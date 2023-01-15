@@ -1,8 +1,18 @@
 # frozen_string_literal: true
 
-require_relative "coradoc/version"
+require "asciidoctor"
+require "coradoc/version"
+require "coradoc/document/base"
+require "coradoc/parser"
 
 module Coradoc
   class Error < StandardError; end
-  # Your code goes here...
+
+  def self.root
+    File.dirname(__dir__)
+  end
+
+  def self.root_path
+    Pathname.new(Coradoc.root)
+  end
 end
