@@ -1,0 +1,185 @@
+= This is the title
+Given name, Last name <email@example.com>
+1.0, 2023-02-23, Version comment note
+:string-attribute: this has to be a string
+:name_1: name of the first contributor in an array
+:name_2: name of the second contributor in an array
+:number-attribute: 300
+:boolean-attribute: true
+:url-attribute: https://example.com
+:uri-attribute: https://example.com
+:flag-without-value:
+:array-semicolon-value: this;is;separated;by;semicolons
+:array-comma-value: this,is,separated,by,semicolons
+
+== Attribute rendering
+
+This ({string-attribute}) renders as "this has to be a string".
+
+This ({url-attribute}) renders as "https://example.com".
+
+
+== Level 1 clause heading
+
+=== Level 2 clause heading
+
+==== Level 3 clause heading
+
+===== Level 4 clause heading
+
+===== Level 5 clause heading
+
+====== Level 6 clause heading
+
+======= Level 7 clause heading
+
+======== Level 8 clause heading
+
+== Inline formatting
+
+This is a *bold* statement.
+
+This is **bold using double** asterisks.
+
+This is in _italics_.
+
+This is in __italics with double underscores__.
+
+This is in `monospace`.
+
+This is in ```monospace with triple backticks```.
+
+This is [underscore]#underscored#.
+
+This is in [strikethrough]#strikethrough#.
+
+This is in [smallcaps]#smallcaps#.
+
+
+
+== Numbered list
+
+. Numbered list item 1
+. Numbered list item 2
+. Numbered list item 3
+. Numbered list item 4
+. Numbered list item 5
+
+== Unnumbered list
+
+* Unnumbered list item 1
+* Unnumbered list item 2
+* Unnumbered list item 3
+* Unnumbered list item 4
+* Unnumbered list item 5
+
+== Definition list
+
+term 1:: definition list item 1
+term 2:: definition list item 2
+term 3:: definition list item 3
+term 4:: definition list item 4
+term 5:: definition list item 5
+term 15:: definition list item 15
+
+== Blocks
+
+=== Basic block with no perimeters
+
+[id=myblock]
+This is my block with a defined ID.
+
+[role=source]
+This should be rendered in source code format.
+
+.Caption title
+This block should have a caption title.
+
+=== Basic block with perimeters
+
+.Example block (open block syntax)
+[example]
+--
+This renders as an example.
+--
+
+.Example block (with block perimeter type)
+[example]
+====
+This renders as an example.
+====
+
+.Source block (open block syntax)
+[source]
+--
+This renders in monospace.
+--
+
+.Source block (with block perimeter type)
+----
+This renders in monospace.
+----
+
+.Side blocks (open block syntax)
+[side]
+****
+This renders in the side.
+****
+
+.Side blocks (with block perimeter type)
+****
+This renders in the side.
+****
+
+.Quote block (open block syntax)
+[quote]
+--
+--
+
+.Quote block (with block perimeter type)
+____
+____
+
+
+== Admonitions
+
+These are all admonition types.
+
+NOTE: This is a note.
+
+TIP: This is a tip.
+
+WARNING: This is a warning.
+
+CAUTION: This is a caution.
+
+DANGER: This is a danger warning.
+
+IMPORTANT: This is an important note.
+
+EDITOR: This is an editor note.
+
+[NOTE]
+This is also a NOTE but in block syntax.
+
+[DANGER]
+This is also a DANGER warning but in block syntax.
+
+
+== Cross references
+
+[#this-is-an-anchor]
+=== Anchor
+
+This (<<this-is-an-anchor>>) should render "X.Y" and link back to "Anchor".
+
+This (<<this-is-an-anchor,title>>) should render "title" and link back to "Anchor".
+
+This (<<this-is-an-anchor,:title>>) should render "Anchor" and link back to "Anchor".
+
+== Links
+
+This renders as a URL: https://www.example.com.
+
+This renders as a URL: https://www.example.com[Example.Com].
+

@@ -3,6 +3,7 @@ PATH
   specs:
     coradoc (0.1.0)
       asciidoctor
+      parslet
       pry
 
 GEM
@@ -17,6 +18,7 @@ GEM
     parallel (1.22.1)
     parser (3.2.0.0)
       ast (~> 2.4.1)
+    parslet (2.0.0)
     pry (0.14.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
