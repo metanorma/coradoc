@@ -7,7 +7,9 @@ RSpec.describe Coradoc::Parser do
 
       document = Coradoc::Parser.parse(sample_file)[:document]
 
-      expect_docuemnt_to_match_title_section(document[0])
+      pp document
+
+      expect_document_to_match_header(document[0])
       expect_document_to_match_bibdata(document[1])
       expect_document_to_match_section_with_body(document[2])
       expect_document_to_match_section_titles(document[3..10])
@@ -302,18 +304,16 @@ RSpec.describe Coradoc::Parser do
     expect(bibdata[6][:value]).to eq("https://example.com")
   end
 
-  def expect_docuemnt_to_match_title_section(doc)
-    section = doc[:section]
+  def expect_document_to_match_header(doc)
+    header= doc[:header]
 
-    expect(section[:title][:level]).to eq("=")
-    expect(section[:title][:text]).to eq("This is the title")
-    expect(section[:paragraphs].count).to eq(2)
+    expect(header[:title]).to eq("This is the title")
+    expect(header[:author][:first_name]).to eq("Given name")
+    expect(header[:author][:last_name]).to eq("Last name")
+    expect(header[:author][:email]).to eq("email@example.com")
 
-    expect(section[:paragraphs].first[:text]).to eq(
-      "Given name, Last name <email@example.com>")
-
-    expect(section[:paragraphs][1][:text]).to eq(
-      "1.0, 2023-02-23, Version comment note"
-    )
+    expect(header[:revision][:number]).to eq("1.0")
+    expect(header[:revision][:date]).to eq("2023-02-23")
+    expect(header[:revision][:remark]).to eq("Version comment note")
   end
 end

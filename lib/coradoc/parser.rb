@@ -18,6 +18,7 @@ module Coradoc
     rule(:inline_element) { text }
     rule(:text) { match("[^\n]").repeat(1) }
     rule(:digits) { match("[0-9]").repeat(1) }
+    rule(:word) { match("[a-zA-Z0-9_-]").repeat(1) }
     rule(:special_character) { match("^[*_:=-]") | str("[#") }
 
     rule(:text_line) do
@@ -26,15 +27,37 @@ module Coradoc
       line_ending.as(:break)
     end
 
+    # Common Helpers
+    rule(:words) { word >> (space? >> word).repeat }
+    rule(:email) { word >> str("@") >> word >> str(".") >> word }
+
     # Document
     rule(:document) do
-      (
-        bibdata.repeat(1).as(:bibdata) |
-        section.as(:section) |
-        block_with_title.as(:block) |
-        empty_line.repeat(1) |
-        any.as(:unparsed)
-      ).repeat(1).as(:document)
+       (
+         bibdata.repeat(1).as(:bibdata) |
+         section.as(:section) |
+         header.as(:header) |
+         block_with_title.as(:block) |
+         empty_line.repeat(1) |
+         any.as(:unparsed)
+       ).repeat(1).as(:document)
+    end
+
+    # Header
+    rule(:header) do
+      match("=") >> space? >> text.as(:title) >> newline >>
+      author.maybe.as(:author) >> revision.maybe.as(:revision)
+    end
+
+    rule(:author) do
+      words.as(:first_name) >> str(",") >> space? >> words.as(:last_name) >>
+      space? >> str("<") >> email.as(:email) >> str(">") >> endline
+    end
+
+    rule(:revision) do
+      (word >> (str(".") >> word).maybe).as(:number) >>
+      str(",") >> space? >> word.as(:date) >>
+      str(":") >> space? >> words.as(:remark) >> newline
     end
 
     # Bibdata
@@ -54,7 +77,7 @@ module Coradoc
     # Heading
     rule(:heading) do
       (anchor_name >> newline).maybe >>
-      match("=").repeat(1, 8).as(:level) >>
+      match("=").repeat(2, 8).as(:level) >>
       space? >> text.as(:text) >> endline.as(:break)
     end
 
@@ -146,7 +169,6 @@ module Coradoc
     end
 
     rule(:paragraph) { admonitions.repeat(1) | text_line.repeat(1) }
-
 
     # Admonition
     rule(:admonition_type) do

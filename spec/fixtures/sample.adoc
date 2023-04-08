@@ -1,6 +1,6 @@
 = This is the title
 Given name, Last name <email@example.com>
-1.0, 2023-02-23, Version comment note
+1.0, 2023-02-23: Version comment note
 :string-attribute: this has to be a string
 :name_1: name of the first contributor in an array
 :name_2: name of the second contributor in an array
