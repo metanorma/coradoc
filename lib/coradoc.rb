@@ -4,6 +4,7 @@ require "asciidoctor"
 require "coradoc/version"
 require "coradoc/document/base"
 require "coradoc/parser"
+require "coradoc/transformer"
 
 module Coradoc
   class Error < StandardError; end
