@@ -1,5 +1,3 @@
-require "coradoc/document/bib_data"
-
 module Coradoc
   module Document
     class Base

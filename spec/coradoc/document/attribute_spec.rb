@@ -6,7 +6,7 @@ RSpec.describe Coradoc::Document::Attribute do
       key = "test-key"
       value = "test-value"
 
-      attribute = Coradoc::Document::Attribute.new(key, value)
+      attribute = Coradoc::Document::Attribute.new(key, value, line_break: "\n")
 
       expect(attribute.key).to eq(key)
       expect(attribute.value).to eq(value)

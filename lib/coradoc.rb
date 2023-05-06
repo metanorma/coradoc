@@ -1,14 +1,10 @@
 # frozen_string_literal: true
 
-require "coradoc/oscal"
+require "parslet"
 require "coradoc/version"
-require "coradoc/document/base"
+
 require "coradoc/parser"
 require "coradoc/transformer"
-
-# Module
-require "coradoc/asciidoc/bibdata"
-require "coradoc/asciidoc/section"
 
 module Coradoc
   class Error < StandardError; end

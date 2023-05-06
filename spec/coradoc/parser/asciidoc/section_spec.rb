@@ -154,7 +154,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
 
   module Asciidoc
     class SectionTester < Parslet::Parser
-      include Coradoc::Asciidoc::Section
+      include Coradoc::Parser::Asciidoc::Section
 
       rule(:document) { (section | any.as(:unparsed)).repeat(1) }
       root :document

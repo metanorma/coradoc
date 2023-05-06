@@ -28,7 +28,7 @@ RSpec.describe "Coradoc::Asciidoc::Bibdata" do
 
   module Asciidoc
     class BibdataTester < Parslet::Parser
-      include Coradoc::Asciidoc::Bibdata
+      include Coradoc::Parser::Asciidoc::Bibdata
 
       rule(:document) { (bibdatas.as(:bibdata) | any.as(:unparsed)).repeat(1) }
       root :document

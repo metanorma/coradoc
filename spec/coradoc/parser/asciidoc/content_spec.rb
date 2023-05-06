@@ -114,7 +114,7 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 
   module Asciidoc
     class ContentTester < Parslet::Parser
-      include Coradoc::Asciidoc::Content
+      include Coradoc::Parser::Asciidoc::Content
 
       rule(:document) { (contents | any.as(:unparsed)).repeat(1) }
       root :document

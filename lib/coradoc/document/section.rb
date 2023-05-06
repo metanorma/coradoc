@@ -1,11 +1,12 @@
 module Coradoc
   class Document::Section
-    attr_reader :title, :blocks, :paragraphs
+    attr_reader :id, :title, :contents, :sections
 
     def initialize(title, options = {})
       @title = title
-      @blocks = options.fetch(:blocks, [])
-      @paragraphs = options.fetch(:paragraphs, [])
+      @id = options.fetch(:id, nil)
+      @contents = options.fetch(:contents, [])
+      @sections = options.fetch(:sections, [])
     end
   end
 end
