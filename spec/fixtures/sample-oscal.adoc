@@ -1,0 +1,840 @@
+= Catalog for ISO27002:2022
+:published: '2023-03-08T09:51:08+08:00'
+:last-modified: '2023-03-08T09:51:08+08:00'
+:version: '1.0'
+:oscal-version: 1.0.0
+:remarks: OSCAL yaml generated from ISO27002:2022
+
+[[cls_5]]
+== Organizational controls
+
+Clause:: 5.1
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:5.1.1, urn:iso:std:iso-iec:27002:ed-2:en:clause:5.1.2
+Type:: Preventive
+Property:: Confidentiality, Integrity, Availability
+Concept:: Identify
+Capability:: Governance
+Domain:: Governance_and_Ecosystem, Resilience
+
+[[control_5.1]]
+=== Control
+
+Information security policy and topic-specific policies should be defined,
+approved by management, published, communicated to and acknowledged by
+relevant personnel and relevant interested parties, and reviewed at planned
+intervals and if significant changes occur.
+
+[[purpose_5.1]]
+=== Purpose
+
+To ensure continuing suitability, adequacy, effectiveness of management
+direction and support for information security in accordance with
+business, legal, statutory, regulatory and contractual requirements.
+
+[[scls_5-1]]
+=== Guidance
+
+[[guidance_5.1_part_1]] At the highest level, the organization should define an “information security policy” which is approved by top management and which sets out the organization’s approach to managing its information security.
+
+[[guidance_5.1_part_2]] The information security policy should take into consideration requirements derived from:
+
+* [[guidance_5.1_part_2_1]] business strategy and requirements;
+
+* [[guidance_5.1_part_2_2]] regulations, legislation and contracts;
+
+* [[guidance_5.1_part_2_3]] the current and projected information security risks and threats.
+
+[[guidance_5.1_part_3]] The information security policy should contain statements concerning:
+
+* [[guidance_5.1_part_3_1]] definition of information security;
+
+* [[guidance_5.1_part_3_2]] information security objectives or the framework for setting information security objectives;
+
+* [[guidance_5.1_part_3_3]] principles to guide all activities relating to information security;
+
+* [[guidance_5.1_part_3_4]] commitment to satisfy applicable requirements related to information security;
+
+* [[guidance_5.1_part_3_5]] commitment to continual improvement of the information security management system;
+
+* [[guidance_5.1_part_3_6]] assignment of responsibilities for information security management to defined roles;
+
+* [[guidance_5.1_part_3_7]] procedures for handling exemptions and exceptions.
+
+[[guidance_5.1_part_4]] Top management should approve any changes to the information security policy.
+
+[[guidance_5.1_part_5]] At a lower level, the information security policy should be supported by topic-specific policies as needed, to further mandate the implementation of information security controls. Topic-specific policies are typically structured to address the needs of certain target groups within an organization or to cover certain security areas. Topic-specific policies should be aligned with and complementary to the information security policy of the organization.
+
+[[guidance_5.1_part_6]] Examples of such topics include:
+
+* [[guidance_5.1_part_6_1]] access control;
+
+* [[guidance_5.1_part_6_2]] physical and environmental security;
+
+* [[guidance_5.1_part_6_3]] asset management;
+
+* [[guidance_5.1_part_6_4]] information transfer;
+
+* [[guidance_5.1_part_6_5]] secure configuration and handling of user endpoint devices;
+
+* [[guidance_5.1_part_6_6]] networking security;
+
+* [[guidance_5.1_part_6_7]] information security incident management;
+
+* [[guidance_5.1_part_6_8]] backup;
+
+* [[guidance_5.1_part_6_9]] cryptography and key management;
+
+* [[guidance_5.1_part_6_10]] information classification and handling;
+
+* [[guidance_5.1_part_6_11]] management of technical vulnerabilities;
+
+* [[guidance_5.1_part_6_12]] secure development.
+
+[[guidance_5.1_part_7]] The responsibility for the development, review and approval of the topic-specific policies should be allocated to relevant personnel based on their appropriate level of authority and technical competency. The review should include assessing opportunities for improvement of the organization’s information security policy and topic-specific policies and managing information security in response to changes to:
+
+* [[guidance_5.1_part_7_1]] the organization’s business strategy;
+
+* [[guidance_5.1_part_7_2]] the organization’s technical environment;
+
+* [[guidance_5.1_part_7_3]] regulations, statutes, legislation and contracts;
+
+* [[guidance_5.1_part_7_4]] information security risks;
+
+* [[guidance_5.1_part_7_5]] the current and projected information security threat environment;
+
+* [[guidance_5.1_part_7_6]] lessons learned from information security events and incidents.
+
+[[guidance_5.1_part_8]] The review of information security policy and topic-specific policies should take the results of management reviews and audits into account. Review and update of other related policies should be considered when one policy is changed to maintain consistency.
+
+[[guidance_5.1_part_9]] The information security policy and topic-specific policies should be communicated to relevant personnel and interested parties in a form that is relevant, accessible and understandable to the intended reader. Recipients of the policies should be required to acknowledge they understand and agree to comply with the policies where applicable. The organization can determine the formats and names of these policy documents that meet the organization’s needs. In some organizations, the information security policy and topic-specific policies can be in a single document. The organization can name these topic-specific policies as standards, directives, policies or others.
+
+[[guidance_5.1_part_10]] If the information security policy or any topic-specific policy is distributed outside the organization, care should be taken not to improperly disclose confidential information.
+
+[[guidance_5.1_part_11]] Differences between information security policy and topic-specific policy illustrates the differences between information security policy and topic-specific policy.
+
+.Differences between information security policy and topic-specific policy
+|===
+|  | *Information security policy* | *Topic-specific policy*
+|*Level of detail* | General or high-level | Specific and detailed
+|*Documented and formally approved by* | Top management | Appropriate level of management
+|===
+
+[[other_info_5.1]]
+=== Other Info
+
+[[other_info_5.1_part_1]] Topic-specific policies can vary across organizations.
+
+Clause:: 5.2
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:6.1.1
+Type:: Preventive
+Property:: Confidentiality, Integrity, Availability
+Concept:: Identify
+Capability:: Governance
+Domain:: Governance_and_Ecosystem, Protection, Resilience
+
+[[control_5.2]]
+=== Control
+
+Information security roles and responsibilities should be defined
+and allocated according to the organization needs.
+
+[[purpose_5.2]]
+=== Purpose
+
+To establish a defined, approved and understood structure for the
+implementation, operation and management of information security within
+the organization.
+
+[[scls_5-2]]
+=== Guidance
+
+[[guidance_5.2_part_1]] Allocation of information security roles and responsibilities should be done in accordance with the information security policy and topic-specific policies (see <<scls_5-1>>). The organization should define and manage responsibilities for:
+
+* [[guidance_5.2_part_1_1]] protection of information and other associated assets;
+
+* [[guidance_5.2_part_1_2]] carrying out specific information security processes;
+
+* [[guidance_5.2_part_1_3]] information security risk management activities and in particular acceptance of residual risks (e.g. to risk owners);
+
+* [[guidance_5.2_part_1_4]] all personnel using an organization’s information and other associated assets.
+
+[[guidance_5.2_part_2]] These responsibilities should be supplemented, where necessary, with more detailed guidance for specific sites and information processing facilities. Individuals with allocated information security responsibilities can assign security tasks to others. However, they remain accountable and should determine that any delegated tasks have been correctly performed.
+
+[[guidance_5.2_part_3]] Each security area for which individuals are responsible should be defined, documented and communicated. Authorization levels should be defined and documented. Individuals who take on a specific information security role should be competent in the knowledge and skills required by the role and should be supported to keep up to date with developments related to the role and required in order to fulfil the responsibilities of the role.
+
+[[other_info_5.2]]
+=== Other Info
+
+[[other_info_5.2_part_1]] Many organizations appoint an information security manager to take overall responsibility for the development and implementation of information security and to support the identification of risks and mitigating controls.
+
+[[other_info_5.2_part_2]] However, responsibility for resourcing and implementing the controls often remains with individual managers. One common practice is to appoint an owner for each asset who then becomes responsible for its day-to-day protection.
+
+[[other_info_5.2_part_3]] Depending on the size and resourcing of an organization, information security can be covered by dedicated roles or duties carried out in addition to existing roles.
+
+Clause:: 5.3
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:6.1.2
+Type:: Preventive
+Property:: Confidentiality, Integrity, Availability
+Concept:: Protect
+Capability:: Governance, Identity_and_access_management
+Domain:: Governance_and_Ecosystem
+
+[[control_5.3]]
+=== Control
+
+Conflicting duties and conflicting areas of responsibility should
+be segregated.
+
+[[purpose_5.3]]
+=== Purpose
+
+To reduce the risk of fraud, error and bypassing of information security
+controls.
+
+[[scls_5-3]]
+=== Guidance
+
+[[guidance_5.3_part_1]] Segregation of duties and areas of responsibility aims to separate conflicting duties between different individuals in order to prevent one individual from executing potential conflicting duties on their own.
+
+[[guidance_5.3_part_2]] The organization should determine which duties and areas of responsibility need to be segregated. The following are examples of activities that can require segregation:
+
+* [[guidance_5.3_part_2_1]] initiating, approving and executing a change;
+
+* [[guidance_5.3_part_2_2]] requesting, approving and implementing access rights;
+
+* [[guidance_5.3_part_2_3]] designing, implementing and reviewing code;
+
+* [[guidance_5.3_part_2_4]] developing software and administering production systems;
+
+* [[guidance_5.3_part_2_5]] using and administering applications;
+
+* [[guidance_5.3_part_2_6]] using applications and administering databases;
+
+* [[guidance_5.3_part_2_7]] designing, auditing and assuring information security controls.
+
+[[guidance_5.3_part_3]] The possibility of collusion should be considered in designing the segregation controls. Small organizations can find segregation of duties difficult to achieve, but the principle should be applied as far as is possible and practicable. Whenever it is difficult to segregate, other controls should be considered, such as monitoring of activities, audit trails and management supervision.
+
+[[guidance_5.3_part_4]] Care should be taken when using role-based access control systems to ensure that persons are not granted conflicting roles. When there is a large number of roles, the organization should consider using automated tools to identify conflicts and facilitate their removal. Roles should be carefully defined and provisioned to minimize access problems if a role is removed or reassigned.
+
+[[other_info_5.3]]
+=== Other Info
+
+[[other_info_5.3_part_1]] No other information.
+
+Clause:: 5.4
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:7.2.1
+Type:: Preventive
+Property:: Confidentiality, Integrity, Availability
+Concept:: Identify
+Capability:: Governance
+Domain:: Governance_and_Ecosystem
+
+[[control_5.4]]
+=== Control
+
+Management should require all personnel to apply information security
+in accordance with the established information security policy, topic-specific policies and procedures of the organization.
+
+[[purpose_5.4]]
+=== Purpose
+
+To ensure management understand their role in information security and undertake actions aiming to ensure all personnel are aware of and fulfil their information security responsibilities.
+
+[[scls_5-4]]
+=== Guidance
+
+[[guidance_5.4_part_1]] Management should demonstrate support of the information security policy, topic-specific policies, procedures and information security controls.
+
+[[guidance_5.4_part_2]] Management responsibilities should include ensuring that personnel:
+
+* [[guidance_5.4_part_2_1]] are properly briefed on their information security roles and responsibilities prior to being granted access to the organization’s information and other associated assets;
+
+* [[guidance_5.4_part_2_2]] are provided with guidelines which state the information security expectations of their role within the organization;
+
+* [[guidance_5.4_part_2_3]] are mandated to fulfil the information security policy and topic-specific policies of the organization;
+
+* [[guidance_5.4_part_2_4]] achieve a level of awareness of information security relevant to their roles and responsibilities within the organization (see <<scls_6-3>>);
+
+* [[guidance_5.4_part_2_5]] compliance with the terms and conditions of employment, contract or agreement, including the organization’s information security policy and appropriate methods of working;
+
+* [[guidance_5.4_part_2_6]] continue to have the appropriate information security skills and qualifications through ongoing professional education;
+
+* [[guidance_5.4_part_2_7]] where practicable, are provided with a confidential channel for reporting violations of information security policy, topic-specific policies or procedures for information security (“whistleblowing”). This can allow for anonymous reporting, or have provisions to ensure that knowledge of the identity of the reporter is known only to those who need to deal with such reports;
+
+* [[guidance_5.4_part_2_8]] are provided with adequate resources and project planning time for implementing the organization’s security-related processes and controls.
+
+[[other_info_5.4]]
+=== Other Info
+
+[[other_info_5.4_part_1]] No other information.
+
+Clause:: 5.5
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:6.1.3
+Type:: Preventive, Corrective
+Property:: Confidentiality, Integrity, Availability
+Concept:: Identify, Protect, Respond, Recover
+Capability:: Governance
+Domain:: Defence, Resilience
+
+[[control_5.5]]
+=== Control
+
+The organization should establish and maintain contact with relevant
+authorities.
+
+[[purpose_5.5]]
+=== Purpose
+
+To ensure appropriate flow of information takes place with respect
+to information security between the organization and relevant legal,
+regulatory and supervisory authorities.
+
+[[scls_5-5]]
+=== Guidance
+
+[[guidance_5.5_part_1]] The organization should specify when and by whom authorities (e.g. law enforcement, regulatory bodies, supervisory authorities) should be contacted and how identified information security incidents should be reported in a timely manner.
+
+[[guidance_5.5_part_2]] Contacts with authorities should also be used to facilitate the understanding about the current and upcoming expectations of these authorities (e.g. applicable information security regulations).
+
+[[other_info_5.5]]
+=== Other Info
+
+[[other_info_5.5_part_1]] Organizations under attack can request authorities to take action against the attack source.
+
+[[other_info_5.5_part_2]] Maintaining such contacts can be a requirement to support information security incident management (see <<scls_5-24>> to <<scls_5-28>>) or the contingency planning and business continuity processes (see <<scls_5-29>> and <<scls_5-30>>). Contacts with regulatory bodies are also useful to anticipate and prepare for upcoming changes in relevant laws or regulations that affect the organization. Contacts with other authorities include utilities, emergency services, electricity suppliers and health and safety [e.g. fire departments (in connection with business continuity), telecommunication providers (in connection with line routing and availability) and water suppliers (in connection with cooling facilities for equipment)].
+
+Clause:: 5.6
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:6.1.4
+Type:: Preventive, Corrective
+Property:: Confidentiality, Integrity, Availability
+Concept:: Protect, Respond, Recover
+Capability:: Governance
+Domain:: Defence
+
+[[control_5.6]]
+=== Control
+
+The organization should establish and maintain contact with special
+interest groups or other specialist security forums and professional
+associations.
+
+[[purpose_5.6]]
+=== Purpose
+
+To ensure appropriate flow of information takes place with respect
+to information security.
+
+[[scls_5-6]]
+=== Guidance
+
+[[guidance_5.6_part_1]] Membership of special interest groups or forums should be considered as a means to:
+
+* [[guidance_5.6_part_1_1]] improve knowledge about best practices and stay up to date with relevant security information;
+
+* [[guidance_5.6_part_1_2]] ensure the understanding of the information security environment is current;
+
+* [[guidance_5.6_part_1_3]] receive early warnings of alerts, advisories and patches pertaining to attacks and vulnerabilities;
+
+* [[guidance_5.6_part_1_4]] gain access to specialist information security advice;
+
+* [[guidance_5.6_part_1_5]] share and exchange information about new technologies, products, services, threats or vulnerabilities;
+
+* [[guidance_5.6_part_1_6]] provide suitable liaison points when dealing with information security incidents (see <<scls_5-24>> to <<scls_5-28>>).
+
+[[other_info_5.6]]
+=== Other Info
+
+[[other_info_5.6_part_1]] No other information.
+
+Clause:: 5.7
+Type:: Preventive, Detective, Corrective
+Property:: Confidentiality, Integrity, Availability
+Concept:: Identify, Detect, Respond
+Capability:: Threat_and_vulnerability_management
+Domain:: Defence, Resilience
+
+[[control_5.7]]
+=== Control
+
+Information relating to information security threats should be collected
+and analysed to produce threat intelligence.
+
+[[purpose_5.7]]
+=== Purpose
+
+To provide awareness of the organization's threat environment so that
+the appropriate mitigation actions can be taken.
+
+[[scls_5-7]]
+=== Guidance
+
+[[guidance_5.7_part_1]] Information about existing or emerging threats is collected and analysed in order to:
+
+* [[guidance_5.7_part_1_1]] facilitate informed actions to prevent the threats from causing harm to the organization;
+
+* [[guidance_5.7_part_1_2]] reduce the impact of such threats.
+
+[[guidance_5.7_part_2]] Threat intelligence can be divided into three layers, which should all be considered:
+
+* [[guidance_5.7_part_2_1]] strategic threat intelligence: exchange of high-level information about the changing threat landscape (e.g. types of attackers or types of attacks);
+
+* [[guidance_5.7_part_2_2]] tactical threat intelligence: information about attacker methodologies, tools and technologies involved;
+
+* [[guidance_5.7_part_2_3]] operational threat intelligence: details about specific attacks, including technical indicators.
+
+[[guidance_5.7_part_3]] Threat intelligence should be:
+
+* [[guidance_5.7_part_3_1]] relevant (i.e. related to the protection of the organization);
+
+* [[guidance_5.7_part_3_2]] insightful (i.e. providing the organization with an accurate and detailed understanding of the threat landscape);
+
+* [[guidance_5.7_part_3_3]] contextual, to provide situational awareness (i.e. adding context to the information based on the time of events, where they occur, previous experiences and prevalence in similar organizations);
+
+* [[guidance_5.7_part_3_4]] actionable (i.e. the organization can act on information quickly and effectively).
+
+[[guidance_5.7_part_4]] Threat intelligence activities should include:
+
+* [[guidance_5.7_part_4_1]] establishing objectives for threat intelligence production;
+
+* [[guidance_5.7_part_4_2]] identifying, vetting and selecting internal and external information sources that are necessary and appropriate to provide information required for the production of threat intelligence;
+
+* [[guidance_5.7_part_4_3]] collecting information from selected sources, which can be internal and external;
+
+* [[guidance_5.7_part_4_4]] processing information collected to prepare it for analysis (e.g. by translating, formatting or corroborating information);
+
+* [[guidance_5.7_part_4_5]] analysing information to understand how it relates and is meaningful to the organization;
+
+* [[guidance_5.7_part_4_6]] communicating and sharing it to relevant individuals in a format that can be understood.
+
+[[guidance_5.7_part_5]] Threat intelligence should be analysed and later used:
+
+* [[guidance_5.7_part_5_1]] by implementing processes to include information gathered from threat intelligence sources into the organization’s information security risk management processes;
+
+* [[guidance_5.7_part_5_2]] as additional input to technical preventive and detective controls like firewalls, intrusion detection system, or anti malware solutions;
+
+* [[guidance_5.7_part_5_3]] as input to the information security test processes and techniques.
+
+[[guidance_5.7_part_6]] The organization should share threat intelligence with other organizations on a mutual basis in order to improve overall threat intelligence.
+
+[[other_info_5.7]]
+=== Other Info
+
+[[other_info_5.7_part_1]] Organizations can use threat intelligence to prevent, detect, or respond to threats. Organizations can produce threat intelligence, but more typically receive and make use of threat intelligence produced by other sources.
+
+[[other_info_5.7_part_2]] Threat intelligence is often provided by independent providers or advisors, government agencies or collaborative threat intelligence groups.
+
+[[other_info_5.7_part_3]] The effectiveness of controls such as <<scls_5-25>>, <<scls_8-7>>, <<scls_8-16>> or <<scls_8-23>>, depends on the quality of available threat intelligence.
+
+Clause:: 5.8
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:6.1.5, urn:iso:std:iso-iec:27002:ed-2:en:clause:14.1.1
+Type:: Preventive
+Property:: Confidentiality, Integrity, Availability
+Concept:: Identify, Protect
+Capability:: Governance
+Domain:: Governance_and_Ecosystem, Protection
+
+[[control_5.8]]
+=== Control
+
+Information security should be integrated into project management.
+
+[[purpose_5.8]]
+=== Purpose
+
+To ensure information security risks related to projects and deliverables
+are effectively addressed in project management throughout the project
+life cycle.
+
+[[scls_5-8]]
+=== Guidance
+
+[[guidance_5.8_part_1]] Information security should be integrated into project management to ensure information security risks are addressed as part of the project management. This can be applied to any type of project regardless of its complexity, size, duration, discipline or application area (e.g. a project for a core business process, ICT, facility management or other supporting processes).
+
+[[guidance_5.8_part_2]] The project management in use should require that:
+
+* [[guidance_5.8_part_2_1]] information security risks are assessed and treated at an early stage and periodically as part of project risks throughout the project life cycle;
+
+* [[guidance_5.8_part_2_2]] information security requirements <<scls_8-26>>), requirements for complying with intellectual property rights (<<scls_5-32>>), etc.] are addressed in the early stages of projects;
+
+* [[guidance_5.8_part_2_3]] information security risks associated with the execution of projects, such as security of internal and external communication aspects are considered and treated throughout the project life cycle;
+
+* [[guidance_5.8_part_2_4]] progress on information security risk treatment is reviewed and effectiveness of the treatment is evaluated and tested.
+
+[[guidance_5.8_part_3]] The appropriateness of the information security considerations and activities should be followed up at predefined stages by suitable persons or governance bodies, such as the project steering committee.
+
+[[guidance_5.8_part_4]] Responsibilities and authorities for information security relevant to the project should be defined and allocated to specified roles.
+
+[[guidance_5.8_part_5]] Information security requirements for products or services to be delivered by the project should be determined using various methods, including deriving compliance requirements from information security policy, topic-specific policies and regulations. Further information security requirements can be derived from activities such as threat modelling, incident reviews, use of vulnerability thresholds or contingency planning, thus ensuring that the architecture and design of information systems are protected against known threats based on the operational environment.
+
+[[guidance_5.8_part_6]] Information security requirements should be determined for all types of projects, not only ICT development projects. The following should also be considered when determining these requirements:
+
+* [[guidance_5.8_part_6_1]] what information is involved (information determination), what are the corresponding information security needs (classification; see <<scls_5-12>>) and the potential negative business impact which can result from lack of adequate security;
+
+* [[guidance_5.8_part_6_2]] the required protection needs of information and other associated assets involved, particularly in terms of confidentiality, integrity and availability;
+
+* [[guidance_5.8_part_6_3]] the level of confidence or assurance required towards the claimed identity of entities in order to derive the authentication requirements;
+
+* [[guidance_5.8_part_6_4]] access provisioning and authorization processes, for customers and other potential business users as well as for privileged or technical users such as relevant project members, potential operation staff or external suppliers;
+
+* [[guidance_5.8_part_6_5]] informing users of their duties and responsibilities;
+
+* [[guidance_5.8_part_6_6]] requirements derived from business processes, such as transaction logging and monitoring, nonrepudiation requirements;
+
+* [[guidance_5.8_part_6_7]] requirements mandated by other information security controls (e.g. interfaces to logging and monitoring or data leakage detection systems);
+
+* [[guidance_5.8_part_6_8]] compliance with the legal, statutory, regulatory and contractual environment in which the organization operates;
+
+* [[guidance_5.8_part_6_9]] level of confidence or assurance required for third parties to meet the organization’s information security policy and topic-specific policies including relevant security clauses in any agreements or contracts.
+
+[[other_info_5.8]]
+=== Other Info
+
+[[other_info_5.8_part_1]] The project development approach, such as waterfall life cycle or agile life cycle, should support information security in a structured way that can be adapted to suit the assessed severity of the information security risks, based on the character of the project. Early consideration of information security requirements for the product or service (e.g. at the planning and design stages), can lead to more effective and cost-efficient solutions for quality and information security. <<ISO_21500>> and <<ISO_21502>> provide guidance on concepts and processes of project management that are important for the performance of projects.
+
+[[other_info_5.8_part_2]] <<ISO_IEC_27005>> provides guidance on the use of risk management processes to identify controls to meet information security requirements.
+
+Clause:: 5.9
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:8.1.1, urn:iso:std:iso-iec:27002:ed-2:en:clause:8.1.2
+Type:: Preventive
+Property:: Confidentiality, Integrity, Availability
+Concept:: Identify
+Capability:: Asset_management
+Domain:: Governance_and_Ecosystem, Protection
+
+[[control_5.9]]
+=== Control
+
+An inventory of information and other associated assets, including
+owners, should be developed and maintained.
+
+[[purpose_5.9]]
+=== Purpose
+
+To identify the organization's information and other associated assets
+in order to preserve their information security and assign appropriate
+ownership.
+
+[[scls_5-9]]
+[underline]#Inventory#
+
+[[guidance_5.9_part_1]] The organization should identify its information and other associated assets and determine their importance in terms of information security. Documentation should be maintained in dedicated or existing inventories as appropriate.
+
+[[guidance_5.9_part_2]] The inventory of information and other associated assets should be accurate, up to date, consistent and aligned with other inventories. Options for ensuring accuracy of an inventory of information and other associated assets include:
+
+* [[guidance_5.9_part_2_1]] conducting regular reviews of identified information and other associated assets against the asset inventory;
+
+* [[guidance_5.9_part_2_2]] automatically enforcing an inventory update in the process of installing, changing or removing an asset.
+
+[[guidance_5.9_part_3]] The location of an asset should be included in the inventory as appropriate.
+
+[[guidance_5.9_part_4]] The inventory does not need to be a single list of information and other associated assets. Considering that the inventory should be maintained by the relevant functions, it can be seen as a set of dynamic inventories, such as inventories for information assets, hardware, software, virtual machines (VMs), facilities, personnel, competence, capabilities and records.
+
+[[guidance_5.9_part_5]] Each asset should be classified in accordance with the classification of the information (see <<scls_5-12>>) associated to that asset.
+
+[[guidance_5.9_part_6]] The granularity of the inventory of information and other associated assets should be at a level appropriate for the needs of the organization. Sometimes specific instances of assets in the information life cycle are not feasible to be documented due to the nature of the asset. An example of a short-lived asset is a VM instance whose life cycle can be of short duration.
+
+[[scls_5-9]]
+[underline]#Ownership#
+
+[[guidance_5.9_part_1]] For the identified information and other associated assets, ownership of the asset should be assigned to an individual or a group and the classification should be identified (see <<scls_5-12>>, <<scls_5-13>>). A process to ensure timely assignment of asset ownership should be implemented. Ownership should be assigned when assets are created or when assets are transferred to the organization. Asset ownership should be reassigned as necessary when current asset owners leave or change job roles.
+
+[[scls_5-9]]
+[underline]#Owner duties#
+
+[[guidance_5.9_part_1]] The asset owner should be responsible for the proper management of an asset over the whole asset life cycle, ensuring that:
+
+* [[guidance_5.9_part_1_1]] information and other associated assets are inventoried;
+
+* [[guidance_5.9_part_1_2]] information and other associated assets are appropriately classified and protected;
+
+* [[guidance_5.9_part_1_3]] the classification is reviewed periodically;
+
+* [[guidance_5.9_part_1_4]] components supporting technology assets are listed and linked, such as database, storage, software components and sub-components;
+
+* [[guidance_5.9_part_1_5]] requirements for the acceptable use of information and other associated assets (see <<scls_5-10>>) are established;
+
+* [[guidance_5.9_part_1_6]] access restrictions correspond with the classification and that they are effective and are reviewed periodically;
+
+* [[guidance_5.9_part_1_7]] information and other associated assets, when deleted or disposed, are handled in a secure manner and removed from the inventory;
+
+* [[guidance_5.9_part_1_8]] they are involved in the identification and management of risks associated with their asset(s);
+
+* [[guidance_5.9_part_1_9]] they support personnel who have the roles and responsibilities of managing their information.
+
+[[other_info_5.9]]
+=== Other Info
+
+[[other_info_5.9_part_1]] Inventories of information and other associated assets are often necessary to ensure the effective protection of information and can be required for other purposes, such as health and safety, insurance or financial reasons. Inventories of information and other associated assets also support risk management, audit activities, vulnerability management, incident response and recovery planning.
+
+[[other_info_5.9_part_2]] Tasks and responsibilities can be delegated (e.g. to a custodian looking after the assets on a daily basis), but the person or group who delegated them remains accountable.
+
+[[other_info_5.9_part_3]] It can be useful to designate groups of information and other associated assets which act together to provide a particular service. In this case, the owner of this service is accountable for the delivery of the service, including the operation of its assets.
+
+[[other_info_5.9_part_4]] See ISO/IEC 19770-1 for additional information on information technology (IT) asset management. See <<ISO_55001>> for additional information on asset management.
+
+Clause:: 5.10
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:8.1.3, urn:iso:std:iso-iec:27002:ed-2:en:clause:8.2.3
+Type:: Preventive
+Property:: Confidentiality, Integrity, Availability
+Concept:: Protect
+Capability:: Asset_management, Information_protection
+Domain:: Governance_and_Ecosystem, Protection
+
+[[control_5.10]]
+=== Control
+
+Rules for the acceptable use and procedures for handling information
+and other associated assets should be identified, documented and implemented.
+
+[[purpose_5.10]]
+=== Purpose
+
+To ensure information and other associated assets are appropriately
+protected, used and handled.
+
+[[scls_5-10]]
+=== Guidance
+
+[[guidance_5.10_part_1]] Personnel and external party users using or having access to the organization’s information and other associated assets should be made aware of the information security requirements for protecting and handling the organization’s information and other associated assets. They should be responsible for their use of any information processing facilities.
+
+[[guidance_5.10_part_2]] The organization should establish a topic-specific policy on the acceptable use of information and other associated assets and communicate it to anyone who uses or handles information and other associated assets. The topic-specific policy on acceptable use should provide clear direction on how individuals are expected to use information and other associated assets. The topic-specific policy should state:
+
+* [[guidance_5.10_part_2_1]] expected and unacceptable behaviours of individuals from an information security perspective;
+
+* [[guidance_5.10_part_2_2]] permitted and prohibited use of information and other associated assets;
+
+* [[guidance_5.10_part_2_3]] monitoring activities being performed by the organization.
+
+[[guidance_5.10_part_3]] Acceptable use procedures should be drawn up for the full information life cycle in accordance with its classification (see <<scls_5-12>>) and determined risks. The following items should be considered:
+
+* [[guidance_5.10_part_3_1]] access restrictions supporting the protection requirements for each level of classification;
+
+* [[guidance_5.10_part_3_2]] maintenance of a record of the authorized users of information and other associated assets;
+
+* [[guidance_5.10_part_3_3]] protection of temporary or permanent copies of information to a level consistent with the protection of the original information;
+
+* [[guidance_5.10_part_3_4]] storage of assets associated with information in accordance with manufacturers' specifications (see <<scls_7-8>>);
+
+* [[guidance_5.10_part_3_5]] clear marking of all copies of storage media (electronic or physical) for the attention of the authorized recipient (see <<scls_7-10>>);
+
+* [[guidance_5.10_part_3_6]] authorization of disposal of information and other associated assets and supported deletion method(s) (see <<scls_8-10>>).
+
+[[other_info_5.10]]
+=== Other Info
+
+[[other_info_5.10_part_1]] It can be the case that the assets concerned do not directly belong to the organization, such as public cloud services. The use of such third-party assets and any assets of the organization associated with such external assets (e.g. information, software) should be identified as applicable and controlled, for example, through agreements with cloud service providers. Care should also be taken when a collaborative working environment is used.
+
+Clause:: 5.11
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:8.1.4
+Type:: Preventive
+Property:: Confidentiality, Integrity, Availability
+Concept:: Protect
+Capability:: Asset_management
+Domain:: Protection
+
+[[control_5.11]]
+=== Control
+
+Personnel and other interested parties as appropriate should return
+all the organization's assets in their possession upon change or termination of their employment, contract or agreement.
+
+[[purpose_5.11]]
+=== Purpose
+
+To protect the organization's assets as part of the process of changing
+or terminating employment,
+contract or agreement.
+
+[[scls_5-11]]
+=== Guidance
+
+[[guidance_5.11_part_1]] The change or termination process should be formalized to include the return of all previously issued physical and electronic assets owned by or entrusted to the organization.
+
+[[guidance_5.11_part_2]] In cases where personnel and other interested parties purchase the organization’s equipment or use their own personal equipment, procedures should be followed to ensure that all relevant information is traced and transferred to the organization and securely deleted from the equipment (see <<scls_7-14>>).
+
+[[guidance_5.11_part_3]] In cases where personnel and other interested parties have knowledge that is important to ongoing operations, that information should be documented and transferred to the organization.
+
+[[guidance_5.11_part_4]] During the notice period and thereafter, the organization should prevent unauthorized copying of relevant information (e.g. intellectual property) by personnel under notice of termination.
+
+[[guidance_5.11_part_5]] The organization should clearly identify and document all information and other associated assets to be returned which can include:
+
+* [[guidance_5.11_part_5_1]] user endpoint devices;
+
+* [[guidance_5.11_part_5_2]] portable storage devices;
+
+* [[guidance_5.11_part_5_3]] specialist equipment;
+
+* [[guidance_5.11_part_5_4]] authentication hardware (e.g. mechanical keys, physical tokens and smartcards) for information systems, sites and physical archives;
+
+* [[guidance_5.11_part_5_5]] physical copies of information.
+
+[[other_info_5.11]]
+=== Other Info
+
+[[other_info_5.11_part_1]] It can be difficult to return information held on assets which are not owned by the organization. In such cases, it is necessary to restrict the use of information using other information security controls such as access rights management (<<scls_5-18>>) or use of cryptography (<<scls_8-24>>).
+
+Clause:: 5.12
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:8.2.1
+Type:: Preventive
+Property:: Confidentiality, Integrity, Availability
+Concept:: Identify
+Capability:: Information_protection
+Domain:: Protection, Defence
+
+[[control_5.12]]
+=== Control
+
+Information should be classified according to the information security
+needs of the organization based on confidentiality, integrity, availability
+and relevant interested party requirements.
+
+[[purpose_5.12]]
+=== Purpose
+
+To ensure identification and understanding of protection needs of
+information in accordance with its importance to the organization.
+
+[[scls_5-12]]
+=== Guidance
+
+[[guidance_5.12_part_1]] The organization should establish a topic-specific policy on information classification and communicate it to all relevant interested parties.
+
+[[guidance_5.12_part_2]] The organization should take into account requirements for confidentiality, integrity and availability in the classification scheme.
+
+[[guidance_5.12_part_3]] Classifications and associated protective controls for information should take account of business needs for sharing or restricting information, for protecting integrity of information and for assuring availability, as well as legal requirements concerning the confidentiality, integrity or availability of the information. Assets other than information can also be classified in compliance with classification of information, which is stored in, processed by or otherwise handled or protected by the asset. Owners of information should be accountable for their classification.
+
+[[guidance_5.12_part_4]] The classification scheme should include conventions for classification and criteria for review of the classification over time. Results of classification should be updated in accordance with changes of the value, sensitivity and criticality of information through their life cycle.
+
+[[guidance_5.12_part_5]] The scheme should be aligned to the topic-specific policy on access control (see <<scls_5-1>>) and should be able to address specific business needs of the organization.
+
+[[guidance_5.12_part_6]] The classification can be determined by the level of impact that the information’s compromise would have for the organization. Each level defined in the scheme should be given a name that makes sense in the context of the classification scheme’s application. The scheme should be consistent across the whole organization and included in its procedures so that everyone classifies information and applicable other associated assets in the same way. In this manner, everyone has a common understanding of protection requirements and applies appropriate protection.
+
+[[guidance_5.12_part_7]] The classification scheme used within the organization can be different from the schemes used by other organizations, even if the names for levels are similar. In addition, information moving between organizations can vary in classification depending on its context in each organization, even if their classification schemes are identical. Therefore, agreements with other organizations that include information sharing should include procedures to identify the classification of that information and to interpret the classification levels from other organizations. Correspondence between different schemes can be determined by looking for equivalence in the associated handling and protection methods.
+
+[[other_info_5.12]]
+=== Other Info
+
+[[other_info_5.12_part_1]] Classification provides people who deal with information with a concise indication of how to handle and protect it. Creating groups of information with similar protection needs and specifying information security procedures that apply to all the information in each group facilitates this. This approach reduces the need for case-by-case risk assessment and custom design of controls.
+
+[[other_info_5.12_part_2]] Information can cease to be sensitive or critical after a certain period of time. For example, when the information has been made public, it no longer has confidentiality requirements but can still require protection for its integrity and availability properties. These aspects should be taken into account, as over-classification can lead to the implementation of unnecessary controls resulting in additional expense or, on the contrary, under-classification can lead to insufficient controls to protect the information from compromise.
+
+[[other_info_5.12_part_3]] As an example, an information confidentiality classification scheme can be based on four levels as follows:
+
+* [[other_info_5.12_part_3_1]] disclosure causes no harm;
+
+* [[other_info_5.12_part_3_2]] disclosure causes minor reputational damage or minor operational impact;
+
+* [[other_info_5.12_part_3_3]] disclosure has a significant short-term impact on operations or business objectives;
+
+* [[other_info_5.12_part_3_4]] disclosure has a serious impact on long term business objectives or puts the survival of the organization at risk.
+
+Clause:: 5.13
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:8.2.2
+Type:: Preventive
+Property:: Confidentiality, Integrity, Availability
+Concept:: Protect
+Capability:: Information_protection
+Domain:: Defence, Protection
+
+[[control_5.13]]
+=== Control
+
+An appropriate set of procedures for information labelling should
+be developed and implemented in accordance with the information classification scheme adopted by the organization.
+
+[[purpose_5.13]]
+=== Purpose
+
+To facilitate the communication of classification of information and
+support automation of information processing and management.
+
+[[scls_5-13]]
+=== Guidance
+
+[[guidance_5.13_part_1]] Procedures for information labelling should cover information and other associated assets in all formats. The labelling should reflect the classification scheme established in <<scls_5-12>>. The labels should be easily recognizable. The procedures should give guidance on where and how labels are attached in consideration of how the information is accessed or the assets are handled depending on the types of storage media. The procedures can define:
+
+* [[guidance_5.13_part_1_1]] cases where labelling is omitted (e.g. labelling of non-confidential information to reduce workloads);
+
+* [[guidance_5.13_part_1_2]] how to label information sent by or stored on electronic or physical means, or any other format;
+
+* [[guidance_5.13_part_1_3]] how to handle cases where labelling is not possible (e.g. due to technical restrictions).
+
+[[guidance_5.13_part_2]] Examples of labelling techniques include:
+
+* [[guidance_5.13_part_2_1]] physical labels;
+
+* [[guidance_5.13_part_2_2]] headers and footers;
+
+* [[guidance_5.13_part_2_3]] metadata;
+
+* [[guidance_5.13_part_2_4]] watermarking;
+
+* [[guidance_5.13_part_2_5]] rubber-stamps.
+
+[[guidance_5.13_part_3]] Digital information should utilize metadata in order to identify, manage and control information, especially with regard to confidentiality. Metadata should also enable efficient and correct searching for information. Metadata should facilitate systems to interact and make decisions based on the associated classification labels.
+
+[[guidance_5.13_part_4]] The procedures should describe how to attach metadata to information, what labels to use and how data should be handled, in line with the organization’s information model and ICT architecture.
+
+[[guidance_5.13_part_5]] Relevant additional metadata should be added by systems when they process information depending on its information security properties.
+
+[[guidance_5.13_part_6]] Personnel and other interested parties should be made aware of labelling procedures. All personnel should be provided with the necessary training to ensure that information is correctly labelled and handled accordingly.
+
+[[guidance_5.13_part_7]] Output from systems containing information that is classified as being sensitive or critical should carry an appropriate classification label.
+
+[[other_info_5.13]]
+=== Other Info
+
+[[other_info_5.13_part_1]] Labelling of classified information is a key requirement for information sharing.
+
+[[other_info_5.13_part_2]] Other useful metadata that can be attached to the information is which organizational process created the information and at what time.
+
+[[other_info_5.13_part_3]] Labelling of information and other associated assets can sometimes have negative effects. Classified assets can be easier to identify by malicious actors for potential misuse.
+
+[[other_info_5.13_part_4]] Some systems do not label individual files or database records with their classification but protect all information at the highest level of classification of any of the information that it contains or is permitted to contain. It is usual in such systems to determine and then label information when it is exported.
+
+Clause:: 5.14
+Maps_27002_2013:: urn:iso:std:iso-iec:27002:ed-2:en:clause:13.2.1, urn:iso:std:iso-iec:27002:ed-2:en:clause:13.2.2, urn:iso:std:iso-iec:27002:ed-2:en:clause:13.2.3
+Type:: Preventive
+Property:: Confidentiality, Integrity, Availability
+Concept:: Protect
+Capability:: Asset_management, Information_protection
+Domain:: Protection
+
+[[control_5.14]]
+=== Control
+
+Information transfer rules, procedures, or agreements should be in
+place for all types of transfer facilities within the organization
+and between the organization and other parties.
+
+[[purpose_5.14]]
+=== Purpose
+
+To maintain the security of information transferred within an organization
+and with any external interested party.
+
+[[scls_5-14]]
+[underline]#General#
+
+[[guidance_5.14_part_1]] The organization should establish and communicate a topic-specific policy on information transfer to all relevant interested parties. Rules, procedures and agreements to protect information in transit should reflect the classification of the information involved. Where information is transferred between the organization and third parties, transfer agreements (including recipient authentication) should be established and maintained to protect information in all forms in transit (see <<scls_5-10>>).
+
+[[guidance_5.14_part_2]] Information transfer can happen through electronic transfer, physical storage media transfer and verbal transfer.
+
+[[guidance_5.14_part_3]] For all types of information transfer, rules, procedures and agreements should include:
+
+* [[guidance_5.14_part_3_1]] controls designed to protect transferred information from interception, unauthorized access, copying, modification, misrouting, destruction and denial of service, including levels of access control commensurate with the classification of the information involved and any special controls that are required to protect sensitive information, such as use of cryptographic techniques (see <<scls_8-24>>);
+
+* [[guidance_5.14_part_3_2]] controls to ensure traceability and non-repudiation, including maintaining a chain of custody for information while in transit;
+
+* [[guidance_5.14_part_3_3]] identification of appropriate contacts related to the transfer including information owners, risk owners, security officers and information custodians, as applicable;
+
+* [[guidance_5.14_part_3_4]] responsibilities and liabilities in the event of information security incidents, such as loss of physical storage media or data;
+
+* [[guidance_5.14_part_3_5]] use of an agreed labelling system for sensitive or critical information, ensuring that the meaning of the labels is immediately understood and that the information is appropriately protected (see <<scls_5-13>>);
+
+* [[guidance_5.14_part_3_6]] reliability and availability of the transfer service;
+
+* [[guidance_5.14_part_3_7]] the topic-specific policy or guidelines on acceptable use of information transfer facilities (see <<scls_5-10>>);
+
+* [[guidance_5.14_part_3_8]] retention and disposal guidelines for all business records, including messages;
+

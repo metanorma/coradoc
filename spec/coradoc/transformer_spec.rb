@@ -9,10 +9,6 @@ RSpec.describe Coradoc::Transformer do
       transformed = Coradoc::Transformer.transform(syntax_tree)
       transformed_doc = transformed[:document]
 
-      # pp syntax_tree[:document][16]
-      # pp transformed_doc[0..1]
-      pp transformed_doc[14]
-
       expect_it_to_extract_document_header(transformed_doc[0])
 
       expect_it_to_extract_section_with_title(transformed_doc[15])

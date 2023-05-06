@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "parslet"
-  spec.add_dependency "asciidoctor"
+  spec.add_dependency "oscal", "~> 0.1.1"
   spec.add_runtime_dependency "pry"
 
   # Uncomment to register a new dependency of your gem

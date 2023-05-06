@@ -7,8 +7,6 @@ RSpec.describe Coradoc::Parser do
 
       document = Coradoc::Parser.parse(sample_file)[:document]
 
-      pp document
-
       expect_document_to_match_header(document[0])
       expect_document_to_match_bibdata(document[1])
       expect_document_to_match_section_with_body(document[2])
@@ -30,9 +28,6 @@ RSpec.describe Coradoc::Parser do
       expect_document_to_match_differnt_admonition(document[26])
       expect_document_to_match_section_with_anchor(document[28])
       expect_document_to_match_section_with_links(document[29])
-
-      # let's see what's in there
-      pp document
     end
   end
 
