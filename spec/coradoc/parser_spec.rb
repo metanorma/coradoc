@@ -29,7 +29,7 @@ RSpec.describe Coradoc::Parser do
       control_section = clause_5_1[:sections][0]
       expect(control_section[:id]).to eq("control_5.1")
       expect(control_section[:title][:text]).to eq("Control")
-      expect(control_section[:contents].count).to eq(2)
+      expect(control_section[:contents].count).to eq(1)
       expect(control_section[:contents][0][:paragraph]).not_to be_nil
 
       purpose_section = clause_5_1[:sections][1]
@@ -38,28 +38,28 @@ RSpec.describe Coradoc::Parser do
       expect(purpose_section[:contents][0][:paragraph]).not_to be_nil
 
       guidance = clause_5_1[:sections][2]
-      expect(guidance[:contents].count).to eq(28)
+      expect(guidance[:contents].count).to eq(16)
       expect(guidance[:contents][0][:paragraph][0][:id]).to eq("guidance_5.1_part_1")
-      expect(guidance[:contents][2][:paragraph][0][:id]).to eq("guidance_5.1_part_2")
+      expect(guidance[:contents][1][:paragraph][0][:id]).to eq("guidance_5.1_part_2")
 
-      list_one_items = guidance[:contents][4][:list][:unnumbered]
+      list_one_items = guidance[:contents][2][:list][:unnumbered]
       expect(list_one_items.count).to eq(3)
       expect(list_one_items[0][:text]).not_to be_nil
       expect(list_one_items[0][:id]).to eq("guidance_5.1_part_2_1")
 
-      expect(guidance[:contents][5][:paragraph][0][:id]).not_to be_nil
-      expect(guidance[:contents][7][:list][:unnumbered].count).to eq(7)
-      expect(guidance[:contents][14][:list][:unnumbered].count).to eq(12)
-      expect(guidance[:contents][17][:list][:unnumbered].count).to eq(6)
-      expect(guidance[:contents][24][:paragraph]).not_to be_nil
+      expect(guidance[:contents][3][:paragraph][0][:id]).not_to be_nil
+      expect(guidance[:contents][4][:list][:unnumbered].count).to eq(7)
+      expect(guidance[:contents][8][:list][:unnumbered].count).to eq(12)
+      expect(guidance[:contents][10][:list][:unnumbered].count).to eq(6)
+      expect(guidance[:contents][14][:paragraph]).not_to be_nil
 
-      diff_table = guidance[:contents][26][:table]
+      diff_table = guidance[:contents][15][:table]
       expect(diff_table[:title]).to eq("Differences between information security policy and topic-specific policy")
       expect(diff_table[:rows][0][:cols][0][:text]).to eq("  ")
       expect(diff_table[:rows][1][:cols][0][:text]).to eq("*Level of detail*")
 
       purpose_5_9 = section[:sections][8][:sections][1]
-      highlight_5_9 = purpose_5_9[:contents][2][:highlight]
+      highlight_5_9 = purpose_5_9[:contents][1][:highlight]
       expect(highlight_5_9[:id]).to eq("scls_5-9")
       expect(highlight_5_9[:text]).to eq("Inventory")
     end

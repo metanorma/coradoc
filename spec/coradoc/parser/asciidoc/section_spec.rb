@@ -122,8 +122,8 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(ast.first[:title][:level]).to eq("==")
       expect(ast.first[:title][:text]).to eq("Section title")
       expect(contents[0][:paragraph][0][:text]).to eq("Section content")
-      expect(contents[2][:paragraph][0][:id]).to eq("inline_id")
-      expect(contents[2][:paragraph][0][:text]).to eq("This is inline id")
+      expect(contents[1][:paragraph][0][:id]).to eq("inline_id")
+      expect(contents[1][:paragraph][0][:text]).to eq("This is inline id")
 
       sub_sections = ast.first[:sections]
       expect(sub_sections[0][:id]).to eq("section_id_two")

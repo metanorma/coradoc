@@ -14,5 +14,33 @@ require "coradoc/document/list"
 
 module Coradoc
   module Document
+    class << self
+      attr_reader :header, :bibdata, :sections
+
+      def from_adoc(filename)
+        ast = Coradoc::Parser.parse(filename)
+        Coradoc::Transformer.transform(ast)
+      end
+
+      def from_ast(elements)
+        @sections = []
+
+        elements.each do |element|
+          if element.is_a?(Coradoc::Document::Bibdata)
+            @bibdata = element
+          end
+
+          if element.is_a?(Coradoc::Document::Header)
+            @header = element
+          end
+
+          if element.is_a?(Coradoc::Document::Section)
+            @sections << element
+          end
+        end
+
+        self
+      end
+    end
   end
 end

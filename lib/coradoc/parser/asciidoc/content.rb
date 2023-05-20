@@ -24,8 +24,7 @@ module Coradoc
             table.as(:table) |
             highlight.as(:highlight) |
             glossaries.as(:glossaries) |
-            paragraph.as(:paragraph) |
-            empty_line.as(:line_break)
+            paragraph.as(:paragraph) | empty_line
           ).repeat(1)
         end
 

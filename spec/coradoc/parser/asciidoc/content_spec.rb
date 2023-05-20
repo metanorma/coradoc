@@ -25,7 +25,7 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 
       ast = Asciidoc::ContentTester.parse(content)
       glossaries = ast.first[:glossaries]
-      lines = ast[2][:paragraph]
+      lines = ast[1][:paragraph]
 
       expect(glossaries[0][:key]).to eq("Clause")
       expect(glossaries[0][:value]).to eq("5.1")
@@ -48,8 +48,8 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 
       ast = Asciidoc::ContentTester.parse(content)
       paragraph_one = ast[0][:paragraph]
-      paragraph_two = ast[2][:paragraph]
-      paragraph_three = ast[4][:paragraph]
+      paragraph_two = ast[1][:paragraph]
+      paragraph_three = ast[2][:paragraph]
 
       expect(paragraph_one[0][:id]).to eq("id_1.1_part_1")
       expect(paragraph_one[0][:text]).to eq("This is the content with id")

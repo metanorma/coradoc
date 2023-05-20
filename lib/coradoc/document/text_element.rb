@@ -3,7 +3,7 @@ module Coradoc
     attr_reader :id, :content, :line_break
 
     def initialize(content, options = {})
-      @content = content
+      @content = content.to_s
       @id = options.fetch(:id, nil)
       @line_break = options.fetch(:line_break, "")
     end

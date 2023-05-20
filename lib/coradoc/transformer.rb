@@ -84,7 +84,7 @@ module Coradoc
       title: simple(:title),
       contents: sequence(:contents),
       sections: sequence(:sections)) do
-        Document::Section.new(title, id: id, contents: contents, section: sections)
+        Document::Section.new(title, id: id, contents: contents, sections: sections)
     end
 
     # rule(title: simple(:title), paragraphs: sequence(:paragraphs)) do
@@ -137,7 +137,7 @@ module Coradoc
     rule(line_break: simple(:line_break)) { Document::LineBreak.new(line_break) }
 
     rule(bibdata: sequence(:bibdata)) do
-      { bibdata: Document::Bibdata.new(bibdata) }
+      Document::Bibdata.new(bibdata)
     end
 
     # Table
@@ -159,6 +159,12 @@ module Coradoc
     # Glossaries
     rule(glossaries: sequence(:glossaries)) do
       Document::Glossaries.new(glossaries)
+    end
+
+    rule(header: simple(:header)) { header }
+    rule(section: simple(:section)) { section }
+    rule(document: sequence(:elements)) do
+      Document.from_ast(elements)
     end
 
     def self.transform(syntax_tree)

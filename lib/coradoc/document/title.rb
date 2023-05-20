@@ -5,14 +5,16 @@ module Coradoc
 
       def initialize(content, level, options = {})
         @level_str = level
-        @content = content
-        @id = options.fetch(:id, nil)
+        @content = content.to_s
+        @id = options.fetch(:id, nil).to_s
         @line_break = options.fetch(:line_break, "")
       end
 
       def level
         @level ||= level_from_string
       end
+
+      alias :text :content
 
       private
 
