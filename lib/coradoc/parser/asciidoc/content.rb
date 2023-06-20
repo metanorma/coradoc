@@ -32,7 +32,7 @@ module Coradoc
         def example_block
           str("[example]") >> newline >>
           str("====") >> newline >>
-          paragraph >>
+          (str("====").absent? >> text.as(:text) >> endline).repeat(1) >>
           str("====") >> line_ending
         end
 
