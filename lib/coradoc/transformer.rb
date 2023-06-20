@@ -87,6 +87,10 @@ module Coradoc
         Document::Section.new(title, id: id, contents: contents, sections: sections)
     end
 
+    rule(example: sequence(:example)) do
+      Document::Block.new("", delimiter: "====", lines: example)
+    end
+
     # rule(title: simple(:title), paragraphs: sequence(:paragraphs)) do
     #   Document::Section.new(title, paragraphs: paragraphs)
     # end

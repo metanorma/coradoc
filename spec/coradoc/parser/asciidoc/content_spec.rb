@@ -15,6 +15,26 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       expect(lines[1][:text]).to eq("It can be distrubuted in multiple lines")
     end
 
+    it "parses content section with text and example block" do
+      content = <<~TEXT
+      This is the sample text for content
+      It can be distrubuted in multiple lines
+
+      [example]
+      ====
+      This is some example text
+      ====
+      TEXT
+
+      ast = Asciidoc::ContentTester.parse(content)
+      lines = ast.first[:paragraph]
+      example = ast.last[:example]
+
+      expect(lines[0][:text]).to eq("This is the sample text for content")
+      expect(lines[1][:text]).to eq("It can be distrubuted in multiple lines")
+      expect(example[0][:text]).to eq("This is some example text")
+    end
+
     it "parses content with glossaries" do
       content = <<~TEXT
       Clause:: 5.1

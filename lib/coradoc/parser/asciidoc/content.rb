@@ -20,12 +20,20 @@ module Coradoc
 
         def contents
           (
+            example_block.as(:example) |
             list.as(:list) |
             table.as(:table) |
             highlight.as(:highlight) |
             glossaries.as(:glossaries) |
             paragraph.as(:paragraph) | empty_line
           ).repeat(1)
+        end
+
+        def example_block
+          str("[example]") >> newline >>
+          str("====") >> newline >>
+          paragraph >>
+          str("====") >> line_ending
         end
 
         def highlight
