@@ -31,9 +31,11 @@ module Coradoc
 
         def example_block
           str("[example]") >> newline >>
-          str("====") >> newline >>
-          (str("====").absent? >> text.as(:text) >> endline).repeat(1) >>
-          str("====") >> line_ending
+          str("=").repeat(4).capture(:delimiter) >> newline >>
+          dynamic do |source, context|
+            (str(context.captures[:delimiter]).absent? >> text.as(:text) >> endline).repeat(1) >>
+            str(context.captures[:delimiter]) >> endline
+          end
         end
 
         def highlight
