@@ -88,7 +88,7 @@ module Coradoc
     end
 
     rule(example: sequence(:example)) do
-      Document::Block.new("", delimiter: "====", lines: example)
+      Document::Block.new("", type: "example", lines: example)
     end
 
     # rule(title: simple(:title), paragraphs: sequence(:paragraphs)) do
