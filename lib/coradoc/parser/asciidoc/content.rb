@@ -20,7 +20,7 @@ module Coradoc
 
         def contents
           (
-            example_block.as(:example) |
+            block.as(:block) |
             list.as(:list) |
             table.as(:table) |
             highlight.as(:highlight) |
@@ -29,13 +29,37 @@ module Coradoc
           ).repeat(1)
         end
 
+        def block
+          sidebar_block | example_block | source_block | quote_block
+        end
+
+        def source_block
+          block_style("-", 2)
+        end
+
+        def quote_block
+          block_style("_")
+        end
+
+        def sidebar_block
+          block_style("*")
+        end
+
         def example_block
-          str("[example]") >> newline >>
-          str("=").repeat(4).capture(:delimiter) >> newline >>
-          dynamic do |source, context|
-            (str(context.captures[:delimiter]).absent? >> text.as(:text) >> endline).repeat(1) >>
-            str(context.captures[:delimiter]) >> endline
-          end
+          block_style("=")
+        end
+
+        def block_style(delimiter="*", repeater = 4)
+          block_title.maybe >>
+          newline.maybe >>
+          block_type.maybe >>
+          str(delimiter).repeat(repeater).as(:delimiter) >> newline >>
+          text_line.repeat(1).as(:lines) >>
+          str(delimiter).repeat(repeater) >> newline
+        end
+
+        def block_type
+          str("[") >> keyword.as(:type) >> str("]") >> newline
         end
 
         def highlight

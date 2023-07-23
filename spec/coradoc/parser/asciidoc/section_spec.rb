@@ -150,6 +150,39 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(list_items[1][:id]).to eq("list_item_id")
       expect(list_items[1][:text]).to eq("List item two")
     end
+
+    it "parses blocks with different types" do
+      section = <<~TEXT
+        === Basic block with perimeters
+
+        .Example block (open block syntax)
+        [example]
+        --
+        This renders as an example.
+        --
+
+        .Example block (with block perimeter type)
+        [example]
+        ====
+        This renders as an example.
+        ====
+
+        .Source block (with block perimeter type)
+        ----
+        Renders in monospace
+        ----
+      TEXT
+
+      ast = Asciidoc::SectionTester.parse(section)
+      section = ast.first
+      contents = section[:contents]
+
+      expect(contents.count).to eq(3)
+      expect(contents[0][:block][:type]).to eq("example")
+      expect(contents[1][:block][:delimiter]).to eq("====")
+      expect(section[:title][:text]).to eq("Basic block with perimeters")
+      expect(contents[2][:block][:lines][0][:text]).to eq("Renders in monospace")
+    end
   end
 
   module Asciidoc

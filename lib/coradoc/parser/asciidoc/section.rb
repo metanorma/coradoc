@@ -10,14 +10,14 @@ module Coradoc
 
         def section_block(level = 2)
           section_id.maybe >>
-          section_title(level).as(:title) >>
-          contents.as(:contents).maybe
+            section_title(level).as(:title) >>
+            contents.as(:contents).maybe
         end
 
         # Section id
         def section_id
           (str("[[") >> keyword.as(:id) >> str("]]") |
-           str("[#") >> keyword.as(:id) >> str("]")) >> newline
+            str("[#") >> keyword.as(:id) >> str("]")) >> newline
         end
 
         # Heading

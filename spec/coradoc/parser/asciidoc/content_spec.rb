@@ -4,8 +4,8 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
   describe ".parse" do
     it "parses content section with texts" do
       content = <<~TEXT
-      This is are the sample text for content
-      It can be distrubuted in multiple lines
+        This is are the sample text for content
+        It can be distrubuted in multiple lines
       TEXT
 
       ast = Asciidoc::ContentTester.parse(content)
@@ -15,39 +15,141 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       expect(lines[1][:text]).to eq("It can be distrubuted in multiple lines")
     end
 
-    it "parses content section with text and example block" do
-      content = <<~TEXT
-      This is the sample text for content
-      It can be distrubuted in multiple lines
+    context "block types" do
+      it "parses block with open type" do
+        content = <<~TEXT
+        .Side blocks (open block syntax)
 
-      [example]
-      ====
-      This is some example text
-      ====
+        [sidebar]
+        ****
+        This renders in the side.
+        ****
+        TEXT
 
-      [example]
-      ======
-      This is another example text
-      ======
-      TEXT
+        ast = Asciidoc::ContentTester.parse(content)
+        block = ast.first[:block]
 
-      ast = Asciidoc::ContentTester.parse(content)
-      lines = ast.first[:paragraph]
-      example1 = ast[1][:example]
-      example2 = ast[2][:example]
+        expect(block[:type]).to eq("sidebar")
+        expect(block[:delimiter]).to eq("****")
+        expect(block[:title]).to eq("Side blocks (open block syntax)")
+        expect(block[:lines].first[:text]).to eq("This renders in the side.")
+      end
 
-      expect(lines[0][:text]).to eq("This is the sample text for content")
-      expect(lines[1][:text]).to eq("It can be distrubuted in multiple lines")
-      expect(example1[0][:text]).to eq("This is some example text")
-      expect(example2[0][:text]).to eq("This is another example text")
+      it "parses block only enforcing minimum permiter" do
+        content = <<~TEXT
+        .Side blocks (open block syntax)
+
+        [sidebar]
+        *****
+        This renders in the side.
+        *****
+        TEXT
+
+        ast = Asciidoc::ContentTester.parse(content)
+        block = ast.first[:block]
+
+        expect(block[:type]).to eq("sidebar")
+        expect(block[:delimiter]).to eq("*****")
+        expect(block[:title]).to eq("Side blocks (open block syntax)")
+        expect(block[:lines].first[:text]).to eq("This renders in the side.")
+      end
+
+      it "parses blocks with perimeter" do
+        content = <<~TEXT
+        .Side blocks (with block perimeter type)
+
+        ****
+        This renders in the side.
+        ****
+        TEXT
+
+        ast = Asciidoc::ContentTester.parse(content)
+        block = ast.first[:block]
+
+        expect(block[:delimiter]).to eq("****")
+        expect(block[:lines].first[:text]).to eq("This renders in the side.")
+        expect(block[:title]).to eq("Side blocks (with block perimeter type)")
+      end
+
+      it "parses example type block" do
+        content = <<~TEXT
+        [example]
+        ====
+        Example text with open type
+        ====
+
+        ======
+        Example text with permiter
+        ======
+        TEXT
+
+        ast = Asciidoc::ContentTester.parse(content)
+        block_one = ast.first[:block]
+        block_two = ast.last[:block]
+
+        expect(block_one[:type]).to eq("example")
+        expect(block_one[:delimiter]).to eq("====")
+        expect(block_two[:delimiter]).to eq("======")
+        expect(block_two[:lines][0][:text]).to eq("Example text with permiter")
+        expect(block_one[:lines][0][:text]).to eq("Example text with open type")
+      end
+
+      it "parses source type block" do
+        content = <<~TEXT
+          .Source block (open block syntax)
+          [source]
+          --
+          This renders in monospace.
+          --
+
+          .Source block (with block perimeter type)
+          ----
+          This renders in monospace.
+          ----
+        TEXT
+
+        ast = Asciidoc::ContentTester.parse(content)
+        block_one = ast.first[:block]
+        block_two = ast.last[:block]
+
+        expect(block_one[:type]).to eq("source")
+        expect(block_one[:delimiter]).to eq("--")
+        expect(block_two[:delimiter]).to eq("----")
+        expect(block_one[:lines][0][:text]).to eq("This renders in monospace.")
+        expect(block_two[:lines][0][:text]).to eq("This renders in monospace.")
+      end
+
+      it "parses quote type block" do
+        content = <<~TEXT
+          .Quote block (open block syntax)
+          [quote]
+          --
+          This is quote type text
+          --
+
+          .Quote block (with block perimeter)
+          ____
+          This is quote type text
+          ____
+        TEXT
+
+        ast = Asciidoc::ContentTester.parse(content)
+        block_one = ast.first[:block]
+        block_two = ast.last[:block]
+
+        expect(block_one[:type]).to eq("quote")
+        expect(block_one[:delimiter]).to eq("--")
+        expect(block_two[:delimiter]).to eq("____")
+        expect(block_one[:lines][0][:text]).to eq("This is quote type text")
+      end
     end
 
     it "parses content with glossaries" do
       content = <<~TEXT
-      Clause:: 5.1
-      Maps_27002_2013:: iso:5.1.1, iso:5.1.2
+        Clause:: 5.1
+        Maps_27002_2013:: iso:5.1.1, iso:5.1.2
 
-      This content block also contains some text
+        This content block also contains some text
       TEXT
 
       ast = Asciidoc::ContentTester.parse(content)
@@ -65,12 +167,12 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 
     it "parses content with inline id" do
       content = <<~TEXT
-      [[id_1.1_part_1]] This is the content with id
-      This is content without any id
+        [[id_1.1_part_1]] This is the content with id
+        This is content without any id
 
-      [[guidance_5.1_part_1]] At highest level organization
+        [[guidance_5.1_part_1]] At highest level organization
 
-      [[guidance_5.1_part_2]] The information security policy
+        [[guidance_5.1_part_2]] The information security policy
       TEXT
 
       ast = Asciidoc::ContentTester.parse(content)
@@ -138,18 +240,17 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       expect(ast[1][:paragraph][0][:text]).to eq("This is a pragraph block")
     end
   end
+end
 
-  module Asciidoc
-    class ContentTester < Parslet::Parser
-      include Coradoc::Parser::Asciidoc::Content
+module Asciidoc
+  class ContentTester < Parslet::Parser
+    include Coradoc::Parser::Asciidoc::Content
 
-      rule(:document) { (contents | any.as(:unparsed)).repeat(1) }
-      root :document
+    rule(:document) { (contents | any.as(:unparsed)).repeat(1) }
+    root :document
 
-      def self.parse(text)
-        new.parse_with_debug(text)
-      end
+    def self.parse(text)
+      new.parse_with_debug(text)
     end
   end
 end
-
