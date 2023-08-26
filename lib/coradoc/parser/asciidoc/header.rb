@@ -6,23 +6,26 @@ module Coradoc
       module Header
         include Coradoc::Parser::Asciidoc::Base
 
-        # Header
         def header
-          match("=") >> space? >> text.as(:title) >> newline >>
-          author.maybe.as(:author) >> revision.maybe.as(:revision)
+          header_title >>
+          author.maybe.as(:author) >>
+          revision.maybe.as(:revision) >> newline.maybe
         end
 
-        # Author
+        def header_title
+          match("=") >> space? >> text.as(:title) >> newline
+        end
+
         def author
-          words.as(:first_name) >> str(",") >> space? >> words.as(:last_name) >>
-          space? >> str("<") >> email.as(:email) >> str(">") >> endline
+          words.as(:first_name) >> str(",") >>
+          space? >> words.as(:last_name) >>
+          space? >> str("<") >> email.as(:email) >> str(">") >> newline
         end
 
-        # Revision
         def revision
           (word >> (str(".") >> word).maybe).as(:number) >>
-          str(",") >> space? >> word.as(:date) >>
-          str(":") >> space? >> words.as(:remark) >> newline
+          str(",") >> space? >> date.as(:date ) >> str(":") >>
+          space? >> words.as(:remark) >> newline
         end
       end
     end

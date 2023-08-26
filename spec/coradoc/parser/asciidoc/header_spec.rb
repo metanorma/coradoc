@@ -17,6 +17,7 @@ RSpec.describe "Coradoc::Asciidoc::Header" do
         = This is the title
         Given name, Last name <email@example.com>
         1.0, 2023-02-23: Version comment note
+        :string-attribute: this has to be a string
       TEXT
 
       ast = Asciidoc::HeaderTester.parse(header)

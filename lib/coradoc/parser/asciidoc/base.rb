@@ -26,31 +26,18 @@ module Coradoc
           match["\r\n"].repeat(1)
         end
 
-        # def line_break
-        #   match["\r\n"]
-        # end
-
         def keyword
           (match("[a-zA-Z0-9_-]") | str(".")).repeat(1)
         end
 
-        # def text_line
-        #   special_character.absent? >>
-        #   match("[^\n]").repeat(1).as(:text) >>
-        #   line_ending.as(:break)
-        # end
-
-        # rule(:space) { match('\s') }
-        # rule(:space?) { spaces.maybe }
-        # rule(:spaces) { space.repeat(1) }
         def empty_line
           match("^\n")
         end
-        #
 
-        #
-        # rule(:inline_element) { text }
-        # rule(:text) { match("[^\n]").repeat(1) }
+        def digit
+          match("[0-9]")
+        end
+
         def digits
           match("[0-9]").repeat(1)
         end
@@ -61,6 +48,14 @@ module Coradoc
 
         def words
           word >> (space? >> word).repeat
+        end
+
+        def rich_texts
+          rich_text >> (space? >> rich_text).repeat
+        end
+
+        def rich_text
+          (match("[a-zA-Z0-9_-]") | str(".") | str("*") | match("@")).repeat(1)
         end
 
         def email
@@ -77,6 +72,11 @@ module Coradoc
 
         def special_character
           match("^[*_:=-]") | str("[#") | str("[[")
+        end
+
+        def date
+          digit.repeat(2, 4) >> str("-") >>
+            digit.repeat(1, 2) >> str("-") >> digit.repeat(1, 2)
         end
       end
     end

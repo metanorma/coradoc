@@ -88,17 +88,12 @@ module Coradoc
             repeat(1).as(:cols) >> line_ending
         end
 
-        # Extended
-        def word
-          (match("[a-zA-Z0-9_-]") | str(".") | str("*") | match("@")).repeat(1)
-        end
-
         def empty_cell_content
           str("|").absent? >> literal_space.as(:text)
         end
 
         def cell_content
-          str("|").absent? >> literal_space? >> words.as(:text)
+          str("|").absent? >> literal_space? >> rich_texts.as(:text)
         end
 
         def literal_space
