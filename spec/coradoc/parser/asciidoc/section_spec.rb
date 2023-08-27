@@ -9,10 +9,11 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       TEXT
 
       ast = Asciidoc::SectionTester.parse(section)
+      paragraph = ast.first[:contents][0][:paragraph]
 
       expect(ast.first[:title][:level]).to eq("==")
       expect(ast.first[:title][:text]).to eq("Section title")
-      expect(ast.first[:contents][0][:paragraph][0][:text]).to eq("Section content")
+      expect(paragraph[:lines][0][:text]).to eq("Section content")
     end
 
     it "it parses section id, title and body" do
@@ -23,11 +24,12 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       TEXT
 
       ast = Asciidoc::SectionTester.parse(section)
+      paragraph = ast.first[:contents][0][:paragraph]
 
       expect(ast.first[:id]).to eq("section_id")
       expect(ast.first[:title][:level]).to eq("==")
       expect(ast.first[:title][:text]).to eq("Section title")
-      expect(ast.first[:contents][0][:paragraph][0][:text]).to eq("Section content")
+      expect(paragraph[:lines][0][:text]).to eq("Section content")
     end
 
     it "it parses legacy section id" do
@@ -121,9 +123,9 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(ast.first[:id]).to eq("section_id")
       expect(ast.first[:title][:level]).to eq("==")
       expect(ast.first[:title][:text]).to eq("Section title")
-      expect(contents[0][:paragraph][0][:text]).to eq("Section content")
-      expect(contents[1][:paragraph][0][:id]).to eq("inline_id")
-      expect(contents[1][:paragraph][0][:text]).to eq("This is inline id")
+      expect(contents[0][:paragraph][:lines][0][:text]).to eq("Section content")
+      expect(contents[1][:paragraph][:lines][0][:id]).to eq("inline_id")
+      expect(contents[1][:paragraph][:lines][0][:text]).to eq("This is inline id")
 
       sub_sections = ast.first[:sections]
       expect(sub_sections[0][:id]).to eq("section_id_two")

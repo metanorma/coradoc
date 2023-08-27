@@ -38,6 +38,12 @@ module Coradoc
       Document::TextElement.new(text, id: id, line_break: line_break)
     end
 
+    # Paragraph
+    rule(paragraph: simple(:paragraph)) { paragraph }
+    rule(lines: sequence(:lines)) { Document::Paragraph.new(lines) }
+    rule(meta: simple(:meta), lines: sequence(:lines)) do
+      Document::Paragraph.new(lines, meta: meta)
+    end
 
     # Title Element
     rule(
@@ -55,10 +61,6 @@ module Coradoc
         Document::Title.new(text, level, line_break: line_break, id: name)
     end
 
-    # Paragraph
-    rule(paragraph: sequence(:paragraph)) do
-      Document::Paragraph.new(paragraph)
-    end
 
     # Section
     # rule(title: simple(:title)) { Document::Section.new(title) }

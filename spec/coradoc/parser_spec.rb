@@ -39,15 +39,15 @@ RSpec.describe Coradoc::Parser do
 
       guidance = clause_5_1[:sections][2]
       expect(guidance[:contents].count).to eq(16)
-      expect(guidance[:contents][0][:paragraph][0][:id]).to eq("guidance_5.1_part_1")
-      expect(guidance[:contents][1][:paragraph][0][:id]).to eq("guidance_5.1_part_2")
+      expect(guidance[:contents][0][:paragraph][:lines][0][:id]).to eq("guidance_5.1_part_1")
+      expect(guidance[:contents][1][:paragraph][:lines][0][:id]).to eq("guidance_5.1_part_2")
 
       list_one_items = guidance[:contents][2][:list][:unnumbered]
       expect(list_one_items.count).to eq(3)
       expect(list_one_items[0][:text]).not_to be_nil
       expect(list_one_items[0][:id]).to eq("guidance_5.1_part_2_1")
 
-      expect(guidance[:contents][3][:paragraph][0][:id]).not_to be_nil
+      expect(guidance[:contents][3][:paragraph][:lines][0][:id]).not_to be_nil
       expect(guidance[:contents][4][:list][:unnumbered].count).to eq(7)
       expect(guidance[:contents][8][:list][:unnumbered].count).to eq(12)
       expect(guidance[:contents][10][:list][:unnumbered].count).to eq(6)

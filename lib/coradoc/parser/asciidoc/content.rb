@@ -5,7 +5,8 @@ module Coradoc
         include Coradoc::Parser::Asciidoc::Base
 
         def paragraph
-          text_line.repeat(1)
+          paragraph_meta.as(:meta).maybe >>
+            text_line.repeat(1).as(:lines)
         end
 
         def glossaries
@@ -126,6 +127,12 @@ module Coradoc
         def text_id
           str("[[") >> keyword.as(:id) >> str("]]") |
             str("[#") >> keyword.as(:id) >> str("]")
+        end
+
+        def paragraph_meta
+          str("[") >>
+            keyword.as(:key) >> str("=") >>
+            word.as(:value) >> str("]") >> newline
         end
 
         def glossary

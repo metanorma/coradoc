@@ -9,7 +9,7 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       TEXT
 
       ast = Asciidoc::ContentTester.parse(content)
-      lines = ast.first[:paragraph]
+      lines = ast.first[:paragraph][:lines]
 
       expect(lines[0][:text]).to eq("This is are the sample text for content")
       expect(lines[1][:text]).to eq("It can be distrubuted in multiple lines")
@@ -154,7 +154,7 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 
       ast = Asciidoc::ContentTester.parse(content)
       glossaries = ast.first[:glossaries]
-      lines = ast[1][:paragraph]
+      lines = ast[1][:paragraph][:lines]
 
       expect(glossaries[0][:key]).to eq("Clause")
       expect(glossaries[0][:value]).to eq("5.1")
@@ -176,9 +176,9 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       TEXT
 
       ast = Asciidoc::ContentTester.parse(content)
-      paragraph_one = ast[0][:paragraph]
-      paragraph_two = ast[1][:paragraph]
-      paragraph_three = ast[2][:paragraph]
+      paragraph_one = ast[0][:paragraph][:lines]
+      paragraph_two = ast[1][:paragraph][:lines]
+      paragraph_three = ast[2][:paragraph][:lines]
 
       expect(paragraph_one[0][:id]).to eq("id_1.1_part_1")
       expect(paragraph_one[0][:text]).to eq("This is the content with id")
@@ -187,6 +187,23 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       expect(paragraph_two[0][:id]).to eq("guidance_5.1_part_1")
       expect(paragraph_three[0][:id]).to eq("guidance_5.1_part_2")
       expect(paragraph_two[0][:text]).to eq("At highest level organization")
+    end
+
+    context "paragraph" do
+      it "parses paragraph with id" do
+        content = <<~TEXT
+          [id=myblock]
+          This is my block with a defined ID.
+          this is going to be the next line
+        TEXT
+
+        ast = Asciidoc::ContentTester.parse(content)
+        paragraph = ast[0][:paragraph]
+
+        expect(paragraph[:meta][:key]).to eq("id")
+        expect(paragraph[:meta][:value]).to eq("myblock")
+        expect(paragraph[:lines][0][:text]).to eq("This is my block with a defined ID.")
+      end
     end
 
     it "parses list embeded in the content" do
@@ -237,7 +254,7 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 
       expect(ast[0][:highlight][:id]).to eq("scls_5-9")
       expect(ast[0][:highlight][:text]).to eq("Ownership")
-      expect(ast[1][:paragraph][0][:text]).to eq("This is a pragraph block")
+      expect(ast[1][:paragraph][:lines][0][:text]).to eq("This is a pragraph block")
     end
   end
 end

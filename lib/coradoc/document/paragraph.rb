@@ -3,8 +3,9 @@ module Coradoc
     class Paragraph
       attr_reader :content
 
-      def initialize(content, _options = {})
+      def initialize(content, options = {})
         @content = content
+        @meta = options.fetch(:meta, nil)
       end
 
       def id
