@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "pathname"
+
 require "parslet"
 require "coradoc/version"
 
