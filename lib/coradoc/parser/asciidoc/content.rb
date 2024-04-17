@@ -15,8 +15,8 @@ module Coradoc
 
         # List
         def list
-          unnumbered_list.as(:unnumbered) |
-            definition_list.as(:definition) | numbered_list.as(:numbered)
+          unordered_list.as(:unordered) |
+            definition_list.as(:definition) | ordered_list.as(:ordered)
         end
 
         def contents
@@ -140,11 +140,11 @@ module Coradoc
           text.as(:value) >> line_ending.as(:break)
         end
 
-        def numbered_list
-          nlist_item.repeat(1)
+        def ordered_list
+          olist_item.repeat(1)
         end
 
-        def unnumbered_list
+        def unordered_list
           (ulist_item >> newline.maybe).repeat(1)
         end
 
@@ -152,7 +152,7 @@ module Coradoc
           dlist_item.repeat(1)
         end
 
-        def nlist_item
+        def olist_item
           match("\.") >> space >> text_line
         end
 

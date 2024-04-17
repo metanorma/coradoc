@@ -85,15 +85,15 @@ module Coradoc
 
     # List
     rule(:list) do
-      unnumbered_list.as(:unnumbered) |
-        definition_list.as(:definition) | numbered_list.as(:numbered)
+      unordered_list.as(:unordered) |
+        definition_list.as(:definition) | ordered_list.as(:ordered)
     end
 
-    rule(:numbered_list) { nlist_item.repeat(1) }
-    rule(:unnumbered_list) { ulist_item.repeat(1) }
+    rule(:ordered_list) { olist_item.repeat(1) }
+    rule(:unordered_list) { ulist_item.repeat(1) }
     rule(:definition_list) { dlist_item.repeat(1) }
 
-    rule(:nlist_item) { match("\.") >> space >> text_line }
+    rule(:olist_item) { match("\.") >> space >> text_line }
     rule(:ulist_item) { match("\\*") >> space >> text_line }
     rule(:dlist_item) do
       str("term") >> space >> digits >> str("::") >> space >> text_line

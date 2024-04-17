@@ -155,8 +155,8 @@ module Coradoc
 
     # List
     rule(list: simple(:list)) { list }
-    rule(unnumbered: sequence(:list_items)) do
-      Document::List::Unnumbered.new(list_items)
+    rule(unordered: sequence(:list_items)) do
+      Document::List::Unordered.new(list_items)
     end
 
     # Highlight
