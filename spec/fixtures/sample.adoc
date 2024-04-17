@@ -57,21 +57,21 @@ This is in [smallcaps]#smallcaps#.
 
 
 
-== Numbered list
+== Ordered list
 
-. Numbered list item 1
-. Numbered list item 2
-. Numbered list item 3
-. Numbered list item 4
-. Numbered list item 5
+. Ordered list item 1
+. Ordered list item 2
+. Ordered list item 3
+. Ordered list item 4
+. Ordered list item 5
 
-== Unnumbered list
+== Unordered list
 
-* Unnumbered list item 1
-* Unnumbered list item 2
-* Unnumbered list item 3
-* Unnumbered list item 4
-* Unnumbered list item 5
+* Unordered list item 1
+* Unordered list item 2
+* Unordered list item 3
+* Unordered list item 4
+* Unordered list item 5
 
 == Definition list
 

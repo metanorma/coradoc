@@ -12,6 +12,11 @@ require "coradoc/document/paragraph"
 require "coradoc/document/table"
 require "coradoc/document/list"
 
+require "coradoc/document/inline"
+require "coradoc/document/audio"
+require "coradoc/document/video"
+require "coradoc/document/break"
+
 module Coradoc
   module Document
     class << self

@@ -208,18 +208,18 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 
     it "parses list embeded in the content" do
       content = <<~DOC
-        * Unnumbered list item 1
-        * Unnumbered list item 2
-        * [[list_item_id]] Unnumbered list item 3
+        * Unordered list item 1
+        * Unordered list item 2
+        * [[list_item_id]] Unordered list item 3
       DOC
 
       ast = Asciidoc::ContentTester.parse(content)
-      list_items = ast[0][:list][:unnumbered]
+      list_items = ast[0][:list][:unordered]
 
       expect(list_items.count).to eq(3)
-      expect(list_items[0][:text]).to eq("Unnumbered list item 1")
+      expect(list_items[0][:text]).to eq("Unordered list item 1")
       expect(list_items[2][:id]).to eq("list_item_id")
-      expect(list_items[2][:text]).to eq("Unnumbered list item 3")
+      expect(list_items[2][:text]).to eq("Unordered list item 3")
     end
 
     it "parses the table block" do

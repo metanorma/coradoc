@@ -8,10 +8,17 @@ module Coradoc
         @content = content.to_s
         @id = options.fetch(:id, nil).to_s
         @line_break = options.fetch(:line_break, "")
+        @anchor = options.fetch(:anchor, nil)
       end
 
       def level
         @level ||= level_from_string
+      end
+
+      def to_adoc
+        content = Coradoc::Generator.gen_adoc(@content)
+        content = ["\n", @anchor, @level_str, ' ', content, "\n"].join("")
+        Coradoc::Generator.gen_adoc(content)
       end
 
       alias :text :content
