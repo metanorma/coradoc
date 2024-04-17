@@ -7,6 +7,10 @@ module Coradoc
       @id = options.fetch(:id, nil)
       @line_break = options.fetch(:line_break, "")
     end
+    
+    def to_adoc
+      @content
+    end
   end
 
   class Document::LineBreak

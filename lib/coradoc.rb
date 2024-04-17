@@ -7,6 +7,7 @@ require "coradoc/version"
 
 require "coradoc/parser"
 require "coradoc/transformer"
+require "coradoc/generator"
 
 module Coradoc
   class Error < StandardError; end

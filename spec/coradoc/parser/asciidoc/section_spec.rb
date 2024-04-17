@@ -143,7 +143,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
 
       ast = Asciidoc::SectionTester.parse(section)
       section = ast[0]
-      list_items = section[:contents].first[:list][:unnumbered]
+      list_items = section[:contents].first[:list][:unordered]
 
       expect(section[:id]).to eq("section_id")
       expect(section[:title][:text]).to eq("Section title")

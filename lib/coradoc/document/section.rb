@@ -20,6 +20,12 @@ module Coradoc
         end
       end
 
+      def to_adoc
+        anchor = !@id.empty? ? "[[#{@id}]]\n" : ""
+        content = Coradoc::Generator.gen_adoc(@contents)
+        "\n#{anchor}" << content << "\n"
+      end
+
       private
 
       def extract_glossaries

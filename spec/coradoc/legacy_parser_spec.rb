@@ -13,8 +13,8 @@ RSpec.describe Coradoc::LegacyParser do
       expect_document_to_match_section_with_body(document[2])
       expect_document_to_match_section_titles(document[3..10])
       expect_document_to_match_inline_formatting(document[11])
-      expect_document_to_match_numbered_list_section(document[12])
-      expect_document_to_match_unnumbered_list_section(document[13])
+      expect_document_to_match_ordered_list_section(document[12])
+      expect_document_to_match_unordered_list_section(document[13])
       expect_document_to_match_definition_list_section(document[14])
       expect_document_to_match_basic_block_sections(document[16])
       expect_document_to_match_the_top_lavel_block(document[17])
@@ -210,30 +210,30 @@ RSpec.describe Coradoc::LegacyParser do
     expect(list[5][:text]).to eq("definition list item 15")
   end
 
-  def expect_document_to_match_unnumbered_list_section(doc)
+  def expect_document_to_match_unordered_list_section(doc)
     section = doc[:section]
-    list = section[:list][:unnumbered]
+    list = section[:list][:unordered]
 
     expect(section[:title][:level]).to eq("==")
-    expect(section[:title][:text]).to eq("Unnumbered list")
-    expect(section[:list][:unnumbered].count).to eq(5)
+    expect(section[:title][:text]).to eq("Unordered list")
+    expect(section[:list][:unordered].count).to eq(5)
 
-    expect(list[0][:text]).to eq("Unnumbered list item 1")
-    expect(list[2][:text]).to eq("Unnumbered list item 3")
-    expect(list[4][:text]).to eq("Unnumbered list item 5")
+    expect(list[0][:text]).to eq("Unordered list item 1")
+    expect(list[2][:text]).to eq("Unordered list item 3")
+    expect(list[4][:text]).to eq("Unordered list item 5")
   end
 
-  def expect_document_to_match_numbered_list_section(doc)
+  def expect_document_to_match_ordered_list_section(doc)
     section = doc[:section]
-    numbered_list = section[:list][:numbered]
+    ordered_list = section[:list][:ordered]
 
     expect(section[:title][:level]).to eq("==")
-    expect(section[:title][:text]).to eq("Numbered list")
-    expect(section[:list][:numbered].count).to eq(5)
+    expect(section[:title][:text]).to eq("Ordered list")
+    expect(section[:list][:ordered].count).to eq(5)
 
-    expect(numbered_list[0][:text]).to eq("Numbered list item 1")
-    expect(numbered_list[2][:text]).to eq("Numbered list item 3")
-    expect(numbered_list[4][:text]).to eq("Numbered list item 5")
+    expect(ordered_list[0][:text]).to eq("Ordered list item 1")
+    expect(ordered_list[2][:text]).to eq("Ordered list item 3")
+    expect(ordered_list[4][:text]).to eq("Ordered list item 5")
   end
 
   def expect_document_to_match_inline_formatting(doc)
