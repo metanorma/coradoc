@@ -7,15 +7,16 @@ module Coradoc
         @rows = rows
         @title = title
         @id = options.fetch(:id, nil)
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
         @attrs = options.fetch(:attrs, '')
       end
 
 
       def to_adoc
-        anchor = @id ? "[[#{@id}]]\n" : ""
-        attrs = @attrs
-        title = @title
-        content = Coradoc::Generator.gen_adoc(@rows)
+        anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
+        attrs = @attrs.to_s.empty? ? "" : "#{@attrs.to_adoc}\n"
+        title = @title.to_s.empty? ? "" : ".#{@title}\n"
+        content = @rows.map(&:to_adoc).join
         "\n\n#{anchor}#{attrs}#{title}|===\n" << content << "\n|===\n"
       end
 
@@ -43,9 +44,10 @@ module Coradoc
 
       end
       class Cell
-        attr_reader :id
+        attr_reader :anchor
         def initialize(options = {})
           @id = options.fetch(:id, nil)
+          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
           @colrowattr = options.fetch(:colrowattr, '')
           @alignattr = options.fetch(:alignattr, '')
           @style = options.fetch(:style, '')
@@ -54,7 +56,7 @@ module Coradoc
         end
 
         def to_adoc
-          anchor = @id ? "[[#{@id}]]" : ""
+          anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}"
           content = Coradoc::Generator.gen_adoc(@content)
           "#{@colrowattr}#{@alignattr}#{@style}| #{anchor}#{content}#{@delim}"
         end
