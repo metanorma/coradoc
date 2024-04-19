@@ -9,7 +9,10 @@ module Coradoc
     end
 
     def to_adoc
-      "= #{title}\n:stem:\n\n"
+      adoc = "= #{title}\n"
+      adoc << @author.to_adoc if @author
+      adoc << @revision.to_adoc if @revision
+      adoc
     end
   end
 end

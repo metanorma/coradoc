@@ -11,28 +11,81 @@ module Coradoc
         @attributes = options.fetch(:attributes, {})
         @lang = options.fetch(:lang, nil)
         @id = options.fetch(:id, nil)
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
       end
 
       def type
         @type ||= defined_type || type_from_delimiter
       end
 
-      def to_adoc
-        lines = Coradoc::Generator.gen_adoc(@lines)
-        if type == :quote
-          "\n\n#{@attributes}____\n" << lines << "\n____\n\n"
-        elsif type == :source && @lang
-          anchor = @id ? "[[#{@id}]]\n" : ""
-          "\n\n#{anchor}[source,#{@lang}]\n----\n" << lines << "\n----\n\n"
-        elsif type == :literal
-          anchor = @id ? "[[#{@id}]]\n" : ""
-          "\n\n#{anchor}....\n" << lines << "\n....\n\n"
-        elsif type == :side
-          "\n\n****\n" << lines << "\n****\n\n"
-        elsif type == :example
-          anchor = @id ? "[[#{@id}]]\n" : ""
+      class Side < Block
+        def initialize(options = {})
+          @lines = options.fetch(:lines, [])
+        end
+
+        def to_adoc
+          lines = Coradoc::Generator.gen_adoc(@lines)
+          "\n\n****" << lines << "\n****\n\n"
+        end
+      end
+
+      class Example < Block
+        def initialize(title, options = {})
+          @title = title
+          @id = options.fetch(:id, nil)
+          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
+          @lines = options.fetch(:lines, [])
+        end
+
+        def to_adoc
+          anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
           title = ".#{@title}\n" unless @title.empty?
+          lines = Coradoc::Generator.gen_adoc(@lines)
           "\n\n#{anchor}#{title}====\n" << lines << "\n====\n\n"
+        end
+      end
+
+      class Quote < Block
+        def initialize(title, options = {})
+          @title = title
+          @attributes = options.fetch(:attributes, nil)
+          @lines = options.fetch(:lines, [])
+        end
+
+        def to_adoc
+          attrs = @attributes.nil? ? "" : "#{@attributes.to_adoc}\n"
+          lines = Coradoc::Generator.gen_adoc(@lines)
+          "\n\n#{attrs}____\n" << lines << "\n____\n\n"
+        end
+      end
+
+      class Literal < Block
+        def initialize(title, options = {})
+          @id = options.fetch(:id, nil)
+          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
+          @lines = options.fetch(:lines, [])
+        end
+
+        def to_adoc
+          anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
+          lines = Coradoc::Generator.gen_adoc(@lines)
+          "\n\n#{anchor}....\n" << lines << "\n....\n\n"
+        end
+      end
+
+      class SourceCode < Block
+        def initialize(title, options = {})
+          @id = options.fetch(:id, nil)
+          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
+          @lang = options.fetch(:lang, '')
+          @lines = options.fetch(:lines, [])
+          # super(title, options.merge({type: :literal}))
+        end
+
+        def to_adoc
+          anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
+          lines = Coradoc::Generator.gen_adoc(@lines)
+          "\n\n#{anchor}[source,#{@lang}]\n----\n" << lines << "\n----\n\n"
         end
       end
 
@@ -55,6 +108,8 @@ module Coradoc
           "...." => :literal
         }
       end
+
+
     end
   end
 end
