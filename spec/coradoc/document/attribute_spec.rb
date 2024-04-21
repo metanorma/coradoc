@@ -11,5 +11,15 @@ RSpec.describe Coradoc::Document::Attribute do
       expect(attribute.key).to eq(key)
       expect(attribute.value).to eq(value)
     end
+
+    it "exposes comma separated values as an array" do
+      key = "comma-separted-values"
+      value = "html,pdf,xml, adoc"
+
+      attribute = Coradoc::Document::Attribute.new(key, value)
+
+      expect(attribute.key).to eq(key)
+      expect(attribute.value).to eq(value.split(",").map(&:strip))
+    end
   end
 end
