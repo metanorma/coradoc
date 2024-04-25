@@ -15,7 +15,8 @@ module Coradoc
       def to_adoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         attrs = @attrs.to_s.empty? ? "" : "#{@attrs.to_adoc}\n"
-        title = @title.to_s.empty? ? "" : ".#{@title}\n"
+        title = Coradoc::Generator.gen_adoc(@title)
+        title = title.empty? ? "" : ".#{title}\n"
         content = @rows.map(&:to_adoc).join
         "\n\n#{anchor}#{attrs}#{title}|===\n" << content << "\n|===\n"
       end

@@ -2,13 +2,15 @@ module Coradoc
   module Document
     module Inline
       class Italic
-        attr_accessor :content
-        def initialize(content)
+        attr_accessor :content, :unconstrained
+        def initialize(content, unconstrained = true)
           @content = content
+          @unconstrained = unconstrained
         end
         def to_adoc
           content = Coradoc::Generator.gen_adoc(@content)
-          "#{content[/^\s*/]}_#{content.strip}_#{content[/\s*$/]}"
+          doubled = @unconstrained ? "_" : ""
+          "#{content[/^\s+/]}#{doubled}_#{content.strip}_#{doubled}#{content[/\s+$/]}"
         end
       end
     end

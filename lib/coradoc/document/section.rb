@@ -5,9 +5,10 @@ module Coradoc
 
       def initialize(title, options = {})
         @title = title
-        @id = options.fetch(:id, nil).to_s
+        @id = options.fetch(:id, nil)
         @contents = options.fetch(:contents, [])
         @sections = options.fetch(:sections, [])
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
       end
 
       def glossaries
@@ -21,7 +22,7 @@ module Coradoc
       end
 
       def to_adoc
-        anchor = !@id.empty? ? "[[#{@id}]]\n" : ""
+        anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         content = Coradoc::Generator.gen_adoc(@contents)
         "\n#{anchor}" << content << "\n"
       end

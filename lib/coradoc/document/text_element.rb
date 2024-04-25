@@ -3,13 +3,13 @@ module Coradoc
     attr_reader :id, :content, :line_break
 
     def initialize(content, options = {})
-      @content = content.to_s
+      @content = content#.to_s
       @id = options.fetch(:id, nil)
       @line_break = options.fetch(:line_break, "")
     end
     
     def to_adoc
-      @content
+      Coradoc::Generator.gen_adoc(@content)
     end
   end
 
