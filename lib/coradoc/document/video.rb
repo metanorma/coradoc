@@ -6,20 +6,17 @@ module Coradoc
       def initialize(title, options = {})
         @title = title
         @id = options.fetch(:id, nil)
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
         @src = options.fetch(:src, '')
-        @options = options.fetch(:options, [])
+        @attributes = options.fetch(:attributes, [])
+        # @attributes.add_valid_named('opts')
       end
 
       def to_adoc
-        anchor = @id ? "[[#{@id}]]\n" : ""
+        anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         title = ".#{@title}\n" unless @title.empty?
-
-        opts = ""
-        if @options.any?
-          opts = %{options="#{@options.join(',')}"}
-        end
-
-        [anchor, title, "video::", @src, "[", opts, "]"].join("")
+        attrs = @attributes.empty? ? "\[\]" : @attributes.to_adoc
+        [anchor, title, "video::", @src, attrs].join("")
       end
     end
   end

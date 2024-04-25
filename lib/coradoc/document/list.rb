@@ -26,22 +26,6 @@ module Coradoc
         "\n#{anchor}#{attrs}" + content
       end
 
-
-      class Ordered < List
-        def prefix
-          "." * [@ol_count, 0].max
-        end
-      end
-
-      class Unordered < List
-        def prefix
-          "*" * [@ol_count, 0].max
-        end
-      end
-
-      class Definition < List
-      end
-
       class Item
         attr_reader :id
         def initialize(content, options = {})
