@@ -6,7 +6,7 @@ module Coradoc
       def initialize(content, level, options = {})
         @level_int = level
         @level_int = level.length if level.is_a?(String)
-        @content = content.to_s
+        @content = content
         @id = options.fetch(:id, nil)
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
         @line_break = options.fetch(:line_break, "")
@@ -21,7 +21,6 @@ module Coradoc
         content = Coradoc::Generator.gen_adoc(@content)
         level_str = "=" * (@level_int + 1)
         content = ["\n", anchor, level_str, ' ', content, "\n"].join("")
-        Coradoc::Generator.gen_adoc(content)
       end
 
       alias :text :content

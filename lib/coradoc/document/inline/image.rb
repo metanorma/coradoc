@@ -2,23 +2,21 @@ module Coradoc
   module Document
     module Inline
       class Image
-        attr_reader :id, :title, :src, :alt, :width, :height
-        def initialize(options = ())
-          @id = options.fetch(:id, nil)
+        attr_reader :title, :id, :src, :attributes
+        def initialize(title, id, src, options = ())
+          @title = title
+          @id = id
+          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
+          @src = src
+          @attributes = options.fetch(:attributes, [])
           @title = options.fetch(:title, nil)
-          @src = options.fetch(:src, nil)
-          @alt = options.fetch(:alt, nil)
-          @width = options.fetch(:width, nil)
-          @height = options.fetch(:height, nil)
         end
+
         def to_adoc
-          anchor = @id ? "[[#{@id}]]\n" : ""
-          title = ".#{@title}\n" unless @title.empty?
-          attrs = @alt
-          attrs = "\"\"" if (@width || @height) && @alt.nil?
-          attrs += ",#{@width}" if @width
-          attrs += ",#{@height}" if @width && @height
-          [anchor, title, "image::", src, "[", attrs, "]"].join("")
+          anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
+          title = ".#{@title}\n" unless @title.to_s.empty?
+          attrs = @attributes.empty? ? "\[\]" : @attributes.to_adoc
+          [anchor, title, "image::", @src, attrs].join("")
         end
       end
     end

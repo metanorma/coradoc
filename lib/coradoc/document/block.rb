@@ -18,76 +18,30 @@ module Coradoc
         @type ||= defined_type || type_from_delimiter
       end
 
-      class Side < Block
-        def initialize(options = {})
-          @lines = options.fetch(:lines, [])
-        end
-
-        def to_adoc
-          lines = Coradoc::Generator.gen_adoc(@lines)
-          "\n\n****" << lines << "\n****\n\n"
-        end
+      def gen_anchor
+        @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
       end
 
-      class Example < Block
-        def initialize(title, options = {})
-          @title = title
-          @id = options.fetch(:id, nil)
-          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-          @lines = options.fetch(:lines, [])
-        end
-
-        def to_adoc
-          anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
-          title = ".#{@title}\n" unless @title.empty?
-          lines = Coradoc::Generator.gen_adoc(@lines)
-          "\n\n#{anchor}#{title}====\n" << lines << "\n====\n\n"
-        end
+      def gen_title
+        t = Coradoc::Generator.gen_adoc(@title)
+        return "" if t.empty?
+        ".#{t}\n"
       end
 
-      class Quote < Block
-        def initialize(title, options = {})
-          @title = title
-          @attributes = options.fetch(:attributes, nil)
-          @lines = options.fetch(:lines, [])
-        end
-
-        def to_adoc
-          attrs = @attributes.nil? ? "" : "#{@attributes.to_adoc}\n"
-          lines = Coradoc::Generator.gen_adoc(@lines)
-          "\n\n#{attrs}____\n" << lines << "\n____\n\n"
-        end
+      def gen_attributes
+        @attributes.nil? ? "" : "#{@attributes.to_adoc}\n"
       end
 
-      class Literal < Block
-        def initialize(title, options = {})
-          @id = options.fetch(:id, nil)
-          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-          @lines = options.fetch(:lines, [])
-        end
-
-        def to_adoc
-          anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
-          lines = Coradoc::Generator.gen_adoc(@lines)
-          "\n\n#{anchor}....\n" << lines << "\n....\n\n"
-        end
+      def gen_delimiter
+        @delimiter_char * @delimiter_len
       end
 
-      class SourceCode < Block
-        def initialize(title, options = {})
-          @id = options.fetch(:id, nil)
-          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-          @lang = options.fetch(:lang, '')
-          @lines = options.fetch(:lines, [])
-          # super(title, options.merge({type: :literal}))
-        end
-
-        def to_adoc
-          anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
-          lines = Coradoc::Generator.gen_adoc(@lines)
-          "\n\n#{anchor}[source,#{@lang}]\n----\n" << lines << "\n----\n\n"
-        end
+      def gen_lines
+        Coradoc::Generator.gen_adoc(@lines)
       end
+
+
+
 
       private
 

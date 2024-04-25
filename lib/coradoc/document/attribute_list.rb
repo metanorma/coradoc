@@ -22,16 +22,20 @@ module Coradoc
 
       def to_adoc
         adoc = ""
-        adoc << @positional.join(", ") if @positional.any?
-        adoc << ", " if @positional.any? && @named.any?
+        adoc << @positional.join(",") if @positional.any?
+        adoc << "," if @positional.any? && @named.any?
         adoc << @named.map do |k, v|
-          v2 = v.to_s
-          v2 = v2.include?("\"") ? v2.gsub("\"","\\\"") : v2
-          if v2.include?(" ") || v2.include?(",") || v2.include?("\"")
-            v2 = "\"#{v2}\""
+          if v.is_a?(String)
+            v2 = v.to_s
+            v2 = v2.include?("\"") ? v2.gsub("\"","\\\"") : v2
+            if v2.include?(" ") || v2.include?(",") || v2.include?("\"")
+              v2 = "\"#{v2}\""
+            end
+          elsif v.is_a?(Array)
+            v2 = "\"#{v.join(",")}\""
           end
           [k.to_s, "=", v2].join
-        end.join(", ")
+        end.join(",")
         adoc = "[#{adoc}]" if @positional.any? || @named.any?
         adoc
       end
