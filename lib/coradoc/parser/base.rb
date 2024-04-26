@@ -1,21 +1,21 @@
 require "parslet"
 require "parslet/convenience"
 
-require "coradoc/parser/asciidoc/header"
-require "coradoc/parser/asciidoc/bibdata"
-require "coradoc/parser/asciidoc/section"
+require_relative "asciidoc/header"
+require_relative "asciidoc/document_attributes"
+require_relative "asciidoc/section"
 
 module Coradoc
   module Parser
     class Base < Parslet::Parser
       include Coradoc::Parser::Asciidoc::Header
-      include Coradoc::Parser::Asciidoc::Bibdata
+      include Coradoc::Parser::Asciidoc::DocumentAttributes
       include Coradoc::Parser::Asciidoc::Section
 
       root :document
       rule(:document) do
         (
-          bibdatas.as(:bibdata) |
+          document_attributess.as(:document_attributes) |
           section.as(:section) |
           header.as(:header) |
           empty_line.as(:line_break) |
