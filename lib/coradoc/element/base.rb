@@ -7,8 +7,6 @@ module Coradoc
       #   @document_attributes = extract_document_attributes(asciidoc)
       # end
 
-      private
-
       # def extract_document_attributes(asciidoc)
       #   @document_attributes ||= DocumentAttributes.new(asciidoc.attributes)
       # end

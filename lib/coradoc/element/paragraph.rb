@@ -22,7 +22,7 @@ module Coradoc
       def to_adoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         if @tdsinglepara
-          "#{anchor}" << Coradoc::Generator.gen_adoc(@content).strip
+          anchor.to_s << Coradoc::Generator.gen_adoc(@content).strip
         else
           "\n\n#{anchor}" << Coradoc::Generator.gen_adoc(@content).strip << "\n\n"
         end

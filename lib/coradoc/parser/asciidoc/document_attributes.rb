@@ -11,7 +11,7 @@ module Coradoc
 
         def document_attributes
           str(":") >> attribute_name.as(:key) >> str(":") >>
-          space? >> attribute_value.as(:value) >> line_ending
+            space? >> attribute_value.as(:value) >> line_ending
         end
       end
     end

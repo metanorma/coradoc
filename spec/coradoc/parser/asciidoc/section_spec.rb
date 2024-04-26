@@ -4,8 +4,8 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
   describe ".parse" do
     it "it parses section tile and body" do
       section = <<~TEXT
-      == Section title
-      Section content
+        == Section title
+        Section content
       TEXT
 
       ast = Asciidoc::SectionTester.parse(section)
@@ -18,9 +18,9 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
 
     it "it parses section id, title and body" do
       section = <<~TEXT
-      [#section_id]
-      == Section title
-      Section content
+        [#section_id]
+        == Section title
+        Section content
       TEXT
 
       ast = Asciidoc::SectionTester.parse(section)
@@ -34,13 +34,13 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
 
     it "it parses legacy section id" do
       section = <<~TEXT
-      [[section_id]]
-      == Section title
+        [[section_id]]
+        == Section title
 
-      This is the content section
+        This is the content section
 
-      [[section_id_5.1]]
-      === Sub section title
+        [[section_id_5.1]]
+        === Sub section title
       TEXT
 
       ast = Asciidoc::SectionTester.parse(section)
@@ -53,23 +53,23 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
 
     it "it parses nested sub sections" do
       section = <<~TEXT
-      == Section title
+        == Section title
 
-      Section Content
+        Section Content
 
-      === Level 2 clause heading
+        === Level 2 clause heading
 
-      ==== Level 3 clause heading
+        ==== Level 3 clause heading
 
-      ===== Level 4 clause heading
+        ===== Level 4 clause heading
 
-      ====== Level 5 clause heading
+        ====== Level 5 clause heading
 
-      ======= Level 6 clause heading
+        ======= Level 6 clause heading
 
-      ======== Level 7 clause heading
+        ======== Level 7 clause heading
 
-      == Another section title
+        == Another section title
       TEXT
 
       ast = Asciidoc::SectionTester.parse(section)
@@ -107,14 +107,14 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
 
     it "it parses section with inline id" do
       section = <<~TEXT
-      [[section_id]]
-      == Section title
-      Section content
+        [[section_id]]
+        == Section title
+        Section content
 
-      [[inline_id]] This is inline id
+        [[inline_id]] This is inline id
 
-      [[section_id_two]]
-      === This is another section id
+        [[section_id_two]]
+        === This is another section id
       TEXT
 
       ast = Asciidoc::SectionTester.parse(section)
@@ -134,11 +134,11 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
 
     it "it parses section with inline id" do
       section = <<~TEXT
-      [[section_id]]
-      == Section title
+        [[section_id]]
+        == Section title
 
-      * List item one
-      * [[list_item_id]] List item two
+        * List item one
+        * [[list_item_id]] List item two
       TEXT
 
       ast = Asciidoc::SectionTester.parse(section)

@@ -3,6 +3,7 @@ module Coradoc
     module Inline
       class Subscript
         attr_accessor :content
+
         def initialize(content)
           @content = content
         end
