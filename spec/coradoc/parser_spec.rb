@@ -12,9 +12,9 @@ RSpec.describe Coradoc::Parser do
 
       expect(ast[0][:header][:title]).to eq("Catalog for ISO27002:2022")
 
-      expect(ast[1][:bibdata].count).to eq(5)
-      expect(ast[1][:bibdata][0][:key]).to eq("published")
-      expect(ast[1][:bibdata][0][:value]).to eq("'2023-03-08T09:51:08+08:00'")
+      expect(ast[1][:document_attributes].count).to eq(5)
+      expect(ast[1][:document_attributes][0][:key]).to eq("published")
+      expect(ast[1][:document_attributes][0][:value]).to eq("'2023-03-08T09:51:08+08:00'")
 
       section = ast[3][:section]
       clause_5_1 = section[:sections][0]
