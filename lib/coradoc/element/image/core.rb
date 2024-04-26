@@ -3,6 +3,7 @@ module Coradoc
     module Image
       class Core
         attr_reader :title, :id, :src, :attributes
+
         def initialize(title, id, src, options = ())
           @title = title
           @id = id

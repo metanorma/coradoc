@@ -44,11 +44,11 @@ RSpec.describe Coradoc::LegacyParser do
 
     expect(section[:title][:text]).to eq("Links")
     expect(section[:paragraphs][0][:text]).to eq(
-      "This renders as a URL: https://www.example.com."
+      "This renders as a URL: https://www.example.com.",
     )
 
     expect(section[:paragraphs][1][:text]).to eq(
-      "This renders as a URL: https://www.example.com[Example.Com]."
+      "This renders as a URL: https://www.example.com[Example.Com].",
     )
   end
 
@@ -89,11 +89,11 @@ RSpec.describe Coradoc::LegacyParser do
     expect(paragraphs[7][:admonition][:text]).to eq("This is an editor note.")
 
     expect(paragraphs[8][:admonition][:text]).to eq(
-      "This is also a NOTE but in block syntax."
+      "This is also a NOTE but in block syntax.",
     )
 
     expect(paragraphs[9][:admonition][:text]).to eq(
-      "This is also a DANGER warning but in block syntax."
+      "This is also a DANGER warning but in block syntax.",
     )
   end
 
@@ -185,14 +185,14 @@ RSpec.describe Coradoc::LegacyParser do
     expect(section[:title][:text]).to eq("Basic block with no perimeters")
 
     expect(blocks.count).to eq(2)
-    expect(blocks[0][:attributes]).to eq({ key: "id", value: "myblock"})
+    expect(blocks[0][:attributes]).to eq({ key: "id", value: "myblock" })
     expect(blocks[0][:lines][0][:text]).to eq(
-      "This is my block with a defined ID."
+      "This is my block with a defined ID.",
     )
 
-    expect(blocks[1][:attributes]).to eq({ key: "role", value: "source"})
+    expect(blocks[1][:attributes]).to eq({ key: "role", value: "source" })
     expect(blocks[1][:lines][0][:text]).to eq(
-      "This should be rendered in source code format."
+      "This should be rendered in source code format.",
     )
   end
 
@@ -246,13 +246,16 @@ RSpec.describe Coradoc::LegacyParser do
     expect(section[:paragraphs][0][:text]).to eq("This is a *bold* statement.")
 
     expect(section[:paragraphs][3][:text]).to eq(
-      "This is in __italics with double underscores__.")
+      "This is in __italics with double underscores__.",
+    )
 
     expect(section[:paragraphs][6][:text]).to eq(
-      "This is [underscore]#underscored#.")
+      "This is [underscore]#underscored#.",
+    )
 
     expect(section[:paragraphs][8][:text]).to eq(
-      "This is in [smallcaps]#smallcaps#.")
+      "This is in [smallcaps]#smallcaps#.",
+    )
   end
 
   def expect_document_to_match_section_titles(doc)
@@ -277,10 +280,12 @@ RSpec.describe Coradoc::LegacyParser do
     expect(section[:paragraphs].count).to eq(2)
 
     expect(section[:paragraphs][0][:text]).to eq(
-      'This ({string-attribute}) renders as "this has to be a string".')
+      'This ({string-attribute}) renders as "this has to be a string".',
+    )
 
     expect(section[:paragraphs][1][:text]).to eq(
-      'This ({url-attribute}) renders as "https://example.com".')
+      'This ({url-attribute}) renders as "https://example.com".',
+    )
   end
 
   def expect_document_to_match_document_attributes(doc)
@@ -295,13 +300,12 @@ RSpec.describe Coradoc::LegacyParser do
     expect(document_attributes[3][:key]).to eq("number-attribute")
     expect(document_attributes[3][:value]).to eq("300")
 
-
     expect(document_attributes[6][:key]).to eq("uri-attribute")
     expect(document_attributes[6][:value]).to eq("https://example.com")
   end
 
   def expect_document_to_match_header(doc)
-    header= doc[:header]
+    header = doc[:header]
 
     expect(header[:title]).to eq("This is the title")
     expect(header[:author][:first_name]).to eq("Given name")

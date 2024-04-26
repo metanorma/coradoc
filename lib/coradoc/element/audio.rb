@@ -7,7 +7,7 @@ module Coradoc
         @title = title
         @id = options.fetch(:id, nil)
         @anchor = Inline::Anchor.new(@id) if @id
-        @src = options.fetch(:src, '')
+        @src = options.fetch(:src, "")
         @attributes = options.fetch(:attributes, [])
       end
 

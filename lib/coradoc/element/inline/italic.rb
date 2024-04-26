@@ -3,6 +3,7 @@ module Coradoc
     module Inline
       class Italic
         attr_accessor :content, :unconstrained
+
         def initialize(content, unconstrained = true)
           @content = content
           @unconstrained = unconstrained

@@ -23,7 +23,7 @@ module Coradoc
         # Heading
         def section_title(level = 2, max_level = 8)
           match("=").repeat(level, max_level).as(:level) >>
-          space? >> text.as(:text) >> endline.as(:break)
+            space? >> text.as(:text) >> endline.as(:break)
         end
 
         # section

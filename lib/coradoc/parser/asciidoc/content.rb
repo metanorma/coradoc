@@ -50,13 +50,13 @@ module Coradoc
           block_style("=")
         end
 
-        def block_style(delimiter="*", repeater = 4)
+        def block_style(delimiter = "*", repeater = 4)
           block_title.maybe >>
-          newline.maybe >>
-          block_type.maybe >>
-          str(delimiter).repeat(repeater).as(:delimiter) >> newline >>
-          text_line.repeat(1).as(:lines) >>
-          str(delimiter).repeat(repeater) >> newline
+            newline.maybe >>
+            block_type.maybe >>
+            str(delimiter).repeat(repeater).as(:delimiter) >> newline >>
+            text_line.repeat(1).as(:lines) >>
+            str(delimiter).repeat(repeater) >> newline
         end
 
         def block_type
@@ -65,7 +65,7 @@ module Coradoc
 
         def highlight
           text_id >> newline >>
-          underline >> highlight_text >> newline
+            underline >> highlight_text >> newline
         end
 
         def underline
@@ -79,14 +79,14 @@ module Coradoc
         # Table
         def table
           block_title >>
-          str("|===") >> line_ending >>
-          table_row.repeat(1).as(:rows) >>
-          str("|===") >> line_ending
+            str("|===") >> line_ending >>
+            table_row.repeat(1).as(:rows) >>
+            str("|===") >> line_ending
         end
 
         def table_row
-          (literal_space? >> str("|") >> (cell_content | empty_cell_content)).
-            repeat(1).as(:cols) >> line_ending
+          (literal_space? >> str("|") >> (cell_content | empty_cell_content))
+            .repeat(1).as(:cols) >> line_ending
         end
 
         def empty_cell_content
@@ -98,7 +98,7 @@ module Coradoc
         end
 
         def literal_space
-          (match[' '] | match[' \t']).repeat(1)
+          (match[" "] | match[' \t']).repeat(1)
         end
 
         # Override
@@ -113,7 +113,7 @@ module Coradoc
         # Text
         def text_line
           (asciidoc_char_with_id.absent? | text_id) >> literal_space? >>
-          text.as(:text) >> line_ending.as(:break)
+            text.as(:text) >> line_ending.as(:break)
         end
 
         def asciidoc_char
@@ -137,7 +137,7 @@ module Coradoc
 
         def glossary
           keyword.as(:key) >> str("::") >> space? >>
-          text.as(:value) >> line_ending.as(:break)
+            text.as(:value) >> line_ending.as(:break)
         end
 
         def ordered_list
