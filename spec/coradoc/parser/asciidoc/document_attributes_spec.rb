@@ -31,14 +31,15 @@ RSpec.describe "Coradoc::Asciidoc::DocumentAttributes" do
       expect(ast[:document_attributes][6][:key]).to eq("title-main-fr")
       expect(ast[:document_attributes][6][:value]).to eq("Spécification et méthodes d'essai")
     end
-
   end
 
   module Asciidoc
     class DocumentAttributesTester < Parslet::Parser
       include Coradoc::Parser::Asciidoc::DocumentAttributes
 
-      rule(:document) { (document_attributess.as(:document_attributes) | any.as(:unparsed)).repeat(1) }
+      rule(:document) do
+        (document_attributess.as(:document_attributes) | any.as(:unparsed)).repeat(1)
+      end
       root :document
 
       def self.parse(text)

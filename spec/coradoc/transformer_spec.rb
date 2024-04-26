@@ -21,4 +21,3 @@ RSpec.describe Coradoc::Transformer do
     end
   end
 end
-

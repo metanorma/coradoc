@@ -3,6 +3,7 @@ module Coradoc
     module Inline
       class Highlight
         attr_accessor :content
+
         def initialize(content, constrained = true)
           @content = content
           @constrained = constrained

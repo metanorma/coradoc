@@ -1,7 +1,6 @@
 module Coradoc
   module Element
     module Image
-
     end
   end
 end

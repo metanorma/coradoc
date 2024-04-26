@@ -8,9 +8,8 @@ module Coradoc
         @title = title
         @id = options.fetch(:id, nil)
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-        @attrs = options.fetch(:attrs, '')
+        @attrs = options.fetch(:attrs, "")
       end
-
 
       def to_adoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
@@ -28,7 +27,7 @@ module Coradoc
           @columns = columns
           @header = header
         end
-        
+
         def table_header_row?
           @header
         end
@@ -42,22 +41,23 @@ module Coradoc
         def underline_for
           "\n"
         end
-
       end
+
       class Cell
         attr_reader :anchor
+
         def initialize(options = {})
           @id = options.fetch(:id, nil)
           @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-          @colrowattr = options.fetch(:colrowattr, '')
-          @alignattr = options.fetch(:alignattr, '')
-          @style = options.fetch(:style, '')
-          @content = options.fetch(:content, '')
-          @delim = options.fetch(:delim, '')
+          @colrowattr = options.fetch(:colrowattr, "")
+          @alignattr = options.fetch(:alignattr, "")
+          @style = options.fetch(:style, "")
+          @content = options.fetch(:content, "")
+          @delim = options.fetch(:delim, "")
         end
 
         def to_adoc
-          anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}"
+          anchor = @anchor.nil? ? "" : @anchor.to_adoc.to_s
           content = Coradoc::Generator.gen_adoc(@content)
           "#{@colrowattr}#{@alignattr}#{@style}| #{anchor}#{content}#{@delim}"
         end

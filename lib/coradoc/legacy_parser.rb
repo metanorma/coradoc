@@ -23,8 +23,8 @@ module Coradoc
 
     rule(:text_line) do
       special_character.absent? >>
-      match("[^\n]").repeat(1).as(:text) >>
-      line_ending.as(:break)
+        match("[^\n]").repeat(1).as(:text) >>
+        line_ending.as(:break)
     end
 
     # Common Helpers
@@ -33,52 +33,52 @@ module Coradoc
 
     # Document
     rule(:document) do
-       (
-         document_attributes.repeat(1).as(:document_attributes) |
-         section.as(:section) |
-         header.as(:header) |
-         block_with_title.as(:block) |
-         empty_line.repeat(1) |
-         any.as(:unparsed)
-       ).repeat(1).as(:document)
+      (
+        document_attributes.repeat(1).as(:document_attributes) |
+        section.as(:section) |
+        header.as(:header) |
+        block_with_title.as(:block) |
+        empty_line.repeat(1) |
+        any.as(:unparsed)
+      ).repeat(1).as(:document)
     end
 
     # Header
     rule(:header) do
       match("=") >> space? >> text.as(:title) >> newline >>
-      author.maybe.as(:author) >> revision.maybe.as(:revision)
+        author.maybe.as(:author) >> revision.maybe.as(:revision)
     end
 
     rule(:author) do
       words.as(:first_name) >> str(",") >> space? >> words.as(:last_name) >>
-      space? >> str("<") >> email.as(:email) >> str(">") >> endline
+        space? >> str("<") >> email.as(:email) >> str(">") >> endline
     end
 
     rule(:revision) do
       (word >> (str(".") >> word).maybe).as(:number) >>
-      str(",") >> space? >> word.as(:date) >>
-      str(":") >> space? >> words.as(:remark) >> newline
+        str(",") >> space? >> word.as(:date) >>
+        str(":") >> space? >> words.as(:remark) >> newline
     end
 
     # DocumentAttributes
     rule(:document_attributes) do
       str(":") >> attribute_name.as(:key) >> str(":") >>
-      space? >> attribute_value.as(:value) >> endline
+        space? >> attribute_value.as(:value) >> endline
     end
 
     # Section
     rule(:section) do
       heading.as(:title) >>
-      (list.as(:list) |
-       blocks.as(:blocks) |
-       paragraphs.as(:paragraphs)).maybe
+        (list.as(:list) |
+         blocks.as(:blocks) |
+         paragraphs.as(:paragraphs)).maybe
     end
 
     # Heading
     rule(:heading) do
       (anchor_name >> newline).maybe >>
-      match("=").repeat(2, 8).as(:level) >>
-      space? >> text.as(:text) >> endline.as(:break)
+        match("=").repeat(2, 8).as(:level) >>
+        space? >> text.as(:text) >> endline.as(:break)
     end
 
     rule(:anchor_name) { str("[#") >> keyword.as(:name) >> str("]") }
@@ -110,51 +110,51 @@ module Coradoc
     rule(:block_type) { str("[") >> keyword.as(:type) >> str("]") >> newline }
 
     rule(:block_attribute) do
-      str("[")  >> keyword.as(:key) >>
-      str("=") >> keyword.as(:value) >> str("]")
+      str("[") >> keyword.as(:key) >>
+        str("=") >> keyword.as(:value) >> str("]")
     end
 
     rule(:simple_block) do
       block_attribute.as(:attributes) >> newline >>
-      text_line.repeat(1).as(:lines)
+        text_line.repeat(1).as(:lines)
     end
 
     rule(:open_block) do
       block_title >>
-      block_type >>
-      str("--").as(:delimiter) >> newline >>
-      text_line.repeat.as(:lines) >>
-      str("--") >> line_ending
+        block_type >>
+        str("--").as(:delimiter) >> newline >>
+        text_line.repeat.as(:lines) >>
+        str("--") >> line_ending
     end
 
     rule(:example_block) do
       block_title >>
-      block_type >>
-      str("====").as(:delimiter) >> newline >>
-      text_line.repeat(1).as(:lines) >>
-      str("====") >> newline
+        block_type >>
+        str("====").as(:delimiter) >> newline >>
+        text_line.repeat(1).as(:lines) >>
+        str("====") >> newline
     end
 
     rule(:sidebar_block) do
       block_title >>
-      block_type.maybe >>
-      str("****").as(:delimiter) >> newline >>
-      text_line.repeat(1).as(:lines) >>
-      str("****") >> newline
+        block_type.maybe >>
+        str("****").as(:delimiter) >> newline >>
+        text_line.repeat(1).as(:lines) >>
+        str("****") >> newline
     end
 
     rule(:source_block) do
       block_title >>
-      str("----").as(:delimiter) >> newline >>
-      text_line.repeat(1).as(:lines) >>
-      str("----") >> newline
+        str("----").as(:delimiter) >> newline >>
+        text_line.repeat(1).as(:lines) >>
+        str("----") >> newline
     end
 
     rule(:quote_block) do
       block_title >>
-      str("____").as(:delimiter) >> newline >>
-      text_line.repeat.as(:lines) >>
-      str("____") >> newline
+        str("____").as(:delimiter) >> newline >>
+        text_line.repeat.as(:lines) >>
+        str("____") >> newline
     end
 
     rule(:block_with_title) do

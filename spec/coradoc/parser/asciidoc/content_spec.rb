@@ -18,12 +18,12 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
     context "block types" do
       it "parses block with open type" do
         content = <<~TEXT
-        .Side blocks (open block syntax)
+          .Side blocks (open block syntax)
 
-        [sidebar]
-        ****
-        This renders in the side.
-        ****
+          [sidebar]
+          ****
+          This renders in the side.
+          ****
         TEXT
 
         ast = Asciidoc::ContentTester.parse(content)
@@ -37,12 +37,12 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 
       it "parses block only enforcing minimum permiter" do
         content = <<~TEXT
-        .Side blocks (open block syntax)
+          .Side blocks (open block syntax)
 
-        [sidebar]
-        *****
-        This renders in the side.
-        *****
+          [sidebar]
+          *****
+          This renders in the side.
+          *****
         TEXT
 
         ast = Asciidoc::ContentTester.parse(content)
@@ -56,11 +56,11 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 
       it "parses blocks with perimeter" do
         content = <<~TEXT
-        .Side blocks (with block perimeter type)
+          .Side blocks (with block perimeter type)
 
-        ****
-        This renders in the side.
-        ****
+          ****
+          This renders in the side.
+          ****
         TEXT
 
         ast = Asciidoc::ContentTester.parse(content)
@@ -73,14 +73,14 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 
       it "parses example type block" do
         content = <<~TEXT
-        [example]
-        ====
-        Example text with open type
-        ====
+          [example]
+          ====
+          Example text with open type
+          ====
 
-        ======
-        Example text with permiter
-        ======
+          ======
+          Example text with permiter
+          ======
         TEXT
 
         ast = Asciidoc::ContentTester.parse(content)

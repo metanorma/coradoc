@@ -13,14 +13,14 @@ module Coradoc
       end
 
       def level
-        @level_str ||= level_from_string
+        @level ||= level_from_string
       end
 
       def to_adoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         content = Coradoc::Generator.gen_adoc(@content)
         level_str = "=" * (@level_int + 1)
-        content = ["\n", anchor, level_str, ' ', content, "\n"].join("")
+        ["\n", anchor, level_str, " ", content, "\n"].join("")
       end
 
       alias :text :content

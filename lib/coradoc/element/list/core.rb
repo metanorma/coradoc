@@ -21,15 +21,14 @@ module Coradoc
           @items.each do |item|
             c = Coradoc::Generator.gen_adoc(item)
             if !c.empty?
-              content << "#{prefix}"
+              content << prefix.to_s
               content << c
             end
           end
-          anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}"
-          attrs = @attrs.nil? ? "" : "#{@attrs.to_adoc}"
+          anchor = @anchor.nil? ? "" : @anchor.to_adoc.to_s
+          attrs = @attrs.nil? ? "" : @attrs.to_adoc.to_s
           "\n#{anchor}#{attrs}" + content
         end
-
       end
     end
   end

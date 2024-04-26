@@ -22,7 +22,7 @@ RSpec.describe Coradoc::Element::Title do
       level: "==",
       id: "dummy-id",
       title: "Heading two",
-      line_break: "\n\n"
+      line_break: "\n\n",
     }
   end
 end

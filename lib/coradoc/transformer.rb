@@ -7,7 +7,8 @@ module Coradoc
     rule(
       title: simple(:title),
       author: simple(:author),
-      revision: simple(:revision)) do
+      revision: simple(:revision),
+    ) do
       Element::Header.new(title, author: author, revision: revision)
     end
 
@@ -15,12 +16,14 @@ module Coradoc
     rule(
       first_name: simple(:first_name),
       last_name: simple(:last_name),
-      email: simple(:email)) do
+      email: simple(:email),
+    ) do
       Element::Author.new(first_name, last_name, email)
     end
 
     # Revision
-    rule(number: simple(:number), date: simple(:date), remark: simple(:remark)) do
+    rule(number: simple(:number), date: simple(:date),
+         remark: simple(:remark)) do
       Element::Revision.new(number, date: date, remark: remark)
     end
 
@@ -49,18 +52,19 @@ module Coradoc
     rule(
       level: simple(:level),
       text: simple(:text),
-      break: simple(:line_break)) do
-        Element::Title.new(text, level, line_break: line_break)
+      break: simple(:line_break),
+    ) do
+      Element::Title.new(text, level, line_break: line_break)
     end
 
     rule(
       name: simple(:name),
       level: simple(:level),
       text: simple(:text),
-      break: simple(:line_break)) do
-        Element::Title.new(text, level, line_break: line_break, id: name)
+      break: simple(:line_break),
+    ) do
+      Element::Title.new(text, level, line_break: line_break, id: name)
     end
-
 
     # Section
     # rule(title: simple(:title)) { Element::Section.new(title) }
@@ -69,7 +73,8 @@ module Coradoc
     rule(
       id: simple(:id),
       title: simple(:title),
-      sections: sequence(:sections)) do
+      sections: sequence(:sections),
+    ) do
       Element::Section.new(title, id: id, sections: sections)
     end
 
@@ -77,16 +82,20 @@ module Coradoc
       id: simple(:id),
       title: simple(:title),
       contents: sequence(:contents),
-      sections: simple(:sections)) do
-      Element::Section.new(title, id: id, contents: contents, sections: sections)
+      sections: simple(:sections),
+    ) do
+      Element::Section.new(title, id: id, contents: contents,
+                                  sections: sections)
     end
 
     rule(
       id: simple(:id),
       title: simple(:title),
       contents: sequence(:contents),
-      sections: sequence(:sections)) do
-        Element::Section.new(title, id: id, contents: contents, sections: sections)
+      sections: sequence(:sections),
+    ) do
+      Element::Section.new(title, id: id, contents: contents,
+                                  sections: sections)
     end
 
     rule(example: sequence(:example)) do
@@ -136,7 +145,8 @@ module Coradoc
       Element::Attribute.new(key, value)
     end
 
-    rule(key: simple(:key), value: simple(:value), break: simple(:line_break)) do
+    rule(key: simple(:key), value: simple(:value),
+         break: simple(:line_break)) do
       Element::Attribute.new(key, value, line_break: line_break)
     end
 

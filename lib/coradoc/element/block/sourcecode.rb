@@ -2,10 +2,10 @@ module Coradoc
   module Element
     module Block
       class SourceCode < Core
-        def initialize(title, options = {})
+        def initialize(_title, options = {})
           @id = options.fetch(:id, nil)
           @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-          @lang = options.fetch(:lang, '')
+          @lang = options.fetch(:lang, "")
           @lines = options.fetch(:lines, [])
           @delimiter_char = "-"
           @delimiter_len = options.fetch(:delimiter_len, 4)

@@ -20,7 +20,6 @@ require_relative "element/break"
 
 module Coradoc
   class Document
-
     class << self
       def from_adoc(filename)
         ast = Coradoc::Parser.parse(filename)
@@ -43,22 +42,22 @@ module Coradoc
           end
         end
 
-        self.new(
+        new(
           document_attributes: @document_attributes,
           header: @header,
-          sections: @sections
+          sections: @sections,
         )
       end
     end
 
     attr_accessor :header, :document_attributes, :sections
 
-    def initialize(options={})
-      @document_attributes = options.fetch(:document_attributes, Coradoc::Element::DocumentAttributes.new)
+    def initialize(options = {})
+      @document_attributes = options.fetch(:document_attributes,
+                                           Coradoc::Element::DocumentAttributes.new)
       @header = options.fetch(:header, Coradoc::Element::Header.new(""))
       @sections = options.fetch(:sections, [])
       self
     end
-
   end
 end

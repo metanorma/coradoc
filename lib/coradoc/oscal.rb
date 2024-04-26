@@ -15,7 +15,7 @@ module Coradoc
     def to_oscal
       {
         "metadata" => _doc.document_attributes.to_hash,
-        "groups" => sections_as_groups
+        "groups" => sections_as_groups,
       }
     end
 
@@ -80,9 +80,7 @@ module Coradoc
     end
 
     def build_oscal_prose(paragraph)
-      if paragraph
-        paragraph.texts.join(" ")
-      end
+      paragraph&.texts&.join(" ")
     end
   end
 end

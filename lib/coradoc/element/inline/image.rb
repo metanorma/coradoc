@@ -4,6 +4,7 @@ module Coradoc
     module Inline
       class Image
         attr_reader :title, :id, :src, :attributes
+
         def initialize(title, id, src, options = ())
           @title = title
           @id = id

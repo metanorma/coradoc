@@ -1,7 +1,6 @@
 module Coradoc
   module Element
     module Inline
-
     end
   end
 end

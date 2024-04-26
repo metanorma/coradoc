@@ -8,8 +8,8 @@ module Coradoc
 
         def header
           header_title >>
-          author.maybe.as(:author) >>
-          revision.maybe.as(:revision) >> newline.maybe
+            author.maybe.as(:author) >>
+            revision.maybe.as(:revision) >> newline.maybe
         end
 
         def header_title
@@ -18,14 +18,14 @@ module Coradoc
 
         def author
           words.as(:first_name) >> str(",") >>
-          space? >> words.as(:last_name) >>
-          space? >> str("<") >> email.as(:email) >> str(">") >> newline
+            space? >> words.as(:last_name) >>
+            space? >> str("<") >> email.as(:email) >> str(">") >> newline
         end
 
         def revision
           (word >> (str(".") >> word).maybe).as(:number) >>
-          str(",") >> space? >> date.as(:date ) >> str(":") >>
-          space? >> words.as(:remark) >> newline
+            str(",") >> space? >> date.as(:date) >> str(":") >>
+            space? >> words.as(:remark) >> newline
         end
       end
     end

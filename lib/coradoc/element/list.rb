@@ -1,7 +1,6 @@
 module Coradoc
   module Element
     module List
-
     end
   end
 end

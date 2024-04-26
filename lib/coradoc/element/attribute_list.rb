@@ -29,12 +29,12 @@ module Coradoc
         adoc << @named.map do |k, v|
           if v.is_a?(String)
             v2 = v.to_s
-            v2 = v2.include?("\"") ? v2.gsub("\"","\\\"") : v2
+            v2 = v2.include?("\"") ? v2.gsub("\"", "\\\"") : v2
             if v2.include?(" ") || v2.include?(",") || v2.include?("\"")
               v2 = "\"#{v2}\""
             end
           elsif v.is_a?(Array)
-            v2 = "\"#{v.join(",")}\""
+            v2 = "\"#{v.join(',')}\""
           end
           [k.to_s, "=", v2].join
         end.join(",")

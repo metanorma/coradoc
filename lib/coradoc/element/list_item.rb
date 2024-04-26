@@ -10,7 +10,7 @@ module Coradoc
       end
 
       def to_adoc
-        anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}"
+        anchor = @anchor.nil? ? "" : @anchor.to_adoc.to_s
         content = Coradoc::Generator.gen_adoc(@content).chomp
         " #{anchor}#{content.chomp}\n"
       end

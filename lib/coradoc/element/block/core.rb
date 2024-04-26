@@ -28,6 +28,7 @@ module Coradoc
         def gen_title
           t = Coradoc::Generator.gen_adoc(@title)
           return "" if t.empty?
+
           ".#{t}\n"
         end
 
@@ -59,10 +60,9 @@ module Coradoc
             "****" => :side,
             "----" => :source,
             "====" => :example,
-            "...." => :literal
+            "...." => :literal,
           }
         end
-
       end
     end
   end

@@ -7,7 +7,7 @@ module Coradoc
         @title = title
         @id = options.fetch(:id, nil)
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-        @src = options.fetch(:src, '')
+        @src = options.fetch(:src, "")
         @attributes = options.fetch(:attributes, [])
         # @attributes.add_valid_named('opts')
       end
