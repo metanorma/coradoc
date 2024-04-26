@@ -3,11 +3,10 @@
 require "pathname"
 
 require "parslet"
-require "coradoc/version"
-
-require "coradoc/parser"
-require "coradoc/transformer"
-require "coradoc/generator"
+require_relative "coradoc/version"
+require_relative "coradoc/parser"
+require_relative "coradoc/transformer"
+require_relative "coradoc/generator"
 
 module Coradoc
   class Error < StandardError; end

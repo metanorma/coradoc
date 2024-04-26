@@ -9,7 +9,7 @@ RSpec.describe Coradoc::LegacyParser do
       document = Coradoc::LegacyParser.parse(sample_file)[:document]
 
       expect_document_to_match_header(document[0])
-      expect_document_to_match_bibdata(document[1])
+      expect_document_to_match_document_attributes(document[1])
       expect_document_to_match_section_with_body(document[2])
       expect_document_to_match_section_titles(document[3..10])
       expect_document_to_match_inline_formatting(document[11])
@@ -283,21 +283,21 @@ RSpec.describe Coradoc::LegacyParser do
       'This ({url-attribute}) renders as "https://example.com".')
   end
 
-  def expect_document_to_match_bibdata(doc)
-    bibdata = doc[:bibdata]
+  def expect_document_to_match_document_attributes(doc)
+    document_attributes = doc[:document_attributes]
 
     # this is not correct btw, should be 10
-    expect(bibdata.count).to eq(9)
+    expect(document_attributes.count).to eq(9)
 
-    expect(bibdata[0][:key]).to eq("string-attribute")
-    expect(bibdata[0][:value]).to eq("this has to be a string")
+    expect(document_attributes[0][:key]).to eq("string-attribute")
+    expect(document_attributes[0][:value]).to eq("this has to be a string")
 
-    expect(bibdata[3][:key]).to eq("number-attribute")
-    expect(bibdata[3][:value]).to eq("300")
+    expect(document_attributes[3][:key]).to eq("number-attribute")
+    expect(document_attributes[3][:value]).to eq("300")
 
 
-    expect(bibdata[6][:key]).to eq("uri-attribute")
-    expect(bibdata[6][:value]).to eq("https://example.com")
+    expect(document_attributes[6][:key]).to eq("uri-attribute")
+    expect(document_attributes[6][:value]).to eq("https://example.com")
   end
 
   def expect_document_to_match_header(doc)

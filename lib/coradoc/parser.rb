@@ -1,4 +1,4 @@
-require "coradoc/parser/base"
+require_relative "parser/base"
 
 module Coradoc
   module Parser

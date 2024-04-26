@@ -13,7 +13,10 @@ module Coradoc
     end
 
     def to_oscal
-      {"metadata" => _doc.bibdata.to_hash, "groups" => sections_as_groups}
+      {
+        "metadata" => _doc.document_attributes.to_hash,
+        "groups" => sections_as_groups
+      }
     end
 
     private
@@ -55,7 +58,7 @@ module Coradoc
     def build_oscal_sub_parts(contents)
       if contents.length > 1
         parts = contents.select do |content|
-          content if content.is_a?(Coradoc::Document::Paragraph)
+          content if content.is_a?(Coradoc::Element::Paragraph)
         end
 
         parts.map do |part|

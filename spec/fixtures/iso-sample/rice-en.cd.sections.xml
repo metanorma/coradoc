@@ -1,6 +1,6 @@
 <iso-standard
   xmlns="https://www.metanorma.org/ns/iso" type="semantic" version="2.3.3">
-<bibdata type="standard">
+<document_attributes type="standard">
   <title language="en" format="text/plain" type="main">Cereals and pulses — Specifications and test methods — Rice (CD)</title>
   <title language="en" format="text/plain" type="title-intro">Cereals and pulses</title>
   <title language="en" format="text/plain" type="title-main">Specifications and test methods</title>
@@ -72,7 +72,7 @@
     </structuredidentifier>
     <stagename>Committee draft</stagename>
   </ext>
-</bibdata>
+</document_attributes>
 <boilerplate>
   <copyright-statement>
     <clause>

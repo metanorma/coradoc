@@ -1,39 +1,27 @@
-require "coradoc/document/title"
-require "coradoc/document/block"
-require "coradoc/document/block/example"
-require "coradoc/document/block/literal"
-require "coradoc/document/block/quote"
-require "coradoc/document/block/side"
-require "coradoc/document/block/sourcecode"
-require "coradoc/document/section"
-require "coradoc/document/attribute"
-require "coradoc/document/attribute_list"
-require "coradoc/document/admonition"
-require "coradoc/document/text_element"
-require "coradoc/document/author"
-require "coradoc/document/revision"
-require "coradoc/document/header"
-require "coradoc/document/bibdata"
-require "coradoc/document/paragraph"
-require "coradoc/document/table"
-require "coradoc/document/list"
-require "coradoc/document/list/ordered"
-require "coradoc/document/list/unordered"
-require "coradoc/document/list/definition"
-
-require "coradoc/document/inline"
-require "coradoc/document/image"
-require "coradoc/document/image/block_image"
-require "coradoc/document/image/inline_image"
-require "coradoc/document/audio"
-require "coradoc/document/video"
-require "coradoc/document/break"
+require_relative "element/title"
+require_relative "element/block"
+require_relative "element/section"
+require_relative "element/attribute"
+require_relative "element/attribute_list"
+require_relative "element/admonition"
+require_relative "element/text_element"
+require_relative "element/author"
+require_relative "element/revision"
+require_relative "element/header"
+require_relative "element/document_attributes"
+require_relative "element/paragraph"
+require_relative "element/table"
+require_relative "element/list"
+require_relative "element/inline"
+require_relative "element/image"
+require_relative "element/audio"
+require_relative "element/video"
+require_relative "element/break"
 
 module Coradoc
-  module Document
-    class << self
-      attr_reader :header, :bibdata, :sections
+  class Document
 
+    class << self
       def from_adoc(filename)
         ast = Coradoc::Parser.parse(filename)
         Coradoc::Transformer.transform(ast)
@@ -43,21 +31,34 @@ module Coradoc
         @sections = []
 
         elements.each do |element|
-          if element.is_a?(Coradoc::Document::Bibdata)
-            @bibdata = element
-          end
+          case element
+          when Coradoc::Element::DocumentAttributes
+            @document_attributes = element
 
-          if element.is_a?(Coradoc::Document::Header)
+          when Coradoc::Element::Header
             @header = element
-          end
 
-          if element.is_a?(Coradoc::Document::Section)
+          when Coradoc::Element::Section
             @sections << element
           end
         end
 
-        self
+        self.new(
+          document_attributes: @document_attributes,
+          header: @header,
+          sections: @sections
+        )
       end
     end
+
+    attr_accessor :header, :document_attributes, :sections
+
+    def initialize(options={})
+      @document_attributes = options.fetch(:document_attributes, Coradoc::Element::DocumentAttributes.new)
+      @header = options.fetch(:header, Coradoc::Element::Header.new(""))
+      @sections = options.fetch(:sections, [])
+      self
+    end
+
   end
 end

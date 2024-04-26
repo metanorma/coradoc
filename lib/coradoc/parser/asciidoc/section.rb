@@ -1,5 +1,5 @@
-require "coradoc/parser/asciidoc/base"
-require "coradoc/parser/asciidoc/content"
+require_relative "base"
+require_relative "content"
 
 module Coradoc
   module Parser

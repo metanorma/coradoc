@@ -34,7 +34,7 @@ module Coradoc
     # Document
     rule(:document) do
        (
-         bibdata.repeat(1).as(:bibdata) |
+         document_attributes.repeat(1).as(:document_attributes) |
          section.as(:section) |
          header.as(:header) |
          block_with_title.as(:block) |
@@ -60,8 +60,8 @@ module Coradoc
       str(":") >> space? >> words.as(:remark) >> newline
     end
 
-    # Bibdata
-    rule(:bibdata) do
+    # DocumentAttributes
+    rule(:document_attributes) do
       str(":") >> attribute_name.as(:key) >> str(":") >>
       space? >> attribute_value.as(:value) >> endline
     end
