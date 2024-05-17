@@ -4,7 +4,7 @@ module Coradoc
       class Quote < Core
         def initialize(title, options = {})
           @title = title
-          @attributes = options.fetch(:attributes, {})
+          @attributes = options.fetch(:attributes, AttributeList.new)
           @lines = options.fetch(:lines, [])
           @delimiter_char = "_"
           @delimiter_len = options.fetch(:delimiter_len, 4)

@@ -17,6 +17,14 @@ module Coradoc
         attrs = @attributes.empty? ? "\[\]" : @attributes.to_adoc
         [anchor, title, "audio::", @src, attrs].join("")
       end
+
+      VALIDATORS_NAMED = {
+        title: String,
+        start: Integer,
+        end: Integer,
+        options: [:many, "nofollow", "noopener", "inline", "interactive"],
+        opts: [:many, "nofollow", "noopener", "inline", "interactive"]
+      }
     end
   end
 end
