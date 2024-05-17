@@ -2,17 +2,17 @@ module Coradoc
   module Element
     module Inline
       class Highlight
-        attr_accessor :content
+        attr_accessor :content, :unconstrained
 
-        def initialize(content, constrained = true)
+        def initialize(content, unconstrained = true)
           @content = content
-          @constrained = constrained
+          @unconstrained = unconstrained
         end
 
         def to_adoc
           content = Coradoc::Generator.gen_adoc(@content)
-          doubled = @constrained ? "" : "#"
-          "#{content[/^\s*/]}#{doubled}##{content.strip}##{doubled}#{content[/\s*$/]}"
+          doubled = @unconstrained ? "#" : ""
+          "#{doubled}##{content}##{doubled}"
         end
       end
     end
