@@ -28,8 +28,8 @@ module Coradoc::ReverseAdoc
         end
 
         Coradoc::Element::Inline::Link.new(path: href,
-                                           name: name,
-                                           title: title)
+                                           name: name.strip,
+                                           title: title.strip)
       end
 
       def convert(node, state = {})
