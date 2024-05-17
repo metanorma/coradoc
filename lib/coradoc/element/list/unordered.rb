@@ -7,7 +7,7 @@ module Coradoc
         end
 
         def prefix
-          "*" * [@ol_count, 0].max
+          "*" * [@ol_count, 1].max
         end
       end
     end

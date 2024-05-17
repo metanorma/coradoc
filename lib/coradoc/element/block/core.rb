@@ -11,7 +11,7 @@ module Coradoc
           @lines = options.fetch(:lines, [])
           @type_str = options.fetch(:type, nil)
           @delimiter = options.fetch(:delimiter, "")
-          @attributes = options.fetch(:attributes, {})
+          @attributes = options.fetch(:attributes, AttributeList.new)
           @lang = options.fetch(:lang, nil)
           @id = options.fetch(:id, nil)
           @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
@@ -33,7 +33,9 @@ module Coradoc
         end
 
         def gen_attributes
-          @attributes.nil? ? "" : "#{@attributes.to_adoc}\n"
+          attrs = @attributes.to_adoc(false)
+          return "#{attrs}\n" if !attrs.empty?
+          ""
         end
 
         def gen_delimiter
