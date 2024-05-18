@@ -27,7 +27,7 @@ pushd reverse_adoc
   sed -i 's|require "reverse_adoc|require "coradoc/reverse_adoc|g' exe/* `find spec/ -name \*.rb`
   sed -i 's/ReverseAdoc/Coradoc::ReverseAdoc/g' exe/* `find lib/ spec/ -name \*.rb`
   sed -i 's|"spec/assets/|"spec/reverse_adoc/assets/|g' `find spec/ -name \*.rb`
-  sed -i 's|require_relative "reverse_adoc/version"|require_relative "coradoc"|g' lib/coradoc/reverse_adoc.rb
+  sed -i 's|require_relative "reverse_adoc/version"|require_relative "../coradoc"|g' lib/coradoc/reverse_adoc.rb
   sed -i 's|"spec", "support"|"spec", "reverse_adoc", "support"|g' spec/reverse_adoc/spec_helper.rb
 
   git add .
@@ -39,7 +39,7 @@ pushd reverse_adoc
   git rm Gemfile
   git rm Rakefile # Needs merge
   git rm .gitignore # Needs merge
-  git rm .github/workflows/rake.yml # Needs merge: generic-rake.yml vs libreoffice-rake.yml
+  git rm .github/workflows/rake.yml
   git rm .github/workflows/release.yml
 
   git commit -m 'Merger: Remove files that are not applicable anymore'
@@ -59,9 +59,14 @@ pushd coradoc
   git add coradoc.gemspec
   git commit -m 'Merger: Combine gemspec files'
 
-  echo 'require "reverse_adoc/spec_helper"' >> spec/spec_helper.rb
+  git rm spec/reverse_adoc/spec_helper.rb
+  cp ../spec_helper_coradoc.rb spec/spec_helper.rb
   git add spec/spec_helper.rb
   git commit -m 'Merger: Combine spec helpers'
+
+  sed -i 's/generic-rake.yml/libreoffice-rake.yml/g' .github/workflows/rake.yml
+  git add .github/workflows/rake.yml
+  git commit -m 'Merger: Combine GitHub Actions'
 popd
 
 pushd reverse_adoc_post_migration
@@ -70,4 +75,10 @@ pushd reverse_adoc_post_migration
   cp ../reverse_adoc_post_migration.gemspec reverse_adoc.gemspec
   git add README.adoc reverse_adoc.gemspec
   git commit -m 'Merger: Replace reverse_adoc with a stub gem'
+popd
+
+# Ensure everything works correctly
+pushd coradoc
+  bundle install
+  bundle exec rake
 popd
