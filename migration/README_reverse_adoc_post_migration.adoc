@@ -1,0 +1,6 @@
+# AsciiDoc from HTML and Microsoft Word: reverse_adoc
+
+This repository has been merged into Coradoc. See:
+
+* https://github.com/metanorma/coradoc/
+* https://github.com/metanorma/coradoc/tree/main/lib/coradoc/reverse_adoc
