@@ -1,4 +1,4 @@
-module ReverseAdoc
+module Coradoc::ReverseAdoc
   module Converters
     class Bypass < Base
       def to_coradoc(node, state = {})

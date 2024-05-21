@@ -4,24 +4,24 @@ require "tempfile"
 require "base64"
 require "marcel"
 
-module ReverseAdoc
+module Coradoc::ReverseAdoc
   module Converters
     class Img < Base
       def image_number
         sprintf(
-          ReverseAdoc.config.image_counter_pattern,
-          ReverseAdoc.config.image_counter,
+          Coradoc::ReverseAdoc.config.image_counter_pattern,
+          Coradoc::ReverseAdoc.config.image_counter,
         )
       end
 
       def image_number_increment
-        ReverseAdoc.config.image_counter += 1
+        Coradoc::ReverseAdoc.config.image_counter += 1
       end
 
       def datauri2file(src)
         %r{^data:image/(?:[^;]+);base64,(?<imgdata>.+)$} =~ src
 
-        dest_dir = Pathname.new(ReverseAdoc.config.destination).dirname
+        dest_dir = Pathname.new(Coradoc::ReverseAdoc.config.destination).dirname
         images_dir = dest_dir.join("images")
         FileUtils.mkdir_p(images_dir)
 
@@ -41,7 +41,7 @@ module ReverseAdoc
         return copy_temp_file(imgdata) if imgdata
 
         ext = File.extname(src).strip.downcase[1..-1]
-        [ext, Pathname.new(ReverseAdoc.config.sourcedir).join(src)]
+        [ext, Pathname.new(Coradoc::ReverseAdoc.config.sourcedir).join(src)]
       end
 
       def copy_temp_file(imgdata)
@@ -63,7 +63,7 @@ module ReverseAdoc
 
         title = extract_title(node)
 
-        if ReverseAdoc.config.external_images
+        if Coradoc::ReverseAdoc.config.external_images
           # puts "external image conversion #{id}, #{src}"
           src = datauri2file(src)
         end

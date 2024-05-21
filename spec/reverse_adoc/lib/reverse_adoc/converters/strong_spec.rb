@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe ReverseAdoc::Converters::Strong do
-  let(:converter) { ReverseAdoc::Converters::Strong.new }
+describe Coradoc::ReverseAdoc::Converters::Strong do
+  let(:converter) { Coradoc::ReverseAdoc::Converters::Strong.new }
 
   it "returns an empty string if the node is empty" do
     input = node_for("<strong></strong>")

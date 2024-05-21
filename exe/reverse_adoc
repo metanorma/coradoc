@@ -4,32 +4,32 @@
 require "rubygems"
 require "bundler/setup"
 
-require "reverse_adoc"
+require "coradoc/reverse_adoc"
 require "optparse"
 require "fileutils"
 
 OptionParser.new do |opts|
   opts.banner = "Usage: reverse_adoc [options] <file>"
   opts.on("-m", "--mathml2asciimath", "Convert MathML to AsciiMath") do |_v|
-    ReverseAdoc.config.mathml2asciimath = true
+    Coradoc::ReverseAdoc.config.mathml2asciimath = true
   end
 
   opts.on("-oFILENAME", "--output=FILENAME", "Output file to write to") do |v|
-    ReverseAdoc.config.destination = File.expand_path(v)
-    # puts "output goes to #{ReverseAdoc.config.destination}"
+    Coradoc::ReverseAdoc.config.destination = File.expand_path(v)
+    # puts "output goes to #{Coradoc::ReverseAdoc.config.destination}"
   end
 
   opts.on("-e", "--external-images", "Export images if data URI") do |_v|
-    ReverseAdoc.config.external_images = true
+    Coradoc::ReverseAdoc.config.external_images = true
   end
 
   opts.on("-u", "--unknown_tags [pass_through, drop, bypass, raise]",
           "Unknown tag handling (default: pass_through)") do |v|
-    ReverseAdoc.config.unknown_tags = v
+    Coradoc::ReverseAdoc.config.unknown_tags = v
   end
 
   opts.on("-v", "--version", "Version information") do |_v|
-    puts "reverse_adoc: v#{ReverseAdoc::VERSION}"
+    puts "reverse_adoc: v#{Coradoc::ReverseAdoc::VERSION}"
     exit
   end
 
@@ -41,30 +41,30 @@ end.parse!
 
 if filename = ARGV.pop
   input_content = IO.read(filename)
-  ReverseAdoc.config.sourcedir = File.dirname(File.expand_path(filename))
+  Coradoc::ReverseAdoc.config.sourcedir = File.dirname(File.expand_path(filename))
 else
-  if ReverseAdoc.config.external_images
+  if Coradoc::ReverseAdoc.config.external_images
     raise "The -e | --external-images feature cannot be used with STDIN input. Exiting."
   end
 
   input_content = ARGF.read
 end
 
-if ReverseAdoc.config.external_images && ReverseAdoc.config.destination.nil?
+if Coradoc::ReverseAdoc.config.external_images && Coradoc::ReverseAdoc.config.destination.nil?
   raise "The -e | --external-images feature must be used with -o | --output. Exiting."
 end
 
 # Read from STDIN
-adoc_content = ReverseAdoc.convert(input_content)
+adoc_content = Coradoc::ReverseAdoc.convert(input_content)
 
 # Print to STDOUT
-unless ReverseAdoc.config.destination
+unless Coradoc::ReverseAdoc.config.destination
   puts adoc_content
   exit
 end
 
-# Write output to ReverseAdoc.config.destination
-FileUtils.mkdir_p(File.dirname(ReverseAdoc.config.destination))
-File.open(ReverseAdoc.config.destination, "w") do |file|
+# Write output to Coradoc::ReverseAdoc.config.destination
+FileUtils.mkdir_p(File.dirname(Coradoc::ReverseAdoc.config.destination))
+File.open(Coradoc::ReverseAdoc.config.destination, "w") do |file|
   file.write(adoc_content)
 end

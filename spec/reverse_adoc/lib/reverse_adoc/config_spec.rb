@@ -1,12 +1,12 @@
 require "spec_helper"
 
-describe ReverseAdoc::Config do
+describe Coradoc::ReverseAdoc::Config do
   describe "#with" do
-    let(:config) { ReverseAdoc.config }
+    let(:config) { Coradoc::ReverseAdoc.config }
 
     it "takes additional options into account" do
       config.with(tag_border: :foobar) do
-        expect(ReverseAdoc.config.tag_border).to eq :foobar
+        expect(Coradoc::ReverseAdoc.config.tag_border).to eq :foobar
       end
     end
 
@@ -17,9 +17,9 @@ describe ReverseAdoc::Config do
     it "resets to original settings afterwards" do
       config.tag_border = :foo
       config.with(tag_border: :bar) do
-        expect(ReverseAdoc.config.tag_border).to eq :bar
+        expect(Coradoc::ReverseAdoc.config.tag_border).to eq :bar
       end
-      expect(ReverseAdoc.config.tag_border).to eq :foo
+      expect(Coradoc::ReverseAdoc.config.tag_border).to eq :foo
     end
   end
 end

@@ -12,7 +12,7 @@ describe "exe/w2a" do
   unless Gem.win_platform? ||
       (Gem::Platform.local.os == "darwin" && !ENV["GITHUB_ACTION"].nil?)
     context "when external images present" do
-      let(:input_file_path) { "spec/assets/external_images.docx" }
+      let(:input_file_path) { "spec/reverse_adoc/assets/external_images.docx" }
       let(:images_folder) { "images" }
 
       after do

@@ -1,6 +1,6 @@
 require "coradoc"
 
-module ReverseAdoc
+module Coradoc::ReverseAdoc
   module Converters
     class A < Base
       def to_coradoc(node, state = {})

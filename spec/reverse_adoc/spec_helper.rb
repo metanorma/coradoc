@@ -7,16 +7,16 @@ SimpleCov.profiles.define "gem" do
 end
 SimpleCov.start "gem"
 
-require "reverse_adoc"
-require "reverse_adoc/html_converter"
+require "coradoc/reverse_adoc"
+require "coradoc/reverse_adoc/html_converter"
 require "word-to-markdown"
 
-Dir[File.join("spec", "support", "**", "*.rb")]
+Dir[File.join("spec", "reverse_adoc", "support", "**", "*.rb")]
   .each { |f| require File.join(".", f) }
 
 RSpec.configure do |config|
   config.after(:each) do
-    ReverseAdoc.instance_variable_set(:@config, nil)
+    Coradoc::ReverseAdoc.instance_variable_set(:@config, nil)
   end
 end
 

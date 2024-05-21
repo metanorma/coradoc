@@ -1,4 +1,4 @@
-module ReverseAdoc
+module Coradoc::ReverseAdoc
   class Error < StandardError
   end
 

@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe ReverseAdoc::Converters::Figure do
-  let(:converter) { ReverseAdoc::Converters::Figure.new }
+describe Coradoc::ReverseAdoc::Converters::Figure do
+  let(:converter) { Coradoc::ReverseAdoc::Converters::Figure.new }
 
   it "converts figure" do
     node = node_for("<figure id='A'><img src='example.jpg'/><figcaption>Figure <i>caption</i></figcaption></figure>")

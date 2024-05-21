@@ -34,7 +34,7 @@ require_relative "converters/tr"
 require_relative "converters/video"
 require_relative "converters/math"
 
-module ReverseAdoc
+module Coradoc::ReverseAdoc
   class HtmlConverter
     def self.to_coradoc(input, options = {})
       root = case input
@@ -48,14 +48,14 @@ module ReverseAdoc
 
       return "" unless root
 
-      ReverseAdoc.config.with(options) do
-        ReverseAdoc::Converters.lookup(root.name).to_coradoc(root)
+      Coradoc::ReverseAdoc.config.with(options) do
+        Coradoc::ReverseAdoc::Converters.lookup(root.name).to_coradoc(root)
       end
     end
 
     def self.convert(input, options = {})
       result = Coradoc::Generator.gen_adoc(to_coradoc(input, options))
-      ReverseAdoc.cleaner.tidy(result)
+      Coradoc::ReverseAdoc.cleaner.tidy(result)
     end
   end
 end

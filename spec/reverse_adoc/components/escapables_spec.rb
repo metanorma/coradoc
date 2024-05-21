@@ -1,9 +1,9 @@
 require "spec_helper"
 
-describe ReverseAdoc do
-  let(:input)    { File.read("spec/assets/escapables.html") }
+describe Coradoc::ReverseAdoc do
+  let(:input)    { File.read("spec/reverse_adoc/assets/escapables.html") }
   let(:document) { Nokogiri::HTML(input) }
-  subject { ReverseAdoc.convert(input) }
+  subject { Coradoc::ReverseAdoc.convert(input) }
 
   context "multiple asterisks" do
     it { is_expected.to include ' \*\*two asterisks\*\* ' }

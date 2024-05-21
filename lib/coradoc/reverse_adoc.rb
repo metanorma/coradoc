@@ -2,7 +2,7 @@
 
 require "digest"
 require "nokogiri"
-require_relative "reverse_adoc/version"
+require_relative "../coradoc"
 require_relative "reverse_adoc/errors"
 require_relative "reverse_adoc/cleaner"
 require_relative "reverse_adoc/config"
@@ -10,9 +10,9 @@ require_relative "reverse_adoc/converters"
 require_relative "reverse_adoc/converters/base"
 require_relative "reverse_adoc/html_converter"
 
-module ReverseAdoc
+module Coradoc::ReverseAdoc
   def self.convert(input, options = {})
-    ReverseAdoc::HtmlConverter.convert(input, options)
+    Coradoc::ReverseAdoc::HtmlConverter.convert(input, options)
   end
 
   def self.config
