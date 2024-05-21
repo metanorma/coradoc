@@ -1,4 +1,4 @@
-module ReverseAdoc
+module Coradoc::ReverseAdoc
   module Converters
     class Hr < Base
       def to_coradoc(_node, _state = {})

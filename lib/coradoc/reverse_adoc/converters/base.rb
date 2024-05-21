@@ -1,4 +1,4 @@
-module ReverseAdoc
+module Coradoc::ReverseAdoc
   module Converters
     class Base
       def treat_children(node, state)
@@ -8,7 +8,7 @@ module ReverseAdoc
       end
 
       def treat(node, state)
-        ReverseAdoc::Converters.lookup(node.name).convert(node, state)
+        Coradoc::ReverseAdoc::Converters.lookup(node.name).convert(node, state)
       end
 
       def treat_children_coradoc(node, state)
@@ -18,7 +18,7 @@ module ReverseAdoc
       end
 
       def treat_coradoc(node, state)
-        ReverseAdoc::Converters.lookup(node.name).to_coradoc(node, state)
+        Coradoc::ReverseAdoc::Converters.lookup(node.name).to_coradoc(node, state)
       end
 
       def escape_keychars(string)

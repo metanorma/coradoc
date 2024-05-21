@@ -1,4 +1,4 @@
-module ReverseAdoc
+module Coradoc::ReverseAdoc
   module Converters
     class PassThrough < Base
       def to_coradoc(node, _state = {})

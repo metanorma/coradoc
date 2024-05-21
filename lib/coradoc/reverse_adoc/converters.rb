@@ -1,4 +1,4 @@
-module ReverseAdoc
+module Coradoc::ReverseAdoc
   module Converters
     def self.register(tag_name, converter)
       @@converters ||= {}
@@ -14,18 +14,18 @@ module ReverseAdoc
     end
 
     def self.default_converter(tag_name)
-      case ReverseAdoc.config.unknown_tags.to_sym
+      case Coradoc::ReverseAdoc.config.unknown_tags.to_sym
       when :pass_through
-        ReverseAdoc::Converters::PassThrough.new
+        Coradoc::ReverseAdoc::Converters::PassThrough.new
       when :drop
-        ReverseAdoc::Converters::Drop.new
+        Coradoc::ReverseAdoc::Converters::Drop.new
       when :bypass
-        ReverseAdoc::Converters::Bypass.new
+        Coradoc::ReverseAdoc::Converters::Bypass.new
       when :raise
         raise UnknownTagError, "unknown tag: #{tag_name}"
       else
         raise InvalidConfigurationError,
-              "unknown value #{ReverseAdoc.config.unknown_tags.inspect} for ReverseAdoc.config.unknown_tags"
+              "unknown value #{Coradoc::ReverseAdoc.config.unknown_tags.inspect} for Coradoc::ReverseAdoc.config.unknown_tags"
       end
     end
   end

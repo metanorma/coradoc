@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe ReverseAdoc::Converters::Code do
-  let(:converter) { ReverseAdoc::Converters::Div.new }
+describe Coradoc::ReverseAdoc::Converters::Code do
+  let(:converter) { Coradoc::ReverseAdoc::Converters::Div.new }
 
   it "converts div" do
     node = node_for("<div>puts foo</div>")

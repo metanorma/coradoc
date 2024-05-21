@@ -1,6 +1,6 @@
 require "tmpdir"
 
-module ReverseAdoc
+module Coradoc::ReverseAdoc
   class Config
     attr_accessor :unknown_tags, :tag_border, :mathml2asciimath, :external_images,
                   :destination, :sourcedir, :image_counter, :image_counter_pattern, :input_format

@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe ReverseAdoc::Cleaner do
-  let(:cleaner) { ReverseAdoc::Cleaner.new }
+describe Coradoc::ReverseAdoc::Cleaner do
+  let(:cleaner) { Coradoc::ReverseAdoc::Cleaner.new }
 
   describe "#scrub_whitespace" do
     it "makes consistent nonbreaking spaces" do
@@ -86,7 +86,7 @@ describe ReverseAdoc::Cleaner do
 
   describe "#clean_tag_borders" do
     context "with default_border is set to space" do
-      before { ReverseAdoc.config.tag_border = " " }
+      before { Coradoc::ReverseAdoc.config.tag_border = " " }
 
       # it 'removes not needed whitespaces from strong tags' do
       #   input = "foo ** foobar ** bar"
@@ -132,7 +132,7 @@ describe ReverseAdoc::Cleaner do
     end
 
     context "with default_border set to no space" do
-      before { ReverseAdoc.config.tag_border = "" }
+      before { Coradoc::ReverseAdoc.config.tag_border = "" }
 
       # it 'removes not needed whitespaces from strong tags' do
       #   input = "foo ** foobar ** bar"

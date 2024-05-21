@@ -1,9 +1,9 @@
 require "spec_helper"
 
-describe ReverseAdoc do
-  let(:input)    { File.read("spec/assets/quotation.html") }
+describe Coradoc::ReverseAdoc do
+  let(:input)    { File.read("spec/reverse_adoc/assets/quotation.html") }
   let(:document) { Nokogiri::HTML(input) }
-  subject { ReverseAdoc.convert(input) }
+  subject { Coradoc::ReverseAdoc.convert(input) }
 
   it { is_expected.to match /\n      Block of code$/ }
   it {

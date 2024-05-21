@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe ReverseAdoc::Converters::Text do
-  let(:converter) { ReverseAdoc::Converters::Text.new }
+describe Coradoc::ReverseAdoc::Converters::Text do
+  let(:converter) { Coradoc::ReverseAdoc::Converters::Text.new }
 
   it "treats newline within text as a single whitespace" do
     input = node_for("<p>foo\nbar</p>")

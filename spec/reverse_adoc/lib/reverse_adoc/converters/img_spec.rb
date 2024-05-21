@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe ReverseAdoc::Converters::Img do
-  let(:converter) { ReverseAdoc::Converters::Img.new }
+describe Coradoc::ReverseAdoc::Converters::Img do
+  let(:converter) { Coradoc::ReverseAdoc::Converters::Img.new }
 
   it "converts image with no attributes" do
     node = node_for("<img src='example.jpg'/>")

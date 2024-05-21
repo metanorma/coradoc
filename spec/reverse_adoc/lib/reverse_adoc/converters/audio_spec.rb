@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe ReverseAdoc::Converters::Audio do
-  let(:converter) { ReverseAdoc::Converters::Audio.new }
+describe Coradoc::ReverseAdoc::Converters::Audio do
+  let(:converter) { Coradoc::ReverseAdoc::Converters::Audio.new }
 
   it "converts audio with no attributes" do
     node = node_for("<audio src='example.mp3'/>")

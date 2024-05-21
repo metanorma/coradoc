@@ -1,51 +1,51 @@
 require "spec_helper"
 
-describe ReverseAdoc do
-  let(:input)    { File.read("spec/assets/minimum.html") }
+describe Coradoc::ReverseAdoc do
+  let(:input)    { File.read("spec/reverse_adoc/assets/minimum.html") }
   let(:document) { Nokogiri::HTML(input) }
 
   it "parses nokogiri documents" do
-    expect { ReverseAdoc.convert(document) }.not_to raise_error
+    expect { Coradoc::ReverseAdoc.convert(document) }.not_to raise_error
   end
 
   it "parses nokogiri elements" do
-    expect { ReverseAdoc.convert(document.root) }.not_to raise_error
+    expect { Coradoc::ReverseAdoc.convert(document.root) }.not_to raise_error
   end
 
   it "parses string input" do
-    expect { ReverseAdoc.convert(input) }.not_to raise_error
+    expect { Coradoc::ReverseAdoc.convert(input) }.not_to raise_error
   end
 
   it "behaves in a sane way when root element is nil" do
-    expect(ReverseAdoc.convert(nil)).to eq ""
+    expect(Coradoc::ReverseAdoc.convert(nil)).to eq ""
   end
 
   describe "#config" do
     it "stores a given configuration option" do
-      ReverseAdoc.config.tag_border = true
-      expect(ReverseAdoc.config.tag_border).to eq true
+      Coradoc::ReverseAdoc.config.tag_border = true
+      expect(Coradoc::ReverseAdoc.config.tag_border).to eq true
     end
 
     it "can be used as a block configurator as well" do
-      ReverseAdoc.config do |config|
+      Coradoc::ReverseAdoc.config do |config|
         expect(config.tag_border).to eq " "
         config.tag_border = true
       end
-      expect(ReverseAdoc.config.tag_border).to eq true
+      expect(Coradoc::ReverseAdoc.config.tag_border).to eq true
     end
   end
 
   shared_examples "converting source with external images included" do |result|
     let(:temp_dir) do
-      Pathname.new(ReverseAdoc.config.destination).dirname
+      Pathname.new(Coradoc::ReverseAdoc.config.destination).dirname
     end
     let(:images_folder) { File.join(temp_dir, "images") }
 
     before do
-      ReverseAdoc.config.destination = File.join(Dir.mktmpdir,
+      Coradoc::ReverseAdoc.config.destination = File.join(Dir.mktmpdir,
                                                  "output.html")
-      ReverseAdoc.config.sourcedir = Dir.mktmpdir
-      ReverseAdoc.config.external_images = true
+      Coradoc::ReverseAdoc.config.sourcedir = Dir.mktmpdir
+      Coradoc::ReverseAdoc.config.external_images = true
     end
 
     after do
@@ -67,14 +67,14 @@ describe ReverseAdoc do
   unless Gem::Platform.local.os == "darwin" && !ENV["GITHUB_ACTION"].nil?
     context "when docx file input" do
       subject(:convert) do
-        ReverseAdoc.convert(
-          ReverseAdoc.cleaner.preprocess_word_html(input.document.html),
+        Coradoc::ReverseAdoc.convert(
+          Coradoc::ReverseAdoc.cleaner.preprocess_word_html(input.document.html),
           WordToMarkdown::REVERSE_MARKDOWN_OPTIONS,
         )
       end
       let(:input) do
-        WordToMarkdown.new("spec/assets/external_images.docx",
-                           ReverseAdoc.config.sourcedir)
+        WordToMarkdown.new("spec/reverse_adoc/assets/external_images.docx",
+                           Coradoc::ReverseAdoc.config.sourcedir)
       end
       it_behaves_like "converting source with external images included",
                       ["001.gif", "002.gif"]
@@ -82,15 +82,15 @@ describe ReverseAdoc do
   end
 
   context "when html file input" do
-    subject(:convert) { ReverseAdoc.convert(input) }
-    let(:input) { File.read("spec/assets/external_images.html") }
+    subject(:convert) { Coradoc::ReverseAdoc.convert(input) }
+    let(:input) { File.read("spec/reverse_adoc/assets/external_images.html") }
     it_behaves_like "converting source with external images included",
                     ["001.gif"]
   end
 
   context "when html file input with internal images" do
-    subject(:convert) { ReverseAdoc.convert(input) }
-    let(:input) { File.read("spec/assets/internal_images.html") }
+    subject(:convert) { Coradoc::ReverseAdoc.convert(input) }
+    let(:input) { File.read("spec/reverse_adoc/assets/internal_images.html") }
     it_behaves_like "converting source with external images included",
                     ["001.png", "002.jpeg", "003.webp", "004.avif", "005.gif"]
   end
