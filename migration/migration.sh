@@ -25,7 +25,7 @@ pushd reverse_adoc
   git commit -m 'Merger: Move reverse_adoc files to not conflict with Coradoc files'
 
   sed -i 's|require "reverse_adoc|require "coradoc/reverse_adoc|g' exe/* `find spec/ -name \*.rb`
-  sed -i 's/ReverseAdoc/Coradoc::ReverseAdoc/g' exe/* `find lib/ spec/ -name \*.rb`
+  sed -i 's/ReverseAdoc/Coradoc::ReverseAdoc/g' exe/* `find lib/ spec/ -name \*.rb` lib/coradoc/reverse_adoc/README.adoc
   sed -i 's|"spec/assets/|"spec/reverse_adoc/assets/|g' `find spec/ -name \*.rb`
   sed -i 's|require_relative "reverse_adoc/version"|require_relative "../coradoc"|g' lib/coradoc/reverse_adoc.rb
   sed -i 's|"spec", "support"|"spec", "reverse_adoc", "support"|g' spec/reverse_adoc/spec_helper.rb
@@ -37,8 +37,8 @@ pushd reverse_adoc
   git rm .rubocop.yml
   git rm .hound.yml
   git rm Gemfile
-  git rm Rakefile # Needs merge
-  git rm .gitignore # Needs merge
+  git rm Rakefile # Needs manual merge
+  git rm .gitignore # Needs manual merge
   git rm .github/workflows/rake.yml
   git rm .github/workflows/release.yml
 
