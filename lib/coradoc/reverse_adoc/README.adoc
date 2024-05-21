@@ -257,6 +257,8 @@ Simple to use.
 
 [source,ruby]
 ----
+require 'coradoc/reverse_adoc'
+
 result = Coradoc::ReverseAdoc.convert input
 result.inspect # " *feelings* "
 ----
@@ -267,6 +269,8 @@ Just pass your chosen configuration options in after the input. The given option
 
 [source,ruby]
 ----
+require 'coradoc/reverse_adoc'
+
 Coradoc::ReverseAdoc.convert(input, unknown_tags: :raise, mathml2asciimath: true)
 ----
 
@@ -277,6 +281,8 @@ Or configure it block style on a initializer level. These configurations will la
 
 [source,ruby]
 ----
+require 'coradoc/reverse_adoc'
+
 Coradoc::ReverseAdoc.config do |config|
   config.unknown_tags      = :bypass
   config.mathml2asciimath  = true
