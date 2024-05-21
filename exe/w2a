@@ -1,0 +1,72 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "rubygems"
+require "bundler/setup"
+
+require "word-to-markdown"
+require "optparse"
+require "coradoc/reverse_adoc"
+
+ARGV.push("-h") if ARGV.empty?
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: w2a [options] <file>"
+  opts.on("-m", "--mathml2asciimath", "Convert MathML to AsciiMath") do |_v|
+    Coradoc::ReverseAdoc.config.mathml2asciimath = true
+  end
+
+  opts.on("-oFILENAME", "--output=FILENAME", "Output file to write to") do |v|
+    Coradoc::ReverseAdoc.config.destination = File.expand_path(v)
+    # puts "output goes to #{Coradoc::ReverseAdoc.config.destination}"
+  end
+
+  opts.on("-e", "--external-images", "Export images if data URI") do |_v|
+    Coradoc::ReverseAdoc.config.external_images = true
+  end
+
+  opts.on("-v", "--version", "Version information") do |_v|
+    puts "reverse_adoc: v#{Coradoc::ReverseAdoc::VERSION}"
+    puts "[dependency] WordToMarkdown: v#{WordToMarkdown::VERSION}"
+    if Gem.win_platform?
+      puts "[dependency] LibreOffice: version not available on Windows"
+    else
+      puts "[dependency] LibreOffice: v#{WordToMarkdown.soffice.version}"
+    end
+    exit
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+filename = ARGV.pop
+raise "Please provide an input file to process. Exiting." unless filename
+
+if Coradoc::ReverseAdoc.config.external_images && Coradoc::ReverseAdoc.config.destination.nil?
+  raise "The -e | --external-images feature must be used with -o | --output. Exiting."
+end
+
+Coradoc::ReverseAdoc.config.sourcedir = Dir.mktmpdir
+
+doc = WordToMarkdown.new(filename, Coradoc::ReverseAdoc.config.sourcedir)
+# File.open("test.html", "w:UTF-8") { |f| f.write doc.document.html }
+adoc_content = Coradoc::ReverseAdoc.convert(
+  Coradoc::ReverseAdoc.cleaner.preprocess_word_html(doc.document.html),
+  WordToMarkdown::REVERSE_MARKDOWN_OPTIONS,
+)
+# puts scrub_whitespace(doc.document.html)
+
+# Print to STDOUT
+unless Coradoc::ReverseAdoc.config.destination
+  puts adoc_content
+  exit
+end
+
+# Write output to Coradoc::ReverseAdoc.config.destination
+FileUtils.mkdir_p(File.dirname(Coradoc::ReverseAdoc.config.destination))
+File.open(Coradoc::ReverseAdoc.config.destination, "w") do |file|
+  file.write(adoc_content)
+end

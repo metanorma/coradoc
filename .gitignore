@@ -1,3 +1,5 @@
+.DS_Store
+
 /.bundle/
 /.yardoc
 /_yardoc/
@@ -16,11 +18,14 @@
 
 # rspec failure tracking
 .rspec_status
-.rubocop-https---raw-githubusercontent-com-riboseinc-oss-guides-master-ci-rubocop-yml
+.rubocop-https---*
 Gemfile.lock
 relaton/
 .vscode/
 
-.rubocop-https--*
 oscal.yml
 .pryrc
+
+# reverse_adoc
+# Some odd files created by specs
+/test1

@@ -7,8 +7,8 @@ services:
       dockerfile: ./.docker/Dockerfile
 
     volumes:
-      - .:/workspace
-      - bundle:/bundle
+      - .:/workspace:z
+      - bundle:/bundle:z
 
 volumes:
   bundle:
