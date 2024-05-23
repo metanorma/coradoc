@@ -14,17 +14,15 @@ module Coradoc
         anchor = @anchor.nil? ? "" : @anchor.to_adoc.to_s
         content = ""
         if (@terms.is_a?(Array) && @terms.size == 1) || !@terms.is_a?(Array)
-          t = Coradoc::Generator.gen_adoc( @terms )
-          
+          t = Coradoc::Generator.gen_adoc(@terms)
           content << "#{anchor}#{t}#{delimiter} "
         else
           @terms.map do |term|
             t = Coradoc::Generator.gen_adoc(term)
             content << "#{t}#{delimiter}\n"
           end
-        
         end
-        d = Coradoc::Generator.gen_adoc( @contents)
+        d = Coradoc::Generator.gen_adoc(@contents)
         content << "#{d}\n"
       end
     end
