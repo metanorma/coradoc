@@ -11,12 +11,10 @@ module Coradoc
 
       def to_adoc
         anchor = @anchor.nil? ? "" : @anchor.to_adoc.to_s
-        case @content
-        when Array
-          content = @content.map{|subitem| Coradoc::Generator.gen_adoc(subitem).chomp}.join("\n+\n")
-        else
-          content = Coradoc::Generator.gen_adoc(@content).chomp
-        end
+        content = Array(@content).map do |subitem|
+          Coradoc::Generator.gen_adoc(subitem).chomp
+        end.join("\n+\n")
+
         " #{anchor}#{content.chomp}\n"
       end
     end

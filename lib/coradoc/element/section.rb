@@ -30,7 +30,7 @@ module Coradoc
       private
 
       def extract_glossaries
-        contents.select { |c| c if c.is_a?(Coradoc::Element::Glossaries) }.first
+        contents.find { |c| c if c.is_a?(Coradoc::Element::Glossaries) }
       end
     end
   end

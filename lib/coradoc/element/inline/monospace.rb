@@ -11,8 +11,11 @@ module Coradoc
 
         def to_adoc
           content = Coradoc::Generator.gen_adoc(@content)
-          doubled = @unconstrained ? "`" : ""
-          "#{doubled}`#{content}`#{doubled}"
+          if @unconstrained
+            "``#{content}``"
+          else
+            "`#{content}`"
+          end
         end
       end
     end
