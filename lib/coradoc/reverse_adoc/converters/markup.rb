@@ -37,10 +37,6 @@ module Coradoc::ReverseAdoc
         after && !after.text.strip.empty? &&
           after.text[0]&.match?(/\w|,|;|"|\.\?!/)
       end
-
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
     end
   end
 end
