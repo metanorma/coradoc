@@ -86,34 +86,6 @@ module Coradoc::ReverseAdoc
         after && !after.text.strip.empty? &&
           after.text[0]&.match?(/\w|,|;|"|\.\?!/)
       end
-
-      # def trailing_whitespace?(node)
-
-      # TODO: This logic ought to be cleaned up.
-      def constrained?(node)
-        before = node.at_xpath("preceding::node()[1]").to_s[-1]
-        before = if before
-                   before&.match?(/\s/) ? true : false
-                 else
-                   true
-                 end
-
-        if !before && (node.to_s[0] =~ /\s/)
-          before = true
-        end
-
-        after = node.at_xpath("following::node()[1]").to_s[0]
-        after = if after
-                  after&.match?(/\s|,|;|"|\.\?!/) ? true : false
-                else
-                  true
-                end
-        if !after && (node.to_s[-1] =~ /\s/)
-          after = true
-        end
-
-        before && after
-      end
     end
   end
 end
