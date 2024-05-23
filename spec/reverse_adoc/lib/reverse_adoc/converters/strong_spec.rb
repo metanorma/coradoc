@@ -8,6 +8,11 @@ describe Coradoc::ReverseAdoc::Converters::Strong do
     expect(converter.convert(input)).to eq ""
   end
 
+  it "returns a space if the node contains just whitespace" do
+    input = node_for("<strong> </strong>")
+    expect(converter.convert(input)).to eq " "
+  end
+
   it "returns just the content if the strong tag is nested in another strong" do
     input = node_for("<strong><strong>foo</strong></strong>")
     expect(converter.convert(input.children.first,
