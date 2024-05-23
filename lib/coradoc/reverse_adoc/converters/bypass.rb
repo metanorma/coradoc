@@ -4,10 +4,6 @@ module Coradoc::ReverseAdoc
       def to_coradoc(node, state = {})
         treat_children_coradoc(node, state)
       end
-
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
     end
 
     register :document, Bypass.new

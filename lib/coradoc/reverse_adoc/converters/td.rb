@@ -29,10 +29,6 @@ module Coradoc::ReverseAdoc
         Coradoc::Element::Table::Cell.new(options)
       end
 
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
-
       def cellstyle(_node)
         ""
       end

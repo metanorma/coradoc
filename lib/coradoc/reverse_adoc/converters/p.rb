@@ -12,10 +12,6 @@ module Coradoc::ReverseAdoc
 
         Coradoc::Element::Paragraph.new(content, options)
       end
-
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
     end
 
     register :p, P.new
