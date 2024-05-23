@@ -47,6 +47,8 @@ describe Coradoc::ReverseAdoc do
   it { is_expected.to match /_i tag content_/ }
   it { is_expected.to match /\*b tag content\*/ }
 
+  it { is_expected.to include "text that has *bold embedded in bold*" }
+
   it { is_expected.to match /H~2~O/ }
   it { is_expected.to match /A\^2\^B/ }
 
