@@ -53,6 +53,13 @@ module Coradoc::ReverseAdoc
         rules_attr = rules(node)
         attrs.add_named("rules", rules_attr) if rules_attr
 
+        if node.at_xpath(".//div")
+          cols = node.xpath(".//tr").first.xpath("./td | ./th").map do |i|
+            (i["colspan"] || 1).to_i
+          end.sum
+          attrs.add_named("cols", "#{cols}*")
+        end
+
         # This line should be removed.
         return "" if attrs.empty?
 
