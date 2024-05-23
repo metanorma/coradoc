@@ -11,7 +11,7 @@ module Coradoc
       end
 
       def add_positional(*attr)
-        attr.each{|a| @positional << a}
+        @positional += attr
       end
 
       def add_named(name, value)
@@ -32,15 +32,12 @@ module Coradoc
 
       def validate_positional(validators)
         @positional.each_with_index do |value, i|
-          if !validators[i][1].is_a?(Array)
-            result = validate_attr(value, validators[i][1])
-          elsif validators[i][1].is_a?(Array)
-            result = validators[i][1].map do |v|
-              validate_attr(value, v)
-            end.any?
-          end
-          if result
-          else
+          # TODO: Decide what to do with this value
+          _positional_name = validators[i][0]
+
+          validator = validators[i][1]
+
+          unless validator && validate_attr(value, validator)
             @positional[i] = nil
             @rejected_positional << [i, value]
           end
@@ -48,29 +45,11 @@ module Coradoc
       end
 
       def validate_named(validators)
-        @named.each_with_index do |pair, i|
-          name = pair[0].to_sym
-          value = pair[1]
-          # validators.each do |vdtr|
-          if validators[name]
-            if !validators[name].is_a?(Array)
-              res = validate_attr(value, validators[name])
-            elsif validators[name].is_a?(Array)
-              res = validators[name][1..-1].map do |vdtr|
-                validate_attr(value, vdtr)
-              end
-            end
-          else
-            res = false
-          end
-            # results << vdtr.map do |vd|
-            #   has_name = vd.keys.include?(name)
-            #   has_value = has_name ? validate_n(value, vd[name]) : false
-            #   has_value
-            # end
-          # end
-          if res == true || (res.is_a?(Array) && res.any?)
-          else
+        @named.each_with_index do |(name, value), i|
+          name = name.to_sym
+          validator = validators[name]
+
+          unless validator && validate_attr(value, validator)
             @named.delete(name)
             @rejected_named << [name, value]
           end
@@ -80,27 +59,61 @@ module Coradoc
       def to_adoc(show_empty = true)
         return "[]" if [@positional, @named].all?(:empty?)
 
-        adoc = ""
+        adoc = +""
         if @positional.any?
-          adoc << @positional.map{|p| p == "" ? "\"\"" : p}.join(",")
+          adoc << @positional.map { |p| [nil, ""].include?(p) ? '""' : p }.join(",")
         end
         adoc << "," if @positional.any? && @named.any?
         adoc << @named.map do |k, v|
           if v.is_a?(String)
-            v2 = v.to_s
-            v2 = v2.include?("\"") ? v2.gsub("\"", "\\\"") : v2
-            if v2.include?(" ") || v2.include?(",") || v2.include?("\"")
-              v2 = "\"#{v2}\""
+            v = v.gsub("\"", "\\\"")
+            if v.include?(" ") || v.include?(",") || v.include?('"')
+              v = "\"#{v}\""
             end
           elsif v.is_a?(Array)
-            v2 = "\"#{v.join(',')}\""
+            v = "\"#{v.join(',')}\""
           end
-          [k.to_s, "=", v2].join
+          [k.to_s, "=", v].join
         end.join(",")
+
         if !empty? || (empty? && show_empty)
           "[#{adoc}]"
         elsif empty? && !show_empty
           adoc
+        end
+      end
+
+      module Matchers
+        def one(*args)
+          One.new(*args)
+        end
+
+        class One
+          def initialize(*possibilities)
+            @possibilities = possibilities
+          end
+
+          def ===(other)
+            @possibilities.any? { |i| i === other }
+          end
+        end
+
+        def many(*args)
+          Many.new(*args)
+        end
+
+        # TODO: Find a way to only reject some values but not all?
+        class Many
+          def initialize(*possibilities)
+            @possibilities = possibilities
+          end
+
+          def ===(other)
+            other = other.split(",") if other.is_a?(String)
+
+            other.is_a?(Array) &&
+              other.all? { |i| @possibilities.any? { |p| p === i } }
+          end
         end
       end
     end

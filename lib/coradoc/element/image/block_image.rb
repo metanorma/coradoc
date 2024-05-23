@@ -11,12 +11,12 @@ module Coradoc
           @attributes.validate_named(VALIDATORS_NAMED, VALIDATORS_NAMED_BLOCK)
         end
 
+        extend AttributeList::Matchers
         VALIDATORS_NAMED_BLOCK = {
           caption: String,
-          align: [:one, "left", "center", "right"],
-          float: [:one, "left", "right"]
+          align: one("left", "center", "right"),
+          float: one("left", "right"),
         }
-
       end
     end
   end

@@ -18,12 +18,13 @@ module Coradoc
         [anchor, title, "audio::", @src, attrs].join("")
       end
 
+      extend AttributeList::Matchers
       VALIDATORS_NAMED = {
         title: String,
         start: Integer,
         end: Integer,
-        options: [:many, "nofollow", "noopener", "inline", "interactive"],
-        opts: [:many, "nofollow", "noopener", "inline", "interactive"]
+        options: many("nofollow", "noopener", "inline", "interactive"),
+        opts: many("nofollow", "noopener", "inline", "interactive"),
       }
     end
   end
