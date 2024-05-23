@@ -24,9 +24,12 @@ module Coradoc::ReverseAdoc
 
         return name if href.to_s.empty?
 
-        Coradoc::Element::Inline::Link.new(path: href,
-                                           name: name.strip,
-                                           title: title.strip)
+        out = []
+        out << " " if unconstrained_before?(node)
+        out << Coradoc::Element::Inline::Link.new(path: href,
+                                                  name: name.strip,
+                                                  title: title.strip)
+        out
       end
     end
 
