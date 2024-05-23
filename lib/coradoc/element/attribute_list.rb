@@ -27,15 +27,7 @@ module Coradoc
       end
 
       def validate_attr(attr, matcher)
-        if (attr.is_a?(String)  && matcher == String) ||
-           (attr.is_a?(Integer) && matcher == Integer) ||
-           (attr.is_a?(String)  && matcher.is_a?(String) && attr == matcher) ||
-           (attr.is_a?(String)  && matcher.is_a?(Regexp) && attr =~ matcher)
-          r = true
-        else
-          r = false
-        end
-        r
+        matcher === attr
       end
 
       def validate_positional(validators)
