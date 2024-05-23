@@ -11,10 +11,6 @@ module Coradoc::ReverseAdoc
         Coradoc::Element::Block::Quote.new(nil, lines: content,
                                                 attributes: attributes)
       end
-
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
     end
 
     register :blockquote, Blockquote.new

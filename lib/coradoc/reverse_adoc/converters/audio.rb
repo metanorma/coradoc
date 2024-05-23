@@ -12,10 +12,6 @@ module Coradoc::ReverseAdoc
                                            attributes: attributes)
       end
 
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
-
       def options(node)
         autoplay = node["autoplay"]
         loop_attr = node["loop"]

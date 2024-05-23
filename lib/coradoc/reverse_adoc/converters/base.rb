@@ -1,6 +1,13 @@
 module Coradoc::ReverseAdoc
   module Converters
     class Base
+      # Default implementation to convert a given Nokogiri node
+      # to an AsciiDoc script.
+      # Can be overriden by subclasses.
+      def convert(node, state = {})
+        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
+      end
+
       def treat_children(node, state)
         node.children.inject("") do |memo, child|
           memo << treat(child, state)

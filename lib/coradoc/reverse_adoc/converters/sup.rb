@@ -11,10 +11,6 @@ module Coradoc::ReverseAdoc
         e = Coradoc::Element::Inline::Superscript.new(content)
         [leading_whitespace, e, trailing_whitespace]
       end
-
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
     end
 
     register :sup, Sup.new

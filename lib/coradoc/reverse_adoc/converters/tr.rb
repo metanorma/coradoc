@@ -7,10 +7,6 @@ module Coradoc::ReverseAdoc
         Coradoc::Element::Table::Row.new(content, header)
       end
 
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
-
       def table_header_row?(node)
         # node.element_children.all? {|child| child.name.to_sym == :th}
         node.previous_element.nil?

@@ -48,10 +48,6 @@ module Coradoc::ReverseAdoc
         end
         [groups, current, seen_dd]
       end
-
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
     end
 
     register :dl, Dl.new

@@ -23,10 +23,6 @@ module Coradoc::ReverseAdoc
         end
       end
 
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
-
       def get_list_type(node, _state)
         case node.name
         when "ol"

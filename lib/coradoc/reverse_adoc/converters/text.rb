@@ -7,10 +7,6 @@ module Coradoc::ReverseAdoc
         Coradoc::Element::TextElement.new(treat_text(node))
       end
 
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
-
       private
 
       def treat_empty(node, state)

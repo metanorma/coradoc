@@ -6,10 +6,6 @@ module Coradoc::ReverseAdoc
         Coradoc::Element::Header.new(title)
       end
 
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
-
       def extract_title(node)
         title = node.at("./title")
         return "(???)" if title.nil?

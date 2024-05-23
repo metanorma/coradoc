@@ -6,10 +6,6 @@ module Coradoc::ReverseAdoc
         contents = treat_children_coradoc(node, state)
         Coradoc::Element::Section.new(nil, id: id, contents: contents)
       end
-
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
     end
 
     register :div,     Div.new

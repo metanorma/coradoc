@@ -82,10 +82,6 @@ module Coradoc::ReverseAdoc
         Coradoc::Element::Image::BlockImage.new(title, id, src,
                                                 attributes: attributes)
       end
-
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
     end
 
     register :img, Img.new

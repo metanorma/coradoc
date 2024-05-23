@@ -15,10 +15,6 @@ module Coradoc::ReverseAdoc
         Coradoc::Element::Title.new(content, level, id: id)
       end
 
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
-
       def treat_children_no_anchors(node, state)
         node.children.reject { |a| a.name == "a" }.inject([]) do |memo, child|
           memo << treat_coradoc(child, state)

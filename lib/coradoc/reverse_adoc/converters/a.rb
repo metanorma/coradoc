@@ -28,10 +28,6 @@ module Coradoc::ReverseAdoc
                                            name: name.strip,
                                            title: title.strip)
       end
-
-      def convert(node, state = {})
-        Coradoc::Generator.gen_adoc(to_coradoc(node, state))
-      end
     end
 
     register :a, A.new
