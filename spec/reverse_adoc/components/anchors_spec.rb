@@ -11,7 +11,11 @@ describe Coradoc::ReverseAdoc do
   it { is_expected.to include "http://strong.foobar.com[*Strong foobar*]" }
 
   it {
-    is_expected.to include "There should be space before but not after the anchor ( http://foobar.com[stripped])."
+    is_expected.to include "There should be space before but not after the anchor AA http://foobar.com[stripped]AA."
+  }
+
+  it {
+    is_expected.to include "There shouldn't be a space before an anchor if constrained http://foobar.com[stripped]."
   }
 
   it {

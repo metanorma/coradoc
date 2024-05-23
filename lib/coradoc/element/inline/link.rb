@@ -22,7 +22,6 @@ module Coradoc
                   else
                     "[#{@name}]"
                   end
-          link.prepend(" ")
           link
         end
       end
