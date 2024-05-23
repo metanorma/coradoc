@@ -28,5 +28,26 @@ RSpec.describe Coradoc::Element::AttributeList do
       expect(attributes.rejected_positional).to eq([[2, 400]])
       expect(attributes.rejected_named).to eq([[:broken, 600]])
     end
+
+    it "supports one and many matchers" do
+      correct = described_class.new(x1: "abc", x2: "def", x3: ["ghi", "jkl"])
+      incorrect = described_class.new(x1: "Abc", x2: "Def", x3: 1)
+      incorrect2 = described_class.new(x1: "ddd", x2: "ddd", x3: ["ghi", "mno"])
+
+      extend Coradoc::Element::AttributeList::Matchers
+      VALIDATOR = {
+        x1: one("abc", /^d{3}$/),
+        x2: one("def", /^d{3}$/),
+        x3: many("ghi", "jkl"),
+      }
+
+      correct.validate_named(VALIDATOR)
+      incorrect.validate_named(VALIDATOR)
+      incorrect2.validate_named(VALIDATOR)
+
+      expect(correct.rejected_named).to eq([])
+      expect(incorrect.rejected_named).to eq([[:x1, "Abc"], [:x2, "Def"], [:x3, 1]])
+      expect(incorrect2.rejected_named).to eq([[:x3, ["ghi", "mno"]]])
+    end
   end
 end

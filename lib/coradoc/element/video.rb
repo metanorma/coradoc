@@ -22,26 +22,27 @@ module Coradoc
         [anchor, title, "video::", @src, attrs].join("")
       end
 
+      extend AttributeList::Matchers
       VALIDATORS_POSITIONAL = [
         [:alt, String],
         [:width, Integer],
-        [:height, Integer]
+        [:height, Integer],
       ]
 
       VALIDATORS_NAMED = {
-          title: String,
-          poster: String,
-          width: Integer,
-          height: Integer,
-          start: Integer,
-          end: Integer,
-          theme: [:one, "dark", "light"],
-          lang: /[a-z]{2,3}(?:-[A-Z]{2})?/,
-          list: String,
-          playlist: String,
-          options: [:many, "autoplay", "loop", "modest",
-                    "nocontrols", "nofullscreen", "muted"]
-        }
+        title: String,
+        poster: String,
+        width: Integer,
+        height: Integer,
+        start: Integer,
+        end: Integer,
+        theme: one("dark", "light"),
+        lang: /[a-z]{2,3}(?:-[A-Z]{2})?/,
+        list: String,
+        playlist: String,
+        options: many("autoplay", "loop", "modest",
+                      "nocontrols", "nofullscreen", "muted"),
+      }
     end
   end
 end
