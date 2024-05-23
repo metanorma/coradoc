@@ -82,8 +82,10 @@ module Coradoc::ReverseAdoc
         attributes.add_positional(width) if width
         attributes.add_positional(height) if height
 
-        Coradoc::Element::Image::BlockImage.new(title, id, src,
-                                                attributes: attributes)
+        if src
+          Coradoc::Element::Image::BlockImage.new(title, id, src,
+                                                  attributes: attributes)
+        end
       end
     end
 
