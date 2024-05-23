@@ -1,3 +1,5 @@
+require "uri"
+
 module Coradoc
   module Element
     module Inline
