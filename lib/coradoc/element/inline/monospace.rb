@@ -4,7 +4,7 @@ module Coradoc
       class Monospace
         attr_accessor :content, :constrained
 
-        def initialize(content, unconstrained = true)
+        def initialize(content, unconstrained: true)
           @content = content
           @unconstrained = unconstrained
         end

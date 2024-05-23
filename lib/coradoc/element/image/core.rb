@@ -45,7 +45,6 @@ module Coradoc
           role: [:many, /.*/, "left", "right", "th", "thumb", "related", "rel"],
           opts: [:many, "nofollow", "noopener", "inline", "interactive"]
         }
-
       end
     end
   end

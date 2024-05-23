@@ -11,7 +11,10 @@ module Coradoc
         end
 
         def to_adoc
-          link = @path.to_s&.match?(URI::DEFAULT_PARSER.make_regexp) ? @path : "link:#{@path}"
+          link = @path
+          unless @path.to_s&.match?(URI::DEFAULT_PARSER.make_regexp)
+            link = "link:#{link}"
+          end
           link << if @name.to_s.empty?
                     "[#{@title}]"
                   else
