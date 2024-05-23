@@ -95,4 +95,8 @@ describe Coradoc::ReverseAdoc do
   context "definition list multiple terms" do
     it { is_expected.to include "Coffee::\nKaffee::\nBlack hot drink\nMilk::\nMilch::\nWhite cold drink" }
   end
+
+  context "definition list supports div inside a dl" do
+    it { is_expected.to include "One:: Two" }
+  end
 end
