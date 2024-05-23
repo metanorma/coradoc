@@ -13,7 +13,7 @@ module Coradoc::ReverseAdoc
           content
         else
           u = !((!u_before || !leading_whitespace.nil?) && (!u_after || !trailing_whitespace.nil?))
-          e = Coradoc::Element::Inline::Bold.new(content, u)
+          e = Coradoc::Element::Inline::Bold.new(content, unconstrained: u)
           [leading_whitespace, e, trailing_whitespace]
         end
       end
