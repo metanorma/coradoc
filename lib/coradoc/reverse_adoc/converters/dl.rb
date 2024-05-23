@@ -25,8 +25,8 @@ module Coradoc::ReverseAdoc
             end
           elsif ["dt", "dd"].include?(child.name)
             groups, current, seen_dd = process_dt_or_dd(groups, current, seen_dd, child, state)
-            child = child.at_xpath("following-sibling::*[1]")
           end
+          child = child.at_xpath("following-sibling::*[1]")
           if current[:name].any? && current[:value].any?
             groups << current
           end
