@@ -52,6 +52,7 @@ module Coradoc::ReverseAdoc
           f.write(Base64.strict_decode64(imgdata))
           f.rewind
           ext = Marcel::MimeType.for(f).sub(%r{^[^/]+/}, "")
+          ext = "svg" if ext == "svg+xml"
           [ext, f.path]
         end
       end
