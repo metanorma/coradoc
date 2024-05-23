@@ -19,6 +19,8 @@ module Coradoc::ReverseAdoc
       end
 
       def datauri2file(src)
+        return unless src
+
         %r{^data:image/(?:[^;]+);base64,(?<imgdata>.+)$} =~ src
 
         dest_dir = Pathname.new(Coradoc::ReverseAdoc.config.destination).dirname
