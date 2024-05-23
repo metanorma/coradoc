@@ -76,6 +76,21 @@ module Coradoc::ReverseAdoc
         end
         [leading_whitespace, trailing_whitespace]
       end
+
+      def unconstrained_before?(node)
+        before = node.at_xpath("preceding::node()[1]")
+
+        before &&
+          !before.text.strip.empty? &&
+          before.text[-1]&.match?(/\w/)
+      end
+
+      def unconstrained_after?(node)
+        after = node.at_xpath("following::node()[1]")
+
+        after && !after.text.strip.empty? &&
+          after.text[0]&.match?(/\w|,|;|"|\.\?!/)
+      end
     end
   end
 end
