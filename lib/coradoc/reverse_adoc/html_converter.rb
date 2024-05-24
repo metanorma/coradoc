@@ -54,6 +54,16 @@ module Coradoc
 
           return "" unless root
 
+          if pc = ReverseAdoc.config.processor
+            if defined? pc::Preprocessor
+              preprocessor = pc::Preprocessor
+
+              root = track_time "Preprocessing document" do
+                preprocessor.(root)
+              end
+            end
+          end
+
           track_time "Converting input document tree to Coradoc tree" do
             Converters.lookup(root.name).to_coradoc(root)
           end
