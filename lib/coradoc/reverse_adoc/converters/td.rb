@@ -15,7 +15,6 @@ module Coradoc::ReverseAdoc
           node.at(".//p") && !singlepara
 
         style = "a" if adoccell
-        delim = adoccell ? "\n" : " "
         content = treat_children_coradoc(node, state)
         options = {}.tap do |hash|
           hash[:id] = id
@@ -23,7 +22,6 @@ module Coradoc::ReverseAdoc
           hash[:alignattr] = alignattr
           hash[:style] = style
           hash[:content] = content
-          hash[:delim] = delim
         end
 
         Coradoc::Element::Table::Cell.new(options)
