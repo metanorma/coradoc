@@ -17,19 +17,19 @@ module Coradoc
 
             # Correct non-semantic classes into semantic HTML tags
             @doc.css(".titledata").each do |e|
-              e.name = "h2"
+              e.name = "h1"
             end
 
             @doc.css(".subtitledata").each do |e|
-              e.name = "h3"
+              e.name = "h2"
             end
 
             @doc.css(".pitemdata").each do |e|
-              e.name = "h4"
+              e.name = "h3"
             end
 
             @doc.css(".sitemdata").each do |e|
-              e.name = "h5"
+              e.name = "h4"
             end
 
             @doc.css('td[bgcolor="#D0CECE"]').each do |e|
