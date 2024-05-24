@@ -6,7 +6,7 @@ module Coradoc
       # context. The idea is that certain cases can be simplified, making it
       # so that the result is equivalent, but much simpler, allowing us to
       # generate a nicer AsciiDoc syntax for those cases.
-      def simplify_content(content)
+      def simplify_block_content(content)
         content = Array(content)
         collected_content = []
         content.each do |i|
@@ -14,7 +14,7 @@ module Coradoc
           when Coradoc::Element::Section
             return content unless i.safe_to_collapse?
 
-            simplified = simplify_content(i.contents)
+            simplified = simplify_block_content(i.contents)
 
             if simplified && !simplified.empty?
               collected_content << simplified
