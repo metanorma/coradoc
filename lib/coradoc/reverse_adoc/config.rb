@@ -2,9 +2,6 @@ require "tmpdir"
 
 module Coradoc::ReverseAdoc
   class Config
-    attr_accessor :unknown_tags, :tag_border, :mathml2asciimath, :external_images,
-                  :destination, :sourcedir, :image_counter, :image_counter_pattern, :input_format
-
     def initialize
       @unknown_tags     = :pass_through
       @input_format     = :html
@@ -26,29 +23,36 @@ module Coradoc::ReverseAdoc
       @strong_delimiter = "*".freeze
       @inline_options   = {}
       @tag_border       = " ".freeze
+
+      # Debugging options
+      @track_time       = false
     end
 
     def with(options = {})
+      old_options = @inline_options
       @inline_options = options
       result = yield
-      @inline_options = {}
+      @inline_options = old_options
       result
     end
 
-    def unknown_tags
-      @inline_options[:unknown_tags] || @unknown_tags
+    def self.declare_option(option)
+      define_method(option) do
+        @inline_options[option] || instance_variable_get(:"@#{option}")
+      end
+
+      attr_writer option
     end
 
-    def mathml2asciimath
-      @inline_options[:mathml2asciimath] || @mathml2asciimath
-    end
-
-    def external_images
-      @inline_options[:external_images] || @external_images
-    end
-
-    def tag_border
-      @inline_options[:tag_border] || @tag_border
-    end
+    declare_option :unknown_tags
+    declare_option :tag_border
+    declare_option :mathml2asciimath
+    declare_option :external_images
+    declare_option :destination
+    declare_option :sourcedir
+    declare_option :image_counter
+    declare_option :image_counter_pattern
+    declare_option :input_format
+    declare_option :track_time
   end
 end

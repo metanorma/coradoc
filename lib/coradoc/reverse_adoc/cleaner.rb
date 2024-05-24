@@ -1,11 +1,21 @@
 module Coradoc::ReverseAdoc
   class Cleaner
     def tidy(string)
-      result = remove_inner_whitespaces(String.new(string))
-      result = remove_newlines(result)
-      result = remove_leading_newlines(result)
-      result = clean_tag_borders(result)
-      clean_punctuation_characters(result)
+      result = HtmlConverter.track_time "Removing inner whitespace" do
+        remove_inner_whitespaces(String.new(string))
+      end
+      result = HtmlConverter.track_time "Removing newlines" do
+        remove_newlines(result)
+      end
+      result = HtmlConverter.track_time "Removing leading newlines" do
+        remove_leading_newlines(result)
+      end
+      result = HtmlConverter.track_time "Cleaning tag borders" do
+        clean_tag_borders(result)
+      end
+      result = HtmlConverter.track_time "Cleaning punctuation characters" do
+        clean_punctuation_characters(result)
+      end
     end
 
     def remove_newlines(string)
@@ -22,11 +32,13 @@ module Coradoc::ReverseAdoc
         string.gsub!(/(stem:\[([^\]]|\\\])*\])\n(?=\S)/, "\\1 ")
         string.gsub!(/(stem:\[([^\]]|\\\])*\])\s+(?=[\^-])/, "\\1")
       end
-      string.each_line.inject("") do |memo, line|
-        memo + preserve_border_whitespaces(line) do
+      result = +""
+      string.each_line do |line|
+        result << preserve_border_whitespaces(line) do
           line.strip.gsub(/[ \t]{2,}/, " ")
         end
       end
+      result
     end
 
     # Find non-asterisk content that is enclosed by two or
