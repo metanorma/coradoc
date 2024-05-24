@@ -32,9 +32,15 @@ module Coradoc
           @header
         end
 
+        def asciidoc?
+          @columns.any?(&:asciidoc?)
+        end
+
         def to_adoc
-          content = Coradoc::Generator.gen_adoc(@columns).rstrip
+          delim = asciidoc? ? "\n" : " "
+          content = @columns.map { |col| Coradoc::Generator.gen_adoc(col) }.join(delim)
           result  = "#{content}\n"
+          result << "\n" if asciidoc?
           table_header_row? ? result + underline_for : result
         end
 
@@ -57,11 +63,15 @@ module Coradoc
           @delim = options.fetch(:delim, "")
         end
 
+        def asciidoc?
+          @style.include?("a")
+        end
+
         def to_adoc
           anchor = @anchor.nil? ? "" : @anchor.to_adoc.to_s
           content = simplify_content(@content)
           content = Coradoc::Generator.gen_adoc(content)
-          "#{@colrowattr}#{@alignattr}#{@style}| #{anchor}#{content}#{@delim}"
+          "#{@colrowattr}#{@alignattr}#{@style}| #{anchor}#{content}"
         end
       end
     end
