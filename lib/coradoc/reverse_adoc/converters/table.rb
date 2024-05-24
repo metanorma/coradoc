@@ -53,17 +53,99 @@ module Coradoc::ReverseAdoc
         rules_attr = rules(node)
         attrs.add_named("rules", rules_attr) if rules_attr
 
-        if node.at_xpath(".//div")
-          cols = node.xpath(".//tr").first.xpath("./td | ./th").map do |i|
-            (i["colspan"] || 1).to_i
-          end.sum
-          attrs.add_named("cols", "#{cols}*")
-        end
+        cols = ensure_row_column_integrity_and_get_column_number(node)
+        attrs.add_named("cols", "#{cols}*")
 
         # This line should be removed.
         return "" if attrs.empty?
 
         attrs
+      end
+
+      def ensure_row_column_integrity_and_get_column_number(node)
+        rows = node.xpath(".//tr")
+        num_rows = rows.length
+        computed_columns_per_row = [0] * num_rows
+        cell_references = [nil] * num_rows
+
+        recompute = proc do
+          return ensure_row_column_integrity_and_get_column_number(node)
+        end
+
+        rows.each_with_index do |row, i|
+          columns = row.xpath("./td | ./th")
+          columns.each do |cell|
+            colspan = cell["colspan"]&.to_i || 1
+            rowspan = cell["rowspan"]&.to_i || 1
+
+            rowspan.times do |j|
+              # Let's increase the table for particularly bad documents
+              computed_columns_per_row[i + j] ||= 0
+              computed_columns_per_row[i + j] += colspan
+
+              cell_references[i + j] ||= []
+              colspan.times do |k|
+                cell_references[i + j] << [cell, k > 0]
+              end
+            end
+          end
+        end
+
+        ##### Fixups
+        cpr = computed_columns_per_row
+
+        # Some cell has too high colspan
+        if cpr.length > num_rows
+          cell_references[num_rows].each do |cell,|
+            next unless cell
+
+            cell["rowspan"] = cell["rowspan"].to_i - 1
+          end
+
+          # Let's recompute the numbers
+          recompute.()
+        end
+
+        if [cpr.first] * num_rows != cpr
+          # Colspan inconsistencies
+          modified = false
+          cpr_max = cpr.max
+          max_rows = cell_references.sort_by(&:length).reverse
+          max_rows.each do |row|
+            break if row.length != cpr_max
+
+            cell, spanning = row.last
+
+            if spanning
+              modified = true
+              cell["colspan"] = cell["colspan"].to_i - 1
+            end
+          end
+
+          recompute.() if modified
+
+          # We are out of colspans to fix. If we are at this point, this
+          # means there is an inconsistent number of TH/TDs simply.
+          # Here, the solution is to add empty TDs.
+          min_rows = cell_references.sort_by(&:length)
+          cpr_min = cpr.min
+          min_rows.each do |row|
+            break if row.length != cpr_min
+
+            row_obj = row.last.first.parent
+            doc = row_obj.document
+            row_obj.add_child(Nokogiri::XML::Node.new("td", doc))
+
+            modified = true
+          end
+
+          recompute.() if modified
+
+          ### We should have a correct document now and we should never
+          ### end up here.
+        end
+
+        computed_columns_per_row.first
       end
     end
 
