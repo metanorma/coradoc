@@ -60,7 +60,6 @@ module Coradoc
           @alignattr = options.fetch(:alignattr, "")
           @style = options.fetch(:style, "")
           @content = options.fetch(:content, "")
-          @delim = options.fetch(:delim, "")
         end
 
         def asciidoc?
