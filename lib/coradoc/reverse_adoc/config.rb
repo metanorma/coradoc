@@ -24,6 +24,9 @@ module Coradoc::ReverseAdoc
       @inline_options   = {}
       @tag_border       = " ".freeze
 
+      # Non-semantic HTML documents
+      @processor        = nil
+
       # Debugging options
       @track_time       = false
     end
@@ -53,6 +56,7 @@ module Coradoc::ReverseAdoc
     declare_option :image_counter
     declare_option :image_counter_pattern
     declare_option :input_format
+    declare_option :processor
     declare_option :track_time
   end
 end
