@@ -69,7 +69,7 @@ module Coradoc
 
         def to_adoc
           anchor = @anchor.nil? ? "" : @anchor.to_adoc.to_s
-          content = simplify_content(@content)
+          content = simplify_block_content(@content)
           content = Coradoc::Generator.gen_adoc(content)
           "#{@colrowattr}#{@alignattr}#{@style}| #{anchor}#{content}"
         end
