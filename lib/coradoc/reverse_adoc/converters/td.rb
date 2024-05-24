@@ -11,7 +11,7 @@ module Coradoc::ReverseAdoc
         singlepara = node.elements.size == 1 && node.elements.first.name == "p"
         state[:tdsinglepara] = singlepara if singlepara
 
-        adoccell = node.at(".//ul | .//ol | .//pre | .//blockquote | .//br | .//hr | .//img") ||
+        adoccell = node.at(".//ul | .//ol | .//pre | .//blockquote | .//br | .//hr | .//img[@src]") ||
           node.at(".//p") && !singlepara
 
         style = "a" if adoccell
