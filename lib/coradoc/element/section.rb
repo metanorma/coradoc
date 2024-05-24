@@ -27,6 +27,13 @@ module Coradoc
         "\n#{anchor}" << content << "\n"
       end
 
+      # Check for cases when Section is simply an equivalent of an empty <DIV>
+      # HTML element and if it happens inside some other block element, can be
+      # safely collapsed.
+      def safe_to_collapse?
+        @id.nil?
+      end
+
       private
 
       def extract_glossaries

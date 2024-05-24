@@ -43,10 +43,11 @@ module Coradoc
         end
       end
 
-      class Cell
+      class Cell < Base
         attr_reader :anchor
 
         def initialize(options = {})
+          super()
           @id = options.fetch(:id, nil)
           @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
           @colrowattr = options.fetch(:colrowattr, "")
@@ -58,7 +59,8 @@ module Coradoc
 
         def to_adoc
           anchor = @anchor.nil? ? "" : @anchor.to_adoc.to_s
-          content = Coradoc::Generator.gen_adoc(@content)
+          content = simplify_content(@content)
+          content = Coradoc::Generator.gen_adoc(content)
           "#{@colrowattr}#{@alignattr}#{@style}| #{anchor}#{content}#{@delim}"
         end
       end

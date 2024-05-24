@@ -1,3 +1,4 @@
+require_relative "element/base"
 require_relative "element/title"
 require_relative "element/block"
 require_relative "element/section"
