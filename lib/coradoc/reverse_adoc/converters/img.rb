@@ -62,8 +62,11 @@ module Coradoc::ReverseAdoc
         id = node["id"]
         alt   = node["alt"]
         src   = node["src"]
-        width = node["width"]&.to_i
-        height = node["height"]&.to_i
+        width = node["width"]
+        height = node["height"]
+
+        width = width.to_i if width&.match?(/\A\d+\z/)
+        height = height.to_i if height&.match?(/\A\d+\z/)
 
         title = extract_title(node)
 
