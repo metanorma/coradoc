@@ -28,6 +28,10 @@ OptionParser.new do |opts|
     Coradoc::ReverseAdoc.config.unknown_tags = v
   end
 
+  opts.on("-r", "--require RUBYMODULE", "Require additional Ruby file") do |v|
+    require v
+  end
+
   opts.on("--track-time", "Track time spent on each step") do
     Coradoc::ReverseAdoc.config.track_time = true
   end
