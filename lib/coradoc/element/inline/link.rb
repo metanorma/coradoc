@@ -19,8 +19,10 @@ module Coradoc
           end
           link << if @name.to_s.empty?
                     "[#{@title}]"
-                  else
+                  elsif !@name.to_s.empty?
                     "[#{@name}]"
+                  else
+                    ""
                   end
           link
         end
