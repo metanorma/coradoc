@@ -36,6 +36,26 @@ module Coradoc
               e.name = "th"
             end
 
+            # Convert table/img caption to become a caption
+            @doc.css(".imagedata").each do |e|
+              table = e.parent.next&.children&.first
+              if table&.name == "table"
+                e.name = "caption"
+                table.prepend_child(e)
+                next
+              end
+
+              img = e.parent.previous&.children&.first
+              if img&.name == "img"
+                title = e.text.strip
+                img["title"] = title
+                e.remove
+                next
+              end
+
+              ### We shouldn't be here
+            end
+
             @doc
           end
         end
