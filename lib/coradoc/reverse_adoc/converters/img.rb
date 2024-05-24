@@ -27,7 +27,7 @@ module Coradoc::ReverseAdoc
         images_dir = dest_dir.join("images")
         FileUtils.mkdir_p(images_dir)
 
-        ext, image_src_path = determine_image_src_path(src, imgdata)
+        ext, image_src_path, tempfile = determine_image_src_path(src, imgdata)
         image_dest_path = images_dir + "#{image_number}.#{ext}"
 
         # puts "image_dest_path: #{image_dest_path.to_s}"
@@ -37,6 +37,8 @@ module Coradoc::ReverseAdoc
         image_number_increment
 
         image_dest_path.relative_path_from(dest_dir)
+      ensure
+        tempfile&.close!
       end
 
       def determine_image_src_path(src, imgdata)
@@ -47,14 +49,13 @@ module Coradoc::ReverseAdoc
       end
 
       def copy_temp_file(imgdata)
-        Tempfile.open(["radoc", ".jpg"]) do |f|
-          f.binmode
-          f.write(Base64.strict_decode64(imgdata))
-          f.rewind
-          ext = Marcel::MimeType.for(f).sub(%r{^[^/]+/}, "")
-          ext = "svg" if ext == "svg+xml"
-          [ext, f.path]
-        end
+        f = Tempfile.open(["radoc", ".jpg"])
+        f.binmode
+        f.write(Base64.strict_decode64(imgdata))
+        f.rewind
+        ext = Marcel::MimeType.for(f).sub(%r{^[^/]+/}, "")
+        ext = "svg" if ext == "svg+xml"
+        [ext, f.path, f]
       end
 
       def to_coradoc(node, _state = {})
