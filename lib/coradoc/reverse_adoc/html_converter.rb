@@ -36,28 +36,59 @@ require_relative "converters/tr"
 require_relative "converters/video"
 require_relative "converters/math"
 
-module Coradoc::ReverseAdoc
-  class HtmlConverter
-    def self.to_coradoc(input, options = {})
-      root = case input
-             when String
-               Nokogiri::HTML(input).root
-             when Nokogiri::XML::Document
-               input.root
-             when Nokogiri::XML::Node
-               input
-             end
+module Coradoc
+  module ReverseAdoc
+    class HtmlConverter
+      def self.to_coradoc(input, options = {})
+        ReverseAdoc.config.with(options) do
+          root = track_time "Loading input HTML document" do
+            case input
+            when String
+              Nokogiri::HTML(input).root
+            when Nokogiri::XML::Document
+              input.root
+            when Nokogiri::XML::Node
+              input
+            end
+          end
 
-      return "" unless root
+          return "" unless root
 
-      Coradoc::ReverseAdoc.config.with(options) do
-        Coradoc::ReverseAdoc::Converters.lookup(root.name).to_coradoc(root)
+          track_time "Converting input document tree to Coradoc tree" do
+            Converters.lookup(root.name).to_coradoc(root)
+          end
+        end
       end
-    end
 
-    def self.convert(input, options = {})
-      result = Coradoc::Generator.gen_adoc(to_coradoc(input, options))
-      Coradoc::ReverseAdoc.cleaner.tidy(result)
+      def self.convert(input, options = {})
+        ReverseAdoc.config.with(options) do
+          coradoc = to_coradoc(input)
+          result = track_time "Converting Coradoc tree into Asciidoc" do
+            Coradoc::Generator.gen_adoc(coradoc)
+          end
+          track_time "Cleaning up the result" do
+            ReverseAdoc.cleaner.tidy(result)
+          end
+        end
+      end
+
+      @track_time_indentation = 0
+      def self.track_time(task)
+        if ReverseAdoc.config.track_time
+          warn "  " * @track_time_indentation +
+            "* #{task} is starting..."
+          @track_time_indentation += 1
+          t0 = Time.now
+          ret = yield
+          time_elapsed = Time.now - t0
+          @track_time_indentation -= 1
+          warn "  " * @track_time_indentation +
+            "* #{task} took #{time_elapsed.round(3)} seconds"
+          ret
+        else
+          yield
+        end
+      end
     end
   end
 end
