@@ -6,7 +6,7 @@ describe Coradoc::ReverseAdoc do
   subject { Coradoc::ReverseAdoc.convert(input) }
 
   it {
-    is_expected.to match /\[\[A\]\]\n\|===\n\| \[\[C\]\]header 1 \| header 2 \| header 3\n\n/
+    is_expected.to match /\[\[A\]\]\n\[cols=3\*\]\n\|===\n\| \[\[C\]\]header 1 \| header 2 \| header 3\n\n/
   }
   it {
     is_expected.to match /\nh\| \[\[D\]\]data 1-1 \| data 2-1 \| data 3-1\n/
@@ -27,12 +27,12 @@ describe Coradoc::ReverseAdoc do
   it { is_expected.to match /<\| horizontal left / }
   it { is_expected.to match /\^\| horizontal center / }
   it { is_expected.to match />\| horizontal right\n/ }
-  it { is_expected.to match /\^\.\^\| center middle\n/ }
+  it { is_expected.to match /\^\.\^\| center middle | |\n/ }
 
   it { is_expected.to match /\n\.Table _caption_\n\|===\n/ }
   # it { is_expected.to match /\n\[width=75%\]\n\|===\n\| 75% width table\n/ }
   it {
-    is_expected.to match /\n\[frame=topbot,rules=cols\]\n\|===\n\| topbot\n/
+    is_expected.to match /\n\[frame=topbot,rules=cols,cols=1\*\]\n\|===\n\| topbot\n/
   }
 
   it {
