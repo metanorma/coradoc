@@ -24,6 +24,13 @@ module Coradoc::ReverseAdoc
       @inline_options   = {}
       @tag_border       = " ".freeze
 
+      # Document width - used to compute table sizes.
+      # This is an assumption for screen size in input document.
+      # If column widths are specified in absolute values, then we
+      # have to convert them to relative values, as AsciiDoc only
+      # supports those.
+      @doc_width        = 1000
+
       # Plugin system
       @plugins          = []
 
@@ -56,6 +63,7 @@ module Coradoc::ReverseAdoc
     declare_option :image_counter
     declare_option :image_counter_pattern
     declare_option :input_format
+    declare_option :doc_width
     declare_option :plugins
     declare_option :track_time
   end
