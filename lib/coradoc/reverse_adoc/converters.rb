@@ -13,6 +13,21 @@ module Coradoc::ReverseAdoc
       @@converters[tag_name.to_sym] or default_converter(tag_name)
     end
 
+    # Note: process won't run plugin hooks
+    def self.process(node, state)
+      lookup(node.name).convert(node, state)
+    end
+
+    def self.process_coradoc(node, state)
+      plugins = state[:plugin_instances] || {}
+      process = proc { lookup(node.name).to_coradoc(node, state) }
+      plugins.each do |i|
+        prev_process = process
+        process = proc { i.html_tree_run_hooks(node, state, &prev_process) }
+      end
+      process.(node, state)
+    end
+
     def self.default_converter(tag_name)
       case Coradoc::ReverseAdoc.config.unknown_tags.to_sym
       when :pass_through
