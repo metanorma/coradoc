@@ -68,7 +68,7 @@ module Coradoc
           end
 
           track_time "Converting input document tree to Coradoc tree" do
-            Converters.lookup(root.name).to_coradoc(root)
+            Converters.process(root, plugin_instances: plugin_instances)
           end
         end
       end
