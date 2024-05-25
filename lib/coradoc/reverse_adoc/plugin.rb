@@ -35,6 +35,14 @@ module Coradoc::ReverseAdoc
       end
     end
 
+    def html_tree_change_properties_by_css(css, properties)
+      html_tree.css(css).each do |e|
+        properties.each do |k,v|
+          e[k.to_s] = v
+        end
+      end
+    end
+
     def html_tree_remove_by_css(css)
       html_tree.css(css).each(&:remove)
     end

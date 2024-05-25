@@ -44,6 +44,9 @@ module Coradoc::ReverseAdoc
 
         # Add hooks for H1, H2, H3, H4
         html_tree_add_hook_post_by_css("h1, h2, h3", &method(:handle_headers))
+
+        # Table cells aligned to center
+        html_tree_change_properties_by_css(".tableTopCenter", align: "center")
       end
 
       def handle_headers(node, coradoc, state)
