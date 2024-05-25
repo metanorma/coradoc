@@ -12,6 +12,15 @@ module Coradoc::ReverseAdoc
       end
 
       def preprocess_html_tree
+        # Let's simplify the tree by removing what's extraneous
+        # html_tree_remove_by_css("script, style, img.container_imagebox:not([src])")
+        # html_tree_replace_with_children_by_css("div.container_box")
+        # html_tree_replace_with_children_by_css("div.col.col-12")
+        # html_tree_replace_with_children_by_css(".tabledatatext, .tabledatatextY")
+        # html_tree_replace_with_children_by_css("div.row")
+        #
+        # We can remove that, but it messes up the images and paragraphs.
+
         # Remove side menu, so we can generate TOC ourselves
         html_tree_remove_by_css(".sideMenu")
 
@@ -47,6 +56,56 @@ module Coradoc::ReverseAdoc
 
         # Table cells aligned to center
         html_tree_change_properties_by_css(".tableTopCenter", align: "center")
+
+        # Handle non-semantic lists and definition lists.
+        # Note: we rely here on a fact that they are text nodes. If they weren't
+        # we would need to hook into ReverseAdoc again.
+        html_tree_add_hook_pre_by_css ".text2data" do |node,|
+          warn_if_has_non_text_children(node)
+
+          if node.text.start_with?(/\d+\./)
+            text = node.text.strip.sub(/\A\d+.\s*/, '')
+            ".. #{text}\n"
+          else
+            # A definition term
+            # text = node.text.strip
+            # "\n\n#{text}::\n\n"
+          end
+        end
+
+        # The definitions are not consistent.
+        #
+        # html_tree_add_hook_pre_by_css ".text3data" do |node,|
+        #   warn_if_has_non_text_children(node)
+        #
+        #   # A definition definition
+        #   text = node.text.strip
+        #   "\n  #{text}\n"
+        # end
+
+        html_tree_add_hook_pre_by_css ".text2data_point ul" do |node,|
+          warn_if_has_non_text_children(node, indirect: true)
+
+          text = node.text.strip
+          "** #{text}\n"
+        end
+
+        html_tree_add_hook_pre_by_css ".text3data_point ul" do |node,|
+          warn_if_has_non_text_children(node, indirect: true)
+
+          text = node.text.strip
+          "*** #{text}\n"
+        end
+
+        # html_tree_preview
+      end
+
+      def warn_if_has_non_text_children(node, indirect: true)
+        node = node.children.first if indirect
+        children = node.children.map(&:class)
+        unless children == [Nokogiri::XML::Text] * children.length
+          warn "MUST-DEBUG: #{node['class']} has non-text children: #{node.inspect}"
+        end
       end
 
       def handle_headers(node, coradoc, state)

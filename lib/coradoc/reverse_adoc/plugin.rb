@@ -47,6 +47,19 @@ module Coradoc::ReverseAdoc
       html_tree.css(css).each(&:remove)
     end
 
+    def html_tree_replace_with_children_by_css(css)
+      html_tree.css(css).each do |e|
+        e.replace(e.children)
+      end
+    end
+
+    def html_tree_preview
+      Tempfile.open(%w"coradoc .html") do |i|
+        i << html_tree.to_html
+        system "chromium-browser", "--no-sandbox", i.path
+      end
+    end
+
     # define preprocess_html_tree to process HTML trees
 
     # Creates a hook to be called instead of converting an element
@@ -85,11 +98,8 @@ module Coradoc::ReverseAdoc
       hook_pre = @html_tree_hooks_pre[node]
       hook_post = @html_tree_hooks_post[node]
 
-      coradoc = if hook_pre
-                  hook_pre.(node, state)
-                else
-                  yield node, state
-                end
+      coradoc = hook_pre.(node, state) if hook_pre
+      coradoc ||= yield node, state
 
       if hook_post
         coradoc = hook_post.(node, coradoc, state)
