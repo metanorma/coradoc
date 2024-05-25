@@ -66,17 +66,45 @@ module Coradoc::ReverseAdoc
         rows = node.xpath(".//tr")
         num_rows = rows.length
         computed_columns_per_row = [0] * num_rows
+        # Both those variables may seem the same, but they have a crucial
+        # difference.
+        #
+        # cell_references don't necessarily contain an image of created
+        # table. New cells are pushed to it as needed, so if we have a
+        # one cell with colspan and rowspan of 2 on the previous row,
+        # those will always be first in the row, regardless of their
+        # position. This array is only used to warrant the table
+        # integrity.
+        #
+        # cell_matrix, on the other hand, can't be constructed outright.
+        # It will be incorrect as long as the table isn't fixed. So we
+        # can't use it to correct colspans/rowspans/missing rows. Once
+        # we have it constructed, only then we can calculate the correct
+        # column widths.
         cell_references = [nil] * num_rows
+        cell_matrix = [nil] * num_rows
 
         recompute = proc do
           return ensure_row_column_integrity_and_get_column_sizes(node)
         end
 
+        fits_in_cell_matrix = proc do |y,x,rowspan,colspan|
+          rowspan.times.all? do |yy|
+            colspan.times.all? do |xx|
+              !cell_matrix.dig(y+yy, x+xx)
+            end
+          end
+        end
+
         rows.each_with_index do |row, i|
           columns = row.xpath("./td | ./th")
+          column_id = 0
+
           columns.each do |cell|
             colspan = cell["colspan"]&.to_i || 1
             rowspan = cell["rowspan"]&.to_i || 1
+
+            column_id += 1 until fits_in_cell_matrix.(i,column_id,rowspan,colspan)
 
             rowspan.times do |j|
               # Let's increase the table for particularly bad documents
@@ -84,10 +112,15 @@ module Coradoc::ReverseAdoc
               computed_columns_per_row[i + j] += colspan
 
               cell_references[i + j] ||= []
+              cell_matrix[i + j] ||= []
               colspan.times do |k|
                 cell_references[i + j] << [cell, k > 0]
+                cell_matrix[i + j][column_id] = cell
+                column_id += 1
               end
+              column_id -= colspan
             end
+            column_id += colspan
           end
         end
 
@@ -143,13 +176,31 @@ module Coradoc::ReverseAdoc
 
           ### We should have a correct document now and we should never
           ### end up here.
+          warn "**** Couldn't fix table sizes for table on line #{node.line}"
+        end
+
+        # For column size computation, we must have an integral cell_matrix.
+        # Let's verify that all columns and rows are populated.
+        cell_matrix_correct = cell_matrix.length.times.all? do |y|
+          cell_matrix[y].length.times.all? do |x|
+            cell_matrix[y][x]
+          end
+        end
+
+        unless cell_matrix_correct
+          warn <<~WARNING.gsub("\n", " ")
+            **** Couldn't construct a valid image of a table on line
+            #{node.line}. We need that to reliably compute column
+            widths of that table. Please report a bug to metanorma/coradoc
+            repository.
+          WARNING
         end
 
         # Compute column sizes
         column_sizes = []
-        cell_references.each do |row|
+        cell_matrix.each do |row|
           row.each_with_index do |(cell,_), i|
-            next unless [nil, "", "1"].include? cell["colspan"]
+            next unless !cell || [nil, "", "1"].include?(cell["colspan"])
 
             column_sizes[i] ||= []
             column_sizes[i] << cell["width"]
