@@ -1,7 +1,7 @@
 module Coradoc
   module Element
     class Title
-      attr_reader :id, :content, :line_break
+      attr_accessor :id, :content, :line_break, :style
 
       def initialize(content, level, options = {})
         @level_int = level
@@ -10,6 +10,7 @@ module Coradoc
         @id = options.fetch(:id, nil)
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
         @line_break = options.fetch(:line_break, "")
+        @style = options.fetch(:style, nil)
       end
 
       def level
@@ -20,7 +21,8 @@ module Coradoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         content = Coradoc::Generator.gen_adoc(@content)
         level_str = "=" * (@level_int + 1)
-        ["\n", anchor, level_str, " ", content, "\n"].join("")
+        style_str = "[#{@style}]\n" if style
+        ["\n", anchor, style_str, level_str, " ", content, "\n"].join("")
       end
 
       alias :text :content
