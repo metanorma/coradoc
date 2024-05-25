@@ -8,6 +8,7 @@ module Coradoc::ReverseAdoc
         Coradoc::Generator.gen_adoc(to_coradoc(node, state))
       end
 
+      # Note: treat_children won't run plugin hooks
       def treat_children(node, state)
         node.children.inject("") do |memo, child|
           memo << treat(child, state)
@@ -15,7 +16,7 @@ module Coradoc::ReverseAdoc
       end
 
       def treat(node, state)
-        Coradoc::ReverseAdoc::Converters.lookup(node.name).convert(node, state)
+        Converters.process(node, state)
       end
 
       def treat_children_coradoc(node, state)
@@ -25,7 +26,7 @@ module Coradoc::ReverseAdoc
       end
 
       def treat_coradoc(node, state)
-        Coradoc::ReverseAdoc::Converters.lookup(node.name).to_coradoc(node, state)
+        Converters.process_coradoc(node, state)
       end
 
       def escape_keychars(string)
