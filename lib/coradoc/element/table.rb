@@ -50,7 +50,7 @@ module Coradoc
       end
 
       class Cell < Base
-        attr_reader :anchor
+        attr_accessor :content, :anchor, :id, :colrowattr, :alignattr, :style
 
         def initialize(options = {})
           super()
