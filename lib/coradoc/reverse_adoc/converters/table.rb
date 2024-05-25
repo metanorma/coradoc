@@ -53,8 +53,8 @@ module Coradoc::ReverseAdoc
         rules_attr = rules(node)
         attrs.add_named("rules", rules_attr) if rules_attr
 
-        cols = ensure_row_column_integrity_and_get_column_number(node)
-        attrs.add_named("cols", "#{cols}*")
+        cols = ensure_row_column_integrity_and_get_column_sizes(node)
+        attrs.add_named("cols", cols)
 
         # This line should be removed.
         return "" if attrs.empty?
@@ -62,14 +62,14 @@ module Coradoc::ReverseAdoc
         attrs
       end
 
-      def ensure_row_column_integrity_and_get_column_number(node)
+      def ensure_row_column_integrity_and_get_column_sizes(node)
         rows = node.xpath(".//tr")
         num_rows = rows.length
         computed_columns_per_row = [0] * num_rows
         cell_references = [nil] * num_rows
 
         recompute = proc do
-          return ensure_row_column_integrity_and_get_column_number(node)
+          return ensure_row_column_integrity_and_get_column_sizes(node)
         end
 
         rows.each_with_index do |row, i|
@@ -145,7 +145,76 @@ module Coradoc::ReverseAdoc
           ### end up here.
         end
 
-        computed_columns_per_row.first
+        # Compute column sizes
+        column_sizes = []
+        cell_references.each do |row|
+          row.each_with_index do |(cell,_), i|
+            next unless [nil, "", "1"].include? cell["colspan"]
+
+            column_sizes[i] ||= []
+            column_sizes[i] << cell["width"]
+          end
+        end
+
+        document_width = Coradoc::ReverseAdoc.config.doc_width.to_r
+
+        column_sizes += [nil] * (cpr.first - column_sizes.length)
+
+        sizes = column_sizes.map do |col|
+          col = [] if col.nil?
+
+          max = col.map do |i|
+            if i.nil?
+              0r
+            elsif i.end_with?("%")
+              document_width * i.to_i / 100
+            else
+              i.to_r
+            end
+          end.max
+
+          if max.nil? || max.negative?
+            0r
+          else
+            max
+          end
+        end
+
+        # The table seems bigger than the document... let's scale all
+        # values.
+        while sizes.map { |i|
+                          i.zero? ? document_width / 3 / sizes.length : i
+                        }.sum > document_width
+
+          sizes = sizes.map { |i| i * 4 / 5 }
+        end
+
+        rest = document_width - sizes.sum
+        unset = sizes.count(&:zero?)
+
+        # Fill in zeros with remainder space
+        sizes = sizes.map do |i|
+          if i.zero?
+            rest / unset
+          else
+            i
+          end
+        end
+
+        # Scale to integers
+        lcm = sizes.map(&:denominator).inject(1) { |i,j| i.lcm(j) }
+        sizes = sizes.map { |i| i * lcm }.map(&:to_i)
+
+        # Scale down by gcd
+        gcd = sizes.inject(sizes.first) { |i,j| i.gcd(j) }
+        sizes = sizes.map { |i| i / gcd }
+
+        # Try to generate a shorter definition
+        if [sizes.first] * sizes.length == sizes
+          sizes.length
+        else
+          sizes.join(",")
+        end
       end
     end
 
