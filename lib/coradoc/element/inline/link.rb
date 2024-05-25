@@ -17,12 +17,19 @@ module Coradoc
           unless @path.to_s&.match?(URI::DEFAULT_PARSER.make_regexp)
             link = "link:#{link}"
           end
-          link << if @name.to_s.empty?
+
+          name_empty = @name.to_s.empty?
+          title_empty = @title.to_s.empty?
+          valid_empty_name_link = link.start_with?(%r{https?://})
+
+          link << if name_empty && !title_empty
                     "[#{@title}]"
-                  elsif !@name.to_s.empty?
+                  elsif !name_empty
                     "[#{@name}]"
-                  else
+                  elsif valid_empty_name_link
                     ""
+                  else
+                    "[]"
                   end
           link
         end
