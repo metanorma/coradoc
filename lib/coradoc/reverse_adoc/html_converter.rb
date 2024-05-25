@@ -40,7 +40,10 @@ module Coradoc
   module ReverseAdoc
     class HtmlConverter
       def self.to_coradoc(input, options = {})
+        plugin_instances = options.delete(:plugin_instances)
         ReverseAdoc.config.with(options) do
+          plugin_instances ||= Coradoc::ReverseAdoc.config.plugins.map(&:new)
+
           root = track_time "Loading input HTML document" do
             case input
             when String
@@ -54,14 +57,14 @@ module Coradoc
 
           return "" unless root
 
-          if pc = ReverseAdoc.config.processor
-            if defined? pc::Preprocessor
-              preprocessor = pc::Preprocessor
-
-              root = track_time "Preprocessing document" do
-                preprocessor.(root)
+          plugin_instances.each do |plugin|
+            plugin.html_tree = root
+            if plugin.respond_to?(:preprocess_html_tree)
+              track_time "Preprocessing document with #{plugin.name} plugin" do
+                plugin.preprocess_html_tree
               end
             end
+            root = plugin.html_tree
           end
 
           track_time "Converting input document tree to Coradoc tree" do
@@ -72,7 +75,11 @@ module Coradoc
 
       def self.convert(input, options = {})
         ReverseAdoc.config.with(options) do
-          coradoc = to_coradoc(input)
+          plugin_instances = Coradoc::ReverseAdoc.config.plugins.map(&:new)
+
+          options = options.merge(plugin_instances: plugin_instances)
+
+          coradoc = to_coradoc(input, options)
           result = track_time "Converting Coradoc tree into Asciidoc" do
             Coradoc::Generator.gen_adoc(coradoc)
           end
