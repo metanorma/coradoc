@@ -1,7 +1,9 @@
 module Coradoc
   module Element
-    class Author
-      attr_reader :email, :last_name, :first_name
+    class Author < Base
+      attr_accessor :email, :last_name, :first_name
+
+      declare_children :email, :last_name, :first_name
 
       def initialize(first_name, last_name, email, middle_name = nil)
         @first_name = first_name

@@ -1,7 +1,9 @@
 module Coradoc
   module Element
-    class Title
-      attr_accessor :id, :content, :line_break, :style
+    class Title < Base
+      attr_accessor :id, :content, :line_break, :style, :level_int
+
+      declare_children :id, :content
 
       def initialize(content, level, options = {})
         @level_int = level

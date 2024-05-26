@@ -2,7 +2,7 @@ module Coradoc
   module Element
     module List
       class Definition < Core
-        attr_reader :items, :delimiter
+        attr_accessor :items, :delimiter
 
         def initialize(items, options = {})
           @items = items

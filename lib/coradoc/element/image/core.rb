@@ -1,8 +1,10 @@
 module Coradoc
   module Element
     module Image
-      class Core
-        attr_reader :title, :id, :src, :attributes
+      class Core < Base
+        attr_accessor :title, :id, :src, :attributes
+
+        declare_children :id, :src, :title, :attributes
 
         def initialize(title, id, src, options = {})
           @title = title

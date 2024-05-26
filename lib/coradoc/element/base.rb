@@ -34,6 +34,45 @@ module Coradoc
           content
         end
       end
+
+      def self.declare_children(*children)
+        @children = (@children || []).dup + children
+      end
+
+      def self.visit(element, &block)
+        element = yield element, :pre
+        element = if element.respond_to? :visit
+                    element.visit(&block)
+                  elsif element.is_a? Array
+                    element.map { |child| visit(child, &block) }.flatten.compact
+                  elsif element.is_a? Hash
+                    element.to_h do |k, v|
+                      [visit(k, &block), visit(v, &block)]
+                    end
+                  else
+                    element
+                  end
+        yield element, :post
+      end
+
+      def self.children_accessors
+        @children || []
+      end
+
+      def children_accessors
+        self.class.children_accessors
+      end
+
+      def visit(&block)
+        children_accessors.each do |accessor|
+          child = public_send(accessor)
+          result = self.class.visit(child, &block)
+          if result != child
+            public_send(:"#{accessor}=", result)
+          end
+        end
+        self
+      end
     end
   end
 end

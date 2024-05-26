@@ -1,7 +1,9 @@
 module Coradoc
   module Element
-    class Revision
-      attr_reader :number, :date, :remark
+    class Revision < Base
+      attr_accessor :number, :date, :remark
+
+      declare_children :number, :date, :remark
 
       def initialize(number, options = {})
         @number = number

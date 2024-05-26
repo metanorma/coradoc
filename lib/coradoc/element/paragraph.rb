@@ -1,7 +1,9 @@
 module Coradoc
   module Element
-    class Paragraph
-      attr_reader :content, :anchor, :tdsinglepara
+    class Paragraph < Base
+      attr_accessor :content, :anchor, :tdsinglepara
+
+      declare_children :content, :anchor
 
       def initialize(content, options = {})
         @content = content

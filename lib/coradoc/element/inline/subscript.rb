@@ -1,8 +1,10 @@
 module Coradoc
   module Element
     module Inline
-      class Subscript
+      class Subscript < Base
         attr_accessor :content
+
+        declare_children :content
 
         def initialize(content)
           @content = content

@@ -1,7 +1,9 @@
 module Coradoc
   module Element
-    class Header
-      attr_reader :title, :author, :revision
+    class Header < Base
+      attr_accessor :title, :author, :revision
+
+      declare_children :title
 
       def initialize(title, options = {})
         @title = title

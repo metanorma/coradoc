@@ -1,7 +1,7 @@
 module Coradoc
   module Element
-    class Admonition
-      attr_reader :type, :content, :line_break
+    class Admonition < Base
+      attr_accessor :type, :content, :line_break
 
       def initialize(content, type, options = {})
         @content = content
