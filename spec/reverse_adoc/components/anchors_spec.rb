@@ -33,4 +33,6 @@ describe Coradoc::ReverseAdoc do
   it { is_expected.to include "[[a_bspaced]]" }
   it { is_expected.to include "[[a_Foreword]]\n== Text" }
   it { is_expected.not_to include "[[_Toc12345]]" }
+
+  it { is_expected.to include "convert a link directly to text: https://example.com/directly_to_text if both" }
 end
