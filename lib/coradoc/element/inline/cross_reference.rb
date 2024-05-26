@@ -1,8 +1,10 @@
 module Coradoc
   module Element
     module Inline
-      class CrossReference
-        attr_reader :href, :name
+      class CrossReference < Base
+        attr_accessor :href, :name
+
+        declare_children :href, :name
 
         def initialize(href, name = nil)
           @href = href

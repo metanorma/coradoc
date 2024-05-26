@@ -1,7 +1,7 @@
 module Coradoc
   module Element
-    class Attribute
-      attr_reader :key, :value
+    class Attribute < Base
+      attr_accessor :key, :value
 
       def initialize(key, value, _options = {})
         @key = key.to_s

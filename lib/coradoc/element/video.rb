@@ -1,7 +1,9 @@
 module Coradoc
   module Element
-    class Video
-      attr_reader :id, :title, :src, :options
+    class Video < Base
+      attr_accessor :id, :title, :src, :options
+
+      declare_children :id, :anchor, :attributes
 
       def initialize(title, options = {})
         @title = title

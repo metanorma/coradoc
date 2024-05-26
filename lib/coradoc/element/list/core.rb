@@ -4,8 +4,10 @@ require_relative "core"
 module Coradoc
   module Element
     module List
-      class Core
-        attr_reader :items, :prefix, :id, :ol_count, :anchor
+      class Core < Base
+        attr_accessor :items, :prefix, :id, :ol_count, :anchor
+
+        declare_children :items, :anchor, :id
 
         def initialize(items, options = {})
           @items = items

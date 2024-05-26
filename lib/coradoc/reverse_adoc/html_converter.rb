@@ -67,8 +67,12 @@ module Coradoc
             root = plugin.html_tree
           end
 
-          track_time "Converting input document tree to Coradoc tree" do
-            Converters.process(root, plugin_instances: plugin_instances)
+          coradoc = track_time "Converting input document tree to Coradoc tree" do
+            Converters.process_coradoc(root, plugin_instances: plugin_instances)
+          end
+
+          track_time "Post-process Coradoc tree" do
+            Postprocessor.process(coradoc)
           end
         end
       end

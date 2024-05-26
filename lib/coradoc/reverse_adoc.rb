@@ -10,6 +10,8 @@ require_relative "reverse_adoc/converters"
 require_relative "reverse_adoc/converters/base"
 require_relative "reverse_adoc/html_converter"
 require_relative "reverse_adoc/plugin"
+require_relative "reverse_adoc/postprocessor"
+
 
 module Coradoc::ReverseAdoc
   def self.convert(input, options = {})

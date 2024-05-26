@@ -1,7 +1,9 @@
 module Coradoc
   module Element
-    class Table
-      attr_reader :title, :rows, :content, :id
+    class Table < Base
+      attr_accessor :title, :rows, :content, :id
+
+      declare_children :title, :rows, :id
 
       def initialize(title, rows, options = {})
         @rows = rows
@@ -20,8 +22,10 @@ module Coradoc
         "\n\n#{anchor}#{attrs}#{title}|===\n" << content << "\n|===\n"
       end
 
-      class Row
-        attr_reader :columns, :header
+      class Row < Base
+        attr_accessor :columns, :header
+
+        declare_children :columns
 
         def initialize(columns, header = false)
           @columns = columns
@@ -51,6 +55,8 @@ module Coradoc
 
       class Cell < Base
         attr_accessor :content, :anchor, :id, :colrowattr, :alignattr, :style
+
+        declare_children :content, :anchor, :id
 
         def initialize(options = {})
           super()
