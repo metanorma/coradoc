@@ -3,8 +3,10 @@ require_relative "../inline/anchor"
 module Coradoc
   module Element
     module Block
-      class Core
-        attr_reader :title, :lines, :attributes, :lang, :id
+      class Core < Base
+        attr_accessor :title, :lines, :attributes, :lang, :id
+
+        declare_children :title, :lines, :attributes, :lang, :id
 
         def initialize(title, options = {})
           @title = title

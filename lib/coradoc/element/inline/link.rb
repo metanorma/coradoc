@@ -3,8 +3,10 @@ require "uri"
 module Coradoc
   module Element
     module Inline
-      class Link
-        attr_reader :path, :title, :name
+      class Link < Base
+        attr_accessor :path, :title, :name
+
+        declare_children :path, :title, :name
 
         def initialize(options = {})
           @path = options.fetch(:path, nil)

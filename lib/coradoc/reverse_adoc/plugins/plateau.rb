@@ -31,6 +31,11 @@ module Coradoc::ReverseAdoc
         html_tree_change_tag_name_by_css(".sitemdata", "h4")
         html_tree_change_tag_name_by_css('td[bgcolor="#D0CECE"]', "th")
 
+        # Remove some CSS ids that are not important to us
+        html_tree_change_properties_by_css("#__nuxt", id: nil)
+        html_tree_change_properties_by_css("#__layout", id: nil)
+        html_tree_change_properties_by_css("#app", id: nil)
+
         # Convert table/img caption to become a caption
         html_tree.css(".imagedata").each do |e|
           table = e.parent.next&.children&.first

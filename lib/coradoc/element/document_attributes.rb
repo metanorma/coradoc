@@ -1,7 +1,9 @@
 module Coradoc
   module Element
-    class DocumentAttributes
-      attr_reader :data
+    class DocumentAttributes < Base
+      attr_accessor :data
+
+      declare_children :data
 
       def initialize(data = {}, options = {})
         @data = data

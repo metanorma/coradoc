@@ -1,8 +1,10 @@
 module Coradoc
   module Element
     module Inline
-      class Quotation
+      class Quotation < Base
         attr_accessor :content
+
+        declare_children :content
 
         def initialize(content)
           @content = content

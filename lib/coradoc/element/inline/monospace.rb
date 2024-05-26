@@ -1,8 +1,10 @@
 module Coradoc
   module Element
     module Inline
-      class Monospace
+      class Monospace < Base
         attr_accessor :content, :constrained
+
+        declare_children :content
 
         def initialize(content, unconstrained: true)
           @content = content

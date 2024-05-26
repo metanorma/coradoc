@@ -1,7 +1,9 @@
 module Coradoc
   module Element
-    class AttributeList
-      attr_reader :positional, :named, :rejected_positional, :rejected_named
+    class AttributeList < Base
+      attr_accessor :positional, :named, :rejected_positional, :rejected_named
+
+      declare_children :positional, :named
 
       def initialize(*positional, **named)
         @positional = positional || []

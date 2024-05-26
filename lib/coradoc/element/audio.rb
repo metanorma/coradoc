@@ -1,7 +1,9 @@
 module Coradoc
   module Element
-    class Audio
-      attr_reader :id, :title, :src, :options, :anchor
+    class Audio < Base
+      attr_accessor :id, :title, :src, :options, :anchor, :attributes
+
+      declare_children :id, :title, :anchor, :attributes
 
       def initialize(title, options = {})
         @title = title

@@ -1,7 +1,9 @@
 module Coradoc
   module Element
-    class ListItemDefinition
-      attr_reader :id, :terms, :contents
+    class ListItemDefinition < Base
+      attr_accessor :id, :terms, :contents
+
+      declare_children :id, :terms, :contents
 
       def initialize(terms, contents, options = {})
         @terms = terms

@@ -1,8 +1,10 @@
 module Coradoc
   module Element
     module Inline
-      class Bold
+      class Bold < Base
         attr_accessor :content, :unconstrained
+
+        declare_children :content
 
         def initialize(content, unconstrained: true)
           @content = content

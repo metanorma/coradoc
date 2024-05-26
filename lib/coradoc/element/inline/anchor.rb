@@ -1,8 +1,10 @@
 module Coradoc
   module Element
     module Inline
-      class Anchor
-        attr_reader :id
+      class Anchor < Base
+        attr_accessor :id
+
+        declare_children :id
 
         def initialize(id)
           @id = id
