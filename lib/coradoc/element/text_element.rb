@@ -12,7 +12,49 @@ module Coradoc
       end
 
       def to_adoc
-        Coradoc::Generator.gen_adoc(@content)
+        Coradoc::Generator.gen_adoc(treat_text_to_adoc(@content))
+      end
+
+      def treat_text_to_adoc(text)
+        text = preserve_nbsp(text)
+        text = remove_border_newlines(text)
+        text = remove_inner_newlines(text)
+        text = self.class.escape_keychars(text)
+
+        text = preserve_keychars_within_backticks(text)
+        escape_links(text)
+      end
+
+      def preserve_nbsp(text)
+        text.gsub(/\u00A0/, "&nbsp;")
+      end
+
+      def escape_links(text)
+        text.gsub(/<<([^>]*)>>/, "\\<<\\1>>")
+      end
+
+      def remove_border_newlines(text)
+        text.gsub(/\A\n+/, "").gsub(/\n+\z/, "")
+      end
+
+      def remove_inner_newlines(text)
+        text.tr("\n\t", " ").squeeze(" ")
+      end
+
+      def preserve_keychars_within_backticks(text)
+        text.gsub(/`.*?`/) do |match|
+          match.gsub('\_', "_").gsub('\*', "*")
+        end
+      end
+
+      def self.escape_keychars(string)
+        subs = { "*" => '\*', "_" => '\_' }
+        string
+          .gsub(/((?<=\s)[\*_]+)|[\*_]+(?=\s)/) do |n|
+          n.chars.map do |char|
+            subs[char]
+          end.join
+        end
       end
     end
 
