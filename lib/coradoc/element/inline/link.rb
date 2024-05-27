@@ -4,7 +4,7 @@ module Coradoc
   module Element
     module Inline
       class Link < Base
-        attr_accessor :path, :title, :name
+        attr_accessor :path, :title, :name, :right_constrain
 
         declare_children :path, :title, :name
 
@@ -12,6 +12,7 @@ module Coradoc
           @path = options.fetch(:path, nil)
           @title = options.fetch(:title, nil)
           @name = options.fetch(:name, nil)
+          @right_constrain = options.fetch(:right_constrain, false)
         end
 
         def to_adoc
@@ -28,7 +29,7 @@ module Coradoc
                     "[#{@title}]"
                   elsif !name_empty
                     "[#{@name}]"
-                  elsif valid_empty_name_link
+                  elsif valid_empty_name_link && !right_constrain
                     ""
                   else
                     "[]"
