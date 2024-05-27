@@ -30,7 +30,7 @@ module Coradoc
       end
 
       def escape_links(text)
-        text.gsub(/<<([^>]*)>>/, "\\<<\\1>>")
+        text.gsub(/<<([^ ][^>]*)>>/, "\\<<\\1>>")
       end
 
       def remove_border_newlines(text)
