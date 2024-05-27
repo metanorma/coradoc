@@ -84,12 +84,82 @@ describe Coradoc::ReverseAdoc::Plugin do
       it { should include "olleh" }
     end
 
+    context "#html_tree_process_to_adoc" do
+      let(:code) do -> {
+        html_tree_add_hook_pre_by_css "div" do |node, _|
+          td = node.at_css('td')
+          td.children.first.content = td.text.reverse
+          html_tree_process_to_adoc(node)
+        end
+      } end
+
+      it { should_not include "hello" }
+      it { should include "olleh" }
+      it { should include "|===" }
+    end
+
+    context "#html_tree_process_to_coradoc" do
+      let(:code) do -> {
+        html_tree_add_hook_pre_by_css "td" do |node, _|
+          node.children.first.content = node.text.reverse
+          coradoc = html_tree_process_to_coradoc(node)
+          coradoc.content.first.content.upcase!
+          coradoc
+        end
+      } end
+
+      it { should_not include "hello" }
+      it { should include "OLLEH" }
+      it { should include "|===" }
+    end
+
     context "#html_tree_add_hook_post_by_css" do
       let(:code) do -> {
         html_tree_add_hook_post_by_css "td" do |_, coradoc, _|
           coradoc.alignattr = ".>"
           coradoc
         end
+      } end
+
+      it { should include ".>|" }
+    end
+  end
+
+  context "#postprocess_coradoc_tree" do
+    let(:plugin) do
+      c = code
+      described_class.new do
+        define_method(:postprocess_coradoc_tree) { instance_exec(&c) }
+      end
+    end
+
+    context "visitor pattern" do
+      let(:code) do -> {
+        self.coradoc_tree = Coradoc::Element::Base.visit(coradoc_tree) do |elem,_dir|
+          if elem.is_a? Coradoc::Element::Table::Cell
+            elem.alignattr = ".>"
+            elem
+          else
+            elem
+          end
+        end
+      } end
+
+      it { should include ".>|" }
+    end
+  end
+
+  context "#postprocess_asciidoc_string" do
+    let(:plugin) do
+      c = code
+      described_class.new do
+        define_method(:postprocess_asciidoc_string) { instance_exec(&c) }
+      end
+    end
+
+    context "replacement" do
+      let(:code) do -> {
+        self.asciidoc_string = asciidoc_string.gsub("|", ".>|")
       } end
 
       it { should include ".>|" }
