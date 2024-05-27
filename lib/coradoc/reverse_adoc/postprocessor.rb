@@ -33,12 +33,10 @@ module Coradoc::ReverseAdoc
     # creating meaningful sections
     def generate_meaningful_sections
       @tree = Coradoc::Element::Base.visit(@tree) do |elem, dir|
-        # We are searching for an array, that has more than 2 elements and
-        # one of those elements is a title. This will be a candidate for
-        # our section array.
+        # We are searching for an array, that has a title. This
+        # will be a candidate for our section array.
         if dir == :post &&
             elem.is_a?(Array) &&
-            elem.length >= 2 &&
             !elem.grep(Coradoc::Element::Title).empty?
 
           new_array = []
@@ -123,7 +121,7 @@ module Coradoc::ReverseAdoc
 
             sections[section_file] = elem
             up = "../" * (title.level_int - 1)
-            "include::#{up}#{section_file}[]\n\n"
+            "\ninclude::#{up}#{section_file}[]\n"
           end
         else
           elem
