@@ -74,6 +74,66 @@ module Coradoc::ReverseAdoc
       end
     end
 
+    def split_sections
+      max_level = Coradoc::ReverseAdoc.config.split_sections
+
+      return unless max_level
+
+      sections = {}
+      parent_sections = []
+      previous_sections = {}
+
+      determine_section_id = ->(elem) do
+        level = 0
+        section = elem
+        while section
+          level += 1 if elem.title.style == section.title.style
+          section = previous_sections[section]
+        end
+        level
+      end
+
+      determine_style = ->(elem) do
+        style = elem.title.style || "section"
+        style += "-"
+        style
+      end
+
+      @tree = Coradoc::Element::Base.visit(@tree) do |elem, dir|
+        title = elem.title if elem.is_a?(Coradoc::Element::Section)
+
+        if title && title.level_int <= max_level
+          if dir == :pre
+            # In the PRE pass, we build a tree of sections, so that
+            # we can compute numbers
+            previous_sections[elem] = parent_sections[title.level_int]
+            parent_sections[title.level_int] = elem
+            parent_sections[(title.level_int+1)..nil] = nil
+
+            elem
+          else
+            # In the POST pass, we replace the sections with their
+            # include tag.
+            section_file = "sections/"
+            section_file += parent_sections[1..title.level_int].map do |parent|
+              style = determine_style.(parent)
+              "%s%02d" % [style, determine_section_id.(parent)]
+            end.join("/")
+            section_file += ".adoc"
+
+            sections[section_file] = elem
+            up = "../" * (title.level_int - 1)
+            "include::#{up}#{section_file}[]\n\n"
+          end
+        else
+          elem
+        end
+      end
+
+      sections[nil] = @tree
+      @tree = sections
+    end
+
     def process
       collapse_meaningless_sections
       generate_meaningful_sections
@@ -81,6 +141,8 @@ module Coradoc::ReverseAdoc
       # Since the structure is changed, we may have new meaningful
       # sections as only children of some meaningless sections.
       collapse_meaningless_sections
+
+      split_sections
 
       @tree
     end
