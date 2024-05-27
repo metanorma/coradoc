@@ -24,15 +24,20 @@ module Coradoc::ReverseAdoc
 
         return name if href.to_s.empty?
 
+        ambigous_characters = /[\w.?&#=%;\[\u{ff}-\u{10ffff}]/
         if name&.strip == href
           name = ""
+          right_constrain = textnode_after_start_with?(node, ambigous_characters)
         end
 
         out = []
-        out << " " if unconstrained_before?(node)
-        out << Coradoc::Element::Inline::Link.new(path: href,
-                                                  name: name.strip,
-                                                  title: title.strip)
+        out << " " if textnode_before_end_with?(node, ambigous_characters)
+        out << Coradoc::Element::Inline::Link.new(
+          path: href,
+          name: name.strip,
+          title: title.strip,
+          right_constrain: right_constrain,
+        )
         out
       end
     end
