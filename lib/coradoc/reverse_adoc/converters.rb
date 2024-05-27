@@ -15,10 +15,16 @@ module Coradoc::ReverseAdoc
 
     # Note: process won't run plugin hooks
     def self.process(node, state)
+      node = node.to_a if node.is_a? Nokogiri::XML::NodeSet
+      return node.map { |i| process(i, state) }.join if node.is_a? Array
+
       lookup(node.name).convert(node, state)
     end
 
     def self.process_coradoc(node, state)
+      node = node.to_a if node.is_a? Nokogiri::XML::NodeSet
+      return node.map { |i| process_coradoc(i, state) } if node.is_a? Array
+
       plugins = state[:plugin_instances] || {}
       process = proc { lookup(node.name).to_coradoc(node, state) }
       plugins.each do |i|

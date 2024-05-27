@@ -53,6 +53,14 @@ module Coradoc::ReverseAdoc
       end
     end
 
+    def html_tree_process_to_coradoc(tree, state={})
+      Coradoc::ReverseAdoc::Converters.process_coradoc(tree, state)
+    end
+
+    def html_tree_process_to_adoc(tree, state={})
+      Coradoc::ReverseAdoc::Converters.process(tree, state)
+    end
+
     def html_tree_preview
       Tempfile.open(%w"coradoc .html") do |i|
         i << html_tree.to_html
@@ -107,5 +115,17 @@ module Coradoc::ReverseAdoc
 
       coradoc
     end
+
+    #### Coradoc tree functionalities
+
+    attr_accessor :coradoc_tree
+
+    # define postprocess_coradoc_tree to change coradoc tree
+
+    #### AsciiDoc string functionalities
+
+    attr_accessor :asciidoc_string
+
+    # define postprocess_asciidoc_string to change the coradoc string
   end
 end

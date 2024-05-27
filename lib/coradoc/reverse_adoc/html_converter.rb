@@ -71,9 +71,21 @@ module Coradoc
             Converters.process_coradoc(root, plugin_instances: plugin_instances)
           end
 
-          track_time "Post-process Coradoc tree" do
+          coradoc = track_time "Post-process Coradoc tree" do
             Postprocessor.process(coradoc)
           end
+
+          plugin_instances.each do |plugin|
+            if plugin.respond_to?(:postprocess_coradoc_tree)
+              plugin.coradoc_tree = coradoc
+              track_time "Postprocessing Coradoc tree with #{plugin.name} plugin" do
+                plugin.postprocess_coradoc_tree
+              end
+              coradoc = plugin.coradoc_tree
+            end
+          end
+
+          coradoc
         end
       end
 
@@ -87,9 +99,19 @@ module Coradoc
           result = track_time "Converting Coradoc tree into Asciidoc" do
             Coradoc::Generator.gen_adoc(coradoc)
           end
-          track_time "Cleaning up the result" do
+          result = track_time "Cleaning up the result" do
             ReverseAdoc.cleaner.tidy(result)
           end
+          plugin_instances.each do |plugin|
+            if plugin.respond_to?(:postprocess_asciidoc_string)
+              plugin.asciidoc_string = result
+              track_time "Postprocessing AsciiDoc string with #{plugin.name} plugin" do
+                plugin.postprocess_asciidoc_string
+              end
+              result = plugin.asciidoc_string
+            end
+          end
+          result
         end
       end
 
