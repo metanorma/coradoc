@@ -54,6 +54,7 @@ module Coradoc::ReverseAdoc
           end
 
           ### We shouldn't be here
+          warn "Unhandled imagedata #{e} at line #{e.line}"
         end
 
         # Add hooks for H1, H2, H3, H4
@@ -111,7 +112,7 @@ module Coradoc::ReverseAdoc
         if coradoc.id.start_with?("toc0_")
           content = coradoc.content.map(&:content).join
           # Special content
-          case content
+          case content.strip
           when "はじめに" # Introduction
             coradoc.style = "abstract" # The older version document has ".preface"
           when "改定の概要" # Revision overview
@@ -121,7 +122,7 @@ module Coradoc::ReverseAdoc
           when "改訂履歴" # Document history
             coradoc.style = "appendix"
           else
-            warn "Unknown section #{coradoc.content.content}"
+            warn "Unknown section #{coradoc.content.map(&:content).join.inspect}"
           end
 
           # Ensure they are generated as level 1
@@ -137,6 +138,7 @@ module Coradoc::ReverseAdoc
       def postprocess_asciidoc_string
         str = self.asciidoc_string
 
+        ### Custom indentation handling
         # If there's a step up, add [none]
         str = str.gsub(%r{\s+//-ENDPT2D\s+//-PT3D\s+}, "\n[none]\n")
         str = str.gsub(%r{\s+//-ENDPT2D\s+//-PT4D\s+}, "\n[none]\n")
