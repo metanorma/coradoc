@@ -46,10 +46,25 @@ module Coradoc::ReverseAdoc
       end
 
       def textnode_before_end_with?(node, str)
-        return nil if !str.is_a?(String) || str.empty?
+        return nil unless [String, Regexp].include?(str.class)
+        return nil if str.is_a?(String) && str.empty?
+
+        str = /#{Regexp.escape(str)}/ if str.is_a?(String)
+        str = /(?:#{str})\z/
 
         node2 = node.at_xpath("preceding-sibling::node()[1]")
-        node2.respond_to?(:text) && node2.text.end_with?(str)
+        node2.respond_to?(:text) && node2.text.match?(str)
+      end
+
+      def textnode_after_start_with?(node, str)
+        return nil unless [String, Regexp].include?(str.class)
+        return nil if str.is_a?(String) && str.empty?
+
+        str = /#{Regexp.escape(str)}/ if str.is_a?(String)
+        str = /\A(?:#{str})/
+
+        node2 = node.at_xpath("following-sibling::node()[1]")
+        node2.respond_to?(:text) && node2.text.match?(str)
       end
 
       def extract_leading_trailing_whitespace(node)
