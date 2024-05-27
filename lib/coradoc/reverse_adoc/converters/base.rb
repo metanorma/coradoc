@@ -29,18 +29,10 @@ module Coradoc::ReverseAdoc
         Converters.process_coradoc(node, state)
       end
 
-      def escape_keychars(string)
-        subs = { "*" => '\*', "_" => '\_' }
-        string
-          .gsub(/((?<=\s)[\*_]+)|[\*_]+(?=\s)/) do |n|
-          n.chars.map do |char|
-            subs[char]
-          end.join
-        end
-      end
-
       def extract_title(node)
-        title = escape_keychars(node["title"].to_s)
+        title = Coradoc::Element::TextElement.escape_keychars(
+          node["title"].to_s,
+        )
         title.empty? ? "" : %[ #{title}]
       end
 
