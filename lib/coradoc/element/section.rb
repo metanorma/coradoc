@@ -29,6 +29,11 @@ module Coradoc
         title = Coradoc::Generator.gen_adoc(@title)
         content = Coradoc::Generator.gen_adoc(@contents)
         sections = Coradoc::Generator.gen_adoc(@sections)
+
+        # A block of " +\n"s isn't parsed correctly. It needs to start
+        # with something.
+        content = "&nbsp;#{content}" if content.start_with?(" +\n")
+
         "\n#{anchor}" << title << content << sections << "\n"
       end
 

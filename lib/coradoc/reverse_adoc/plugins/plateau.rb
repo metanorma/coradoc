@@ -46,15 +46,12 @@ module Coradoc::ReverseAdoc
           end
 
           img = e.parent.previous&.children&.first
-          if img&.name == "img"
+          if img&.name == "img" && img["src"]
             title = e.text.strip
             img["title"] = title
             e.remove
             next
           end
-
-          ### We shouldn't be here
-          warn "Unhandled imagedata #{e} at line #{e.line}"
         end
 
         # Add hooks for H1, H2, H3, H4
