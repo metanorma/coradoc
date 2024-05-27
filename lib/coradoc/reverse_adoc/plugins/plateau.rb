@@ -62,55 +62,49 @@ module Coradoc::ReverseAdoc
         # Table cells aligned to center
         html_tree_change_properties_by_css(".tableTopCenter", align: "center")
 
-        # Handle non-semantic lists and definition lists.
-        # Note: we rely here on a fact that they are text nodes. If they weren't
-        # we would need to hook into ReverseAdoc again.
+        # Handle non-semantic lists and indentation
         html_tree_add_hook_pre_by_css ".text2data" do |node,|
-          warn_if_has_non_text_children(node)
+          text = html_tree_process_to_adoc(node).strip
+          next "" if text.empty? || text == "\u3000"
 
-          if node.text.start_with?(/\d+\./)
-            text = node.text.strip.sub(/\A\d+.\s*/, '')
+          if text.start_with?(/\d+\./)
+            text = text.sub(/\A\d+.\s*/, "")
             ".. #{text}\n"
           else
-            # A definition term
-            # text = node.text.strip
-            # "\n\n#{text}::\n\n"
+            text = text.gsub(/^/, "** ")
+            "\n\n//-PT2D\n#{text}\n//-ENDPT2D\n\n"
           end
         end
 
-        # The definitions are not consistent.
-        #
-        # html_tree_add_hook_pre_by_css ".text3data" do |node,|
-        #   warn_if_has_non_text_children(node)
-        #
-        #   # A definition definition
-        #   text = node.text.strip
-        #   "\n  #{text}\n"
-        # end
+        html_tree_add_hook_pre_by_css ".text3data" do |node,|
+          text = html_tree_process_to_adoc(node).strip
+          next "" if text.empty? || text == "\u3000"
+
+          text = text.strip.gsub(/^/, "*** ")
+          "\n\n//-PT3D\n#{text}\n//-ENDPT3D\n\n"
+        end
+
+        html_tree_add_hook_pre_by_css ".text4data" do |node,|
+          text = html_tree_process_to_adoc(node).strip
+          next "" if text.empty? || text == "\u3000"
+
+          text = text.strip.gsub(/^/, "**** ")
+          "\n\n//-PT4D\n#{text}\n//-ENDPT4D\n\n"
+        end
 
         html_tree_add_hook_pre_by_css ".text2data_point ul" do |node,|
-          warn_if_has_non_text_children(node, indirect: true)
+          text = html_tree_process_to_adoc(node.children.first.children).strip
 
-          text = node.text.strip
           "** #{text}\n"
         end
 
         html_tree_add_hook_pre_by_css ".text3data_point ul" do |node,|
-          warn_if_has_non_text_children(node, indirect: true)
+          text = html_tree_process_to_adoc(node.children.first.children).strip
 
-          text = node.text.strip
           "*** #{text}\n"
         end
 
         # html_tree_preview
-      end
-
-      def warn_if_has_non_text_children(node, indirect: true)
-        node = node.children.first if indirect
-        children = node.children.map(&:class)
-        unless children == [Nokogiri::XML::Text] * children.length
-          warn "MUST-DEBUG: #{node['class']} has non-text children: #{node.inspect}"
-        end
       end
 
       def handle_headers(node, coradoc, state)
@@ -129,12 +123,34 @@ module Coradoc::ReverseAdoc
           else
             warn "Unknown section #{coradoc.content.content}"
           end
+
+          # Ensure they are generated as level 1
+          coradoc.level_int = 1
         end
 
         # Remove numbers
         coradoc.content.first.content.sub!(/\A[\d\s.]+/, "")
 
         coradoc
+      end
+
+      def postprocess_asciidoc_string
+        str = self.asciidoc_string
+
+        # If there's a step up, add [none]
+        str = str.gsub(%r{\s+//-ENDPT2D\s+//-PT3D\s+}, "\n[none]\n")
+        str = str.gsub(%r{\s+//-ENDPT2D\s+//-PT4D\s+}, "\n[none]\n")
+        str = str.gsub(%r{\s+//-ENDPT3D\s+//-PT4D\s+}, "\n[none]\n")
+        # Collapse blocks of text[2,3]data
+        str = str.gsub(%r{\s+//-ENDPT[234]D\s+//-PT[234]D\s+}, "\n\n")
+        # In the beginning, add [none]
+        str = str.gsub(%r{\s+//-PT[234]D\s+}, "\n\n[none]\n")
+        # If following with another list, ensure we readd styling
+        str = str.gsub(%r{\s+//-ENDPT[234]D\s+\*}, "\n\n[disc]\n*")
+        # Otherwise, clean up
+        str = str.gsub(%r{\s+//-ENDPT[234]D\s+}, "\n\n")
+
+        self.asciidoc_string = str
       end
     end
   end
