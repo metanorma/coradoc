@@ -22,4 +22,9 @@ describe Coradoc::ReverseAdoc::Converters::Img do
     node = node_for("<img id='A' src='example.jpg' width='30' height='40'/>")
     expect(converter.convert(node)).to include "[[A]]\nimage::example.jpg[\"\",30,40]"
   end
+
+  it "converts image with invalid set of attributes" do
+    node = node_for("<img src='example.jpg' width='-30' height=''/>")
+    expect(converter.convert(node)).to include "image::example.jpg[]"
+  end
 end

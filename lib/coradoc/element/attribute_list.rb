@@ -44,6 +44,8 @@ module Coradoc
             @rejected_positional << [i, value]
           end
         end
+
+        @positional.pop while !@positional.empty? && @positional.last.nil?
       end
 
       def validate_named(validators)
@@ -62,7 +64,7 @@ module Coradoc
         return "[]" if [@positional, @named].all?(:empty?)
 
         adoc = +""
-        if @positional.any?
+        if !@positional.empty?
           adoc << @positional.map { |p| [nil, ""].include?(p) ? '""' : p }.join(",")
         end
         adoc << "," if @positional.any? && @named.any?
