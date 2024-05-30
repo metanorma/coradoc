@@ -56,6 +56,7 @@ module Coradoc::ReverseAdoc
 
         # Add hooks for H1, H2, H3, H4
         html_tree_add_hook_post_by_css("h1, h2, h3", &method(:handle_headers))
+        html_tree_add_hook_post_by_css("h4", &method(:handle_headers_h4))
 
         # Table cells aligned to center
         html_tree_change_properties_by_css(".tableTopCenter", align: "center")
@@ -130,6 +131,21 @@ module Coradoc::ReverseAdoc
         coradoc.content.first.content.sub!(/\A[\d\s.]+/, "")
 
         coradoc
+      end
+
+      def handle_headers_h4(node, coradoc, state)
+        case coradoc.content.first.content
+        when /\A\(\d+\)(.*)/
+          coradoc.level_int = 4
+          coradoc.content.first.content = $1.strip
+          coradoc
+        when /\A\d+\)(.*)/
+          coradoc.level_int = 5
+          coradoc.content.first.content = $1.strip
+          coradoc
+        else
+          ["// FIXME\n", coradoc]
+        end
       end
 
       def postprocess_asciidoc_string
