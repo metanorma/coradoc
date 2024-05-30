@@ -22,16 +22,28 @@ module Coradoc
       def to_adoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         content = Coradoc::Generator.gen_adoc(@content)
-        level_str = "=" * (@level_int + 1)
-        style_str = "[#{@style}]\n" if style
         ["\n", anchor, style_str, level_str, " ", content, "\n"].join("")
+      end
+
+      def level_str
+        if @level_int <= 4
+          "=" * (@level_int + 1)
+        else
+          "====="
+        end
+      end
+
+      def style_str
+        style = [@style]
+        style << "level=#{@level_int}" if @level_int > 4
+        style = style.compact.join(",")
+
+        "[#{style}]\n" unless style.empty?
       end
 
       alias :text :content
 
       private
-
-      attr_reader :level_str
 
       def level_from_string
         case @level_int
