@@ -80,7 +80,7 @@ module Coradoc::ReverseAdoc
         if alt # && !alt.to_s.empty?
           attributes.add_positional(alt)
         elsif width || height
-          attributes.add_positional("")
+          attributes.add_positional(nil)
         end
         attributes.add_named("title", title) if title && !title.empty?
         attributes.add_positional(width) if width
