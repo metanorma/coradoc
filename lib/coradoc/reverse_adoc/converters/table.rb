@@ -56,6 +56,12 @@ module Coradoc::ReverseAdoc
         cols = ensure_row_column_integrity_and_get_column_sizes(node)
         attrs.add_named("cols", cols)
 
+        # Header first rows can't span multiple riws - drop header if they do.
+        header = node.at_xpath(".//tr")
+        unless header.xpath("./td | ./th").all? { |i| [nil, "1", ""].include? i["rowspan"] }
+          attrs.add_named("options", ["noheader"])
+        end
+
         # This line should be removed.
         return "" if attrs.empty?
 
