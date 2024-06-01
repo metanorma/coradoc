@@ -24,9 +24,9 @@ module Coradoc
       def to_adoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         if @tdsinglepara
-          anchor.to_s << Coradoc::Generator.gen_adoc(@content).strip
+          anchor.to_s << Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(@content))
         else
-          "\n\n#{anchor}" << Coradoc::Generator.gen_adoc(@content).strip << "\n\n"
+          "\n\n#{anchor}" << Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(@content)) << "\n\n"
         end
       end
     end

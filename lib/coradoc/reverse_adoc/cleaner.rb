@@ -83,8 +83,7 @@ module Coradoc::ReverseAdoc
 
     def scrub_whitespace(string)
       string.gsub!(/&nbsp;|&#xA0;|\u00a0/i, "&#xA0;") # HTML encoded spaces
-      string.sub!(/^\A[[:space:]]+/m, "") # document leading whitespace
-      string.sub!(/[[:space:]]+\z$/m, "") # document trailing whitespace
+      string = Coradoc.strip_unicode(string) # Strip document-level leading and trailing whitespace
       string.gsub!(/( +)$/, " ") # line trailing whitespace
       string.gsub!(/\n\n\n\n/, "\n\n") # Quadruple line breaks
       # string.delete!('?| ')               # Unicode non-breaking spaces, injected as tabs
