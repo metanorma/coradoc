@@ -11,8 +11,8 @@ describe Coradoc::ReverseAdoc do
   it { is_expected.to match /\n=== h2\n/ }
   it { is_expected.to match /\n==== h3\n/ }
   it { is_expected.to match /\n===== h4\n/ }
-  it { is_expected.to include "\n[level=5]\n===== h5\n" }
-  it { is_expected.to include "\n[level=6]\n===== h6\n" }
+  it { is_expected.to match /\n====== h5\n/ }
+  it { is_expected.to include "\n[level=6]\n====== h6\n" }
 
   it { is_expected.to match /_em tag content_/ }
   it { is_expected.to match /before and after empty em tags/ }
