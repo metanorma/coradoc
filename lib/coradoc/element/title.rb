@@ -21,7 +21,7 @@ module Coradoc
 
       def to_adoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
-        content = Coradoc::Generator.gen_adoc(@content)
+        content = Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(@content))
         <<~HERE
 
         #{anchor}#{style_str}#{level_str} #{content}
