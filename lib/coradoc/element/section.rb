@@ -34,6 +34,12 @@ module Coradoc
         # with something.
         content = "&nbsp;#{content}" if content.start_with?(" +\n")
 
+        # Only try to postprocess elements that are text,
+        # otherwise we could strip markup.
+        if Coradoc.is_a_single?(@contents, Coradoc::Element::TextElement)
+          content = Coradoc.strip_unicode(content)
+        end
+
         "\n#{anchor}" << title << content << sections << "\n"
       end
 
