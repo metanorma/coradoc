@@ -42,10 +42,10 @@ describe Coradoc::ReverseAdoc do
   end
 
   context "nested list with lots of whitespace" do
-    it { is_expected.to match /\n\* item wa \n/ }
-    it { is_expected.to match /\n\* item wb \n/ }
-    it { is_expected.to match /\n\*\* item wbb \n/ }
-    it { is_expected.to match /\n\*\* item wbc \n/ }
+    it { is_expected.to match /\n\* item wa\n/ }
+    it { is_expected.to match /\n\* item wb\n/ }
+    it { is_expected.to match /\n\*\* item wbb\n/ }
+    it { is_expected.to match /\n\*\* item wbc\n/ }
   end
 
   context "lists containing links" do
