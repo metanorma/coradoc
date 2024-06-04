@@ -1,8 +1,10 @@
 module Coradoc
   module Element
     module List
-      class Definition < Core
+      class Definition < Base
         attr_accessor :items, :delimiter
+
+        declare_children :items
 
         def initialize(items, options = {})
           @items = items
