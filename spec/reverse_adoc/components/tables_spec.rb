@@ -39,4 +39,7 @@ describe Coradoc::ReverseAdoc do
     is_expected.to match /\na|\nHello\n\nThis cell has multiple paragraphs\n\n/
   }
   it { is_expected.to match /\n\| This cell has a single paragraph\n/ }
+
+  it { is_expected.to match /\[\[empty_table_1\]\]\n\|===\n+\|===\n/ }
+  it { is_expected.to match /\[\[empty_table_2\]\]\n\|===\n+\|===\n/ }
 end
