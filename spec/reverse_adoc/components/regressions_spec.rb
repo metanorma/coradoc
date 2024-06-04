@@ -45,4 +45,9 @@ describe Coradoc::ReverseAdoc do
   t "attached<i>italics</i>here", "attached__italics__here"
   t "<mark>highlight</mark> itself", "#highlight# itself"
   t "attached<mark>highlight</mark>here", "attached##highlight##here"
+
+  # https://github.com/metanorma/coradoc/issues/96
+  t "<ul><li>test</li><ul><li>test</li></ul></ul>", "* test\n\n** test"
+  t "<ol><li>test</li><ol><li>test</li></ol></ol>", ". test\n\n.. test"
+  t "<ul><li>test</li><ol><li>test</li></ol></ul>", "* test\n\n.. test"
 end

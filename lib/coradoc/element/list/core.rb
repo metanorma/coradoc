@@ -25,8 +25,13 @@ module Coradoc
           @items.each do |item|
             c = Coradoc::Generator.gen_adoc(item)
             if !c.empty?
-              content << prefix.to_s
-              content << " " if c[0]!=" "
+              # If there's a list inside a list directly, we want to
+              # skip adding an empty list item.
+              # See: https://github.com/metanorma/coradoc/issues/96
+              unless item.is_a? List::Core
+                content << prefix.to_s
+                content << " " if c[0]!=" "
+              end
               content << c
             end
           end
