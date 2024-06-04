@@ -53,19 +53,27 @@ module Coradoc::ReverseAdoc
         rules_attr = rules(node)
         attrs.add_named("rules", rules_attr) if rules_attr
 
-        cols = ensure_row_column_integrity_and_get_column_sizes(node)
-        attrs.add_named("cols", cols)
+        # We can't, and shouldn't do those calculation if the table we are
+        # processing is empty.
+        unless empty?(node)
+          cols = ensure_row_column_integrity_and_get_column_sizes(node)
+          attrs.add_named("cols", cols)
 
-        # Header first rows can't span multiple riws - drop header if they do.
-        header = node.at_xpath(".//tr")
-        unless header.xpath("./td | ./th").all? { |i| [nil, "1", ""].include? i["rowspan"] }
-          attrs.add_named("options", ["noheader"])
+          # Header first rows can't span multiple riws - drop header if they do.
+          header = node.at_xpath(".//tr")
+          unless header.xpath("./td | ./th").all? { |i| [nil, "1", ""].include? i["rowspan"] }
+            attrs.add_named("options", ["noheader"])
+          end
         end
 
         # This line should be removed.
         return "" if attrs.empty?
 
         attrs
+      end
+
+      def empty?(node)
+        !node.at_xpath(".//td | .//th")
       end
 
       def ensure_row_column_integrity_and_get_column_sizes(node)
