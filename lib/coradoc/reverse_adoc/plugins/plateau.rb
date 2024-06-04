@@ -144,7 +144,12 @@ module Coradoc::ReverseAdoc
           coradoc.content.first.content = $1.strip
           coradoc
         else
-          ["// FIXME\n", coradoc]
+          if Coradoc.strip_unicode(coradoc.content.first.content).empty?
+            # Strip instances of faulty empty paragraphs
+            nil
+          else
+            ["// FIXME\n", coradoc]
+          end
         end
       end
 
