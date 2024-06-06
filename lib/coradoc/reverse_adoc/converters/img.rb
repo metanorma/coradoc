@@ -33,7 +33,13 @@ module Coradoc::ReverseAdoc
         # puts "image_dest_path: #{image_dest_path.to_s}"
         # puts "image_src_path: #{image_src_path.to_s}"
 
-        FileUtils.cp(image_src_path, image_dest_path)
+        if File.exist?(image_src_path)
+          FileUtils.cp(image_src_path, image_dest_path)
+        else
+          @annotate_missing = image_src_path
+          Kernel.warn "Image #{image_src_path} does not exist"
+        end
+
         image_number_increment
 
         image_dest_path.relative_path_from(dest_dir)
@@ -88,7 +94,8 @@ module Coradoc::ReverseAdoc
 
         if src
           Coradoc::Element::Image::BlockImage.new(title, id, src,
-                                                  attributes: attributes)
+                                                  attributes: attributes,
+                                                  annotate_missing: @annotate_missing)
         end
       end
     end

@@ -12,6 +12,7 @@ module Coradoc
           @anchor = @id.nil? ? nil : Coradoc::Element::Inline::Anchor.new(@id)
           @src = src
           @attributes = options.fetch(:attributes, AttributeList.new)
+          @annotate_missing = options.fetch(:annotate_missing)
           @title = options.fetch(:title, nil)
           if @attributes.any?
             @attributes.validate_positional(VALIDATORS_POSITIONAL)
@@ -20,10 +21,11 @@ module Coradoc
         end
 
         def to_adoc
+          missing = "// FIXME: Missing image: #{@annotate_missing}\n" if @annotate_missing
           anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
           title = ".#{@title}\n" unless @title.to_s.empty?
           attrs = @attributes.to_adoc
-          [anchor, title, "image", @colons, @src, attrs].join("")
+          [missing, anchor, title, "image", @colons, @src, attrs].join("")
         end
 
         extend AttributeList::Matchers
