@@ -100,6 +100,6 @@ module Coradoc::ReverseAdoc
       end
     end
 
-    register :img, Img.new
+    register :img, Img
   end
 end

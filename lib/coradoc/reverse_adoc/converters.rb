@@ -10,7 +10,9 @@ module Coradoc::ReverseAdoc
     end
 
     def self.lookup(tag_name)
-      @@converters[tag_name.to_sym] or default_converter(tag_name)
+      converter = @@converters[tag_name.to_sym] || default_converter(tag_name)
+      converter = converter.new if converter.respond_to? :new
+      converter
     end
 
     # Note: process won't run plugin hooks
