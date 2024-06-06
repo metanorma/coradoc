@@ -151,7 +151,7 @@ module Coradoc::ReverseAdoc
         end
 
         # Remove numbers
-        coradoc.content.first.content.sub!(/\A(#{IM}\.)+#{IM}/, "")
+        coradoc.content.first.content.sub!(/\A(#{IM}\.)*#{IM}[[:space:]]/, "")
 
         coradoc
       end
