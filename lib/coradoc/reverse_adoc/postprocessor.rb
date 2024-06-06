@@ -82,13 +82,18 @@ module Coradoc::ReverseAdoc
       previous_sections = {}
 
       determine_section_id = ->(elem) do
-        level = 0
-        section = elem
+        if elem.title.style == "appendix"
+          level = "A"
+        else
+          level = 1
+        end
+
+        section = previous_sections[elem]
         while section
-          level += 1 if elem.title.style == section.title.style
+          level = level.succ if elem.title.style == section.title.style
           section = previous_sections[section]
         end
-        level
+        level.is_a?(Integer) ? "%02d" % level : level
       end
 
       determine_style = ->(elem) do
@@ -114,8 +119,7 @@ module Coradoc::ReverseAdoc
             # include tag.
             section_file = "sections/"
             section_file += parent_sections[1..title.level_int].map do |parent|
-              style = determine_style.(parent)
-              "%s%02d" % [style, determine_section_id.(parent)]
+              determine_style.(parent) + determine_section_id.(parent)
             end.join("/")
             section_file += ".adoc"
 
