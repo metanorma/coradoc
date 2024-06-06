@@ -1,7 +1,7 @@
 module Coradoc
   module Element
     class ListItem < Base
-      attr_accessor :id
+      attr_accessor :id, :content, :anchor
 
       declare_children :content, :id, :anchor
 

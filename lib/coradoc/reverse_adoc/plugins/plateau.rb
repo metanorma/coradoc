@@ -38,6 +38,9 @@ module Coradoc::ReverseAdoc
         html_tree_change_properties_by_css("#__layout", id: nil)
         html_tree_change_properties_by_css("#app", id: nil)
 
+        # Handle lists of document 02
+        html_tree_replace_with_children_by_css(".list_num-wrap")
+
         # Convert table/img caption to become a caption
         html_tree.css(".imagedata").each do |e|
           table = e.parent.next&.children&.first
@@ -77,32 +80,30 @@ module Coradoc::ReverseAdoc
           end
         end
 
-        html_tree_add_hook_pre_by_css ".text3data" do |node,|
-          text = html_tree_process_to_adoc(node).strip
-          next "" if text.empty? || text == "\u3000"
+        (3..4).each do |i|
+          html_tree_add_hook_pre_by_css ".text#{i}data" do |node,|
+            text = html_tree_process_to_adoc(node).strip
+            next "" if text.empty? || text == "\u3000"
 
-          text = text.strip.gsub(/^/, "*** ")
-          "\n\n//-PT3D\n#{text}\n//-ENDPT3D\n\n"
+            text = text.strip.gsub(/^/, "#{'*' * i} ")
+            "\n\n//-PT#{i}D\n#{text}\n//-ENDPT#{i}D\n\n"
+          end
         end
 
-        html_tree_add_hook_pre_by_css ".text4data" do |node,|
-          text = html_tree_process_to_adoc(node).strip
-          next "" if text.empty? || text == "\u3000"
+        (2..3).each do |i|
+          html_tree_add_hook_pre_by_css ".text#{i}data_point ul" do |node,|
+            text = html_tree_process_to_adoc(node.children.first.children).strip
 
-          text = text.strip.gsub(/^/, "**** ")
-          "\n\n//-PT4D\n#{text}\n//-ENDPT4D\n\n"
+            "#{'*' * i} #{text}\n"
+          end
         end
 
-        html_tree_add_hook_pre_by_css ".text2data_point ul" do |node,|
-          text = html_tree_process_to_adoc(node.children.first.children).strip
+        (1..20).each do |i|
+          html_tree_add_hook_pre_by_css ".numtextdata_num .list_num#{i}" do |node,|
+            text = html_tree_process_to_adoc(node).strip
 
-          "** #{text}\n"
-        end
-
-        html_tree_add_hook_pre_by_css ".text3data_point ul" do |node,|
-          text = html_tree_process_to_adoc(node.children.first.children).strip
-
-          "*** #{text}\n"
+            "[start=#{i}]\n. #{text}\n"
+          end
         end
 
         # html_tree_preview
