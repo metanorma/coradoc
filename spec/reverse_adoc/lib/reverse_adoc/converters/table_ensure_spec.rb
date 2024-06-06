@@ -7,7 +7,7 @@ describe Coradoc::ReverseAdoc::Converters::Table do
   let(:converter) { Coradoc::ReverseAdoc::Converters::Table.new }
 
   let(:c) { '<td colspan="1" rowspan="1"></td>' }
-  let(:e) { "<td></td>" } # Added cell
+  let(:e) { '<td x-added="x-added"></td>' } # Added cell
 
   let(:c1x2) { '<td colspan="2" rowspan="1"></td>' }
   let(:c1x3) { '<td colspan="3" rowspan="1"></td>' }
@@ -52,6 +52,13 @@ describe Coradoc::ReverseAdoc::Converters::Table do
       tree = Nokogiri::HTML(input)
       my_sizes = converter.ensure_row_column_integrity_and_get_column_sizes(tree)
       my_sizes.should be == sizes
+    end
+  end
+
+  shared_examples "should not cause error" do
+    it "should not cause error" do
+      tree = Nokogiri::HTML(input)
+      converter.ensure_row_column_integrity_and_get_column_sizes(tree)
     end
   end
 
@@ -184,5 +191,11 @@ describe Coradoc::ReverseAdoc::Converters::Table do
     let(:sizes) { "1,2,1" }
 
     include_examples "should compute sizes correctly"
+  end
+
+  context "converts a wild table correctly" do
+    let(:input) { File.read("spec/reverse_adoc/assets/wild_table.html") }
+
+    include_examples "should not cause error"
   end
 end
