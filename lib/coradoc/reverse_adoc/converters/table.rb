@@ -181,7 +181,9 @@ module Coradoc::ReverseAdoc
 
             row_obj = row.last.first.parent
             doc = row_obj.document
-            row_obj.add_child(Nokogiri::XML::Node.new("td", doc))
+            added_node = Nokogiri::XML::Node.new("td", doc)
+            added_node["x-added"] = "x-added"
+            row_obj.add_child(added_node)
 
             modified = true
           end
@@ -202,6 +204,21 @@ module Coradoc::ReverseAdoc
         end
 
         unless cell_matrix_correct
+          # It may be a special case that we need to add virtual cells at the
+          # beginning not the end of a row.
+          needs_recompute = false
+          cell_matrix.each do |row|
+            if row.compact.length != row.length
+              last_cell = row.last
+              if last_cell["x-added"]
+                last_cell.parent.prepend_child(last_cell)
+                needs_recompute = true
+              end
+            end
+          end
+          recompute.() if needs_recompute
+
+          # But otherwise... we've got a really nasty table.
           warn <<~WARNING.gsub("\n", " ")
             **** Couldn't construct a valid image of a table on line
             #{node.line}. We need that to reliably compute column
