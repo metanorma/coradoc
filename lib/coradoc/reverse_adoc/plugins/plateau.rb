@@ -112,9 +112,12 @@ module Coradoc::ReverseAdoc
         # html_tree_preview
       end
 
+      IM = /[A-Z0-9]{1,3}/
+
       def handle_headers(node, coradoc, state)
+        content = coradoc.content.map(&:content).join
+
         if %w[toc0 toc_0].any? { |i| coradoc.id&.start_with?(i) }
-          content = coradoc.content.map(&:content).join
           # Special content
           case content.strip
           when "はじめに" # Introduction
@@ -136,18 +139,26 @@ module Coradoc::ReverseAdoc
             coradoc.style = "index" # I'm not sure this is correct
             coradoc.level_int = 1
           else
-            warn "Unknown section #{coradoc.content.map(&:content).join.inspect}"
+            warn "Unknown section #{content.inspect}"
+          end
+        end
+
+        if node.name == "h1"
+          if content.start_with?("Annex")
+            coradoc.style = "appendix"
+            coradoc.content.first.content.sub!(/\AAnnex [A-Z]/, "")
           end
         end
 
         # Remove numbers
-        coradoc.content.first.content.sub!(/\A[\d\s.]+/, "")
+        coradoc.content.first.content.sub!(/\A(#{IM}\.)+#{IM}/, "")
 
         coradoc
       end
 
       def handle_headers_h4(node, coradoc, state)
-        case coradoc.content.first.content
+        title = Coradoc.strip_unicode(coradoc.content.first.content)
+        case title
         when /\A\(\d+\)(.*)/
           coradoc.level_int = 4
           coradoc.content.first.content = $1.strip
@@ -156,8 +167,11 @@ module Coradoc::ReverseAdoc
           coradoc.level_int = 5
           coradoc.content.first.content = $1.strip
           coradoc
+        when /\A#{IM}\.#{IM}\.#{IM}\.#{IM}(.*)/
+          coradoc.level_int = 4
+          coradoc.content.first.content = $1.strip
         else
-          if Coradoc.strip_unicode(coradoc.content.first.content).empty?
+          if title.empty?
             # Strip instances of faulty empty paragraphs
             nil
           else
