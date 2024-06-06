@@ -88,6 +88,10 @@ describe Coradoc::ReverseAdoc do
     it { is_expected.to match /\n\* delta\n/ }
   end
 
+  context "properly continues a list if brs are inside" do
+    it { is_expected.to include "have\n+\nbrs\n+\ninside" }
+  end
+
   context "definition list simple" do
     it { is_expected.to include "Coffee:: Black hot drink\nMilk:: White cold drink" }
   end

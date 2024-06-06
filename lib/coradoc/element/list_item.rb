@@ -14,6 +14,8 @@ module Coradoc
       def to_adoc
         anchor = @anchor.nil? ? "" : @anchor.to_adoc.to_s
         content = Array(@content).map do |subitem|
+          next if subitem.is_a? Coradoc::Element::Inline::HardLineBreak
+
           subcontent = Coradoc::Generator.gen_adoc(subitem)
           # Only try to postprocess elements that are text,
           # otherwise we could strip markup.
@@ -21,7 +23,7 @@ module Coradoc
             subcontent = Coradoc.strip_unicode(subcontent)
           end
           subcontent.chomp
-        end.join("\n+\n")
+        end.compact.join("\n+\n")
 
         " #{anchor}#{content.chomp}\n"
       end
