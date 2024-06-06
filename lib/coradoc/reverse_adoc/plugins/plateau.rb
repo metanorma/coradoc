@@ -107,24 +107,31 @@ module Coradoc::ReverseAdoc
       end
 
       def handle_headers(node, coradoc, state)
-        if coradoc.id&.start_with?("toc0_")
+        if %w[toc0 toc_0].any? { |i| coradoc.id&.start_with?(i) }
           content = coradoc.content.map(&:content).join
           # Special content
           case content.strip
           when "はじめに" # Introduction
             coradoc.style = "abstract" # The older version document has ".preface"
+            coradoc.level_int = 1
           when "改定の概要" # Revision overview
             coradoc.style = "abstract" # The older version document has ".preface"
+            coradoc.level_int = 1
           when "参考文献" # Bibliography
             coradoc.style = "bibliography"
+            coradoc.level_int = 1
           when "改訂履歴" # Document history
             coradoc.style = "appendix"
+            coradoc.level_int = 1
+          when "0　概要" # Overview
+            coradoc.style = "abstract" # I'm not sure this is correct
+            coradoc.level_int = 1
+          when "索引" # Index
+            coradoc.style = "index" # I'm not sure this is correct
+            coradoc.level_int = 1
           else
             warn "Unknown section #{coradoc.content.map(&:content).join.inspect}"
           end
-
-          # Ensure they are generated as level 1
-          coradoc.level_int = 1
         end
 
         # Remove numbers
