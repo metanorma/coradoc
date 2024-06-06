@@ -9,7 +9,7 @@ module Coradoc
         end
 
         def to_adoc
-          "\n\n#{gen_delimiter}" << gen_lines << "\n#{gen_delimiter}\n\n"
+          "\n\n#{gen_delimiter}\n" << gen_lines << "\n#{gen_delimiter}\n\n"
         end
       end
     end

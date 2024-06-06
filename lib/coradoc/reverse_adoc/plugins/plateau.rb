@@ -30,6 +30,8 @@ module Coradoc::ReverseAdoc
         html_tree_change_tag_name_by_css(".pitemdata", "h3")
         html_tree_change_tag_name_by_css(".sitemdata", "h4")
         html_tree_change_tag_name_by_css('td[bgcolor="#D0CECE"]', "th")
+        html_tree_change_tag_name_by_css('td[bgcolor="#d0cece"]', "th")
+        html_tree_change_tag_name_by_css('.framedata, .frame_container_box', 'aside')
 
         # Remove some CSS ids that are not important to us
         html_tree_change_properties_by_css("#__nuxt", id: nil)
