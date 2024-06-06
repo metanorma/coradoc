@@ -107,7 +107,7 @@ module Coradoc::ReverseAdoc
       end
 
       def handle_headers(node, coradoc, state)
-        if coradoc.id.start_with?("toc0_")
+        if coradoc.id&.start_with?("toc0_")
           content = coradoc.content.map(&:content).join
           # Special content
           case content.strip
