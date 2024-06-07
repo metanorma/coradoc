@@ -34,7 +34,7 @@ module Coradoc::ReverseAdoc
         html_tree_change_tag_name_by_css('.framedata, .frame_container_box', 'aside')
         html_tree_change_tag_name_by_css('.frame2data', 'pre')
         # Assumption that all code snippets in those documents are XML...
-        html_tree_change_properties_by_css(".frame2data", class: "highlight-xml")
+        html_tree_change_properties_by_css(".frame2data", class: "brush:xml;")
 
         # Remove some CSS ids that are not important to us
         html_tree_change_properties_by_css("#__nuxt", id: nil)
