@@ -1,20 +1,11 @@
 ## Docker
 
-This directory is only meant to be used for development, and contains some
+This Docker image is only meant to be used for development, and contains some
 necessary setup to spin up docker containers with multiple ruby environment.
 
 ### Setup
 
-Before doing anything, you might want to create a symlink to the docker file and
-Makefile. This would allow you to avoid some of the unnecessary work related to
-the file paths To do that run the following from the root of the project.
-
-```
-ln -sf .docker/Makefile .
-ln -sf .docker/docker-compose.yml .
-```
-
-By default it usages the most recent ruby version for docker environment, but if
+By default it uses the most recent ruby version for docker environment, but if
 you want to run it in any specific version then you can set it up by exporting
 `RUBY_IMAGE` environment variable in your shell:
 

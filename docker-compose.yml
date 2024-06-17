@@ -1,1 +1,14 @@
-.docker/docker-compose.yml
+version: "3"
+
+services:
+  lib:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+
+    volumes:
+      - .:/workspace:z
+      - bundle:/bundle:z
+
+volumes:
+  bundle:
