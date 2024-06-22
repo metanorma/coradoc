@@ -1,7 +1,32 @@
+require_relative "admonition"
+require_relative "attribute_list"
+require_relative "block"
+require_relative "content"
+require_relative "document_attributes"
+require_relative "header"
+require_relative "inline"
+require_relative "list"
+require_relative "paragraph"
+require_relative "section"
+require_relative "table"
+# require_relative "include"
+
 module Coradoc
   module Parser
     module Asciidoc
       module Base
+        include Coradoc::Parser::Asciidoc::Admonition
+        include Coradoc::Parser::Asciidoc::AttributeList
+        include Coradoc::Parser::Asciidoc::Block
+        include Coradoc::Parser::Asciidoc::Content
+        include Coradoc::Parser::Asciidoc::DocumentAttributes
+        include Coradoc::Parser::Asciidoc::Header
+        include Coradoc::Parser::Asciidoc::Inline
+        include Coradoc::Parser::Asciidoc::List
+        include Coradoc::Parser::Asciidoc::Paragraph
+        include Coradoc::Parser::Asciidoc::Section
+        include Coradoc::Parser::Asciidoc::Table
+
         def space?
           space.maybe
         end
@@ -23,7 +48,12 @@ module Coradoc
         end
 
         def newline
-          match["\r\n"].repeat(1)
+          # match["\r\n"].repeat(1)
+          (match("\n") | match("\r\n")).repeat(1)
+        end
+
+        def newline_single
+          (match("\n") | match("\r\n"))
         end
 
         def keyword
@@ -77,6 +107,47 @@ module Coradoc
         def date
           digit.repeat(2, 4) >> str("-") >>
             digit.repeat(1, 2) >> str("-") >> digit.repeat(1, 2)
+        end
+
+        def attr_name
+          match("[^\t\s]").repeat(1)
+        end
+
+        def file_path
+          match('[^\[]').repeat(1)
+          # match("[a-zA-Z0-9_-]").repeat(1)
+        end
+
+        def include_directive
+          (str("include::") >> 
+            file_path.as(:path) >>
+            attribute_list >>
+          (line_ending)
+          ).as(:include)
+        end
+
+        def inline_image
+          (str("image::") >> 
+            file_path.as(:path) >>
+            attribute_list >>
+          (line_ending)
+          ).as(:inline_image)
+        end
+
+        def comment_line
+          (str('//') >> str("/").absent? >>
+            space? >>
+            text.as(:comment_text) #>>
+            # newline.as(:line_break)
+            ).as(:comment_line)
+        end
+
+        def comment_block
+          ( str('////') >> line_ending >>
+          ((line_ending >> str('////')).absent? >> any
+            ).repeat.as(:comment_text) >> 
+          line_ending >> str('////')
+          ).as(:comment_block)
         end
       end
     end

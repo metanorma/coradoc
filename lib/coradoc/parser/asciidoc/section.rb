@@ -1,12 +1,23 @@
-require_relative "base"
-require_relative "content"
-
 module Coradoc
   module Parser
     module Asciidoc
       module Section
-        include Coradoc::Parser::Asciidoc::Base
-        include Coradoc::Parser::Asciidoc::Content
+
+        def contents
+          (
+            comment_block |
+            comment_line |
+            include_directive |
+            admonition_line |
+            block.as(:block) |
+            table.as(:table) |
+            highlight.as(:highlight) |
+            glossaries.as(:glossaries) |
+            paragraph |
+            list |
+            empty_line
+          ).repeat(1)
+        end
 
         def section_block(level = 2)
           section_id.maybe >>
@@ -28,7 +39,7 @@ module Coradoc
 
         # section
         def section
-          section_block >> second_level_section.repeat.maybe.as(:sections)
+          section_block >> second_level_section.repeat(0).as(:sections)
         end
 
         def sub_section(level)
@@ -36,23 +47,23 @@ module Coradoc
         end
 
         def second_level_section
-          sub_section(3) >> third_level_section.repeat.maybe.as(:sections)
+          sub_section(3) >> third_level_section.repeat(0).as(:sections)
         end
 
         def third_level_section
-          sub_section(4) >> fourth_level_section.repeat.maybe.as(:sections)
+          sub_section(4) >> fourth_level_section.repeat(0).as(:sections)
         end
 
         def fourth_level_section
-          sub_section(5) >> fifth_level_section.repeat.maybe.as(:sections)
+          sub_section(5) >> fifth_level_section.repeat(0).as(:sections)
         end
 
         def fifth_level_section
-          sub_section(6) >> sixth_level_section.repeat.maybe.as(:sections)
+          sub_section(6) >> sixth_level_section.repeat(0).as(:sections)
         end
 
         def sixth_level_section
-          sub_section(7) >> sub_section(8).repeat.maybe.as(:sections)
+          sub_section(7) >> sub_section(8).repeat(0).as(:sections)
         end
       end
     end
