@@ -11,6 +11,8 @@ module Coradoc
         content
       elsif content.nil?
         ""
+      elsif content.is_a?(Parslet::Slice)
+        content.to_s
       end
     end
   end
