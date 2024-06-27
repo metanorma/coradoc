@@ -1,6 +1,8 @@
 require_relative "element/base"
 require_relative "element/title"
 require_relative "element/block"
+require_relative "element/bibliography"
+require_relative "element/bibliography_entry"
 require_relative "element/comment_block"
 require_relative "element/comment_line"
 require_relative "element/include"

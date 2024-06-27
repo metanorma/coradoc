@@ -32,7 +32,7 @@ module Coradoc
       root :document
       rule(:document) do
         (
-
+          bibliography | 
           # attribute_list.as(:attribute_list) |
           comment_block |
           comment_line |
@@ -43,8 +43,8 @@ module Coradoc
           paragraph |
           list |
           header.as(:header) |
-          empty_line.as(:line_break) #|
-          # any.as(:unparsed)
+          empty_line.as(:line_break) |
+          any.as(:unparsed)
         ).repeat(1).as(:document)
       end
 
