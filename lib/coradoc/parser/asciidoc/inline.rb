@@ -53,7 +53,8 @@ module Coradoc
 
         def text_unformatted
           (admonition_line.absent? >>
-          (bold_unconstrained.absent? |
+          (cross_reference.absent? |
+            bold_unconstrained.absent? |
             bold_constrained.absent? |
             highlight_unconstrained.absent? |
             highlight_constrained.absent? |

@@ -1,5 +1,6 @@
 require_relative "admonition"
 require_relative "attribute_list"
+require_relative "bibliography"
 require_relative "block"
 require_relative "content"
 require_relative "document_attributes"
@@ -17,6 +18,7 @@ module Coradoc
       module Base
         include Coradoc::Parser::Asciidoc::Admonition
         include Coradoc::Parser::Asciidoc::AttributeList
+        include Coradoc::Parser::Asciidoc::Bibliography
         include Coradoc::Parser::Asciidoc::Block
         include Coradoc::Parser::Asciidoc::Content
         include Coradoc::Parser::Asciidoc::DocumentAttributes
@@ -90,14 +92,6 @@ module Coradoc
 
         def email
           word >> str("@") >> word >> str(".") >> word
-        end
-
-        def attribute_name
-          match("[a-zA-Z0-9_-]").repeat(1)
-        end
-
-        def attribute_value
-          text | str("")
         end
 
         def special_character

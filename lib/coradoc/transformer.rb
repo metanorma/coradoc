@@ -84,7 +84,9 @@ module Coradoc
       Element::TextElement.new(text.to_s, id: id)
     end
 
-    # rule(text: sequence(:text)) { Element::TextElement.new(text) }
+    rule(text: sequence(:text)) {
+      Element::TextElement.new(text)
+    }
 
     rule(
       text: simple(:text),
@@ -173,10 +175,6 @@ module Coradoc
     }
 
 
-
-
-
-
     # Paragraph
     # rule(paragraph: simple(:paragraph)) { paragraph }
     # rule(lines: sequence(:lines)) { Element::Paragraph.new(lines) }
@@ -230,6 +228,17 @@ module Coradoc
     end
 
     rule(
+      title: simple(:title),
+      contents: sequence(:contents),
+      sections: sequence(:sections),
+    ) do
+      Element::Section.new(
+        title,
+        contents: contents,
+        sections: sections)
+    end
+
+    rule(
       id: simple(:id),
       title: simple(:title),
       contents: sequence(:contents),
@@ -270,6 +279,36 @@ module Coradoc
     #   Element::Section.new(title, blocks: blocks)
     # end
     #
+
+    rule(bibliography_entry: subtree(:bib_entry) ){
+      Element::BibliographyEntry.new(bib_entry)
+    }
+
+    rule( #bibliography: subtree(:bib_data)){
+      id: simple(:id),
+      title: simple(:title),
+      entries: sequence(:entries)
+    ){
+      Element::Bibliography.new(
+        # bib_data
+        id: id,
+        title: title,
+        entries: entries
+        )
+    }
+
+    rule(block: {
+      delimiter: simple(:delimiter),
+      lines: sequence(:lines)
+    }) {
+      if delimiter == "****"
+        Element::Block::Side.new(
+          title: nil,
+          lines: lines
+        )
+      end
+    }
+
     # # Admonition
     # rule(admonition: simple(:admonition)) { admonition }
     # rule(type: simple(:type), text: simple(:text), break: simple(:line_break)) do
