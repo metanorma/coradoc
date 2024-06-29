@@ -1,10 +1,7 @@
-require_relative "base"
-
 module Coradoc
   module Parser
     module Asciidoc
       module Header
-        include Coradoc::Parser::Asciidoc::Base
 
         def header
           header_title >>

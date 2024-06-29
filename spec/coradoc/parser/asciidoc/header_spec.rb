@@ -31,7 +31,7 @@ RSpec.describe "Coradoc::Asciidoc::Header" do
 
   module Asciidoc
     class HeaderTester < Parslet::Parser
-      include Coradoc::Parser::Asciidoc::Header
+      include Coradoc::Parser::Asciidoc::Base
 
       rule(:document) { (header | any.as(:unparsed)).repeat(1) }
       root :document

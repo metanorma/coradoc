@@ -200,8 +200,8 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
         ast = Asciidoc::ContentTester.parse(content)
         paragraph = ast[0][:paragraph]
 
-        expect(paragraph[:meta][:key]).to eq("id")
-        expect(paragraph[:meta][:value]).to eq("myblock")
+        expect(paragraph[:attribute_list][:attribute_array][0][:named][:named_key]).to eq("id")
+        expect(paragraph[:attribute_list][:attribute_array][0][:named][:named_value]).to eq("myblock")
         expect(paragraph[:lines][0][:text]).to eq("This is my block with a defined ID.")
       end
     end
@@ -261,7 +261,7 @@ end
 
 module Asciidoc
   class ContentTester < Parslet::Parser
-    include Coradoc::Parser::Asciidoc::Content
+    include Coradoc::Parser::Asciidoc::Base
 
     rule(:document) { (contents | any.as(:unparsed)).repeat(1) }
     root :document

@@ -19,7 +19,7 @@ module Coradoc
         elsif @date.nil?
           "#{@number}: #{@remark}\n"
         else
-          "#{@number}, #{@date}: #{@revision}\n"
+          "#{@number}, #{@date}: #{@remark}\n"
         end
       end
     end

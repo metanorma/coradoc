@@ -13,10 +13,10 @@ module Coradoc
       end
 
       def to_adoc
-        adoc = "#{@first_name} "
-        adoc << "#{@middle_name} " if @middle_name
-        adoc << @last_name.to_s
-        adoc << " <#{@email}>" if @email
+        adoc = "#{@first_name}"
+        adoc << " #{@middle_name}" if @middle_name
+        adoc << " #{@last_name.to_s}"
+        adoc << " <#{@email}>\n" if @email
         adoc
       end
     end

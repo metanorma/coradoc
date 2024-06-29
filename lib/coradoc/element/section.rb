@@ -9,9 +9,9 @@ module Coradoc
         @title = title
         @id = options.fetch(:id, nil)
         @id = nil if @id == ""
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
         @contents = options.fetch(:contents, [])
         @sections = options.fetch(:sections, [])
-        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
       end
 
       def glossaries
