@@ -12,7 +12,7 @@ module Coradoc
       end
 
       def to_adoc
-        adoc = "= #{title}\n"
+        adoc = "= #{@title}\n"
         adoc << @author.to_adoc if @author
         adoc << @revision.to_adoc if @revision
         adoc

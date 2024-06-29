@@ -8,8 +8,8 @@ module Coradoc
       def initialize(content, options = {})
         @content = content
         @meta = options.fetch(:meta, nil)
-        id = options.fetch(:id, nil)
-        @anchor = Inline::Anchor.new(id) if id
+        @id = options.fetch(:id, nil)
+        @anchor = Inline::Anchor.new(@id) if @id
         @tdsinglepara = options.fetch(:tdsinglepara, nil)
       end
 

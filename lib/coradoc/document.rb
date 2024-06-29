@@ -1,6 +1,11 @@
 require_relative "element/base"
 require_relative "element/title"
 require_relative "element/block"
+require_relative "element/bibliography"
+require_relative "element/bibliography_entry"
+require_relative "element/comment_block"
+require_relative "element/comment_line"
+require_relative "element/include"
 require_relative "element/section"
 require_relative "element/attribute"
 require_relative "element/attribute_list"
@@ -59,6 +64,12 @@ module Coradoc
       @header = options.fetch(:header, Coradoc::Element::Header.new(""))
       @sections = options.fetch(:sections, [])
       self
+    end
+
+    def to_adoc
+      Coradoc::Generator.gen_adoc(@header) +
+      Coradoc::Generator.gen_adoc(@document_attributes) +
+      Coradoc::Generator.gen_adoc(@sections)
     end
   end
 end
