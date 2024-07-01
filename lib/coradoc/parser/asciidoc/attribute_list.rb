@@ -25,20 +25,39 @@ module Coradoc
             ).as(:positional)
         end
 
+        def named_many
+          (named_attribute.repeat(1,1) >>
+              (str(",") >> named_attribute).repeat(0))
+        end
+
+        def positional_one_named_many
+          (positional_attribute.repeat(1,1) >>
+            (str(",") >> named_attribute).repeat(1))
+        end
+
+        def positional_many_named_many
+          (positional_attribute.repeat(1,1) >>
+            (str(",") >> positional_attribute).repeat(1) >>
+            (str(",") >> named_attribute).repeat(1))
+        end
+
+        def positional_many
+          (positional_attribute.repeat(1,1) >>
+            (str(",") >> positional_attribute).repeat(0))
+        end
+
+        def positional_zero_or_one
+          positional_attribute.repeat(0,1)
+        end
+
         def attribute_list
           str("[") >>
-          (
-            (named_attribute.repeat(1,1) >>
-              (str(",") >> named_attribute).repeat(0)) |
-            (positional_attribute.repeat(1,1) >>
-              (str(",") >> named_attribute).repeat(1)) |
-            (positional_attribute.repeat(1,1) >>
-              (str(",") >> positional_attribute).repeat(1) >>
-              (str(",") >> named_attribute).repeat(1)) |
-            (positional_attribute.repeat(1,1) >>
-              (str(",") >> positional_attribute).repeat(0)) |
-            positional_attribute.repeat(0,1)
-            ).as(:attribute_array).as(:attribute_list) >>
+          ( named_many |
+            positional_one_named_many |
+            positional_many_named_many |
+            positional_many |
+            positional_zero_or_one
+          ).as(:attribute_array).as(:attribute_list) >>
           str("]")
         end
 

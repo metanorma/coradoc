@@ -10,9 +10,11 @@ module Coradoc
         end
 
         def to_adoc
-          "////\n" +
-          "#{@text}\n" +
-          "////#{@line_break}"
+          <<~ADOC.chomp
+            ////
+            #{@text}
+            ////#{@line_break}
+          ADOC
         end
       end
     end
