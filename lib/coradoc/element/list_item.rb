@@ -1,14 +1,16 @@
 module Coradoc
   module Element
     class ListItem < Base
-      attr_accessor :id, :content, :anchor
+      attr_accessor :marker, :id, :anchor, :content, :line_break
 
       declare_children :content, :id, :anchor
 
       def initialize(content, options = {})
-        @content = content
+        @marker = options.fetch(:marker, nil)
         @id = options.fetch(:id, nil)
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
+        @content = content
+        @line_break = options.fetch(:line_break, "")
       end
 
       def to_adoc
