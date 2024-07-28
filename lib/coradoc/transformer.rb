@@ -67,21 +67,27 @@ module Coradoc
     # Include
     rule(include: {
       path: simple(:path),
-      attribute_list: simple(:attribute_obj)}
+      attribute_list: simple(:attribute_list),
+      line_break: simple(:line_break)}
     ) {
       Element::Include.new(
         path.to_s,
-        attributes: attribute_obj)
+        attributes: attribute_list,
+        line_break: line_break)
     }
 
 
     # Text Element
     rule(text: simple(:text)) {
-      Element::TextElement.new(text)
+      Element::TextElement.new(text.to_s)
+    }
+
+    rule(text: simple(:text), line_break: simple(:line_break)) {
+      Element::TextElement.new(text.to_s, line_break: line_break)
     }
 
     rule(id: simple(:id), text: simple(:text)) do
-      Element::TextElement.new(text.to_s, id: id)
+      Element::TextElement.new(text.to_s, id: id.to_s)
     end
 
     rule(text: sequence(:text)) {
@@ -90,7 +96,7 @@ module Coradoc
 
     rule(
       text: simple(:text),
-      break: simple(:line_break)
+      line_break: simple(:line_break)
     ) do
       Element::TextElement.new(
         text.to_s,
@@ -176,33 +182,30 @@ module Coradoc
 
 
     # Paragraph
-    # rule(paragraph: simple(:paragraph)) { paragraph }
-    # rule(lines: sequence(:lines)) { Element::Paragraph.new(lines) }
-    # rule(meta: simple(:meta), lines: sequence(:lines)) do
-    #   Element::Paragraph.new(lines, meta: meta)
-    # end
-
-    # Paragraph
-    rule(paragraph: simple(:paragraph)) { paragraph }
-    rule(lines: sequence(:lines)) { Element::Paragraph.new(lines) }
-    rule(attribute_list: simple(:attribute_list), lines: sequence(:lines)) do
-      Element::Paragraph.new(lines, meta: attribute_list)
+    rule(paragraph: subtree(:paragraph)) do
+      Element::Paragraph.new(
+        paragraph[:lines],
+        meta: paragraph[:attribute_list],
+        title: paragraph[:title]
+        )
     end
+
+
 
     # Title Element
     rule(
       level: simple(:level),
       text: simple(:text),
-      break: simple(:line_break),
+      line_break: simple(:line_break),
     ) do
-      Element::Title.new(text, level, line_break: line_break)
+      Element::Title.new(text, level.to_s, line_break: line_break)
     end
 
     rule(
       name: simple(:name),
       level: simple(:level),
       text: simple(:text),
-      break: simple(:line_break),
+      line_break: simple(:line_break),
     ) do
       Element::Title.new(text, level, line_break: line_break, id: name)
     end
@@ -226,6 +229,15 @@ module Coradoc
     ) do
       Element::Section.new(title, id: id, sections: sections)
     end
+
+    rule(
+      id: simple(:id),
+      title: simple(:title),
+      contents: sequence(:contents),
+    ) do
+      Element::Section.new(title, id: id, contents: contents)
+    end
+
 
     rule(
       title: simple(:title),

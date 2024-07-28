@@ -180,7 +180,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       contents = section[:contents]
 
       expect(contents.count).to eq(3)
-      expect(contents[0][:block][:type]).to eq("example")
+      expect(contents[0][:block][:attribute_list][:attribute_array][0][:positional]).to eq("example")
       expect(contents[1][:block][:delimiter]).to eq("====")
       expect(section[:title][:text]).to eq("Basic block with perimeters")
       expect(contents[2][:block][:lines][0][:text]).to eq("Renders in monospace")

@@ -34,7 +34,8 @@ module Coradoc
         end
 
         def space
-          match('\s').repeat(1)
+          str(' ').repeat(1)
+          # match('\s').repeat(1)
         end
 
         def text
@@ -116,7 +117,7 @@ module Coradoc
           (str("include::") >> 
             file_path.as(:path) >>
             attribute_list >>
-          (line_ending)
+          (newline | str("")).as(:line_break)
           ).as(:include)
         end
 
