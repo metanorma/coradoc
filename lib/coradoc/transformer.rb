@@ -106,7 +106,7 @@ module Coradoc
     rule(
       id: simple(:id),
       text: simple(:text),
-      break: simple(:line_break)
+      line_break: simple(:line_break)
     ) do
       Element::TextElement.new(
         text.to_s,
@@ -117,7 +117,7 @@ module Coradoc
     rule(
       id: simple(:id),
       text: sequence(:text),
-      break: simple(:line_break)
+      line_break: simple(:line_break)
     ) do
       Element::TextElement.new(
         text,
@@ -129,7 +129,7 @@ module Coradoc
 
 
     rule(text: sequence(:text),
-      break: simple(:line_break)
+      line_break: simple(:line_break)
     ) do
       Element::TextElement.new(
         text,
@@ -279,6 +279,10 @@ module Coradoc
                                   sections: sections)
     end
 
+
+
+
+
     rule(example: sequence(:example)) do
       Element::Core.new("", type: "example", lines: example)
     end
@@ -380,7 +384,7 @@ module Coradoc
     end
 
     rule(key: simple(:key), value: simple(:value),
-         break: simple(:line_break)) do
+         line_break: simple(:line_break)) do
       Element::Attribute.new(key, value, line_break: line_break)
     end
 
@@ -391,17 +395,52 @@ module Coradoc
     end
 
     # Table
-    rule(table: simple(:table)) { table }
-    rule(cols: sequence(:cols)) { Element::Table::Row.new(cols) }
-    rule(title: simple(:title), rows: sequence(:rows)) do
-      Element::Table.new(title, rows)
+
+    rule(cols: sequence(:cols)) {
+      cells = cols.map{|c| Element::Table::Cell.new(content: c)}
+      Element::Table::Row.new(cells)
+    }
+
+    rule(table: subtree(:table)) do
+      title = table[:title] || nil
+      rows = table[:rows] || []
+      opts = {attributes: table[:attribute_list] || ""}
+      Element::Table.new(title, rows, opts)
     end
+
+
+
+    rule(marker: simple(:marker),
+      text: simple(:text),
+      line_break: simple(:line_break)) do
+      Element::ListItem.new(
+        text,
+        marker: marker.to_s,
+        line_break: line_break
+        )
+    end
+
+    rule(marker: simple(:marker),
+      id: simple(:id),
+      text: simple(:text),
+      line_break: simple(:line_break)) do
+      Element::ListItem.new(
+        text,
+        id: id,
+        marker: marker.to_s,
+        line_break: line_break
+        )
+    end
+
 
     # List
     rule(list: simple(:list)) { list }
     rule(unordered: sequence(:list_items)) do
       Element::List::Unordered.new(list_items)
     end
+
+
+
 
     # rule(list: simple(:list)) { list }
     rule(ordered: sequence(:list_items)) do
