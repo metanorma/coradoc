@@ -31,7 +31,7 @@ module Coradoc
           comment_line.absent? >>
           include_directive.absent?)  >>
             (asciidoc_char_with_id.absent? | text_id) >> literal_space? >>
-            text.as(:text) >> line_ending.as(:break)
+            text.as(:text) >> line_ending.as(:line_break)
         end
 
         def asciidoc_char
@@ -49,7 +49,7 @@ module Coradoc
 
         def glossary
           keyword.as(:key) >> str("::") >> (str(" ") | newline) >>
-            text.as(:value) >> line_ending.as(:break)
+            text.as(:value) >> line_ending.as(:line_break)
         end
 
         def glossaries

@@ -11,11 +11,12 @@ RSpec.describe "Coradoc::Asciidoc::DocumentAttributes" do
         :remarks: OSCAL from ISO27002:2022
         :mn-output-extensions: xml,html,doc,html_alt
         :title-main-fr: Spécification et méthodes d'essai
+        :local-cache-only:
       DOC
 
       ast = Asciidoc::DocumentAttributesTester.parse(document_attributes).first
 
-      expect(ast[:document_attributes].count).to eq(7)
+      expect(ast[:document_attributes].count).to eq(8)
       expect(ast[:document_attributes][0][:key]).to eq("published")
       expect(ast[:document_attributes][0][:value]).to eq("'2023-03-08T09:51:08+08:00'")
 
@@ -30,6 +31,9 @@ RSpec.describe "Coradoc::Asciidoc::DocumentAttributes" do
 
       expect(ast[:document_attributes][6][:key]).to eq("title-main-fr")
       expect(ast[:document_attributes][6][:value]).to eq("Spécification et méthodes d'essai")
+
+      expect(ast[:document_attributes][7][:key]).to eq("local-cache-only")
+      expect(ast[:document_attributes][7][:value]).to eq("")
     end
   end
 

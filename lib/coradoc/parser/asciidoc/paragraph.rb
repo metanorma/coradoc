@@ -26,9 +26,10 @@ module Coradoc
           list.absent? >>
           admonition_line.absent? >>
 
-          ((attribute_list >> newline).maybe >>
+          ( block_title.maybe >>
+            (attribute_list >> newline).maybe >>
             (paragraph_text_line.repeat(1,1) >> any.absent? |
-              (paragraph_text_line >> newline_single.as(:break)).repeat(1) >>
+              (paragraph_text_line >> newline_single.as(:line_break)).repeat(1) >>
               (paragraph_text_line.repeat(1,1)).repeat(0,1)
             ).as(:lines) >>
             newline.repeat(0)

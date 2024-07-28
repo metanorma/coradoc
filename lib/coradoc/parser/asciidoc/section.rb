@@ -5,6 +5,7 @@ module Coradoc
 
         def contents
           (
+            citation |
             comment_block |
             comment_line |
             include_directive |
@@ -17,6 +18,10 @@ module Coradoc
             list |
             empty_line
           ).repeat(1)
+        end
+
+        def citation
+          (str("[.source]\n") >> cross_reference.as(:reference) ).as(:citation)
         end
 
         def section_block(level = 2)
@@ -34,7 +39,7 @@ module Coradoc
         # Heading
         def section_title(level = 2, max_level = 8)
           match("=").repeat(level, max_level).as(:level) >>
-            space? >> text.as(:text) >> endline.as(:break)
+            space? >> text.as(:text) >> endline.as(:line_break)
         end
 
         # section
