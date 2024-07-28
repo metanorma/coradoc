@@ -10,7 +10,7 @@ module Coradoc
         @title = title
         @id = options.fetch(:id, nil)
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-        @attrs = options.fetch(:attrs, "")
+        @attrs = options.fetch(:attributes, "")
       end
 
       def to_adoc

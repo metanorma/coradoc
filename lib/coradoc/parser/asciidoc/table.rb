@@ -5,7 +5,8 @@ module Coradoc
         # include Coradoc::Parser::Asciidoc::Base
 
         def table
-          block_title >>
+          (attribute_list >> newline).maybe >>
+          block_title.maybe >>
             str("|===") >> line_ending >>
             table_row.repeat(1).as(:rows) >>
             str("|===") >> line_ending
