@@ -29,7 +29,7 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
         ast = Asciidoc::ContentTester.parse(content)
         block = ast.first[:block]
 
-        expect(block[:type]).to eq("sidebar")
+        expect(block[:attribute_list][:attribute_array][0][:positional]).to eq("sidebar")
         expect(block[:delimiter]).to eq("****")
         expect(block[:title]).to eq("Side blocks (open block syntax)")
         expect(block[:lines].first[:text]).to eq("This renders in the side.")
@@ -48,7 +48,7 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
         ast = Asciidoc::ContentTester.parse(content)
         block = ast.first[:block]
 
-        expect(block[:type]).to eq("sidebar")
+        expect(block[:attribute_list][:attribute_array][0][:positional]).to eq("sidebar")
         expect(block[:delimiter]).to eq("*****")
         expect(block[:title]).to eq("Side blocks (open block syntax)")
         expect(block[:lines].first[:text]).to eq("This renders in the side.")
@@ -87,7 +87,7 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
         block_one = ast.first[:block]
         block_two = ast.last[:block]
 
-        expect(block_one[:type]).to eq("example")
+        expect(block_one[:attribute_list][:attribute_array][0][:positional]).to eq("example")
         expect(block_one[:delimiter]).to eq("====")
         expect(block_two[:delimiter]).to eq("======")
         expect(block_two[:lines][0][:text]).to eq("Example text with permiter")
@@ -112,7 +112,7 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
         block_one = ast.first[:block]
         block_two = ast.last[:block]
 
-        expect(block_one[:type]).to eq("source")
+        expect(block_one[:attribute_list][:attribute_array][0][:positional]).to eq("source")
         expect(block_one[:delimiter]).to eq("--")
         expect(block_two[:delimiter]).to eq("----")
         expect(block_one[:lines][0][:text]).to eq("This renders in monospace.")
@@ -137,7 +137,7 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
         block_one = ast.first[:block]
         block_two = ast.last[:block]
 
-        expect(block_one[:type]).to eq("quote")
+        expect(block_one[:attribute_list][:attribute_array][0][:positional]).to eq("quote")
         expect(block_one[:delimiter]).to eq("--")
         expect(block_two[:delimiter]).to eq("____")
         expect(block_one[:lines][0][:text]).to eq("This is quote type text")

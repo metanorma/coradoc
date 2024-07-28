@@ -4,7 +4,10 @@ module Coradoc
       module Block
 
         def block
-          sidebar_block | example_block | source_block | quote_block
+          sidebar_block |
+          example_block |
+          source_block |
+          quote_block
         end
 
         def source_block
@@ -19,6 +22,12 @@ module Coradoc
           block_style("_")
         end
 
+        def block_content
+          (text_line |
+            list
+          ).repeat(1) #>> newline
+        end
+
         def sidebar_block
           block_style("*")
         end
@@ -28,7 +37,7 @@ module Coradoc
         end
 
         def block_title
-          str(".") >> text.as(:title) >> newline
+          str(".") >> space.absent? >> text.as(:title) >> newline
         end
 
         def block_type(type)
@@ -40,9 +49,9 @@ module Coradoc
         def block_style(delimiter = "*", repeater = 4, type = "")
           block_title.maybe >>
             newline.maybe >>
-            block_type(type).maybe >>
+            (attribute_list >> newline ).maybe >>
             str(delimiter).repeat(repeater).as(:delimiter) >> newline >>
-            text_line.repeat(1).as(:lines) >>
+            block_content.as(:lines) >>
             str(delimiter).repeat(repeater) >> newline
         end
 
