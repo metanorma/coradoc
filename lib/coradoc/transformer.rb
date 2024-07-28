@@ -309,15 +309,38 @@ module Coradoc
         )
     }
 
-    rule(block: {
-      delimiter: simple(:delimiter),
-      lines: sequence(:lines)
-    }) {
+    rule(block: subtree(:block)
+    # {
+    #     title: simple(:title),
+    #   attribute_list: simple(:attribute_list),
+    #   delimiter: simple(:delimiter),
+    #   lines: sequence(:lines)
+    # }
+    ) {
+      title = block[:title]
+      attribute_list = block[:attribute_list]
+      delimiter = block[:delimiter]
+      lines = block[:lines]
+
+      opts = {title: title, 
+        attributes: attribute_list,
+        delimiter_len: delimiter.size,
+        lines: lines}
       if delimiter == "****"
-        Element::Block::Side.new(
-          title: nil,
-          lines: lines
-        )
+        # puts attribute_lisp.inspect
+        if (attribute_list.positional == [] &&
+           attribute_list.named.keys[0] == "reviewer")
+          Element::Block::ReviewerComment.new(
+            opts
+            )
+        elsif (attribute_list.positional[0] == "sidebar" &&
+          attribute_list.named == {})
+          Element::Block::Side.new(
+            opts
+          )
+        end
+      elsif delimiter == "____"
+        Element::Block::Quote.new
       end
     }
 
