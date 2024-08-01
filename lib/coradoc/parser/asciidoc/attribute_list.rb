@@ -12,10 +12,10 @@ module Coradoc
         end
 
         def named_attribute
-          (match['a-zA-Z0-9_-'].repeat(1).as(:named_key) >>
-            space? >> str("=") >> space? >>
+          (match('[a-zA-Z0-9_-]').repeat(1).as(:named_key) >>
+            str(' ').maybe >> str("=") >> str(' ').maybe >>
             match['a-zA-Z0-9_-'].repeat(1).as(:named_value) >>
-            space?
+            str(' ').maybe
             ).as(:named)
         end
 
@@ -51,7 +51,7 @@ module Coradoc
         end
 
         def attribute_list
-          str("[") >>
+          match('^\[') >> str("[").absent? >> 
           ( named_many |
             positional_one_named_many |
             positional_many_named_many |

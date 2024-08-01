@@ -10,7 +10,7 @@ module Coradoc
         @id = options.fetch(:id, nil)
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
         @content = content
-        @line_break = options.fetch(:line_break, "")
+        @line_break = options.fetch(:line_break, "\n")
       end
 
       def to_adoc
@@ -27,7 +27,7 @@ module Coradoc
           subcontent.chomp
         end.compact.join("\n+\n")
 
-        " #{anchor}#{content.chomp}\n"
+        " #{anchor}#{content.chomp}#{@line_break}"
       end
     end
   end

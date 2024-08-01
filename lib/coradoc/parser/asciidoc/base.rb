@@ -31,6 +31,9 @@ module Coradoc
 
         def space?
           space.maybe
+          # str(' ') >> str(' ').absent? |
+          # str('  ') >> str(' ').absent? |
+          # space.maybe
         end
 
         def space
@@ -43,7 +46,7 @@ module Coradoc
         end
 
         def line_ending
-          match("[\n]")
+          str("\n")
         end
 
         def endline
@@ -52,11 +55,11 @@ module Coradoc
 
         def newline
           # match["\r\n"].repeat(1)
-          (match("\n") | match("\r\n")).repeat(1)
+          (str("\n") | str("\r\n")).repeat(1)
         end
 
         def newline_single
-          (match("\n") | match("\r\n"))
+          (str("\n") | str("\r\n"))
         end
 
         def keyword
@@ -77,6 +80,7 @@ module Coradoc
 
         def word
           match("[a-zA-Z0-9_-]").repeat(1)
+          # match(/[a-zA-Z0-9_-]+/)
         end
 
         def words

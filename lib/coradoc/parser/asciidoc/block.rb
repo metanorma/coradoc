@@ -37,11 +37,13 @@ module Coradoc
         end
 
         def block_title
-          str(".") >> space.absent? >> text.as(:title) >> newline
+          match("^\\.") >> space.absent? >> text.as(:title) >> newline
         end
 
         def block_type(type)
-          (str("[") >> str(type).as(:type) >> str("]")) | 
+          (match("^[") >> str("[").absent? >>
+            str(type).as(:type) >>
+            str("]")) | 
             (str("[") >> keyword.as(:type) >> str("]")
           ) >> newline
         end

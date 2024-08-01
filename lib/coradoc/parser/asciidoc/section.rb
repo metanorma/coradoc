@@ -26,6 +26,7 @@ module Coradoc
 
         def section_block(level = 2)
           section_id.maybe >>
+            (attribute_list >> newline).maybe >>
             section_title(level).as(:title) >>
             contents.as(:contents).maybe
         end
@@ -39,6 +40,7 @@ module Coradoc
         # Heading
         def section_title(level = 2, max_level = 8)
           match("=").repeat(level, max_level).as(:level) >>
+            str('=').absent? >>
             space? >> text.as(:text) >> endline.as(:line_break)
         end
 

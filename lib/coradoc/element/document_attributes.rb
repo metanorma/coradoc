@@ -20,7 +20,7 @@ module Coradoc
         to_hash.map do |key, value|
           v = value.to_s.empty? ? "" : " #{value}"
           ":#{key}:#{v}\n"
-        end.join("\n") + "\n"
+        end.join + "\n"
       end
     end
   end
