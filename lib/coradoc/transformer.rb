@@ -198,7 +198,7 @@ module Coradoc
       text: simple(:text),
       line_break: simple(:line_break),
     ) do
-      Element::Title.new(text, level.to_s, line_break: line_break)
+      Element::Title.new(text, level.size - 1, line_break: line_break)
     end
 
     rule(
@@ -207,7 +207,7 @@ module Coradoc
       text: simple(:text),
       line_break: simple(:line_break),
     ) do
-      Element::Title.new(text, level, line_break: line_break, id: name)
+      Element::Title.new(text, level.size - 1, line_break: line_break, id: name)
     end
 
     # Section
@@ -349,11 +349,14 @@ module Coradoc
     }
 
     # # Admonition
-    # rule(admonition: simple(:admonition)) { admonition }
-    # rule(type: simple(:type), text: simple(:text), break: simple(:line_break)) do
-    #   Element::Admonition.new(text, type.to_s, line_break: line_break)
-    # end
-    #
+    # rule(admonition_type: simple(:admonition)) { admonition }
+    rule(admonition_type: simple(:admonition_type),
+      content: simple(:content),
+      # line_break: simple(:line_break)
+      ) do
+      Element::Admonition.new(content, admonition_type.to_s)
+    end
+    
     # # Block
     # rule(title: simple(:title), lines: sequence(:lines)) do
     #   Element::Block.new(title, lines: lines)
@@ -410,7 +413,8 @@ module Coradoc
 
 
 
-    rule(marker: simple(:marker),
+    rule(list_item: simple(:list_item),
+      marker: simple(:marker),
       text: simple(:text),
       line_break: simple(:line_break)) do
       Element::ListItem.new(
@@ -420,7 +424,8 @@ module Coradoc
         )
     end
 
-    rule(marker: simple(:marker),
+    rule(list_item: simple(:list_item),
+      marker: simple(:marker),
       id: simple(:id),
       text: simple(:text),
       line_break: simple(:line_break)) do
@@ -438,7 +443,11 @@ module Coradoc
     rule(unordered: sequence(:list_items)) do
       Element::List::Unordered.new(list_items)
     end
-
+    rule(attribute_list: simple(:attribute_list),
+      unordered: sequence(:list_items)
+    ) do
+      Element::List::Unordered.new(list_items, attrs: attribute_list)
+    end
 
 
 
@@ -447,6 +456,11 @@ module Coradoc
       Element::List::Ordered.new(list_items)
     end
 
+    rule(attribute_list: simple(:attribute_list),
+      ordered: sequence(:list_items)
+    ) do
+      Element::List::Ordered.new(list_items, attrs: attribute_list)
+    end
 
 
     rule(terms: simple(:terms), definition: simple(:definition)) do

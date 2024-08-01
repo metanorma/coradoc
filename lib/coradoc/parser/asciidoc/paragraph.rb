@@ -4,13 +4,13 @@ module Coradoc
       module Paragraph
 
         def paragraph_text_line
-          include_directive.absent? >>
-          comment_block.absent? >>
-          comment_line.absent? >>
-          list.absent? >>
-          admonition_line.absent? >>
+          # include_directive.absent? >>
+          # comment_block.absent? >>
+          # comment_line.absent? >>
+          # list.absent? >>
+          # admonition_line.absent? >>
 
-          block.absent? >>
+          # block.absent? >>
           (asciidoc_char_with_id.absent? | text_id ) >>
           literal_space? >>
           (text_formatted.as(:text) # >>
@@ -19,12 +19,12 @@ module Coradoc
         end
 
         def paragraph
-          block.absent? >>
-          include_directive.absent? >>
-          comment_block.absent? >>
-          comment_line.absent? >>
-          list.absent? >>
-          admonition_line.absent? >>
+          # block.absent? >>
+          # include_directive.absent? >>
+          # comment_block.absent? >>
+          # comment_line.absent? >>
+          # list.absent? >>
+          # admonition_line.absent? >>
 
           ( block_title.maybe >>
             (attribute_list >> newline).maybe >>
