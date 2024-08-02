@@ -215,72 +215,15 @@ module Coradoc
     #
     # rule(id: simple(:id), title: simple(:title), content:)
 
-    rule(
-      title: simple(:title),
-      sections: sequence(:sections),
-    ) do
-      Element::Section.new(title, sections: sections)
+    rule(section: subtree(:section)) do
+      id = section[:id] || nil
+      title = section[:title] || nil
+      attribute_list = section[:attribute_list] || nil
+      contents = section[:contents] || []
+      sections = section[:sections]
+      opts = {id:,attribute_list:,contents:,sections: }
+      Element::Section.new(title, opts)
     end
-
-    rule(
-      id: simple(:id),
-      title: simple(:title),
-      sections: sequence(:sections),
-    ) do
-      Element::Section.new(title, id: id, sections: sections)
-    end
-
-    rule(
-      id: simple(:id),
-      title: simple(:title),
-      contents: sequence(:contents),
-    ) do
-      Element::Section.new(title, id: id, contents: contents)
-    end
-
-
-    rule(
-      title: simple(:title),
-      contents: sequence(:contents),
-      sections: sequence(:sections),
-    ) do
-      Element::Section.new(
-        title,
-        contents: contents,
-        sections: sections)
-    end
-
-    rule(
-      id: simple(:id),
-      title: simple(:title),
-      contents: sequence(:contents),
-      sections: simple(:sections),
-    ) do
-      Element::Section.new(title, id: id, contents: contents,
-                                  sections: sections)
-    end
-
-    rule(
-      id: simple(:id),
-      title: simple(:title),
-      contents: sequence(:contents),
-      sections: sequence(:sections),
-    ) do
-      Element::Section.new(title, id: id, contents: contents,
-                                  sections: sections)
-    end
-
-    rule(
-      title: simple(:title),
-      contents: sequence(:contents),
-      sections: simple(:sections),
-    ) do
-      Element::Section.new(title, contents: contents,
-                                  sections: sections)
-    end
-
-
-
 
 
     rule(example: sequence(:example)) do

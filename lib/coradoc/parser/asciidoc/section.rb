@@ -25,6 +25,7 @@ module Coradoc
         end
 
         def section_block(level = 2)
+          return nil if level > 8
           section_id.maybe >>
             (attribute_list >> newline).maybe >>
             section_title(level).as(:title) >>
@@ -45,33 +46,19 @@ module Coradoc
         end
 
         # section
-        def section
-          section_block >> second_level_section.repeat(0).as(:sections)
+        def section(level = 2)
+          r = section_block(level) 
+          if level < 8
+            r = r >> section(level + 1).as(:section).repeat(0).as(:sections)
+          end
+          if level == 2
+            (r).as(:section)
+          else
+            r
+          end
+
         end
 
-        def sub_section(level)
-          newline.maybe >> section_block(level)
-        end
-
-        def second_level_section
-          sub_section(3) >> third_level_section.repeat(0).as(:sections)
-        end
-
-        def third_level_section
-          sub_section(4) >> fourth_level_section.repeat(0).as(:sections)
-        end
-
-        def fourth_level_section
-          sub_section(5) >> fifth_level_section.repeat(0).as(:sections)
-        end
-
-        def fifth_level_section
-          sub_section(6) >> sixth_level_section.repeat(0).as(:sections)
-        end
-
-        def sixth_level_section
-          sub_section(7) >> sub_section(8).repeat(0).as(:sections)
-        end
       end
     end
   end

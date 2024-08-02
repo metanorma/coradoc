@@ -49,6 +49,7 @@ module Coradoc
           marker = marker >>  str("*").repeat(nl2, nl2) if nl2 > 0
           str("").as(:list_item) >>
           marker.as(:marker) >> str("*").absent? >>
+          str(' [[[').absent? >>
           match("\n").absent? >> space >> text_line
         end
 
