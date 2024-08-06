@@ -13,7 +13,8 @@ module Coradoc
       def to_adoc
         adoc = "* [[[#{@anchor_name}"
         adoc << ",#{@document_id}" if @document_id
-        adoc << "]]], #{@reference_text}"
+        adoc << "]]]"
+        adoc << "#{@reference_text}" if @reference_text
         adoc << @line_break
         adoc
       end

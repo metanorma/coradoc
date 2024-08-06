@@ -11,7 +11,7 @@ module Coradoc
 
       def to_s
         content = Coradoc::Generator.gen_adoc(@content)
-        "#{type.to_s.upcase}: #{content}"
+        "#{type.to_s.upcase}: #{content}#{@line_break}"
       end
 
     end

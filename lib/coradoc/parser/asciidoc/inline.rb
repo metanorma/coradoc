@@ -9,6 +9,13 @@ module Coradoc
           str('>>')
         end
 
+        def citation
+          (str("[.source]\n") >>
+            cross_reference.as(:cross_reference) >>
+            (match['[^\n]'].repeat(1)).as(:comment).maybe >>
+            newline).as(:citation)
+        end
+
         def bold_constrained
           (str('*') >>
             match("[^*]").repeat(1).as(:text).repeat(1,1) >>
@@ -65,7 +72,9 @@ module Coradoc
         end
 
         def text_formatted
+          attribute_list.absent? >>
           (asciidoc_char_with_id.absent?| text_id) >>
+          (attribute_list >> newline).absent? >>
             # literal_space? >>
            ((cross_reference |
             bold_unconstrained | bold_constrained |

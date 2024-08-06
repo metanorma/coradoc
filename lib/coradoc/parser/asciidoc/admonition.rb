@@ -19,7 +19,10 @@ module Coradoc
           #     # )
           #   )
           (
-            text_line(1).repeat(1)
+            # text_line(1).repeat(1)
+            (text.as(:text) >>
+            line_ending.as(:line_break)
+            ).repeat(1)
             ).as(:content)
         end
       end

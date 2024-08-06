@@ -30,6 +30,7 @@ module Coradoc
           # (comment_block.absent? >>
           # comment_line.absent? >>
           # include_directive.absent?)  >>
+          # attribute_list.absent? >>
             (asciidoc_char_with_id.absent? | text_id) >> literal_space? >>
             text.as(:text) >>
             line_ending.repeat(n_line_breaks).as(:line_break)
