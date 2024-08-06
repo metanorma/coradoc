@@ -72,9 +72,9 @@ module Coradoc
         end
 
         def text_formatted
-          attribute_list.absent? >>
-          (asciidoc_char_with_id.absent?| text_id) >>
-          (attribute_list >> newline).absent? >>
+          # attribute_list.absent? >>
+          # (asciidoc_char_with_id.absent?| text_id) >>
+          # (attribute_list >> newline).absent? >>
             # literal_space? >>
            ((cross_reference |
             bold_unconstrained | bold_constrained |

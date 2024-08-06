@@ -19,8 +19,9 @@ adoc_files.each do |file_path|
   file_path_diff = "#{file_path}.roundtrip.diff"
   FileUtils.rm(file_path_rt) if File.exist?(file_path_rt)
   FileUtils.rm(file_path_diff) if File.exist?(file_path_diff)
-  begin
+  # begin
     adoc_file = File.open(file_path).read;
+    next if adoc_file.size == 0
     puts "parsing..."
     ast = Coradoc::Parser::Base.new.parse(adoc_file);
     puts "transforming..."
@@ -33,7 +34,7 @@ adoc_files.each do |file_path|
     cleaned_adoc = Coradoc::ReverseAdoc.cleaner.tidy(generated_adoc)
     File.open("#{file_path}.roundtrip","w"){|f| f.write(cleaned_adoc)}
     `diff #{file_path} #{file_path}.roundtrip > #{file_path}.roundtrip.diff`
-  rescue
-    puts "unsuccessful..."
-  end
+  # rescue
+    # puts "unsuccessful..."
+  # end
 end;

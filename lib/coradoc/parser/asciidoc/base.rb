@@ -11,6 +11,7 @@ require_relative "paragraph"
 require_relative "section"
 require_relative "table"
 # require_relative "include"
+require_relative "term"
 
 module Coradoc
   module Parser
@@ -28,6 +29,7 @@ module Coradoc
         include Coradoc::Parser::Asciidoc::Paragraph
         include Coradoc::Parser::Asciidoc::Section
         include Coradoc::Parser::Asciidoc::Table
+        include Coradoc::Parser::Asciidoc::Term
 
         def space?
           space.maybe
@@ -63,7 +65,7 @@ module Coradoc
         end
 
         def keyword
-          (match("[a-zA-Z0-9_-]") | str(".")).repeat(1)
+          (match('[a-zA-Z0-9_\-.,]') | str(".")).repeat(1)
         end
 
         def empty_line

@@ -65,6 +65,7 @@ module Coradoc
             "----" => :source,
             "====" => :example,
             "...." => :literal,
+            "++++" => :pass,
           }
         end
       end

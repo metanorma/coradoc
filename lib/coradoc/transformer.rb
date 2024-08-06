@@ -266,6 +266,19 @@ module Coradoc
     }
 
 
+    rule(term_type: simple(:term_type),
+      term: simple(:term),
+      line_break: simple(:line_break)){
+      Coradoc::Element::Term.new(term, type: term_type, line_break: line_break, lang: :en)
+    }
+
+    rule(term_type: simple(:term_type),
+      term2: simple(:term2),
+      line_break: simple(:line_break)){
+      Coradoc::Element::Term.new(term2, type: term_type, line_break: line_break, lang: :fr)
+    }
+
+
     rule(block: subtree(:block)
     # {
     #     title: simple(:title),
@@ -274,12 +287,14 @@ module Coradoc
     #   lines: sequence(:lines)
     # }
     ) {
+      id = block[:id]
       title = block[:title]
       attribute_list = block[:attribute_list]
       delimiter = block[:delimiter]
       lines = block[:lines]
 
-      opts = {title: title, 
+      opts = {id: id,
+        title: title, 
         attributes: attribute_list,
         delimiter_len: delimiter.size,
         lines: lines}
