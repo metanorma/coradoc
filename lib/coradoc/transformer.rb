@@ -256,6 +256,16 @@ module Coradoc
         )
     }
 
+    rule(citation: {cross_reference: simple(:cross_reference),
+      comment: simple(:comment)}){
+      Element::Inline::Citation.new(cross_reference, comment)
+    }
+
+    rule(citation: {cross_reference: simple(:cross_reference)}){
+      Element::Inline::Citation.new(cross_reference)
+    }
+
+
     rule(block: subtree(:block)
     # {
     #     title: simple(:title),
@@ -294,7 +304,7 @@ module Coradoc
     # # Admonition
     # rule(admonition_type: simple(:admonition)) { admonition }
     rule(admonition_type: simple(:admonition_type),
-      content: simple(:content),
+      content: sequence(:content),
       # line_break: simple(:line_break)
       ) do
       Element::Admonition.new(content, admonition_type.to_s)

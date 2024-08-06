@@ -9,8 +9,10 @@ module Coradoc
           # comment_line.absent? >>
           # list.absent? >>
           # admonition_line.absent? >>
+          # (match("^") >> attribute_list >> newline).absent? >>
 
           # block.absent? >>
+          # match('^\[').absent? >>
           (asciidoc_char_with_id.absent? | text_id ) >>
           literal_space? >>
           (text_formatted.as(:text) # >>

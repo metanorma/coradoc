@@ -1,6 +1,7 @@
 $LOAD_PATH.unshift("../coradoc/lib");
 
 require "coradoc"
+require "coradoc/reverse_adoc"
 
 
 rice_path = "../mn-samples-iso/sources/international-standard/rice-2023/"
@@ -29,7 +30,8 @@ adoc_files.each do |file_path|
 
     puts "generating..."
     generated_adoc = Coradoc::Generator.gen_adoc(doc)
-    File.open("#{file_path}.roundtrip","w"){|f| f.write(generated_adoc)}
+    cleaned_adoc = Coradoc::ReverseAdoc.cleaner.tidy(generated_adoc)
+    File.open("#{file_path}.roundtrip","w"){|f| f.write(cleaned_adoc)}
     `diff #{file_path} #{file_path}.roundtrip > #{file_path}.roundtrip.diff`
   rescue
     puts "unsuccessful..."

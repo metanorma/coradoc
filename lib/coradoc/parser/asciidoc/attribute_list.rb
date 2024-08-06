@@ -14,7 +14,7 @@ module Coradoc
         def named_attribute
           (match('[a-zA-Z0-9_-]').repeat(1).as(:named_key) >>
             str(' ').maybe >> str("=") >> str(' ').maybe >>
-            match['a-zA-Z0-9_-'].repeat(1).as(:named_value) >>
+            match['a-zA-Z0-9_\- '].repeat(1).as(:named_value) >>
             str(' ').maybe
             ).as(:named)
         end

@@ -32,7 +32,10 @@ module Coradoc
       root :document
       rule(:document) do
         (
-          bibliography | 
+          # bibliography | 
+          admonition_line |
+          bib_entry | 
+          citation |
           # attribute_list.as(:attribute_list) |
           comment_block |
           comment_line |
@@ -40,8 +43,8 @@ module Coradoc
           include_directive |
           document_attributes |
           section.as(:section) |
-          paragraph |
           list |
+          paragraph |
           header.as(:header) |
           empty_line.as(:line_break) |
           any.as(:unparsed)

@@ -12,14 +12,15 @@ module Coradoc
         end
 
         def bib_entry
-          (str('* [[[') >> match('[^,\]\n]').repeat(1).as(:anchor_name) >>
+          (match("^*") >> str(' [[[') >>
+            match('[^,\[\]\n]').repeat(1).as(:anchor_name) >>
           (  str(",") >>
             match('[^\]\n]').repeat(1).as(:document_id)
             ).maybe  >>
           str("]]]") >>
             (text_line.repeat(0,1) >>
               text_line.repeat(0)
-            ).as(:reference_text) >>
+            ).as(:reference_text).maybe >>
             line_ending.repeat(1).as(:line_break).maybe
           ).as(:bibliography_entry)
         end

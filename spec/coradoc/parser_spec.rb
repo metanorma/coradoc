@@ -16,7 +16,7 @@ RSpec.describe Coradoc::Parser do
       expect(ast[1][:document_attributes][0][:key]).to eq("published")
       expect(ast[1][:document_attributes][0][:value]).to eq("'2023-03-08T09:51:08+08:00'")
 
-      section = ast[3][:section][:section] #TODO fix it
+      section = ast[3][:section][:section]
       clause_5_1 = section[:sections][0][:section]
       content = clause_5_1[:contents].first
 
