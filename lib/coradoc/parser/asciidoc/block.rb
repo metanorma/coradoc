@@ -7,11 +7,16 @@ module Coradoc
           sidebar_block |
           example_block |
           source_block |
-          quote_block
+          quote_block |
+          pass_block
         end
 
         def source_block
           block_style("-", 2)
+        end
+
+        def pass_block
+          block_style("+")
         end
 
         def source_block
@@ -48,9 +53,17 @@ module Coradoc
           ) >> newline
         end
 
+        def block_id
+          (str("[[") >> keyword.as(:id) >> str("]]") |
+            str("[#") >> keyword.as(:id) >> str("]")) >> newline
+        end
+
+
         def block_style(delimiter = "*", repeater = 4, type = "")
           block_title.maybe >>
             newline.maybe >>
+            (attribute_list >> newline ).maybe >>
+            block_id.maybe >>
             (attribute_list >> newline ).maybe >>
             str(delimiter).repeat(repeater).as(:delimiter) >> newline >>
             block_content.as(:lines) >>

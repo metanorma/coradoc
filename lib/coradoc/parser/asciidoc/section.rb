@@ -6,6 +6,7 @@ module Coradoc
         def contents
           (
             citation |
+            term | term2 |
             bib_entry |
             comment_block |
             comment_line |
@@ -25,6 +26,7 @@ module Coradoc
           return nil if level > 8
           (attribute_list >> newline).maybe >>
           section_id.maybe >>
+          (attribute_list >> newline).maybe >>
             section_title(level).as(:title) >>
             contents.as(:contents).maybe
         end

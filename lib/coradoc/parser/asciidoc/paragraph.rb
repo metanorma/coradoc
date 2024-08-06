@@ -17,7 +17,8 @@ module Coradoc
           literal_space? >>
           (text_formatted.as(:text) # >>
           # newline_single.as(:break).maybe
-          )#.as(:paragraph_text_line)
+          ) | term | term2
+          #.as(:paragraph_text_line)
         end
 
         def paragraph

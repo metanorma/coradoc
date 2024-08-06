@@ -20,7 +20,7 @@ module Coradoc
           str("]]]") >>
             (text_line.repeat(0,1) >>
               text_line.repeat(0)
-            ).as(:reference_text).maybe >>
+            ).as(:ref_text).maybe >>
             line_ending.repeat(1).as(:line_break).maybe
           ).as(:bibliography_entry)
         end

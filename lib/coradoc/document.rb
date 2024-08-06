@@ -23,6 +23,7 @@ require_relative "element/image"
 require_relative "element/audio"
 require_relative "element/video"
 require_relative "element/break"
+require_relative "element/term"
 
 module Coradoc
   class Document
