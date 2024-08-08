@@ -16,7 +16,7 @@ module Coradoc
         end
 
         def pass_block
-          block_style("+")
+          block_style("+", 4, :pass)
         end
 
         def source_block
@@ -27,10 +27,13 @@ module Coradoc
           block_style("_")
         end
 
-        def block_content
-          (text_line |
-            list
-          ).repeat(1) #>> newline
+        def block_content(n_deep = 2)
+          c = block_image |
+            list |
+            text_line |
+            empty_line.as(:line_break)
+          c = c | block_content(n_deep - 1) if (n_deep > 0)
+          c.repeat(1) #>> newline
         end
 
         def sidebar_block
@@ -46,27 +49,31 @@ module Coradoc
         end
 
         def block_type(type)
-          (match("^[") >> str("[").absent? >>
+          (match('^\[') >> str("[").absent? >>
             str(type).as(:type) >>
             str("]")) | 
-            (str("[") >> keyword.as(:type) >> str("]")
-          ) >> newline
+          (match('^\[') >> keyword.as(:type) >> str("]")) >> newline
         end
 
         def block_id
-          (str("[[") >> keyword.as(:id) >> str("]]") |
+          (match('^\[') >> str("[") >> str('[').absent? >> keyword.as(:id) >> str("]]") |
             str("[#") >> keyword.as(:id) >> str("]")) >> newline
         end
 
 
-        def block_style(delimiter = "*", repeater = 4, type = "")
+        def block_style(delimiter = "*", repeater = 4, type = nil)
+          block_id.maybe >>
           block_title.maybe >>
             newline.maybe >>
             (attribute_list >> newline ).maybe >>
             block_id.maybe >>
             (attribute_list >> newline ).maybe >>
             str(delimiter).repeat(repeater).as(:delimiter) >> newline >>
-            block_content.as(:lines) >>
+            if type == :pass
+              (text_line | empty_line.as(:line_break)).repeat(1).as(:lines)
+            else
+              block_content.as(:lines)
+            end >>
             str(delimiter).repeat(repeater) >> newline
         end
 

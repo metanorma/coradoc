@@ -37,7 +37,7 @@ module Coradoc
         end
 
         def asciidoc_char
-          match("^[*_:=-]")
+          match('^[*_:=\-+]')
         end
 
         def asciidoc_char_with_id

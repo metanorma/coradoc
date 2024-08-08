@@ -185,7 +185,7 @@ module Coradoc
     rule(paragraph: subtree(:paragraph)) do
       Element::Paragraph.new(
         paragraph[:lines],
-        meta: paragraph[:attribute_list],
+        attributes: paragraph[:attribute_list],
         title: paragraph[:title]
         )
     end
@@ -290,15 +290,16 @@ module Coradoc
       id = block[:id]
       title = block[:title]
       attribute_list = block[:attribute_list]
-      delimiter = block[:delimiter]
+      delimiter = block[:delimiter].to_s
+      delimiter_c = delimiter[0]
       lines = block[:lines]
 
       opts = {id: id,
         title: title, 
-        attributes: attribute_list,
         delimiter_len: delimiter.size,
         lines: lines}
-      if delimiter == "****"
+      opts[:attributes] = attribute_list if attribute_list
+      if delimiter_c == "*"
         # puts attribute_lisp.inspect
         if (attribute_list.positional == [] &&
            attribute_list.named.keys[0] == "reviewer")
@@ -311,8 +312,16 @@ module Coradoc
             opts
           )
         end
-      elsif delimiter == "____"
-        Element::Block::Quote.new
+      elsif delimiter_c == "="
+        Element::Block::Example.new(title, opts)
+      elsif delimiter_c == "+"
+        Element::Block::Pass.new(opts)
+      elsif delimiter_c == "-"
+        if (attribute_list.positional[0] == "quote")
+          Element::Block::Quote.new(title, opts)
+        end
+      elsif delimiter_c == "_"
+        Element::Block::Quote.new(title, opts)
       end
     }
 
@@ -324,7 +333,8 @@ module Coradoc
       ) do
       Element::Admonition.new(content, admonition_type.to_s)
     end
-    
+
+
     # # Block
     # rule(title: simple(:title), lines: sequence(:lines)) do
     #   Element::Block.new(title, lines: lines)
@@ -348,7 +358,22 @@ module Coradoc
     # rule(attributes: simple(:attributes), lines: sequence(:lines)) do
     #   Element::Block.new(nil, lines: lines, attributes: attributes)
     # end
-    #
+
+    # TODO block_image 
+    rule(block_image: subtree(:block_image)) do
+      id = block_image[:id]
+      title = block_image[:title]
+      path = block_image[:path]
+      opts = {
+        # attributes: block_image[:attribute_list],
+        attributes: block_image[:attribute_list_macro],
+        line_break: block_image[:line_break]
+      }
+      Element::Image::BlockImage.new(title, id, path, opts)
+    end
+
+
+
     # Attribute
     rule(key: simple(:key), value: simple(:value)) do
       Element::Attribute.new(key, value)
@@ -359,7 +384,9 @@ module Coradoc
       Element::Attribute.new(key, value, line_break: line_break)
     end
 
-    rule(line_break: simple(:line_break)) { Element::LineBreak.new(line_break) }
+    rule(line_break: simple(:line_break)) {
+      Element::LineBreak.new(line_break)
+    }
 
     rule(document_attributes: sequence(:document_attributes)) do
       Element::DocumentAttributes.new(document_attributes)
@@ -375,7 +402,10 @@ module Coradoc
     rule(table: subtree(:table)) do
       title = table[:title] || nil
       rows = table[:rows] || []
-      opts = {attributes: table[:attribute_list] || ""}
+      opts = {
+        id: table[:id] || nil,
+        attributes: table[:attribute_list] || nil
+      }
       Element::Table.new(title, rows, opts)
     end
 

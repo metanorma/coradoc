@@ -8,6 +8,7 @@ module Coradoc
           @title = title
           @id = options.fetch(:id, nil)
           @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
+          @attributes = options.fetch(:attributes, AttributeList.new)
           @lines = options.fetch(:lines, [])
           @delimiter_char = "="
           @delimiter_len = options.fetch(:delimiter_len, 4)

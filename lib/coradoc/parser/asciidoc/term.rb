@@ -15,7 +15,7 @@ module Coradoc
         def term2
           match('^\[') >> term_type >> str(']#') >>
           match('[^\#]').repeat(1).as(:term2) >> str('#') >>
-          str("]") >> str("\n").repeat(1).as(:line_break)
+          str("\n").repeat(1).as(:line_break)
         end
       end
     end

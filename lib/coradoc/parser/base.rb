@@ -37,17 +37,19 @@ module Coradoc
           # bibliography | 
           admonition_line |
           bib_entry | 
+          block_image |
           term | term2 |
           citation |
           # attribute_list.as(:attribute_list) |
           comment_block |
           comment_line |
+          section.as(:section) |
           block.as(:block) |
           include_directive |
           document_attributes |
-          section.as(:section) |
-          list |
 
+          list |
+          table.as(:table) |
           paragraph |
           header.as(:header) |
           empty_line.as(:line_break) |
