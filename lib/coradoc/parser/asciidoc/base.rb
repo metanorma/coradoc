@@ -102,7 +102,7 @@ module Coradoc
         end
 
         def special_character
-          match("^[*_:=-]") | str("[#") | str("[[")
+          match("^[*:=-]") | str("[#") | str("[[")
         end
 
         def date
@@ -133,6 +133,17 @@ module Coradoc
             attribute_list >>
           (line_ending)
           ).as(:inline_image)
+        end
+
+        def block_image
+          (block_id.maybe >>
+            block_title.maybe >>
+            (attribute_list >> newline).maybe >>
+            match('^i') >> str("mage::") >>
+            file_path.as(:path) >>
+            attribute_list(:attribute_list_macro) >>
+            newline.as(:line_break)
+            ).as(:block_image)
         end
 
         def comment_line

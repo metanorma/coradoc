@@ -8,6 +8,7 @@ module Coradoc
             citation |
             term | term2 |
             bib_entry |
+            block_image |
             comment_block |
             comment_line |
             include_directive |

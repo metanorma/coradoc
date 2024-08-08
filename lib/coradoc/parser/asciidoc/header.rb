@@ -10,7 +10,7 @@ module Coradoc
         end
 
         def header_title
-          match("=") >> space? >> text.as(:title) >> newline
+          match("^=") >> str('=').absent? >> space? >> text.as(:title) >> newline
         end
 
         def author
