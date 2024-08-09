@@ -5,13 +5,13 @@ RSpec.describe Coradoc::Element::Title do
     it "initializes instance and exposes attributes" do
       title = Coradoc::Element::Title.new(
         ast[:title],
-        ast[:level],
+        ast[:level_int],
         id: ast[:id],
         line_break: ast[:line_break],
       )
 
       expect(title.id).to eq(ast[:id])
-      expect(title.level).to eq(:heading_two)
+      expect(title.level_int).to eq(1)
       expect(title.content).to eq(ast[:title])
       expect(title.line_break).to eq(ast[:line_break])
     end
@@ -19,7 +19,7 @@ RSpec.describe Coradoc::Element::Title do
 
   def ast
     @ast ||= {
-      level: "==",
+      level_int: 1,
       id: "dummy-id",
       title: "Heading two",
       line_break: "\n\n",

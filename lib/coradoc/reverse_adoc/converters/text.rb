@@ -4,7 +4,7 @@ module Coradoc::ReverseAdoc
       def to_coradoc(node, state = {})
         return treat_empty(node, state) if node.text.strip.empty?
 
-        Coradoc::Element::TextElement.new(node.text)
+        Coradoc::Element::TextElement.new(node.text, html_cleanup: true)
       end
 
       private

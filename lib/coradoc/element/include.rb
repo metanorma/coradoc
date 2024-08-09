@@ -12,7 +12,7 @@ module Coradoc
 
       def to_adoc
         attrs = @attributes.to_adoc(true)
-        "include::#{@path}#{attrs}"
+        "include::#{@path}#{attrs}#{@line_break}"
       end
     end
   end

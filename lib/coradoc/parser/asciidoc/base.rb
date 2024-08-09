@@ -11,6 +11,7 @@ require_relative "paragraph"
 require_relative "section"
 require_relative "table"
 # require_relative "include"
+require_relative "term"
 
 module Coradoc
   module Parser
@@ -28,13 +29,18 @@ module Coradoc
         include Coradoc::Parser::Asciidoc::Paragraph
         include Coradoc::Parser::Asciidoc::Section
         include Coradoc::Parser::Asciidoc::Table
+        include Coradoc::Parser::Asciidoc::Term
 
         def space?
           space.maybe
+          # str(' ') >> str(' ').absent? |
+          # str('  ') >> str(' ').absent? |
+          # space.maybe
         end
 
         def space
-          match('\s').repeat(1)
+          str(' ').repeat(1)
+          # match('\s').repeat(1)
         end
 
         def text
@@ -42,7 +48,7 @@ module Coradoc
         end
 
         def line_ending
-          match("[\n]")
+          str("\n")
         end
 
         def endline
@@ -51,15 +57,15 @@ module Coradoc
 
         def newline
           # match["\r\n"].repeat(1)
-          (match("\n") | match("\r\n")).repeat(1)
+          (str("\n") | str("\r\n")).repeat(1)
         end
 
         def newline_single
-          (match("\n") | match("\r\n"))
+          (str("\n") | str("\r\n"))
         end
 
         def keyword
-          (match("[a-zA-Z0-9_-]") | str(".")).repeat(1)
+          (match('[a-zA-Z0-9_\-.,]') | str(".")).repeat(1)
         end
 
         def empty_line
@@ -76,6 +82,7 @@ module Coradoc
 
         def word
           match("[a-zA-Z0-9_-]").repeat(1)
+          # match(/[a-zA-Z0-9_-]+/)
         end
 
         def words
@@ -95,7 +102,7 @@ module Coradoc
         end
 
         def special_character
-          match("^[*_:=-]") | str("[#") | str("[[")
+          match("^[*:=-]") | str("[#") | str("[[")
         end
 
         def date
@@ -116,7 +123,7 @@ module Coradoc
           (str("include::") >> 
             file_path.as(:path) >>
             attribute_list >>
-          (line_ending)
+          (newline | str("")).as(:line_break)
           ).as(:include)
         end
 
@@ -126,6 +133,17 @@ module Coradoc
             attribute_list >>
           (line_ending)
           ).as(:inline_image)
+        end
+
+        def block_image
+          (block_id.maybe >>
+            block_title.maybe >>
+            (attribute_list >> newline).maybe >>
+            match('^i') >> str("mage::") >>
+            file_path.as(:path) >>
+            attribute_list(:attribute_list_macro) >>
+            newline.as(:line_break)
+            ).as(:block_image)
         end
 
         def comment_line

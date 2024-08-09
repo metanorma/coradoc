@@ -16,8 +16,8 @@ RSpec.describe Coradoc::Parser do
       expect(ast[1][:document_attributes][0][:key]).to eq("published")
       expect(ast[1][:document_attributes][0][:value]).to eq("'2023-03-08T09:51:08+08:00'")
 
-      section = ast[3][:section]
-      clause_5_1 = section[:sections][0]
+      section = ast[3][:section][:section]
+      clause_5_1 = section[:sections][0][:section]
       content = clause_5_1[:contents].first
 
       expect(section[:title][:text]).to eq("Organizational controls")
@@ -26,18 +26,18 @@ RSpec.describe Coradoc::Parser do
       expect(content[:glossaries][6][:key]).to eq("Domain")
       expect(content[:glossaries][6][:value]).to eq("Governance_and_Ecosystem, Resilience")
 
-      control_section = clause_5_1[:sections][0]
+      control_section = clause_5_1[:sections][0][:section]
       expect(control_section[:id]).to eq("control_5.1")
       expect(control_section[:title][:text]).to eq("Control")
       expect(control_section[:contents].count).to eq(1)
       expect(control_section[:contents][0][:paragraph]).not_to be_nil
 
-      purpose_section = clause_5_1[:sections][1]
+      purpose_section = clause_5_1[:sections][1][:section]
       expect(purpose_section[:id]).to eq("purpose_5.1")
       expect(purpose_section[:title][:text]).to eq("Purpose")
       expect(purpose_section[:contents][0][:paragraph]).not_to be_nil
 
-      guidance = clause_5_1[:sections][2]
+      guidance = clause_5_1[:sections][2][:section]
       expect(guidance[:contents].count).to eq(16)
       expect(guidance[:contents][0][:paragraph][:lines][0][:id]).to eq("guidance_5.1_part_1")
       expect(guidance[:contents][1][:paragraph][:lines][0][:id]).to eq("guidance_5.1_part_2")
@@ -58,7 +58,7 @@ RSpec.describe Coradoc::Parser do
       expect(diff_table[:rows][0][:cols][0][:text]).to eq("  ")
       expect(diff_table[:rows][1][:cols][0][:text]).to eq("*Level of detail*")
 
-      purpose_5_9 = section[:sections][8][:sections][1]
+      purpose_5_9 = section[:sections][8][:section][:sections][1][:section]
       highlight_5_9 = purpose_5_9[:contents][1][:highlight]
       expect(highlight_5_9[:id]).to eq("scls_5-9")
       expect(highlight_5_9[:text]).to eq("Inventory")

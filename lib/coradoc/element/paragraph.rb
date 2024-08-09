@@ -7,9 +7,10 @@ module Coradoc
 
       def initialize(content, options = {})
         @content = content
-        @meta = options.fetch(:meta, nil)
         @id = options.fetch(:id, nil)
         @anchor = Inline::Anchor.new(@id) if @id
+        @title = options.fetch(:title, nil)
+        @attributes = options.fetch(:attributes, nil)
         @tdsinglepara = options.fetch(:tdsinglepara, nil)
       end
 
@@ -22,11 +23,13 @@ module Coradoc
       end
 
       def to_adoc
+        title = @title.nil? ? "" : ".#{Coradoc::Generator.gen_adoc(@title)}\n"
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
+        attrs = @attributes.nil? ? "" : "#{@attributes.to_adoc}\n"
         if @tdsinglepara
-          anchor.to_s << Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(@content))
+          "#{title}#{anchor}" << Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(@content))
         else
-          "\n\n#{anchor}" << Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(@content)) << "\n\n"
+          "\n\n#{title}#{anchor}#{attrs}" << Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(@content)) << "\n\n"
         end
       end
     end

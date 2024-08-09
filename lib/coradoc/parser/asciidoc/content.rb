@@ -26,16 +26,18 @@ module Coradoc
         end
 
         # Text
-        def text_line
-          (comment_block.absent? >>
-          comment_line.absent? >>
-          include_directive.absent?)  >>
+        def text_line( n_line_breaks = 1)
+          # (comment_block.absent? >>
+          # comment_line.absent? >>
+          # include_directive.absent?)  >>
+          # attribute_list.absent? >>
             (asciidoc_char_with_id.absent? | text_id) >> literal_space? >>
-            text.as(:text) >> line_ending.as(:break)
+            text.as(:text) >>
+            line_ending.repeat(n_line_breaks).as(:line_break)
         end
 
         def asciidoc_char
-          match("^[*_:=-]")
+          match('^[*_:=\-+]')
         end
 
         def asciidoc_char_with_id
@@ -43,13 +45,13 @@ module Coradoc
         end
 
         def text_id
-          str("[[") >> keyword.as(:id) >> str("]]") |
+          str("[[") >> str('[').absent? >> keyword.as(:id) >> str("]]") |
             str("[#") >> keyword.as(:id) >> str("]")
         end
 
         def glossary
           keyword.as(:key) >> str("::") >> (str(" ") | newline) >>
-            text.as(:value) >> line_ending.as(:break)
+            text.as(:value) >> line_ending.as(:line_break)
         end
 
         def glossaries

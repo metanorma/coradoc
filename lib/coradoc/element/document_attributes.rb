@@ -18,8 +18,9 @@ module Coradoc
 
       def to_adoc
         to_hash.map do |key, value|
-          ":#{key}: #{value}\n"
-        end.join("\n") + "\n"
+          v = value.to_s.empty? ? "" : " #{value}"
+          ":#{key}:#{v}\n"
+        end.join + "\n"
       end
     end
   end
