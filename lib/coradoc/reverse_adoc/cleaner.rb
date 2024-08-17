@@ -21,11 +21,11 @@ module Coradoc::ReverseAdoc
     end
 
     def remove_block_leading_newlines(string)
-      string.gsub("]\n****\n\n","]\n****\n")
+      string.gsub("]\n****\n\n", "]\n****\n")
     end
 
     def remove_section_attribute_newlines(string)
-      string.gsub("]\n\n==","]\n==")
+      string.gsub("]\n\n==", "]\n==")
     end
 
     def remove_newlines(string)

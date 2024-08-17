@@ -68,19 +68,15 @@ module Coradoc
             italic_unconstrained.absent? |
             italic_constrained.absent?) >>
             match('[^\n]').repeat(1)
-            )#.as(:text_unformatted)
+            )
         end
 
         def text_formatted
-          # attribute_list.absent? >>
-          # (asciidoc_char_with_id.absent?| text_id) >>
-          # (attribute_list >> newline).absent? >>
-            # literal_space? >>
            ((cross_reference |
             bold_unconstrained | bold_constrained |
             highlight_unconstrained | highlight_constrained |
             italic_unconstrained | italic_constrained )|
-            text_unformatted).repeat(1)#.as(:text_formatted)
+            text_unformatted).repeat(1)
            
         end
       end

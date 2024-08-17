@@ -33,7 +33,7 @@ module Coradoc
             text_line |
             empty_line.as(:line_break)
           c = c | block_content(n_deep - 1) if (n_deep > 0)
-          c.repeat(1) #>> newline
+          c.repeat(1)
         end
 
         def sidebar_block
@@ -45,7 +45,7 @@ module Coradoc
         end
 
         def block_title
-          match("^\\.") >> space.absent? >> text.as(:title) >> newline
+          match('^\\.') >> space.absent? >> text.as(:title) >> newline
         end
 
         def block_type(type)
@@ -59,7 +59,6 @@ module Coradoc
           (match('^\[') >> str("[") >> str('[').absent? >> keyword.as(:id) >> str("]]") |
             str("[#") >> keyword.as(:id) >> str("]")) >> newline
         end
-
 
         def block_style(delimiter = "*", repeater = 4, type = nil)
           block_id.maybe >>

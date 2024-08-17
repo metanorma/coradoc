@@ -125,9 +125,6 @@ module Coradoc
         line_break: line_break)
     end
 
-
-
-
     rule(text: sequence(:text),
       line_break: simple(:line_break)
     ) do
@@ -135,11 +132,6 @@ module Coradoc
         text,
         line_break: line_break)
     end
-
-    # rule(text_unformatted: simple(:text)) { text }
-    # rule(text: sequence({text_unformatted: simple(:t)})) { t.to_s }
-
-
 
     rule(href: simple(:href)){
       Element::Inline::CrossReference.new(
@@ -211,10 +203,6 @@ module Coradoc
     end
 
     # Section
-    # rule(title: simple(:title)) { Element::Section.new(title) }
-    #
-    # rule(id: simple(:id), title: simple(:title), content:)
-
     rule(section: subtree(:section)) do
       id = section[:id] || nil
       title = section[:title] || nil
@@ -230,26 +218,16 @@ module Coradoc
       Element::Core.new("", type: "example", lines: example)
     end
 
-    # rule(title: simple(:title), paragraphs: sequence(:paragraphs)) do
-    #   Element::Section.new(title, paragraphs: paragraphs)
-    # end
-    #
-    # rule(title: simple(:title), blocks: sequence(:blocks)) do
-    #   Element::Section.new(title, blocks: blocks)
-    # end
-    #
-
     rule(bibliography_entry: subtree(:bib_entry) ){
       Element::BibliographyEntry.new(bib_entry)
     }
 
-    rule( #bibliography: subtree(:bib_data)){
+    rule(
       id: simple(:id),
       title: simple(:title),
       entries: sequence(:entries)
     ){
       Element::Bibliography.new(
-        # bib_data
         id: id,
         title: title,
         entries: entries
@@ -280,27 +258,24 @@ module Coradoc
 
 
     rule(block: subtree(:block)
-    # {
-    #     title: simple(:title),
-    #   attribute_list: simple(:attribute_list),
-    #   delimiter: simple(:delimiter),
-    #   lines: sequence(:lines)
-    # }
     ) {
+
       id = block[:id]
       title = block[:title]
       attribute_list = block[:attribute_list]
       delimiter = block[:delimiter].to_s
       delimiter_c = delimiter[0]
       lines = block[:lines]
+      ordering = block.keys.select{|k|
+        [:id, :title, :attribute_list, :attribute_list2].include?(k)}
 
       opts = {id: id,
         title: title, 
         delimiter_len: delimiter.size,
-        lines: lines}
+        lines: lines,
+        ordering: ordering}
       opts[:attributes] = attribute_list if attribute_list
       if delimiter_c == "*"
-        # puts attribute_lisp.inspect
         if (attribute_list.positional == [] &&
            attribute_list.named.keys[0] == "reviewer")
           Element::Block::ReviewerComment.new(
@@ -325,47 +300,18 @@ module Coradoc
       end
     }
 
-    # # Admonition
-    # rule(admonition_type: simple(:admonition)) { admonition }
+    # Admonition
     rule(admonition_type: simple(:admonition_type),
       content: sequence(:content),
-      # line_break: simple(:line_break)
       ) do
       Element::Admonition.new(content, admonition_type.to_s)
     end
 
-
-    # # Block
-    # rule(title: simple(:title), lines: sequence(:lines)) do
-    #   Element::Block.new(title, lines: lines)
-    # end
-    #
-    # rule(
-    #   title: simple(:title),
-    #   delimiter: simple(:delimiter),
-    #   lines: sequence(:lines)) do
-    #     Element::Block.new(title, lines: lines, delimiter: delimiter)
-    #   end
-    #
-    # rule(
-    #   type: simple(:type),
-    #   title: simple(:title),
-    #   delimiter: simple(:delimiter),
-    #   lines: sequence(:lines)) do
-    #     Element::Block.new(title, lines: lines, delimiter: delimiter, type: type)
-    #   end
-    #
-    # rule(attributes: simple(:attributes), lines: sequence(:lines)) do
-    #   Element::Block.new(nil, lines: lines, attributes: attributes)
-    # end
-
-    # TODO block_image 
     rule(block_image: subtree(:block_image)) do
       id = block_image[:id]
       title = block_image[:title]
       path = block_image[:path]
       opts = {
-        # attributes: block_image[:attribute_list],
         attributes: block_image[:attribute_list_macro],
         line_break: block_image[:line_break]
       }
@@ -409,8 +355,6 @@ module Coradoc
       Element::Table.new(title, rows, opts)
     end
 
-
-
     rule(list_item: simple(:list_item),
       marker: simple(:marker),
       text: simple(:text),
@@ -447,9 +391,6 @@ module Coradoc
       Element::List::Unordered.new(list_items, attrs: attribute_list)
     end
 
-
-
-    # rule(list: simple(:list)) { list }
     rule(ordered: sequence(:list_items)) do
       Element::List::Ordered.new(list_items)
     end

@@ -21,7 +21,7 @@ module Coradoc
           subcontent = Coradoc::Generator.gen_adoc(subitem)
           # Only try to postprocess elements that are text,
           # otherwise we could strip markup.
-          if Coradoc.is_a_single?(subitem, Coradoc::Element::TextElement)
+          if Coradoc.a_single?(subitem, Coradoc::Element::TextElement)
             subcontent = Coradoc.strip_unicode(subcontent)
           end
           subcontent.chomp

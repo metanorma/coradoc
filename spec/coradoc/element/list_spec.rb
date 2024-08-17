@@ -28,7 +28,6 @@ RSpec.describe Coradoc::Element::List do
       expect(list.to_adoc).to eq("\n\n* Item 1\n* Item 2\nsecond line\nthird line\n")
     end
     it "handles definition list" do
-      # items = Coradoc::Element::ListItem.new(["Item1", "Item 2b", "Item 2c"])
       item = Coradoc::Element::ListItemDefinition.new("Coffee","Black hot drink")
       items = [item]
 

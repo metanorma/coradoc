@@ -1,10 +1,12 @@
-module Coradoc::ReverseAdoc
-  class Error < StandardError
-  end
+module Coradoc
+  module ReverseAdoc
+    class Error < StandardError
+    end
 
-  class UnknownTagError < Error
-  end
+    class UnknownTagError < Error
+    end
 
-  class InvalidConfigurationError < Error
+    class InvalidConfigurationError < Error
+    end
   end
 end
