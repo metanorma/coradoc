@@ -9,7 +9,6 @@ module Coradoc
         @line_break = options.fetch(:line_break, "\n")
       end
 
-
       def to_adoc
         attrs = @attributes.to_adoc(true)
         "include::#{@path}#{attrs}#{@line_break}"

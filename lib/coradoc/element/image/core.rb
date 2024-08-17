@@ -11,7 +11,6 @@ module Coradoc
           @id = id
           @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
           @src = src
-          # @attributes = options.fetch(:attributes, AttributeList.new)
           @attributes = options.fetch(:attributes, AttributeList.new)
           @annotate_missing = options.fetch(:annotate_missing, nil)
           @title = options.fetch(:title, nil) unless @title
@@ -26,7 +25,6 @@ module Coradoc
           missing = "// FIXME: Missing image: #{@annotate_missing}\n" if @annotate_missing
           anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
           title = ".#{@title}\n" unless @title.to_s.empty?
-          # attrs = @attributes.to_adoc
           attrs = @attributes_macro.to_adoc
           [missing, anchor, title, "image", @colons, @src, attrs, @line_break].join("")
         end

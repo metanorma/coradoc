@@ -56,8 +56,6 @@ module Coradoc
           else
             r
           end
-          # r
-
         end
 
       end

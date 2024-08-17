@@ -37,6 +37,7 @@ module Coradoc
         def gen_attributes
           attrs = @attributes.to_adoc(false)
           return "#{attrs}\n" if !attrs.empty?
+
           ""
         end
 

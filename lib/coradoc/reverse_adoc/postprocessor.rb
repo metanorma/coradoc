@@ -111,7 +111,7 @@ module Coradoc::ReverseAdoc
             # we can compute numbers
             previous_sections[elem] = parent_sections[title.level_int]
             parent_sections[title.level_int] = elem
-            parent_sections[(title.level_int+1)..nil] = nil
+            parent_sections[(title.level_int + 1)..nil] = nil
 
             elem
           else

@@ -69,8 +69,8 @@ module Coradoc
 
     def to_adoc
       Coradoc::Generator.gen_adoc(@header) +
-      Coradoc::Generator.gen_adoc(@document_attributes) +
-      Coradoc::Generator.gen_adoc(@sections)
+        Coradoc::Generator.gen_adoc(@document_attributes) +
+        Coradoc::Generator.gen_adoc(@sections)
     end
   end
 end

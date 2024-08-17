@@ -38,7 +38,8 @@ g = GraphViz.new( :G, :type => :digraph );
 
 g[:fontsize] = 8
 g[:rankdir] = "LR"
-g[:concentrate] = true
+g[:overlap] = false
+g[:splines] = false
 
 nodes = {}
 

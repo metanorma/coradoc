@@ -34,20 +34,17 @@ module Coradoc
       root :document
       rule(:document) do
         (
-          # bibliography | 
           admonition_line |
           bib_entry | 
           block_image |
           term | term2 |
           citation |
-          # attribute_list.as(:attribute_list) |
           comment_block |
           comment_line |
-          section.as(:section) |
           block.as(:block) |
+          section.as(:section) |
           include_directive |
           document_attributes |
-
           list |
           table.as(:table) |
           paragraph |
