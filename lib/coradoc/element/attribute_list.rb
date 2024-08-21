@@ -71,7 +71,7 @@ module Coradoc
         adoc << @named.map do |k, v|
           if v.is_a?(String)
             v = v.gsub("\"", "\\\"")
-            if v.include?(" ") || v.include?(",") || v.include?('"')
+            if v.include?(",") || v.include?('"')
               v = "\"#{v}\""
             end
           elsif v.is_a?(Array)

@@ -4,31 +4,18 @@ module Coradoc
       module Paragraph
 
         def paragraph_text_line
-          include_directive.absent? >>
-          comment_block.absent? >>
-          comment_line.absent? >>
-          list.absent? >>
-          admonition_line.absent? >>
-
-          block.absent? >>
           (asciidoc_char_with_id.absent? | text_id ) >>
           literal_space? >>
           (text_formatted.as(:text) # >>
-          # newline_single.as(:break).maybe
-          )#.as(:paragraph_text_line)
+          ) | term | term2
         end
 
         def paragraph
-          block.absent? >>
-          include_directive.absent? >>
-          comment_block.absent? >>
-          comment_line.absent? >>
-          list.absent? >>
-          admonition_line.absent? >>
-
-          ((attribute_list >> newline).maybe >>
+          ( block_id.maybe >>
+            block_title.maybe >>
+            (attribute_list >> newline).maybe >>
             (paragraph_text_line.repeat(1,1) >> any.absent? |
-              (paragraph_text_line >> newline_single.as(:break)).repeat(1) >>
+              (paragraph_text_line >> newline_single.as(:line_break)).repeat(1) >>
               (paragraph_text_line.repeat(1,1)).repeat(0,1)
             ).as(:lines) >>
             newline.repeat(0)

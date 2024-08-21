@@ -10,7 +10,7 @@ module Coradoc
         @title = title
         @id = options.fetch(:id, nil)
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-        @attrs = options.fetch(:attrs, "")
+        @attrs = options.fetch(:attributes, nil)
       end
 
       def to_adoc
@@ -78,7 +78,7 @@ module Coradoc
           content = Coradoc::Generator.gen_adoc(content)
           # Only try to postprocess elements that are text,
           # otherwise we could strip markup.
-          if Coradoc.is_a_single?(@content, Coradoc::Element::TextElement)
+          if Coradoc.a_single?(@content, Coradoc::Element::TextElement)
             content = Coradoc.strip_unicode(content)
           end
           "#{@colrowattr}#{@alignattr}#{@style}| #{anchor}#{content}"

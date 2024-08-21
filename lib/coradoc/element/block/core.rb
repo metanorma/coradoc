@@ -10,13 +10,13 @@ module Coradoc
 
         def initialize(title, options = {})
           @title = title
-          @lines = options.fetch(:lines, [])
-          @type_str = options.fetch(:type, nil)
-          @delimiter = options.fetch(:delimiter, "")
-          @attributes = options.fetch(:attributes, AttributeList.new)
-          @lang = options.fetch(:lang, nil)
           @id = options.fetch(:id, nil)
           @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
+          @type_str = options.fetch(:type, nil)
+          @attributes = options.fetch(:attributes, AttributeList.new)
+          @delimiter = options.fetch(:delimiter, "")
+          @lang = options.fetch(:lang, nil)
+          @lines = options.fetch(:lines, [])
         end
 
         def type
@@ -37,6 +37,7 @@ module Coradoc
         def gen_attributes
           attrs = @attributes.to_adoc(false)
           return "#{attrs}\n" if !attrs.empty?
+
           ""
         end
 
@@ -65,6 +66,7 @@ module Coradoc
             "----" => :source,
             "====" => :example,
             "...." => :literal,
+            "++++" => :pass,
           }
         end
       end

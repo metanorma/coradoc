@@ -67,21 +67,27 @@ module Coradoc
     # Include
     rule(include: {
       path: simple(:path),
-      attribute_list: simple(:attribute_obj)}
+      attribute_list: simple(:attribute_list),
+      line_break: simple(:line_break)}
     ) {
       Element::Include.new(
         path.to_s,
-        attributes: attribute_obj)
+        attributes: attribute_list,
+        line_break: line_break)
     }
 
 
     # Text Element
     rule(text: simple(:text)) {
-      Element::TextElement.new(text)
+      Element::TextElement.new(text.to_s)
+    }
+
+    rule(text: simple(:text), line_break: simple(:line_break)) {
+      Element::TextElement.new(text.to_s, line_break: line_break)
     }
 
     rule(id: simple(:id), text: simple(:text)) do
-      Element::TextElement.new(text.to_s, id: id)
+      Element::TextElement.new(text.to_s, id: id.to_s)
     end
 
     rule(text: sequence(:text)) {
@@ -90,7 +96,7 @@ module Coradoc
 
     rule(
       text: simple(:text),
-      break: simple(:line_break)
+      line_break: simple(:line_break)
     ) do
       Element::TextElement.new(
         text.to_s,
@@ -100,7 +106,7 @@ module Coradoc
     rule(
       id: simple(:id),
       text: simple(:text),
-      break: simple(:line_break)
+      line_break: simple(:line_break)
     ) do
       Element::TextElement.new(
         text.to_s,
@@ -111,7 +117,7 @@ module Coradoc
     rule(
       id: simple(:id),
       text: sequence(:text),
-      break: simple(:line_break)
+      line_break: simple(:line_break)
     ) do
       Element::TextElement.new(
         text,
@@ -119,21 +125,13 @@ module Coradoc
         line_break: line_break)
     end
 
-
-
-
     rule(text: sequence(:text),
-      break: simple(:line_break)
+      line_break: simple(:line_break)
     ) do
       Element::TextElement.new(
         text,
         line_break: line_break)
     end
-
-    # rule(text_unformatted: simple(:text)) { text }
-    # rule(text: sequence({text_unformatted: simple(:t)})) { t.to_s }
-
-
 
     rule(href: simple(:href)){
       Element::Inline::CrossReference.new(
@@ -176,203 +174,232 @@ module Coradoc
 
 
     # Paragraph
-    # rule(paragraph: simple(:paragraph)) { paragraph }
-    # rule(lines: sequence(:lines)) { Element::Paragraph.new(lines) }
-    # rule(meta: simple(:meta), lines: sequence(:lines)) do
-    #   Element::Paragraph.new(lines, meta: meta)
-    # end
-
-    # Paragraph
-    rule(paragraph: simple(:paragraph)) { paragraph }
-    rule(lines: sequence(:lines)) { Element::Paragraph.new(lines) }
-    rule(attribute_list: simple(:attribute_list), lines: sequence(:lines)) do
-      Element::Paragraph.new(lines, meta: attribute_list)
+    rule(paragraph: subtree(:paragraph)) do
+      Element::Paragraph.new(
+        paragraph[:lines],
+        attributes: paragraph[:attribute_list],
+        title: paragraph[:title]
+        )
     end
+
+
 
     # Title Element
     rule(
       level: simple(:level),
       text: simple(:text),
-      break: simple(:line_break),
+      line_break: simple(:line_break),
     ) do
-      Element::Title.new(text, level, line_break: line_break)
+      Element::Title.new(text, level.size - 1, line_break: line_break)
     end
 
     rule(
       name: simple(:name),
       level: simple(:level),
       text: simple(:text),
-      break: simple(:line_break),
+      line_break: simple(:line_break),
     ) do
-      Element::Title.new(text, level, line_break: line_break, id: name)
+      Element::Title.new(text, level.size - 1, line_break: line_break, id: name)
     end
 
     # Section
-    # rule(title: simple(:title)) { Element::Section.new(title) }
-    #
-    # rule(id: simple(:id), title: simple(:title), content:)
-
-    rule(
-      title: simple(:title),
-      sections: sequence(:sections),
-    ) do
-      Element::Section.new(title, sections: sections)
+    rule(section: subtree(:section)) do
+      id = section[:id] || nil
+      title = section[:title] || nil
+      attribute_list = section[:attribute_list] || nil
+      contents = section[:contents] || []
+      sections = section[:sections]
+      opts = {id:,attribute_list:,contents:,sections: }
+      Element::Section.new(title, opts)
     end
 
-    rule(
-      id: simple(:id),
-      title: simple(:title),
-      sections: sequence(:sections),
-    ) do
-      Element::Section.new(title, id: id, sections: sections)
-    end
-
-    rule(
-      title: simple(:title),
-      contents: sequence(:contents),
-      sections: sequence(:sections),
-    ) do
-      Element::Section.new(
-        title,
-        contents: contents,
-        sections: sections)
-    end
-
-    rule(
-      id: simple(:id),
-      title: simple(:title),
-      contents: sequence(:contents),
-      sections: simple(:sections),
-    ) do
-      Element::Section.new(title, id: id, contents: contents,
-                                  sections: sections)
-    end
-
-    rule(
-      id: simple(:id),
-      title: simple(:title),
-      contents: sequence(:contents),
-      sections: sequence(:sections),
-    ) do
-      Element::Section.new(title, id: id, contents: contents,
-                                  sections: sections)
-    end
-
-    rule(
-      title: simple(:title),
-      contents: sequence(:contents),
-      sections: simple(:sections),
-    ) do
-      Element::Section.new(title, contents: contents,
-                                  sections: sections)
-    end
 
     rule(example: sequence(:example)) do
       Element::Core.new("", type: "example", lines: example)
     end
 
-    # rule(title: simple(:title), paragraphs: sequence(:paragraphs)) do
-    #   Element::Section.new(title, paragraphs: paragraphs)
-    # end
-    #
-    # rule(title: simple(:title), blocks: sequence(:blocks)) do
-    #   Element::Section.new(title, blocks: blocks)
-    # end
-    #
-
     rule(bibliography_entry: subtree(:bib_entry) ){
       Element::BibliographyEntry.new(bib_entry)
     }
 
-    rule( #bibliography: subtree(:bib_data)){
+    rule(
       id: simple(:id),
       title: simple(:title),
       entries: sequence(:entries)
     ){
       Element::Bibliography.new(
-        # bib_data
         id: id,
         title: title,
         entries: entries
         )
     }
 
-    rule(block: {
-      delimiter: simple(:delimiter),
-      lines: sequence(:lines)
-    }) {
-      if delimiter == "****"
-        Element::Block::Side.new(
-          title: nil,
-          lines: lines
-        )
+    rule(citation: {cross_reference: simple(:cross_reference),
+      comment: simple(:comment)}){
+      Element::Inline::Citation.new(cross_reference, comment)
+    }
+
+    rule(citation: {cross_reference: simple(:cross_reference)}){
+      Element::Inline::Citation.new(cross_reference)
+    }
+
+
+    rule(term_type: simple(:term_type),
+      term: simple(:term),
+      line_break: simple(:line_break)){
+      Coradoc::Element::Term.new(term, type: term_type, line_break: line_break, lang: :en)
+    }
+
+    rule(term_type: simple(:term_type),
+      term2: simple(:term2),
+      line_break: simple(:line_break)){
+      Coradoc::Element::Term.new(term2, type: term_type, line_break: line_break, lang: :fr)
+    }
+
+
+    rule(block: subtree(:block)
+    ) {
+
+      id = block[:id]
+      title = block[:title]
+      attribute_list = block[:attribute_list]
+      delimiter = block[:delimiter].to_s
+      delimiter_c = delimiter[0]
+      lines = block[:lines]
+      ordering = block.keys.select{|k|
+        [:id, :title, :attribute_list, :attribute_list2].include?(k)}
+
+      opts = {id: id,
+        title: title, 
+        delimiter_len: delimiter.size,
+        lines: lines,
+        ordering: ordering}
+      opts[:attributes] = attribute_list if attribute_list
+      if delimiter_c == "*"
+        if (attribute_list.positional == [] &&
+           attribute_list.named.keys[0] == "reviewer")
+          Element::Block::ReviewerComment.new(
+            opts
+            )
+        elsif (attribute_list.positional[0] == "sidebar" &&
+          attribute_list.named == {})
+          Element::Block::Side.new(
+            opts
+          )
+        end
+      elsif delimiter_c == "="
+        Element::Block::Example.new(title, opts)
+      elsif delimiter_c == "+"
+        Element::Block::Pass.new(opts)
+      elsif delimiter_c == "-"
+        if (attribute_list.positional[0] == "quote")
+          Element::Block::Quote.new(title, opts)
+        end
+      elsif delimiter_c == "_"
+        Element::Block::Quote.new(title, opts)
       end
     }
 
-    # # Admonition
-    # rule(admonition: simple(:admonition)) { admonition }
-    # rule(type: simple(:type), text: simple(:text), break: simple(:line_break)) do
-    #   Element::Admonition.new(text, type.to_s, line_break: line_break)
-    # end
-    #
-    # # Block
-    # rule(title: simple(:title), lines: sequence(:lines)) do
-    #   Element::Block.new(title, lines: lines)
-    # end
-    #
-    # rule(
-    #   title: simple(:title),
-    #   delimiter: simple(:delimiter),
-    #   lines: sequence(:lines)) do
-    #     Element::Block.new(title, lines: lines, delimiter: delimiter)
-    #   end
-    #
-    # rule(
-    #   type: simple(:type),
-    #   title: simple(:title),
-    #   delimiter: simple(:delimiter),
-    #   lines: sequence(:lines)) do
-    #     Element::Block.new(title, lines: lines, delimiter: delimiter, type: type)
-    #   end
-    #
-    # rule(attributes: simple(:attributes), lines: sequence(:lines)) do
-    #   Element::Block.new(nil, lines: lines, attributes: attributes)
-    # end
-    #
+    # Admonition
+    rule(admonition_type: simple(:admonition_type),
+      content: sequence(:content),
+      ) do
+      Element::Admonition.new(content, admonition_type.to_s)
+    end
+
+    rule(block_image: subtree(:block_image)) do
+      id = block_image[:id]
+      title = block_image[:title]
+      path = block_image[:path]
+      opts = {
+        attributes: block_image[:attribute_list_macro],
+        line_break: block_image[:line_break]
+      }
+      Element::Image::BlockImage.new(title, id, path, opts)
+    end
+
+
+
     # Attribute
     rule(key: simple(:key), value: simple(:value)) do
       Element::Attribute.new(key, value)
     end
 
     rule(key: simple(:key), value: simple(:value),
-         break: simple(:line_break)) do
+         line_break: simple(:line_break)) do
       Element::Attribute.new(key, value, line_break: line_break)
     end
 
-    rule(line_break: simple(:line_break)) { Element::LineBreak.new(line_break) }
+    rule(line_break: simple(:line_break)) {
+      Element::LineBreak.new(line_break)
+    }
 
     rule(document_attributes: sequence(:document_attributes)) do
       Element::DocumentAttributes.new(document_attributes)
     end
 
     # Table
-    rule(table: simple(:table)) { table }
-    rule(cols: sequence(:cols)) { Element::Table::Row.new(cols) }
-    rule(title: simple(:title), rows: sequence(:rows)) do
-      Element::Table.new(title, rows)
+
+    rule(cols: sequence(:cols)) {
+      cells = cols.map{|c| Element::Table::Cell.new(content: c)}
+      Element::Table::Row.new(cells)
+    }
+
+    rule(table: subtree(:table)) do
+      title = table[:title] || nil
+      rows = table[:rows] || []
+      opts = {
+        id: table[:id] || nil,
+        attributes: table[:attribute_list] || nil
+      }
+      Element::Table.new(title, rows, opts)
     end
+
+    rule(list_item: simple(:list_item),
+      marker: simple(:marker),
+      text: simple(:text),
+      line_break: simple(:line_break)) do
+      Element::ListItem.new(
+        text,
+        marker: marker.to_s,
+        line_break: line_break
+        )
+    end
+
+    rule(list_item: simple(:list_item),
+      marker: simple(:marker),
+      id: simple(:id),
+      text: simple(:text),
+      line_break: simple(:line_break)) do
+      Element::ListItem.new(
+        text,
+        id: id,
+        marker: marker.to_s,
+        line_break: line_break
+        )
+    end
+
 
     # List
     rule(list: simple(:list)) { list }
     rule(unordered: sequence(:list_items)) do
       Element::List::Unordered.new(list_items)
     end
+    rule(attribute_list: simple(:attribute_list),
+      unordered: sequence(:list_items)
+    ) do
+      Element::List::Unordered.new(list_items, attrs: attribute_list)
+    end
 
-    # rule(list: simple(:list)) { list }
     rule(ordered: sequence(:list_items)) do
       Element::List::Ordered.new(list_items)
     end
 
+    rule(attribute_list: simple(:attribute_list),
+      ordered: sequence(:list_items)
+    ) do
+      Element::List::Ordered.new(list_items, attrs: attribute_list)
+    end
 
 
     rule(terms: simple(:terms), definition: simple(:definition)) do

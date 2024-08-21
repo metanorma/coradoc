@@ -9,10 +9,14 @@ module Coradoc
         @content = content # .to_s
         @id = options.fetch(:id, nil)
         @line_break = options.fetch(:line_break, "")
+        @html_cleanup = options.fetch(:html_cleanup, false)
+        if @html_cleanup
+          @content = treat_text_to_adoc(@content)
+        end
       end
 
       def to_adoc
-        Coradoc::Generator.gen_adoc(treat_text_to_adoc(@content))
+        Coradoc::Generator.gen_adoc(@content) + @line_break
       end
 
       def treat_text_to_adoc(text)

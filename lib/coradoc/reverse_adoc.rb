@@ -12,19 +12,20 @@ require_relative "reverse_adoc/html_converter"
 require_relative "reverse_adoc/plugin"
 require_relative "reverse_adoc/postprocessor"
 
+module Coradoc
+  module ReverseAdoc
+    def self.convert(input, options = {})
+      Coradoc::ReverseAdoc::HtmlConverter.convert(input, options)
+    end
 
-module Coradoc::ReverseAdoc
-  def self.convert(input, options = {})
-    Coradoc::ReverseAdoc::HtmlConverter.convert(input, options)
-  end
+    def self.config
+      @config ||= Config.new
+      yield @config if block_given?
+      @config
+    end
 
-  def self.config
-    @config ||= Config.new
-    yield @config if block_given?
-    @config
-  end
-
-  def self.cleaner
-    @cleaner ||= Cleaner.new
+    def self.cleaner
+      @cleaner ||= Cleaner.new
+    end
   end
 end
