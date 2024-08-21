@@ -4,9 +4,9 @@ module Coradoc::ReverseAdoc
       def to_coradoc(node, state = {})
         id = node["id"]
         title = extract_title(node)
-        attrs = style(node)
+        attributes = style(node)
         content = treat_children_coradoc(node, state)
-        Coradoc::Element::Table.new(title, content, { id: id, attrs: attrs })
+        Coradoc::Element::Table.new(title, content, { id: id, attributes: attributes })
       end
 
       def extract_title(node)

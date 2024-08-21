@@ -8,6 +8,7 @@ end
 require_relative "inline/anchor"
 require_relative "inline/bold"
 require_relative "inline/cross_reference"
+require_relative "inline/citation"
 require_relative "inline/hard_line_break"
 require_relative "inline/highlight"
 require_relative "inline/italic"

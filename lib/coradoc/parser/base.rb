@@ -13,6 +13,7 @@ require_relative "asciidoc/list"
 require_relative "asciidoc/paragraph"
 require_relative "asciidoc/section"
 require_relative "asciidoc/table"
+require_relative "asciidoc/term"
 
 module Coradoc
   module Parser
@@ -28,20 +29,25 @@ module Coradoc
       include Coradoc::Parser::Asciidoc::Paragraph
       include Coradoc::Parser::Asciidoc::Section
       include Coradoc::Parser::Asciidoc::Table
+      include Coradoc::Parser::Asciidoc::Term
 
       root :document
       rule(:document) do
         (
-          bibliography | 
-          # attribute_list.as(:attribute_list) |
+          admonition_line |
+          bib_entry | 
+          block_image |
+          term | term2 |
+          citation |
           comment_block |
           comment_line |
           block.as(:block) |
+          section.as(:section) |
           include_directive |
           document_attributes |
-          section.as(:section) |
-          paragraph |
           list |
+          table.as(:table) |
+          paragraph |
           header.as(:header) |
           empty_line.as(:line_break) |
           any.as(:unparsed)

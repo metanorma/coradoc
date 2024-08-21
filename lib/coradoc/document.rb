@@ -23,6 +23,7 @@ require_relative "element/image"
 require_relative "element/audio"
 require_relative "element/video"
 require_relative "element/break"
+require_relative "element/term"
 
 module Coradoc
   class Document
@@ -68,8 +69,8 @@ module Coradoc
 
     def to_adoc
       Coradoc::Generator.gen_adoc(@header) +
-      Coradoc::Generator.gen_adoc(@document_attributes) +
-      Coradoc::Generator.gen_adoc(@sections)
+        Coradoc::Generator.gen_adoc(@document_attributes) +
+        Coradoc::Generator.gen_adoc(@sections)
     end
   end
 end

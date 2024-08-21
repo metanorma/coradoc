@@ -1,7 +1,7 @@
 module Coradoc
   module Element
     class Section < Base
-      attr_accessor :id, :title, :contents, :sections
+      attr_accessor :id, :title, :attrs, :contents, :sections
 
       declare_children :id, :title, :contents, :sections
 
@@ -10,6 +10,7 @@ module Coradoc
         @id = options.fetch(:id, nil)
         @id = nil if @id == ""
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
+        @attrs = options.fetch(:attribute_list, "")
         @contents = options.fetch(:contents, [])
         @sections = options.fetch(:sections, [])
       end
@@ -27,6 +28,7 @@ module Coradoc
       def to_adoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         title = Coradoc::Generator.gen_adoc(@title)
+        attrs = @attrs.to_s.empty? ? "" : "#{@attrs.to_adoc}\n"
         content = Coradoc::Generator.gen_adoc(@contents)
         sections = Coradoc::Generator.gen_adoc(@sections)
 
@@ -36,11 +38,11 @@ module Coradoc
 
         # Only try to postprocess elements that are text,
         # otherwise we could strip markup.
-        if Coradoc.is_a_single?(@contents, Coradoc::Element::TextElement)
+        if Coradoc.a_single?(@contents, Coradoc::Element::TextElement)
           content = Coradoc.strip_unicode(content)
         end
 
-        "\n#{anchor}" << title << content << sections << "\n"
+        "\n#{anchor}" << attrs << title << content << sections << "\n"
       end
 
       # Check for cases when Section is simply an equivalent of an empty <DIV>

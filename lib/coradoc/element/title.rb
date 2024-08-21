@@ -7,7 +7,7 @@ module Coradoc
 
       def initialize(content, level, options = {})
         @level_int = level
-        @level_int = level.length if level.is_a?(String)
+        # @level_int = level.length - 1 if level.is_a?(String)
         @content = content
         @id = options.fetch(:id, nil)
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)

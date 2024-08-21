@@ -14,7 +14,15 @@ module Coradoc
           @items = [@items] unless @items.is_a?(Array)
           @id = options.fetch(:id, nil)
           @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-          @ol_count = options.fetch(:ol_count, 1)
+          @ol_count = options.fetch(:ol_count, nil)
+          if @ol_count.nil?
+            m = @items.select do |i|
+              i.is_a?(Coradoc::Element::ListItem) &&
+                !i.marker.nil?
+            end.first&.marker
+            @ol_count = m.size if m.is_a?(String)
+          end
+          @ol_count = 1 if @ol_count.nil?
           @attrs = options.fetch(:attrs, AttributeList.new)
         end
 
@@ -30,7 +38,7 @@ module Coradoc
               # See: https://github.com/metanorma/coradoc/issues/96
               unless item.is_a? List::Core
                 content << prefix.to_s
-                content << " " if c[0]!=" "
+                content << " " if c[0] != " "
               end
               content << c
             end

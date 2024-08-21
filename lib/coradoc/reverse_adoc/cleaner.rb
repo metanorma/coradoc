@@ -16,6 +16,16 @@ module Coradoc::ReverseAdoc
       result = HtmlConverter.track_time "Cleaning punctuation characters" do
         clean_punctuation_characters(result)
       end
+      result = remove_block_leading_newlines(result)
+      result = remove_section_attribute_newlines(result)
+    end
+
+    def remove_block_leading_newlines(string)
+      string.gsub("]\n****\n\n", "]\n****\n")
+    end
+
+    def remove_section_attribute_newlines(string)
+      string.gsub("]\n\n==", "]\n==")
     end
 
     def remove_newlines(string)

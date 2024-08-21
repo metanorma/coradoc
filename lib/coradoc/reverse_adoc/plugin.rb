@@ -53,11 +53,11 @@ module Coradoc::ReverseAdoc
       end
     end
 
-    def html_tree_process_to_coradoc(tree, state={})
+    def html_tree_process_to_coradoc(tree, state = {})
       Coradoc::ReverseAdoc::Converters.process_coradoc(tree, state)
     end
 
-    def html_tree_process_to_adoc(tree, state={})
+    def html_tree_process_to_adoc(tree, state = {})
       Coradoc::ReverseAdoc::Converters.process(tree, state)
     end
 
