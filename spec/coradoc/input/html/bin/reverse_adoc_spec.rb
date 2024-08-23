@@ -9,7 +9,9 @@ describe "exe/reverse_adoc" do
 
   unless Gem.win_platform?
     context "when external images present" do
-      let(:input_file_path) { "spec/reverse_adoc/assets/external_images.html" }
+      let(:input_file_path) do
+        "spec/coradoc/input/html/assets/external_images.html"
+      end
       let(:images_folder) { "images" }
 
       after do

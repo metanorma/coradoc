@@ -1,5 +1,5 @@
 module Coradoc
-  module ReverseAdoc
+  module Input::HTML
     module Converters
       def self.register(tag_name, converter)
         @@converters ||= {}
@@ -38,18 +38,18 @@ module Coradoc
       end
 
       def self.default_converter(tag_name)
-        case Coradoc::ReverseAdoc.config.unknown_tags.to_sym
+        case Coradoc::Input::HTML.config.unknown_tags.to_sym
         when :pass_through
-          Coradoc::ReverseAdoc::Converters::PassThrough.new
+          Coradoc::Input::HTML::Converters::PassThrough.new
         when :drop
-          Coradoc::ReverseAdoc::Converters::Drop.new
+          Coradoc::Input::HTML::Converters::Drop.new
         when :bypass
-          Coradoc::ReverseAdoc::Converters::Bypass.new
+          Coradoc::Input::HTML::Converters::Bypass.new
         when :raise
           raise UnknownTagError, "unknown tag: #{tag_name}"
         else
           raise InvalidConfigurationError,
-                "unknown value #{Coradoc::ReverseAdoc.config.unknown_tags.inspect} for Coradoc::ReverseAdoc.config.unknown_tags"
+                "unknown value #{Coradoc::Input::HTML.config.unknown_tags.inspect} for Coradoc::Input::HTML.config.unknown_tags"
         end
       end
     end

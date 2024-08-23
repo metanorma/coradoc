@@ -3,8 +3,8 @@ require "spec_helper"
 # We know better what syntax looks nice :)
 # rubocop:disable all
 
-describe Coradoc::ReverseAdoc::Converters::Table do
-  let(:converter) { Coradoc::ReverseAdoc::Converters::Table.new }
+describe Coradoc::Input::HTML::Converters::Table do
+  let(:converter) { Coradoc::Input::HTML::Converters::Table.new }
 
   let(:c) { '<td colspan="1" rowspan="1"></td>' }
   let(:e) { '<td x-added="x-added"></td>' } # Added cell
@@ -194,7 +194,7 @@ describe Coradoc::ReverseAdoc::Converters::Table do
   end
 
   context "converts a wild table correctly" do
-    let(:input) { File.read("spec/reverse_adoc/assets/wild_table.html") }
+    let(:input) { File.read("spec/coradoc/input/html/assets/wild_table.html") }
 
     include_examples "should not cause error"
   end

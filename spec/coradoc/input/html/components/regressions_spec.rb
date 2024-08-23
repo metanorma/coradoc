@@ -1,8 +1,8 @@
 require "spec_helper"
 
-describe Coradoc::ReverseAdoc do
+describe Coradoc::Input::HTML do
   let(:document) { Nokogiri::HTML(input) }
-  let(:adoc) { Coradoc::ReverseAdoc.convert(document) }
+  let(:adoc) { Coradoc::Input::HTML.convert(document) }
 
   shared_examples "test" do |name, test, expected_result|
     context name do

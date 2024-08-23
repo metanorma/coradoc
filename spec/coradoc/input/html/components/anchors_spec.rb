@@ -1,9 +1,9 @@
 require "spec_helper"
 
-describe Coradoc::ReverseAdoc do
-  let(:input)    { File.read("spec/reverse_adoc/assets/anchors.html") }
+describe Coradoc::Input::HTML do
+  let(:input)    { File.read("spec/coradoc/input/html/assets/anchors.html") }
   let(:document) { Nokogiri::HTML(input) }
-  subject { Coradoc::ReverseAdoc.convert(input) }
+  subject { Coradoc::Input::HTML.convert(input) }
 
   it { is_expected.to include "http://foobar.com[Foobar]" }
   it { is_expected.to include "http://foobar.com[Fubar]" }

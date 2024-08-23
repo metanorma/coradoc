@@ -1,9 +1,9 @@
 require "spec_helper"
 
-describe Coradoc::ReverseAdoc do
-  let(:input)    { File.read("spec/reverse_adoc/assets/lists.html") }
+describe Coradoc::Input::HTML do
+  let(:input)    { File.read("spec/coradoc/input/html/assets/lists.html") }
   let(:document) { Nokogiri::HTML(input) }
-  subject { Coradoc::ReverseAdoc.convert(input) }
+  subject { Coradoc::Input::HTML.convert(input) }
 
   it { is_expected.to match /\n\* unordered list entry\n/ }
   it { is_expected.to match /\n\* unordered list entry 2\n/ }
@@ -93,11 +93,15 @@ describe Coradoc::ReverseAdoc do
   end
 
   context "definition list simple" do
-    it { is_expected.to include "Coffee:: Black hot drink\nMilk:: White cold drink" }
+    it {
+      is_expected.to include "Coffee:: Black hot drink\nMilk:: White cold drink"
+    }
   end
 
   context "definition list multiple terms" do
-    it { is_expected.to include "Coffee::\nKaffee::\nBlack hot drink\nMilk::\nMilch::\nWhite cold drink" }
+    it {
+      is_expected.to include "Coffee::\nKaffee::\nBlack hot drink\nMilk::\nMilch::\nWhite cold drink"
+    }
   end
 
   context "definition list supports div inside a dl" do

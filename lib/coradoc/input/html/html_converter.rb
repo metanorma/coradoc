@@ -37,12 +37,12 @@ require_relative "converters/video"
 require_relative "converters/math"
 
 module Coradoc
-  module ReverseAdoc
+  module Input::HTML
     class HtmlConverter
       def self.to_coradoc(input, options = {})
         plugin_instances = options.delete(:plugin_instances)
-        ReverseAdoc.config.with(options) do
-          plugin_instances ||= Coradoc::ReverseAdoc.config.plugins.map(&:new)
+        Input::HTML.config.with(options) do
+          plugin_instances ||= Coradoc::Input::HTML.config.plugins.map(&:new)
 
           root = track_time "Loading input HTML document" do
             case input
@@ -90,8 +90,8 @@ module Coradoc
       end
 
       def self.convert(input, options = {})
-        ReverseAdoc.config.with(options) do
-          plugin_instances = Coradoc::ReverseAdoc.config.plugins.map(&:new)
+        Input::HTML.config.with(options) do
+          plugin_instances = Coradoc::Input::HTML.config.plugins.map(&:new)
 
           options = options.merge(plugin_instances: plugin_instances)
 
@@ -114,7 +114,7 @@ module Coradoc
           Coradoc::Generator.gen_adoc(coradoc)
         end
         result = track_time "Cleaning up the result" do
-          ReverseAdoc.cleaner.tidy(result)
+          Input::HTML.cleaner.tidy(result)
         end
         plugin_instances.each do |plugin|
           if plugin.respond_to?(:postprocess_asciidoc_string)
@@ -130,7 +130,7 @@ module Coradoc
 
       @track_time_indentation = 0
       def self.track_time(task)
-        if ReverseAdoc.config.track_time
+        if Input::HTML.config.track_time
           warn "  " * @track_time_indentation +
             "* #{task} is starting..."
           @track_time_indentation += 1

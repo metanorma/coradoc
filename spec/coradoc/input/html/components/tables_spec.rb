@@ -1,9 +1,9 @@
 require "spec_helper"
 
-describe Coradoc::ReverseAdoc do
-  let(:input)    { File.read("spec/reverse_adoc/assets/tables.html") }
+describe Coradoc::Input::HTML do
+  let(:input)    { File.read("spec/coradoc/input/html/assets/tables.html") }
   let(:document) { Nokogiri::HTML(input) }
-  subject { Coradoc::ReverseAdoc.convert(input) }
+  subject { Coradoc::Input::HTML.convert(input) }
 
   it {
     is_expected.to match /\[\[A\]\]\n\[cols=3\]\n\|===\n\| \[\[C\]\]header 1 \| header 2 \| header 3\n\n/

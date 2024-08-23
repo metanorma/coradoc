@@ -1,4 +1,4 @@
-module Coradoc::ReverseAdoc
+module Coradoc::Input::HTML
   module Converters
     class Em < Markup
       def coradoc_class

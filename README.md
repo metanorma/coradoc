@@ -66,8 +66,8 @@ Coradoc::Parser.parse(sample_asciidoc)
 
 This interface will return the abstract syntax tree.
 
-### Converting from HTML to AsciiDoc (reverse_adoc)
+### Converting from HTML to AsciiDoc (formerly reverse_adoc)
 
-See: [reverse_adoc README](https://github.com/metanorma/coradoc/blob/main/lib/coradoc/reverse_adoc/README.adoc)
+See: [Coradoc::Input::HTML README](https://github.com/metanorma/coradoc/blob/main/lib/input/html/README.adoc)
 
 [sandi-metz]: http://robots.thoughtbot.com/post/50655960596/sandi-metz-rules-for-developers

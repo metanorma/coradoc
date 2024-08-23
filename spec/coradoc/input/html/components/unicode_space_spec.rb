@@ -1,9 +1,11 @@
 require "spec_helper"
 
-describe Coradoc::ReverseAdoc do
-  let(:input)    { File.read("spec/reverse_adoc/assets/unicode_space.html") }
+describe Coradoc::Input::HTML do
+  let(:input) do
+    File.read("spec/coradoc/input/html/assets/unicode_space.html")
+  end
   let(:document) { Nokogiri::HTML(input) }
-  subject { Coradoc::ReverseAdoc.convert(input) }
+  subject { Coradoc::Input::HTML.convert(input) }
 
   it { should include "\n| test1 | | test2 | \n" }
   it { should include "\ntest3\n" }

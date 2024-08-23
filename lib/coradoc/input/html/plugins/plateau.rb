@@ -1,10 +1,10 @@
-module Coradoc::ReverseAdoc
+module Coradoc::Input::HTML
   class Plugin
     # This plugin enhances documents from the PLATEAU project
     # to extract more data.
     #
     # Usage:
-    # reverse_adoc -rcoradoc/reverse_adoc/plugins/plateau
+    # reverse_adoc -rcoradoc/input/html/plugins/plateau
     #   --external-images -u raise --output _out/index.adoc index.html
     class Plateau < Plugin
       def name
@@ -203,4 +203,4 @@ module Coradoc::ReverseAdoc
   end
 end
 
-Coradoc::ReverseAdoc.config.plugins << Coradoc::ReverseAdoc::Plugin::Plateau
+Coradoc::Input::HTML.config.plugins << Coradoc::Input::HTML::Plugin::Plateau

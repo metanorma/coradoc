@@ -1,4 +1,4 @@
-module Coradoc::ReverseAdoc
+module Coradoc::Input::HTML
   # Postprocessor's aim is to convert a Coradoc tree from
   # a mess that has been created from HTML into a tree that
   # is compatible with what we would get out of Coradoc, if
@@ -73,7 +73,7 @@ module Coradoc::ReverseAdoc
     end
 
     def split_sections
-      max_level = Coradoc::ReverseAdoc.config.split_sections
+      max_level = Coradoc::Input::HTML.config.split_sections
 
       return unless max_level
 

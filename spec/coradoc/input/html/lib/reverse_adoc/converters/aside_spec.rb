@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe Coradoc::ReverseAdoc::Converters::Aside do
-  let(:converter) { Coradoc::ReverseAdoc::Converters::Aside.new }
+describe Coradoc::Input::HTML::Converters::Aside do
+  let(:converter) { Coradoc::Input::HTML::Converters::Aside.new }
 
   it "converts aside" do
     input = node_for("<aside><ul><li>foo</li></ul></aside>")

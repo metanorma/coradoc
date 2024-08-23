@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe Coradoc::ReverseAdoc::Converters::Blockquote do
-  let(:converter) { Coradoc::ReverseAdoc::Converters::Blockquote.new }
+describe Coradoc::Input::HTML::Converters::Blockquote do
+  let(:converter) { Coradoc::Input::HTML::Converters::Blockquote.new }
 
   it "converts nested elements as well" do
     input = node_for("<blockquote><ul><li>foo</li></ul></blockquote>")

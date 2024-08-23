@@ -1,4 +1,4 @@
-module Coradoc::ReverseAdoc
+module Coradoc::Input::HTML
   module Converters
     class Table < Base
       def to_coradoc(node, state = {})
@@ -238,7 +238,7 @@ module Coradoc::ReverseAdoc
           end
         end
 
-        document_width = Coradoc::ReverseAdoc.config.doc_width.to_r
+        document_width = Coradoc::Input::HTML.config.doc_width.to_r
 
         column_sizes += [nil] * (cpr.first - column_sizes.length)
 

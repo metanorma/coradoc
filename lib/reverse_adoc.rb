@@ -3,7 +3,7 @@ warn <<~WARN
   | Please update your references from:
   |   require 'reverse_adoc'
   | To:
-  |   require 'coradoc/reverse_adoc'
+  |   require 'coradoc/input/html'
   |
   | You are referencing an old require here:
   |   #{caller.join("\n|   ")}
@@ -12,9 +12,9 @@ warn <<~WARN
   | reverse_adoc 2.0.0 will be kept with 'coradoc' as the only dependency.
   |
   | Please also ensure that you replace all references to ReverseAdoc in your code
-  | with Coradoc::ReverseAdoc.
+  | with Coradoc::Input::HTML.
 WARN
 
-require "coradoc/reverse_adoc"
+require "coradoc/input/html"
 
-ReverseAdoc = Coradoc::ReverseAdoc
+ReverseAdoc = Coradoc::Input::HTML

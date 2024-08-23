@@ -1,4 +1,4 @@
-module Coradoc::ReverseAdoc
+module Coradoc::Input::HTML
   module Converters
     class Audio < Base
       def to_coradoc(node, _state = {})
