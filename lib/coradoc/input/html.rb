@@ -2,7 +2,7 @@
 
 require "digest"
 require "nokogiri"
-require_relative "../input"
+require "coradoc/input"
 require_relative "html/errors"
 require_relative "html/cleaner"
 require_relative "html/config"
@@ -18,6 +18,10 @@ module Coradoc
       Coradoc::Input::HTML::HtmlConverter.convert(input, options)
     end
 
+    def self.to_coradoc(input, options = {})
+      Input::HTML::HtmlConverter.to_coradoc(input, options)
+    end
+
     def self.config
       @config ||= Config.new
       yield @config if block_given?
@@ -27,5 +31,29 @@ module Coradoc
     def self.cleaner
       @cleaner ||= Cleaner.new
     end
+
+    def self.processor_id
+      :html
+    end
+
+    def self.processor_match?(filename)
+      %w[.html .htm].any? { |i| filename.downcase.end_with?(i) }
+    end
+
+    def self.processor_execute(input, options = {})
+      to_coradoc(input, options)
+    end
+
+    def self.processor_postprocess(data, options)
+      if options[:output_processor] == :adoc
+        data.transform_values do |v|
+          Input::HTML::HtmlConverter.cleanup_result(v, options)
+        end
+      else
+        data
+      end
+    end
+
+    Coradoc::Input.define(self)
   end
 end

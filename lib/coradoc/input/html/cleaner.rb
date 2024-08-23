@@ -1,6 +1,10 @@
 module Coradoc::Input::HTML
   class Cleaner
     def tidy(string)
+      if string.is_a? Hash
+        return string.transform_values { |i| tidy(i) }
+      end
+
       result = HtmlConverter.track_time "Removing inner whitespace" do
         remove_inner_whitespaces(String.new(string))
       end
