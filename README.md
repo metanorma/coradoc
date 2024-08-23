@@ -66,7 +66,35 @@ Coradoc::Parser.parse(sample_asciidoc)
 
 This interface will return the abstract syntax tree.
 
-### Converting from HTML to AsciiDoc (formerly reverse_adoc)
+### Converting a document
+
+To convert any document of a supported format (right now: `.html`, `.adoc`, `.docx`) to any supported
+format (right now: `.adoc`), you can execute:
+
+```ruby
+Coradoc::Converter.("input.html", "output.adoc")
+```
+
+The converters are chosen based on file extension, but you can select a converter manually like so:
+
+```ruby
+Coradoc::Converter.("input", "output", input_processor: :html, output_processor: :adoc)
+```
+
+Some converters may support additional options, which can likewise be passed as keyword arguments:
+
+```ruby
+Coradoc::Converter.(
+  "input.html", "output.adoc",
+  input_options: { external_images: true, split_sections: 2 }
+)
+```
+
+It is also possible to pass IO objects instead of filenames. By default, if an argument is not
+provided, it defaults to STDIN/STDOUT. Note that not all combinations of formats and converter
+options are supported in this mode.
+
+### Legacy README for converting from HTML to AsciiDoc (formerly reverse_adoc)
 
 See: [Coradoc::Input::HTML README](https://github.com/metanorma/coradoc/blob/main/lib/input/html/README.adoc)
 
