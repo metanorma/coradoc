@@ -1,12 +1,10 @@
 require "coradoc"
 
 module Coradoc
-  module Input
+  module Output
     @processors = {}
     extend Converter::CommonInputOutputMethods
   end
 end
 
-require "coradoc/input/adoc"
-require "coradoc/input/docx"
-require "coradoc/input/html"
+require "coradoc/output/adoc"

@@ -40,9 +40,8 @@ module Coradoc
   module Input::HTML
     class HtmlConverter
       def self.to_coradoc(input, options = {})
-        plugin_instances = options.delete(:plugin_instances)
         Input::HTML.config.with(options) do
-          plugin_instances ||= Coradoc::Input::HTML.config.plugins.map(&:new)
+          plugin_instances = prepare_plugin_instances(options)
 
           root = track_time "Loading input HTML document" do
             case input
@@ -85,47 +84,63 @@ module Coradoc
             end
           end
 
+          options[:plugin_instances] = plugin_instances unless options.frozen?
+
           coradoc
         end
       end
 
       def self.convert(input, options = {})
         Input::HTML.config.with(options) do
-          plugin_instances = Coradoc::Input::HTML.config.plugins.map(&:new)
-
-          options = options.merge(plugin_instances: plugin_instances)
+          plugin_instances = prepare_plugin_instances(options)
 
           coradoc = to_coradoc(input, options)
 
           if coradoc.is_a?(Hash)
             coradoc.to_h do |file, tree|
               track_time "Converting file #{file || 'main'}" do
-                [file, convert_single_coradoc_to_adoc(file, tree, plugin_instances)]
+                [file,
+                 convert_single_coradoc_to_adoc(file, tree, options)]
               end
             end
           else
-            convert_single_coradoc_to_adoc(nil, coradoc, plugin_instances)
+            convert_single_coradoc_to_adoc(nil, coradoc, options)
           end
         end
       end
 
-      def self.convert_single_coradoc_to_adoc(_file, coradoc, plugin_instances)
+      def self.convert_single_coradoc_to_adoc(_file, coradoc, options)
+        plugin_instances = prepare_plugin_instances(options)
+
         result = track_time "Converting Coradoc tree into Asciidoc" do
           Coradoc::Generator.gen_adoc(coradoc)
         end
-        result = track_time "Cleaning up the result" do
-          Input::HTML.cleaner.tidy(result)
-        end
-        plugin_instances.each do |plugin|
-          if plugin.respond_to?(:postprocess_asciidoc_string)
-            plugin.asciidoc_string = result
-            track_time "Postprocessing AsciiDoc string with #{plugin.name} plugin" do
-              plugin.postprocess_asciidoc_string
-            end
-            result = plugin.asciidoc_string
+        cleanup_result(result, options)
+      end
+
+      def self.cleanup_result(result, options)
+        Input::HTML.config.with(options) do
+          plugin_instances = prepare_plugin_instances(options)
+
+          result = track_time "Cleaning up the result" do
+            Input::HTML.cleaner.tidy(result)
           end
+          plugin_instances.each do |plugin|
+            if plugin.respond_to?(:postprocess_asciidoc_string)
+              plugin.asciidoc_string = result
+              track_time "Postprocessing AsciiDoc string with #{plugin.name} plugin" do
+                plugin.postprocess_asciidoc_string
+              end
+              result = plugin.asciidoc_string
+            end
+          end
+
+          result
         end
-        result
+      end
+
+      def self.prepare_plugin_instances(options)
+        options[:plugin_instances] || Coradoc::Input::HTML.config.plugins.map(&:new)
       end
 
       @track_time_indentation = 0
