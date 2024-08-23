@@ -1,9 +1,9 @@
-module Coradoc::ReverseAdoc
+module Coradoc::Input::HTML
   class Plugin
     #### Plugin system general
 
     # Allow building plugins with a shorthand syntax:
-    # plugin = Coradoc::ReverseAdoc::Plugin.new do
+    # plugin = Coradoc::Input::HTML::Plugin.new do
     #   def name = "Test"
     # end
 
@@ -54,11 +54,11 @@ module Coradoc::ReverseAdoc
     end
 
     def html_tree_process_to_coradoc(tree, state = {})
-      Coradoc::ReverseAdoc::Converters.process_coradoc(tree, state)
+      Coradoc::Input::HTML::Converters.process_coradoc(tree, state)
     end
 
     def html_tree_process_to_adoc(tree, state = {})
-      Coradoc::ReverseAdoc::Converters.process(tree, state)
+      Coradoc::Input::HTML::Converters.process(tree, state)
     end
 
     def html_tree_preview

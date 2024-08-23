@@ -1,9 +1,9 @@
 require "spec_helper"
 
-describe Coradoc::ReverseAdoc do
-  let(:input) { File.read("spec/reverse_adoc/assets/basic.html") }
+describe Coradoc::Input::HTML do
+  let(:input) { File.read("spec/coradoc/input/html/assets/basic.html") }
   # let(:document) { Nokogiri::HTML(input) }
-  subject { Coradoc::ReverseAdoc.convert(input) }
+  subject { Coradoc::Input::HTML.convert(input) }
 
   it { is_expected.to match /plain text ?\n/ }
   it { is_expected.to match /\n== h1\n/ }

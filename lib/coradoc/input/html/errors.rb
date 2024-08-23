@@ -1,5 +1,5 @@
 module Coradoc
-  module ReverseAdoc
+  module Input::HTML
     class Error < StandardError
     end
 

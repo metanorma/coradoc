@@ -1,10 +1,10 @@
-# Unless run with Coradoc::ReverseAdoc.config.mathml2asciimath,
+# Unless run with Coradoc::Input::HTML.config.mathml2asciimath,
 # this is cheating: we're injecting MathML into Asciidoctor, but
 # Asciidoctor only understands AsciiMath or LaTeX
 
 require "mathml2asciimath"
 
-module Coradoc::ReverseAdoc
+module Coradoc::Input::HTML
   module Converters
     class Math < Base
       # FIXIT
@@ -14,7 +14,7 @@ module Coradoc::ReverseAdoc
 
       def convert(node, _state = {})
         stem = node.to_s.gsub(/\n/, " ")
-        stem = MathML2AsciiMath.m2a(stem) if Coradoc::ReverseAdoc.config.mathml2asciimath
+        stem = MathML2AsciiMath.m2a(stem) if Coradoc::Input::HTML.config.mathml2asciimath
         unless stem.nil?
           stem = stem.gsub(/\[/, "\\[").gsub(/\]/, "\\]").gsub(
             /\(\(([^\)]+)\)\)/, "(\\1)"

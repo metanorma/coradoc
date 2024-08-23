@@ -1,24 +1,24 @@
 require "spec_helper"
 
-describe Coradoc::ReverseAdoc do
-  let(:input)    { File.read("spec/reverse_adoc/assets/sections.html") }
+describe Coradoc::Input::HTML do
+  let(:input)    { File.read("spec/coradoc/input/html/assets/sections.html") }
   let(:document) { Nokogiri::HTML(input) }
   let(:level)    { 1 }
-  subject { Coradoc::ReverseAdoc.convert(input, split_sections: level) }
-  let(:l1sections) {
+  subject { Coradoc::Input::HTML.convert(input, split_sections: level) }
+  let(:l1sections) do
     %w[sections/section-01.adoc
        sections/section-02.adoc
-       sections/section-03.adoc
-      ] + [nil] }
-  let(:l2sections) {
+       sections/section-03.adoc] + [nil]
+  end
+  let(:l2sections) do
     %w[sections/section-01.adoc
        sections/section-02/section-01.adoc
        sections/section-02/section-02.adoc
        sections/section-02/section-03.adoc
        sections/section-02.adoc
        sections/section-03/section-01.adoc
-       sections/section-03.adoc
-      ] + [nil] }
+       sections/section-03.adoc] + [nil]
+  end
 
   context "splitting in level nil" do
     let(:level) { nil }
@@ -33,7 +33,9 @@ describe Coradoc::ReverseAdoc do
     end
 
     it "should have a correct index" do
-      section_content = l1sections.compact.map { |i| "include::#{i}[]\n\n" }.join
+      section_content = l1sections.compact.map do |i|
+        "include::#{i}[]\n\n"
+      end.join
       subject[nil].should be == "[[__brokendiv]]\nPreface\n#{section_content}"
     end
   end
@@ -54,15 +56,15 @@ describe Coradoc::ReverseAdoc do
     it "should have a correct level2 index" do
       subject["sections/section-02.adoc"].should be ==
         "== Section 2\n" +
-        "\n" +
-        "This document describes something.\n" +
-        "\n" +
-        "include::../sections/section-02/section-01.adoc[]\n" +
-        "\n" +
-        "include::../sections/section-02/section-02.adoc[]\n" +
-        "\n" +
-        "include::../sections/section-02/section-03.adoc[]\n" +
-        "\n"
+          "\n" +
+          "This document describes something.\n" +
+          "\n" +
+          "include::../sections/section-02/section-01.adoc[]\n" +
+          "\n" +
+          "include::../sections/section-02/section-02.adoc[]\n" +
+          "\n" +
+          "include::../sections/section-02/section-03.adoc[]\n" +
+          "\n"
     end
   end
 end

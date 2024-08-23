@@ -2,20 +2,20 @@
 
 require "digest"
 require "nokogiri"
-require_relative "../coradoc"
-require_relative "reverse_adoc/errors"
-require_relative "reverse_adoc/cleaner"
-require_relative "reverse_adoc/config"
-require_relative "reverse_adoc/converters"
-require_relative "reverse_adoc/converters/base"
-require_relative "reverse_adoc/html_converter"
-require_relative "reverse_adoc/plugin"
-require_relative "reverse_adoc/postprocessor"
+require_relative "../input"
+require_relative "html/errors"
+require_relative "html/cleaner"
+require_relative "html/config"
+require_relative "html/converters"
+require_relative "html/converters/base"
+require_relative "html/html_converter"
+require_relative "html/plugin"
+require_relative "html/postprocessor"
 
 module Coradoc
-  module ReverseAdoc
+  module Input::HTML
     def self.convert(input, options = {})
-      Coradoc::ReverseAdoc::HtmlConverter.convert(input, options)
+      Coradoc::Input::HTML::HtmlConverter.convert(input, options)
     end
 
     def self.config
