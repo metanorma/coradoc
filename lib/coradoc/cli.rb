@@ -50,8 +50,9 @@ module Coradoc
            type: :numeric,
            default: 0, banner: "LEVEL",
            desc: "Split sections into separate files up to a provided level"
+
     def convert(input = nil)
-      options[:require]&.each { |r| require r }
+      options[:require]&.each { |r| Kernel.require r }
 
       config = {
         input_options: input_options = {},
