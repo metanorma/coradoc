@@ -1,7 +1,6 @@
 require "parslet"
 require "parslet/convenience"
 
-
 require_relative "asciidoc/attribute_list"
 require_relative "asciidoc/base"
 require_relative "asciidoc/block"
@@ -35,7 +34,7 @@ module Coradoc
       rule(:document) do
         (
           admonition_line |
-          bib_entry | 
+          bib_entry |
           block_image |
           term | term2 |
           citation |
@@ -57,8 +56,8 @@ module Coradoc
       def self.parse(filename)
         content = File.read(filename)
         new.parse(content)
-      rescue Parslet::ParseFailed => failure
-        puts failure.parse_failure_cause.ascii_tree
+      rescue Parslet::ParseFailed => e
+        puts e.parse_failure_cause.ascii_tree
       end
     end
   end
