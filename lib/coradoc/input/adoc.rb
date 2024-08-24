@@ -11,7 +11,16 @@ module Coradoc
     end
 
     def self.processor_execute(input, _options = {})
-      Coradoc::Parser.parse(input)
+      ast = Coradoc::Parser::Base.new.parse(input)
+      Coradoc::Transformer.transform(ast[:document])
+    end
+
+    def self.processor_postprocess(input, options)
+      if options[:output_processor] == :adoc
+        Coradoc::Input::HTML::Cleaner.new.tidy(input)
+      else
+        input
+      end
     end
 
     Coradoc::Input.define(self)
