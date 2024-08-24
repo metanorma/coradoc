@@ -54,7 +54,16 @@ make test
 ```
 
 
-## Usages
+## Usage from command line
+
+### Converting a document
+
+```bash
+$ coradoc help convert
+$ coradoc convert file.html -o file.adoc
+```
+
+## Usage from Ruby
 
 ### Parsing a document
 
