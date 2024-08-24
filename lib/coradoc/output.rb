@@ -8,3 +8,4 @@ module Coradoc
 end
 
 require "coradoc/output/adoc"
+require "coradoc/output/coradoc_tree_debug"
