@@ -177,6 +177,7 @@ module Coradoc
     rule(paragraph: subtree(:paragraph)) do
       Element::Paragraph.new(
         paragraph[:lines],
+        id: paragraph[:id],
         attributes: paragraph[:attribute_list],
         title: paragraph[:title]
         )
@@ -234,15 +235,28 @@ module Coradoc
         )
     }
 
-    rule(citation: {cross_reference: simple(:cross_reference),
-      comment: simple(:comment)}){
-      Element::Inline::Citation.new(cross_reference, comment)
+    rule(
+      key: simple(:key),
+      delimiter: simple(:delimiter),
+      value: simple(:value)
+      ){
+      Element::Inline::CrossReferenceArg.new(key, delimiter, value)
     }
 
-    rule(citation: {cross_reference: simple(:cross_reference)}){
-      Element::Inline::Citation.new(cross_reference)
+    rule(href_arg: simple(:href_arg)){
+        href_arg.to_s
     }
 
+    rule(citation: subtree(:citation)){
+      puts citation.inspect
+      xref = citation[:cross_reference]
+      xref = Element::Inline::CrossReference.new(xref[0], xref[1..-1]) if xref
+      comment = citation[:comment]
+      opts = {}
+      opts[:cross_reference] = xref if xref
+      opts[:comment] = comment if comment
+      Element::Inline::Citation.new(opts)
+    }
 
     rule(term_type: simple(:term_type),
       term: simple(:term),
@@ -276,16 +290,19 @@ module Coradoc
         ordering: ordering}
       opts[:attributes] = attribute_list if attribute_list
       if delimiter_c == "*"
-        if (attribute_list.positional == [] &&
+        if attribute_list
+          if (attribute_list.positional == [] &&
            attribute_list.named.keys[0] == "reviewer")
-          Element::Block::ReviewerComment.new(
-            opts
+            Element::Block::ReviewerComment.new(
+              opts
+              )
+          elsif (attribute_list.positional[0] == "sidebar" &&
+            attribute_list.named == {})
+            Element::Block::Side.new(
+              opts
             )
-        elsif (attribute_list.positional[0] == "sidebar" &&
-          attribute_list.named == {})
-          Element::Block::Side.new(
-            opts
-          )
+          end
+        else
         end
       elsif delimiter_c == "="
         Element::Block::Example.new(title, opts)

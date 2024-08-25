@@ -4,6 +4,7 @@ require "parslet/convenience"
 require_relative "asciidoc/attribute_list"
 require_relative "asciidoc/base"
 require_relative "asciidoc/block"
+require_relative "asciidoc/citation"
 require_relative "asciidoc/content"
 require_relative "asciidoc/document_attributes"
 require_relative "asciidoc/header"
@@ -20,6 +21,7 @@ module Coradoc
       include Coradoc::Parser::Asciidoc::AttributeList
       include Coradoc::Parser::Asciidoc::Base
       include Coradoc::Parser::Asciidoc::Block
+      include Coradoc::Parser::Asciidoc::Citation
       include Coradoc::Parser::Asciidoc::Content
       include Coradoc::Parser::Asciidoc::DocumentAttributes
       include Coradoc::Parser::Asciidoc::Header
