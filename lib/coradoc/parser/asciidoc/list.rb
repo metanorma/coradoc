@@ -40,7 +40,7 @@ module Coradoc
           marker = marker >>  str(".").repeat(nl2, nl2) if nl2 > 0
           str("").as(:list_item) >> 
           marker.as(:marker) >> str(".").absent? >>
-          match("\n").absent? >> space >> text_line
+          match("\n").absent? >> space >> text_line(true)
         end
 
         def ulist_item(nesting_level = 1)
@@ -50,7 +50,7 @@ module Coradoc
           str("").as(:list_item) >>
           marker.as(:marker) >> str("*").absent? >>
           str(' [[[').absent? >>
-          match("\n").absent? >> space >> text_line
+          match("\n").absent? >> space >> text_line(true)
         end
 
         def dlist_delimiter

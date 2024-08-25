@@ -26,10 +26,14 @@ module Coradoc
         end
 
         # Text
-        def text_line( n_line_breaks = 1)
-            (asciidoc_char_with_id.absent? | text_id) >> literal_space? >>
-            text.as(:text) >>
-            line_ending.repeat(n_line_breaks).as(:line_break)
+        def text_line(many_breaks = false)
+            tl = (asciidoc_char_with_id.absent? | text_id) >> literal_space? >>
+            text.as(:text)
+            if many_breaks
+              tl >> line_ending.repeat(1).as(:line_break)
+            else
+              tl >> line_ending.as(:line_break)
+            end
         end
 
         def asciidoc_char

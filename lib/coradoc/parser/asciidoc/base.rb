@@ -2,6 +2,7 @@ require_relative "admonition"
 require_relative "attribute_list"
 require_relative "bibliography"
 require_relative "block"
+require_relative "citation"
 require_relative "content"
 require_relative "document_attributes"
 require_relative "header"
@@ -20,6 +21,7 @@ module Coradoc
         include Coradoc::Parser::Asciidoc::AttributeList
         include Coradoc::Parser::Asciidoc::Bibliography
         include Coradoc::Parser::Asciidoc::Block
+        include Coradoc::Parser::Asciidoc::Citation
         include Coradoc::Parser::Asciidoc::Content
         include Coradoc::Parser::Asciidoc::DocumentAttributes
         include Coradoc::Parser::Asciidoc::Header

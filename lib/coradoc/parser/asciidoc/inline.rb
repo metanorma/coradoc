@@ -3,19 +3,6 @@ module Coradoc
     module Asciidoc
       module Inline
 
-        def cross_reference
-          str('<<') >> match("[^,>]").repeat(1).as(:href) >>
-          (str(',') >> match("[^>]").repeat(1).as(:name)).maybe >>
-          str('>>')
-        end
-
-        def citation
-          (str("[.source]\n") >>
-            cross_reference.as(:cross_reference) >>
-            (match['[^\n]'].repeat(1)).as(:comment).maybe >>
-            newline).as(:citation)
-        end
-
         def bold_constrained
           (str('*') >>
             match("[^*]").repeat(1).as(:text).repeat(1,1) >>
