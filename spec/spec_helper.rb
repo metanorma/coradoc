@@ -14,18 +14,18 @@ RSpec.configure do |config|
   end
   SimpleCov.start "gem"
 
-  # ReverseAdoc:
+  # Input::HTML:
   config.after(:each) do
-    Coradoc::ReverseAdoc.instance_variable_set(:@config, nil)
+    Coradoc::Input::HTML.instance_variable_set(:@config, nil)
   end
 end
 
-# ReverseAdoc:
-require "coradoc/reverse_adoc"
-require "coradoc/reverse_adoc/html_converter"
+# Input::HTML:
+require "coradoc/input/html"
+require "coradoc/input/html/html_converter"
 require "word-to-markdown"
 
-Dir[File.join("spec", "reverse_adoc", "support", "**", "*.rb")]
+Dir[File.join("spec", "**", "support", "**", "*.rb")]
   .each { |f| require File.join(".", f) }
 
 def node_for(html)
