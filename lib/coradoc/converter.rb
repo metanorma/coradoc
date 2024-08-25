@@ -109,9 +109,11 @@ module Coradoc
       end
     end
 
-    class NoInputPathError < StandardError; end
-    class NoOutputPathError < StandardError; end
-    class NoProcessorError < StandardError; end
+    class ConverterArgumentError < ArgumentError; end
+
+    class NoInputPathError < ConverterArgumentError; end
+    class NoOutputPathError < ConverterArgumentError; end
+    class NoProcessorError < ConverterArgumentError; end
 
     module CommonInputOutputMethods
       def define(const)
@@ -122,17 +124,21 @@ module Coradoc
         @processors[id.to_sym]
       end
 
+      def keys
+        @processors.keys
+      end
+
       def select_processor(filename)
         filename = filename.path if filename.respond_to? :path
         unless filename.is_a? String
           raise Converter::NoProcessorError,
-                "can't find a path for #{filename}. You must manually select the processor."
+                "Can't find a path for #{filename}. You must manually select the processor."
         end
 
         @processors.values.find do |i|
           i.processor_match?(filename)
         end or raise Converter::NoProcessorError,
-                     "you must manually select the processor for #{filename}"
+                     "You must manually select the processor for #{filename}"
       end
     end
   end
