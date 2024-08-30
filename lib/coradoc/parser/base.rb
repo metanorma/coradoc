@@ -40,6 +40,7 @@ module Coradoc
           block_image |
           term | term2 |
           citation |
+          tag |
           comment_block |
           comment_line |
           block.as(:block) |

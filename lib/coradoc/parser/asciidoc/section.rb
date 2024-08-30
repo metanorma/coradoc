@@ -9,6 +9,7 @@ module Coradoc
             term | term2 |
             bib_entry |
             block_image |
+            tag |
             comment_block |
             comment_line |
             include_directive |
@@ -19,7 +20,7 @@ module Coradoc
             glossaries.as(:glossaries) |
             paragraph |
             list |
-            empty_line
+            empty_line.as(:line_break)
           ).repeat(1)
         end
 

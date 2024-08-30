@@ -68,6 +68,10 @@ module Coradoc
       def initialize(line_break)
         @line_break = line_break
       end
+
+      def to_adoc
+        @line_break
+      end
     end
 
     class Highlight < Element::TextElement
