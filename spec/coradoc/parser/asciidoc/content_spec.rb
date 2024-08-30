@@ -154,7 +154,7 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 
       ast = Asciidoc::ContentTester.parse(content)
       glossaries = ast.first[:glossaries]
-      lines = ast[1][:paragraph][:lines]
+      lines = ast[2][:paragraph][:lines]
 
       expect(glossaries[0][:key]).to eq("Clause")
       expect(glossaries[0][:value]).to eq("5.1")
