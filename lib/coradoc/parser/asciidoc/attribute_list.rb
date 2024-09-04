@@ -51,7 +51,7 @@ module Coradoc
         end
 
         def attribute_list(name = :attribute_list)
-          match('^\[') >> str("[").absent? >> 
+          str('[') >> str("[").absent? >> 
           ( named_many |
             positional_one_named_many |
             positional_many_named_many |
