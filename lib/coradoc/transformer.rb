@@ -37,7 +37,11 @@ module Coradoc
     }
 
     rule(tag: subtree(:tag)) {
-      Element::Tag.new(tag[:name])
+      opts = {}
+      opts[:prefix] = tag[:prefix]
+      opts[:attribute_list] = tag[:attribute_list]
+      opts[:line_break] = tag[:line_break]
+      Element::Tag.new(tag[:name], opts)
     }
 
     # AttributeList

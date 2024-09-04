@@ -1,18 +1,18 @@
 module Coradoc
   module Element
     class Tag < Base
-      attr_accessor :name
+      attr_accessor :name, :prefix, :attrs, :line_break
 
-      def initialize(tag_name, options = {})
-        @tag_name = tag_name
+      def initialize(name, options = {})
+        @name = name
         @prefix = options.fetch(:prefix, "tag")
-        @attrs = options.fetch(:attribute_list, nil)
+        @attrs = options.fetch(:attribute_list, AttributeList.new)
         @line_break = options.fetch(:line_break, "\n")
       end
 
       def to_adoc
         attrs = @attrs.to_adoc
-        "// #{@prefix}::#{@tag_name}#{attrs}#{@line_break}"
+        "// #{@prefix}::#{@name}#{attrs}#{@line_break}"
       end
     end
   end
