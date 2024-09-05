@@ -141,10 +141,22 @@ module Coradoc
         end
 
         def comment_line
+          tag.absent? >>
           (str('//') >> str("/").absent? >>
             space? >>
             text.as(:comment_text)
             ).as(:comment_line)
+        end
+
+        def tag
+          (str('//') >> str('/').absent? >>
+            space? >>
+            (str('tag') | str('end')).as(:prefix) >>
+            str('::') >> str(':').absent? >>
+            match('[^\[]').repeat(1).as(:name) >>
+            attribute_list >>
+            line_ending.maybe.as(:line_break)
+            ).as(:tag)
         end
 
         def comment_block

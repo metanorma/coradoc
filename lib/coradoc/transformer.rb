@@ -36,6 +36,14 @@ module Coradoc
       Element::Comment::Block.new(comment_text)
     }
 
+    rule(tag: subtree(:tag)) {
+      opts = {}
+      opts[:prefix] = tag[:prefix]
+      opts[:attribute_list] = tag[:attribute_list]
+      opts[:line_break] = tag[:line_break]
+      Element::Tag.new(tag[:name], opts)
+    }
+
     # AttributeList
     class NamedAttribute < Struct.new(:key, :value); end
 
@@ -248,7 +256,6 @@ module Coradoc
     }
 
     rule(citation: subtree(:citation)){
-      puts citation.inspect
       xref = citation[:cross_reference]
       xref = Element::Inline::CrossReference.new(xref[0], xref[1..-1]) if xref
       comment = citation[:comment]
