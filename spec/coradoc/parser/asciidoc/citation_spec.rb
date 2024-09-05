@@ -2,7 +2,7 @@ require "spec_helper"
 
 RSpec.describe "Coradoc::Parser::Asciidoc::Citatione" do
   describe ".parse" do
-    it "parses various inline text formattings" do
+    it "parses multiple types of citation" do
       parser = Asciidoc::CitationTester
 
 
