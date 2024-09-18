@@ -6,7 +6,9 @@ module Coradoc::Input::HTML
         internal_anchor = treat_children_anchors(node, state)
 
         if id.to_s.empty? && internal_anchor.size.positive?
-          id = internal_anchor.first.id
+          if internal_anchor.first.respond_to? :id
+            id = internal_anchor.first.id
+          end
         end
 
         level = node.name[/\d/].to_i
@@ -16,14 +18,14 @@ module Coradoc::Input::HTML
       end
 
       def treat_children_no_anchors(node, state)
-        node.children.reject { |a| a.name == "a" }.inject([]) do |memo, child|
-          memo << treat_coradoc(child, state)
+        node.children.reject { |a| a.name == "a" }.map do |child|
+          treat_coradoc(child, state)
         end
       end
 
       def treat_children_anchors(node, state)
-        node.children.select { |a| a.name == "a" }.inject([]) do |memo, child|
-          memo << treat_coradoc(child, state)
+        node.children.select { |a| a.name == "a" }.map do |child|
+          treat_coradoc(child, state)
         end
       end
     end
