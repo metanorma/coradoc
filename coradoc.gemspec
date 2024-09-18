@@ -36,7 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "premailer", "~> 1.11.0"
   spec.add_dependency "word-to-markdown"
   spec.add_dependency "base64"
-  spec.add_dependency "thor"
+  spec.add_dependency "thor", ">= 1.3.0"
   spec.add_development_dependency "codeclimate-test-reporter"
   spec.add_development_dependency "pry"
   spec.add_development_dependency "rake"
