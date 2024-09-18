@@ -10,9 +10,9 @@ module Coradoc::Input::HTML
 
       # Note: treat_children won't run plugin hooks
       def treat_children(node, state)
-        node.children.inject("") do |memo, child|
-          memo << treat(child, state)
-        end
+        node.children.map do |child|
+          treat(child, state)
+        end.join
       end
 
       def treat(node, state)
@@ -20,9 +20,9 @@ module Coradoc::Input::HTML
       end
 
       def treat_children_coradoc(node, state)
-        node.children.inject([]) do |memo, child|
-          memo << treat_coradoc(child, state)
-        end.flatten.reject { |x| x == "" || x.nil? }
+        node.children.map do |child|
+          treat_coradoc(child, state)
+        end.flatten.reject { |x| x.to_s.empty? }
       end
 
       def treat_coradoc(node, state)
