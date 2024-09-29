@@ -10,5 +10,6 @@ module Coradoc::Input::HTML
 
     register :div,     Div.new
     register :article, Div.new
+    register :center,  Div.new
   end
 end
