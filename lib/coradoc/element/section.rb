@@ -1,7 +1,7 @@
 module Coradoc
   module Element
     class Section < Base
-      attr_accessor :id, :title, :attrs, :contents, :sections
+      attr_accessor :id, :title, :attrs, :contents, :sections, :anchor
 
       declare_children :id, :title, :contents, :sections
 
@@ -49,7 +49,7 @@ module Coradoc
       # HTML element and if it happens inside some other block element, can be
       # safely collapsed.
       def safe_to_collapse?
-        @title.nil? && @id.nil? && @sections.empty?
+        @title.nil? && @sections.empty?
       end
 
       private

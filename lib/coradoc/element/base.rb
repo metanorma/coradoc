@@ -14,6 +14,8 @@ module Coradoc
           when Coradoc::Element::Section
             return content unless i.safe_to_collapse?
 
+            collected_content << i.anchor if i.anchor
+
             simplified = simplify_block_content(i.contents)
 
             if simplified && !simplified.empty?
