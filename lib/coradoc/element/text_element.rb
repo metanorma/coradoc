@@ -15,6 +15,15 @@ module Coradoc
         end
       end
 
+      def inspect
+        str = "TextElement"
+        str += "(#{@id})" if @id
+        str += ": "
+        str += @content.inspect
+        str += " + #{@line_break.inspect}" unless line_break.empty?
+        str
+      end
+
       def to_adoc
         Coradoc::Generator.gen_adoc(@content) + @line_break
       end
