@@ -4,6 +4,8 @@ module Coradoc::Input::HTML
   # is compatible with what we would get out of Coradoc, if
   # it parsed it directly.
   class Postprocessor
+    Element = Coradoc::Element
+
     def self.process(coradoc)
       new(coradoc).process
     end
@@ -12,17 +14,74 @@ module Coradoc::Input::HTML
       @tree = coradoc
     end
 
+    # Extracts titles from lists. This happens in HTML files
+    # generated from DOCX documents by LibreOffice.
+    #
+    # We are interested in a particular tree:
+    # Element::List::Ordered items:
+    #   Element::List::Ordered items: (any depth)
+    #     Element::ListItem content:
+    #       Element::Title
+    #       (any number of other titles of the same scheme)
+    #
+    # This tree is flattened into:
+    # Element::Title
+    # Element::Title (any number of titles)
+    def extract_titles_from_lists
+      @tree = Element::Base.visit(@tree) do |elem, dir|
+        next elem unless dir == :pre
+        next elem unless elem.is_a?(Element::List::Ordered)
+        next elem if elem.items.length != 1
+
+        anchors = []
+        anchors << elem.anchor if elem.anchor
+
+        # Extract ListItem from any depth of List::Ordered
+        processed = elem
+        while processed.is_a?(Element::List::Ordered)
+          if processed.items.length != 1
+            backtrack = true
+            break
+          end
+          anchors << processed.anchor if processed.anchor
+          processed = processed.items.first
+        end
+
+        # Something went wrong? Anything not matching on the way?
+        next elem if backtrack
+        next elem unless processed.is_a?(Element::ListItem)
+
+        anchors << processed.anchor if processed.anchor
+
+        # Now we must have a title (or titles).
+        titles = processed.content.flatten
+
+        # Don't bother if there's no title in there.
+        next elem unless titles.any? { |i| i.is_a? Element::Title }
+
+        # Ordered is another iteration for our cleanup.
+        next elem unless titles.all? do |i|
+          i.is_a?(Element::Title) || i.is_a?(Element::List::Ordered)
+        end
+
+        # We are done now.
+        titles + anchors
+      end
+    end
+
     # Collapse DIVs that only have a title, or nest another DIV.
     def collapse_meaningless_sections
-      @tree = Coradoc::Element::Base.visit(@tree) do |elem, _dir|
-        if elem.is_a?(Coradoc::Element::Section) && elem.safe_to_collapse?
+      @tree = Element::Base.visit(@tree) do |elem, _dir|
+        if elem.is_a?(Element::Section) && elem.safe_to_collapse?
           children_classes = Array(elem.contents).map(&:class)
           count = children_classes.length
-          safe_classes = [Coradoc::Element::Section, Coradoc::Element::Title]
+          safe_classes = [Element::Section, Element::Title]
 
           # Count > 0 because some documents use <div> as a <br>.
           if count > 0 && children_classes.all? { |i| safe_classes.include?(i) }
-            next elem.contents
+            contents = elem.contents.dup
+            contents.prepend(elem.anchor) if elem.anchor
+            next contents
           end
         end
         elem
@@ -32,12 +91,14 @@ module Coradoc::Input::HTML
     # tree should now be more cleaned up, so we can progress with
     # creating meaningful sections
     def generate_meaningful_sections
-      @tree = Coradoc::Element::Base.visit(@tree) do |elem, dir|
+      @tree = Element::Base.visit(@tree) do |elem, dir|
         # We are searching for an array, that has a title. This
         # will be a candidate for our section array.
         if dir == :post &&
             elem.is_a?(Array) &&
-            !elem.grep(Coradoc::Element::Title).empty?
+            !elem.flatten.grep(Element::Title).empty?
+
+          elem = elem.flatten
 
           new_array = []
           content_array = new_array
@@ -47,12 +108,12 @@ module Coradoc::Input::HTML
           # all descendant sections into those sections. Otherwise, we push
           # an element as content of current section.
           elem.each do |e|
-            if e.is_a? Coradoc::Element::Title
+            if e.is_a? Element::Title
               title = e
               content_array = []
               section_array = []
               level = title.level_int
-              section = Coradoc::Element::Section.new(
+              section = Element::Section.new(
                 title, contents: content_array, sections: section_array
               )
               # Some documents may not be consistent and eg. follow H4 after
@@ -82,11 +143,11 @@ module Coradoc::Input::HTML
       previous_sections = {}
 
       determine_section_id = ->(elem) do
-        if elem.title.style == "appendix"
-          level = "A"
-        else
-          level = 1
-        end
+        level = if elem.title.style == "appendix"
+                  "A"
+                else
+                  1
+                end
 
         section = previous_sections[elem]
         while section
@@ -102,8 +163,8 @@ module Coradoc::Input::HTML
         style
       end
 
-      @tree = Coradoc::Element::Base.visit(@tree) do |elem, dir|
-        title = elem.title if elem.is_a?(Coradoc::Element::Section)
+      @tree = Element::Base.visit(@tree) do |elem, dir|
+        title = elem.title if elem.is_a?(Element::Section)
 
         if title && title.level_int <= max_level
           if dir == :pre
@@ -137,6 +198,7 @@ module Coradoc::Input::HTML
     end
 
     def process
+      extract_titles_from_lists
       collapse_meaningless_sections
       generate_meaningful_sections
       # Do it again to simplify the document further.
