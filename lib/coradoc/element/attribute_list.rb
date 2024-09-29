@@ -12,6 +12,16 @@ module Coradoc
         @rejected_named = []
       end
 
+      def inspect
+        "AttributeList: " +
+          [
+            @positional.map(&:inspect).join(", "),
+            @named.map { |k, v| "#{k}: #{v.inspect}" }.join(", "),
+            (@rejected_positional.empty? or "rejected: #{@rejected_positional.inspect}"),
+            (@rejected_positional.empty? or "rejected: #{@rejected_named.inspect}"),
+          ].reject { |i| i == true || i.empty? }.join(", ")
+      end
+
       def add_positional(*attr)
         @positional += attr
       end
@@ -65,7 +75,9 @@ module Coradoc
 
         adoc = +""
         if !@positional.empty?
-          adoc << @positional.map { |p| [nil, ""].include?(p) ? '""' : p }.join(",")
+          adoc << @positional.map do |p|
+            [nil, ""].include?(p) ? '""' : p
+          end.join(",")
         end
         adoc << "," if @positional.any? && @named.any?
         adoc << @named.map do |k, v|
