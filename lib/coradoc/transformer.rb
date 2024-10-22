@@ -316,7 +316,7 @@ module Coradoc
       elsif delimiter_c == "+"
         Element::Block::Pass.new(opts)
       elsif delimiter_c == "-"
-        if (attribute_list.positional[0] == "quote")
+        if (attribute_list && attribute_list.positional[0] == "quote")
           Element::Block::Quote.new(title, opts)
         end
       elsif delimiter_c == "_"
