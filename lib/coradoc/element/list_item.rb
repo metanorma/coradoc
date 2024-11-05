@@ -1,7 +1,7 @@
 module Coradoc
   module Element
     class ListItem < Base
-      attr_accessor :marker, :id, :anchor, :content, :line_break
+      attr_accessor :marker, :id, :anchor, :content, :subitem, :line_break
 
       declare_children :content, :id, :anchor
 
@@ -10,11 +10,14 @@ module Coradoc
         @id = options.fetch(:id, nil)
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
         @content = content
+        @attached = options.fetch(:attached, [])
+        @nested = options.fetch(:nested, nil)
         @line_break = options.fetch(:line_break, "\n")
       end
 
       def to_adoc
-        anchor = @anchor.nil? ? "" : @anchor.to_adoc.to_s
+        anchor = @anchor.nil? ? "" : " #{@anchor.to_adoc.to_s} "
+        # text = Coradoc::Generator.gen_adoc(@content)
         content = Array(@content).map do |subitem|
           next if subitem.is_a? Inline::HardLineBreak
 
@@ -24,10 +27,15 @@ module Coradoc
           if Coradoc.a_single?(subitem, Coradoc::Element::TextElement)
             subcontent = Coradoc.strip_unicode(subcontent)
           end
-          subcontent.chomp
+          subcontent
         end.compact.join("\n+\n")
-
-        " #{anchor}#{content.chomp}#{@line_break}"
+        # attach = Coradoc::Generator.gen_adoc(@attached)
+        attach = @attached.map do |elem|
+          "+\n" + Coradoc::Generator.gen_adoc(elem)
+        end.join
+        nest = Coradoc::Generator.gen_adoc(@nested)
+        out = " #{anchor}#{content}#{@line_break}"
+        out + attach + nest
       end
     end
   end

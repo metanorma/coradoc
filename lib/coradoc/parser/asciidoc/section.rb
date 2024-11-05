@@ -14,7 +14,7 @@ module Coradoc
             comment_line |
             include_directive |
             admonition_line |
-            block.as(:block) |
+            block |
             table.as(:table) |
             highlight.as(:highlight) |
             glossaries.as(:glossaries) |
@@ -35,12 +35,14 @@ module Coradoc
 
         # Section id
         def section_id
+          line_start? >>
           (str("[[") >> keyword.as(:id) >> str("]]") |
             str("[#") >> keyword.as(:id) >> str("]")) >> newline
         end
 
         # Heading
         def section_title(level = 2, max_level = 8)
+          line_start? >>
           match("=").repeat(level, max_level).as(:level) >>
             str('=').absent? >>
             space? >> text.as(:text) >> endline.as(:line_break)

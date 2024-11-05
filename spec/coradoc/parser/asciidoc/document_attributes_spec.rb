@@ -38,8 +38,7 @@ RSpec.describe "Coradoc::Asciidoc::DocumentAttributes" do
   end
 
   module Asciidoc
-    class DocumentAttributesTester < Parslet::Parser
-      include Coradoc::Parser::Asciidoc::Base
+    class DocumentAttributesTester < Coradoc::Parser::Asciidoc::Base
 
       rule(:document) do
         (document_attributes | any.as(:unparsed)).repeat(1)

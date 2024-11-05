@@ -15,7 +15,7 @@ module Coradoc
         end
 
         def to_adoc
-          "\n\n#{gen_anchor}#{gen_title}#{gen_delimiter}\n" << gen_lines << "\n#{gen_delimiter}\n\n"
+          "\n\n#{gen_anchor}#{gen_title}#{gen_attributes}#{gen_delimiter}\n" << gen_lines << "\n#{gen_delimiter}\n\n"
         end
       end
     end

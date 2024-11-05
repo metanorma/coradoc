@@ -16,7 +16,7 @@ RSpec.describe Coradoc::Parser do
       expect(ast[1][:document_attributes][0][:key]).to eq("published")
       expect(ast[1][:document_attributes][0][:value]).to eq("'2023-03-08T09:51:08+08:00'")
 
-      section = ast[3][:section][:section]
+      section = ast[3][:section]
       clause_5_1 = section[:sections][0][:section]
       content = clause_5_1[:contents].first
 
@@ -44,8 +44,8 @@ RSpec.describe Coradoc::Parser do
 
       list_one_items = guidance[:contents][2][:list][:unordered]
       expect(list_one_items.count).to eq(3)
-      expect(list_one_items[0][:text]).not_to be_nil
-      expect(list_one_items[0][:id]).to eq("guidance_5.1_part_2_1")
+      expect(list_one_items[0][:list_item][:text]).not_to be_nil
+      expect(list_one_items[0][:list_item][:id]).to eq("guidance_5.1_part_2_1")
 
       expect(guidance[:contents][3][:paragraph][:lines][0][:id]).not_to be_nil
       expect(guidance[:contents][4][:list][:unordered].count).to eq(7)

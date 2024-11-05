@@ -61,12 +61,13 @@ module Coradoc
 
         def type_hash
           @type_hash ||= {
+            "====" => :example,
+            "...." => :literal,
+            "--"   => :open,
+            "++++" => :pass,
             "____" => :quote,
             "****" => :side,
             "----" => :source,
-            "====" => :example,
-            "...." => :literal,
-            "++++" => :pass,
           }
         end
       end

@@ -149,9 +149,9 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(section[:id]).to eq("section_id")
       expect(section[:title][:text]).to eq("Section title")
 
-      expect(list_items[0][:text]).to eq("List item one")
-      expect(list_items[1][:id]).to eq("list_item_id")
-      expect(list_items[1][:text]).to eq("List item two")
+      expect(list_items[0][:list_item][:text]).to eq("List item one")
+      expect(list_items[1][:list_item][:id]).to eq("list_item_id")
+      expect(list_items[1][:list_item][:text]).to eq("List item two")
     end
 
     it "parses blocks with different types" do
@@ -189,8 +189,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
   end
 
   module Asciidoc
-    class SectionTester < Parslet::Parser
-      include Coradoc::Parser::Asciidoc::Base
+    class SectionTester < Coradoc::Parser::Asciidoc::Base
 
       rule(:document) { (section | any.as(:unparsed)).repeat(1) }
       root :document

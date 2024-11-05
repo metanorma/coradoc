@@ -20,7 +20,7 @@ module Coradoc
         str += "(#{@id})" if @id
         str += ": "
         str += @content.inspect
-        str += " + #{@line_break.inspect}" unless line_break.empty?
+        str += " + #{@line_break.inspect}" unless line_break.to_s.empty?
         str
       end
 

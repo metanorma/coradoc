@@ -1,36 +1,12 @@
+require "digest"
 require "parslet"
 require "parslet/convenience"
 
-require_relative "asciidoc/attribute_list"
 require_relative "asciidoc/base"
-require_relative "asciidoc/block"
-require_relative "asciidoc/citation"
-require_relative "asciidoc/content"
-require_relative "asciidoc/document_attributes"
-require_relative "asciidoc/header"
-require_relative "asciidoc/inline"
-require_relative "asciidoc/list"
-require_relative "asciidoc/paragraph"
-require_relative "asciidoc/section"
-require_relative "asciidoc/table"
-require_relative "asciidoc/term"
 
 module Coradoc
   module Parser
-    class Base < Parslet::Parser
-      include Coradoc::Parser::Asciidoc::AttributeList
-      include Coradoc::Parser::Asciidoc::Base
-      include Coradoc::Parser::Asciidoc::Block
-      include Coradoc::Parser::Asciidoc::Citation
-      include Coradoc::Parser::Asciidoc::Content
-      include Coradoc::Parser::Asciidoc::DocumentAttributes
-      include Coradoc::Parser::Asciidoc::Header
-      include Coradoc::Parser::Asciidoc::Inline
-      include Coradoc::Parser::Asciidoc::List
-      include Coradoc::Parser::Asciidoc::Paragraph
-      include Coradoc::Parser::Asciidoc::Section
-      include Coradoc::Parser::Asciidoc::Table
-      include Coradoc::Parser::Asciidoc::Term
+    class Base < Coradoc::Parser::Asciidoc::Base
 
       root :document
       rule(:document) do
@@ -43,8 +19,8 @@ module Coradoc
           tag |
           comment_block |
           comment_line |
-          block.as(:block) |
-          section.as(:section) |
+          block |
+          section |
           include_directive |
           document_attributes |
           list |
