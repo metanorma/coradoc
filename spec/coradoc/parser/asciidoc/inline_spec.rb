@@ -7,9 +7,9 @@ RSpec.describe "Coradoc::Parser::Asciidoc::Inline" do
 
 
       ast = parser.parse("*bold*")
-      # expect(ast).to eq([{:bold_constrained=>[{:text=>"bold"}]}])
+      expect(ast).to eq([{:bold_constrained=>[{:text=>"bold"}]}])
       ast = parser.parse("**bold**")
-      # expect(ast).to eq([{:bold_unconstrained=>[{:text=>"bold"}]}])
+      expect(ast).to eq([{:bold_unconstrained=>[{:text=>"bold"}]}])
       ast = parser.parse("line with *bold*")
       exp = [{:text=>[
         "line with ",
@@ -30,8 +30,7 @@ end
 
 
 module Asciidoc
-  class InlineTextFormattingTester < Parslet::Parser
-    include Coradoc::Parser::Asciidoc::Base
+  class InlineTextFormattingTester < Coradoc::Parser::Asciidoc::Base
 
     rule(:document) { (text_formatted | any.as(:unparsed)).repeat(1) }
     root :document

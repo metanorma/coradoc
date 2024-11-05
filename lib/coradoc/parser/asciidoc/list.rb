@@ -1,30 +1,30 @@
+# $DEBUG = true
 module Coradoc
   module Parser
     module Asciidoc
       module List
 
-        def list
-          (
-          unordered_list |
-             ordered_list # definition_list |
+        def list(nesting_level = 1)
+          ( 
+          unordered_list(nesting_level) |
+             ordered_list(nesting_level) |
+             definition_list
             ).as(:list)
+        end
+
+        def list_continuation
+          line_start? >> str("+\n")
         end
 
         def ordered_list(nesting_level = 1)
           attrs = (attribute_list >> newline).maybe
           r = olist_item(nesting_level)
-          if nesting_level <= 8
-            r = r | ordered_list(nesting_level + 1)
-          end
-          attrs >> r.repeat(1).as(:ordered)
+          attrs >> olist_item(nesting_level).present? >> r.repeat(1).as(:ordered)
         end
 
         def unordered_list(nesting_level = 1)
           attrs = (attribute_list >> newline).maybe
           r = ulist_item(nesting_level)
-          if nesting_level <= 8
-            r = r | unordered_list(nesting_level + 1)
-          end
           attrs >> r.repeat(1).as(:unordered)
         end
 
@@ -34,23 +34,57 @@ module Coradoc
           dlist_item(delimiter).absent?
         end
 
+        def list_marker(nesting_level = 1)
+          olist_marker(nesting_level) | ulist_marker(nesting_level)
+        end
+
+        def olist_marker(nesting_level = 1)
+          line_start? >> str('.' * nesting_level) >> str('.').absent?
+        end
+
         def olist_item(nesting_level = 1)
-          nl2 = nesting_level - 1
-          marker = match(/^\./)
-          marker = marker >>  str(".").repeat(nl2, nl2) if nl2 > 0
-          str("").as(:list_item) >> 
-          marker.as(:marker) >> str(".").absent? >>
-          match("\n").absent? >> space >> text_line(true)
+          item = olist_marker(nesting_level).as(:marker) >>
+          match("\n").absent? >> space >> text_line(true)# >>
+          # (list_continuation.present? >> list_continuation >> 
+          # paragraph #| example_block(n_deep: 1)
+          # ).repeat(0).as(:attached)
+
+          att = (list_continuation.present? >>
+                  list_continuation >> 
+                  (admonition_line | paragraph | block) #(n_deep: 1))
+                ).repeat(0).as(:attached)
+          item = item >> att.maybe
+
+
+          if nesting_level <= 4
+            item = item >>
+              (list_marker(nesting_level + 1).present? >>
+              list(nesting_level + 1)).repeat(0).as(:nested)#).maybe
+          end
+          olist_marker(nesting_level).present? >> item.as(:list_item)
+        end
+
+        def ulist_marker(nesting_level = 1)
+          line_start? >> str('*' * nesting_level) >> str('*').absent?
         end
 
         def ulist_item(nesting_level = 1)
-          nl2 = nesting_level - 1
-          marker = match(/^\*/)
-          marker = marker >>  str("*").repeat(nl2, nl2) if nl2 > 0
-          str("").as(:list_item) >>
-          marker.as(:marker) >> str("*").absent? >>
+          item = ulist_marker(nesting_level).as(:marker) >>
           str(' [[[').absent? >>
           match("\n").absent? >> space >> text_line(true)
+
+          att = (list_continuation.present? >>
+                  list_continuation >> 
+                  (admonition_line | paragraph | block) #(n_deep: 1))
+                ).repeat(0).as(:attached)
+          item = item >> att.maybe
+
+          if nesting_level <= 4
+            item = item >>
+              (list_marker(nesting_level + 1).present? >>
+              list(nesting_level + 1)).repeat(0).as(:nested)#).maybe
+          end
+          ulist_marker(nesting_level).present? >> item.as(:list_item)
         end
 
         def dlist_delimiter

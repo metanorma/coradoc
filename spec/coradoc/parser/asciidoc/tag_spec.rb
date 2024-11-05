@@ -22,8 +22,7 @@ end
 
 
 module Asciidoc
-  class TagTester < Parslet::Parser
-    include Coradoc::Parser::Asciidoc::Base
+  class TagTester < Coradoc::Parser::Asciidoc::Base
 
     rule(:document) { (tag | any.as(:unparsed)).repeat(1) }
     root :document

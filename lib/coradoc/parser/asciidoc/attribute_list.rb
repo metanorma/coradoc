@@ -11,8 +11,13 @@ module Coradoc
           match('[^\],]').repeat(1)
         end
 
+        def named_key
+          (str('reviewer') | 
+            match('[a-zA-Z0-9_-]').repeat(1)).as(:named_key)
+        end
+
         def named_attribute
-          (match('[a-zA-Z0-9_-]').repeat(1).as(:named_key) >>
+          ( named_key >>
             str(' ').maybe >> str("=") >> str(' ').maybe >>
             match['a-zA-Z0-9_\- \"'].repeat(1).as(:named_value) >>
             str(' ').maybe
@@ -51,6 +56,7 @@ module Coradoc
         end
 
         def attribute_list(name = :attribute_list)
+          str('[').present? >>
           str('[') >> str("[").absent? >> 
           ( named_many |
             positional_one_named_many |

@@ -156,27 +156,25 @@ module Coradoc
       )
     }
 
-    rule(bold_constrained: {
-      content: simple(:text)
-    }){
+    rule(bold_constrained: sequence(:text)){
       Element::Inline::Bold.new(text, unconstrained: false)
     }
 
-    rule(bold_unconstrained: {content: simple(:text)}) {
+    rule(bold_unconstrained: sequence(:text)) {
       Element::Inline::Bold.new(text, unconstrained: true)
     }
 
-    rule(highlight_constrained: {content: simple(:text)}) {
+    rule(highlight_constrained: sequence(:text)) {
       Element::Inline::Highlight.new(text, unconstrained: false)
     }
-    rule(highlight_unconstrained: {content: simple(:text)}) {
+    rule(highlight_unconstrained: sequence(:text)) {
       Element::Inline::Highlight.new(text, unconstrained: true)
     }
 
-    rule(italic_constrained: {content: simple(:text)}) {
+    rule(italic_constrained: sequence(:text)) {
       Element::Inline::Italic.new(text, unconstrained: false)
     }
-    rule(italic_unconstrained: {content: simple(:text)}) {
+    rule(italic_unconstrained: sequence(:text)) {
       Element::Inline::Italic.new(text, unconstrained: true)
     }
 
@@ -300,25 +298,24 @@ module Coradoc
         if attribute_list
           if (attribute_list.positional == [] &&
            attribute_list.named.keys[0] == "reviewer")
-            Element::Block::ReviewerComment.new(
-              opts
-              )
+            Element::Block::ReviewerComment.new(opts)
           elsif (attribute_list.positional[0] == "sidebar" &&
             attribute_list.named == {})
-            Element::Block::Side.new(
-              opts
-            )
+            Element::Block::Side.new(opts)
+          else
+            Element::Block::Side.new(opts)
           end
         else
+          Element::Block::Side.new(opts)
         end
       elsif delimiter_c == "="
         Element::Block::Example.new(title, opts)
       elsif delimiter_c == "+"
         Element::Block::Pass.new(opts)
-      elsif delimiter_c == "-"
-        if (attribute_list && attribute_list.positional[0] == "quote")
-          Element::Block::Quote.new(title, opts)
-        end
+      elsif delimiter_c == "-" && delimiter.size == 2
+        Element::Block::Open.new(title, opts)
+      elsif delimiter_c == "-"&& delimiter.size >= 4
+        Element::Block::SourceCode.new(title, opts)
       elsif delimiter_c == "_"
         Element::Block::Quote.new(title, opts)
       end
@@ -379,28 +376,15 @@ module Coradoc
       Element::Table.new(title, rows, opts)
     end
 
-    rule(list_item: simple(:list_item),
-      marker: simple(:marker),
-      text: simple(:text),
-      line_break: simple(:line_break)) do
+    rule(list_item: subtree(:list_item)) do
+      marker = list_item[:marker]
+      id = list_item[:id]
+      text = list_item[:text]
+      attached = list_item[:attached]
+      nested = list_item[:nested]
+      line_break = list_item[:line_break]
       Element::ListItem.new(
-        text,
-        marker: marker.to_s,
-        line_break: line_break
-        )
-    end
-
-    rule(list_item: simple(:list_item),
-      marker: simple(:marker),
-      id: simple(:id),
-      text: simple(:text),
-      line_break: simple(:line_break)) do
-      Element::ListItem.new(
-        text,
-        id: id,
-        marker: marker.to_s,
-        line_break: line_break
-        )
+        text, id:, marker:, attached:, nested:, line_break: )
     end
 
 

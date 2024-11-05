@@ -19,8 +19,8 @@ module Coradoc
             m = @items.select do |i|
               i.is_a?(Coradoc::Element::ListItem) &&
                 !i.marker.nil?
-            end.first&.marker
-            @ol_count = m.size if m.is_a?(String)
+            end.first&.marker.to_s
+            @ol_count = m.size
           end
           @ol_count = 1 if @ol_count.nil?
           @attrs = options.fetch(:attrs, AttributeList.new)

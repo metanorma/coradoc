@@ -21,10 +21,20 @@ RSpec.describe "Coradoc::Parser::Asciidoc::Citatione" do
       expect(ast).to eq([{:citation=>{:cross_reference=>[{:href_arg=>"xref_anchor"}, {:key=>"section", :delimiter=>"=", :value=>"1"}]}}])
 
       ast = parser.parse("[.source]\n<<xref_anchor>>some reference\n")
-      expect(ast).to eq([{:citation=>{:cross_reference=>[{:href_arg=>"xref_anchor"}], :comment=>[{:text=>"some reference", :line_break=>"\n"}]}}])
+      obj = [{:citation=>
+               {:cross_reference=>[{:href_arg=>"xref_anchor"}],
+                :comment=>[{:text=>"some reference", :line_break=>"\n"}]}}]
+
+      expect(ast).to eq(obj)
 
       ast = parser.parse("[.source]\n<<xref_anchor>>some reference\nsecond line\n")
-      expect(ast).to eq([{:citation=>{:cross_reference=>[{:href_arg=>"xref_anchor"}], :comment=>[{:text=>"some reference", :line_break=>"\n"}, {:text=>"second line", :line_break=>"\n"}]}}])
+      obj = [{:citation=>
+               {:cross_reference=>[{:href_arg=>"xref_anchor"}],
+                :comment=>
+                 [{:text=>"some reference", :line_break=>"\n"},
+                  {:text=>"second line", :line_break=>"\n"}]}}]
+
+      expect(ast).to eq(obj)
 
     end
   end
@@ -32,8 +42,7 @@ end
 
 
 module Asciidoc
-  class CitationTester < Parslet::Parser
-    include Coradoc::Parser::Asciidoc::Base
+  class CitationTester < Coradoc::Parser::Asciidoc::Base
 
     rule(:document) { (citation | any.as(:unparsed)).repeat(1) }
     root :document

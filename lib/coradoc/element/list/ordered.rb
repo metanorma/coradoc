@@ -7,6 +7,7 @@ module Coradoc
         end
 
         def prefix
+          return @marker if @marker
           "." * [@ol_count, 1].max
         end
       end

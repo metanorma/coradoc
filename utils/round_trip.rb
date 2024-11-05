@@ -30,7 +30,7 @@ adoc_files.each do |file_path|
     generated_adoc = Coradoc::Generator.gen_adoc(doc)
     cleaned_adoc = Coradoc::Input::HTML.cleaner.tidy(generated_adoc)
     File.open("#{file_path}.roundtrip","w"){|f| f.write(cleaned_adoc)}
-    `diff -B #{file_path} #{file_path}.roundtrip > #{file_path}.roundtrip.diff`
+    `diff -BNaur #{file_path} #{file_path}.roundtrip > #{file_path}.roundtrip.diff`
   # rescue
     # puts "unsuccessful..."
   # end
