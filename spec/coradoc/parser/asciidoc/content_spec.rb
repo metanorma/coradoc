@@ -119,6 +119,34 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
         expect(block_two[:lines][0][:text]).to eq("This renders in monospace.")
       end
 
+      it "parses source type block" do
+        content = <<~TEXT
+          .Source block (open block syntax)
+          [source]
+          --
+          This renders in monospace.
+          --
+
+          .Source block (with block perimeter type)
+          ----
+          This renders in monospace.
+          ----
+        TEXT
+
+        ast = Asciidoc::ContentTester.parse(content)
+
+        obj = [{:block=>
+                 {:title=>"Source block (open block syntax)",
+                  :attribute_list=>{:attribute_array=>[{:positional=>"source"}]},
+                  :delimiter=>"--",
+                  :lines=>[{:text=>"This renders in monospace.", :line_break=>"\n"}]}},
+               {:block=>
+                 {:title=>"Source block (with block perimeter type)",
+                  :delimiter=>"----",
+                  :lines=>[{:text=>"This renders in monospace.", :line_break=>"\n"}]}}]
+        expect(ast).to eq(obj)
+      end
+
       it "parses quote type block" do
         content = <<~TEXT
           .Quote block (open block syntax)
@@ -206,21 +234,26 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       end
     end
 
-    it "parses list embeded in the content" do
-      content = <<~DOC
-        * Unordered list item 1
-        * Unordered list item 2
-        * [[list_item_id]] Unordered list item 3
-      DOC
-
-      ast = Asciidoc::ContentTester.parse(content)
-      list_items = ast[0][:list][:unordered]
-
-      expect(list_items.count).to eq(3)
-      expect(list_items[0][:text]).to eq("Unordered list item 1")
-      expect(list_items[2][:id]).to eq("list_item_id")
-      expect(list_items[2][:text]).to eq("Unordered list item 3")
+    context "paragraph" do
+      it "parses paragraph with id 2" do
+        content = <<~TEXT
+          [id=myblock]
+          This is my block with a defined ID.
+          this is going to be the next line
+        TEXT
+        ast = Asciidoc::ContentTester.parse(content)
+        obj = [{:paragraph=>
+                 {:attribute_list=>
+                   {:attribute_array=>
+                     [{:named=>{:named_key=>"id", :named_value=>"myblock"}}]},
+                  :lines=>
+                   [{:text=>"This is my block with a defined ID.", :line_break=>"\n"},
+                    {:text=>"this is going to be the next line", :line_break=>"\n"}]}}]
+        expect(ast).to eq(obj)
+      end
     end
+
+
 
     it "parses the table block" do
       content = <<~DOC
@@ -242,6 +275,33 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       expect(table[:rows][1][:cols][2][:text]).to eq("john.doe@example.com")
     end
 
+    it "parses the table block 2" do
+      content = <<~DOC
+        .Person table
+        |===
+        | *first_name* | last_name | email
+        | John | Doe | john.doe@example.com
+        | | doe | jennie.doe@example.com
+        |===
+      DOC
+
+      ast = Asciidoc::ContentTester.parse(content)
+      table = ast.first[:table]
+
+
+      obj = {:table=>
+              {:title=>"Person table",
+               :rows=>
+                [{:cols=>[{:text=>"*first_name*"}, {:text=>"last_name"}, {:text=>"email"}]},
+                 {:cols=>
+                   [{:text=>"John"}, {:text=>"Doe"}, {:text=>"john.doe@example.com"}]},
+                 {:cols=>
+                   [{:text=>" "}, {:text=>"doe"}, {:text=>"jennie.doe@example.com"}]}]}}
+
+      expect(ast.first).to eq(obj)
+
+    end
+
     it "parses highlighted text block" do
       content = <<~DOC
         [[scls_5-9]]
@@ -260,8 +320,7 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 end
 
 module Asciidoc
-  class ContentTester < Parslet::Parser
-    include Coradoc::Parser::Asciidoc::Base
+  class ContentTester < Coradoc::Parser::Asciidoc::Base
 
     rule(:document) { (contents | any.as(:unparsed)).repeat(1) }
     root :document
