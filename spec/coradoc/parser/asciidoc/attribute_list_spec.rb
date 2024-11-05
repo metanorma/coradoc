@@ -8,35 +8,38 @@ RSpec.describe "Coradoc::Parser::Asciidoc::AttributeList" do
       expect(ast).to eq([])
 
       ast = parser.parse("[a]")
-      expect(ast).to eq([{positional: "a"}])
+      expect(ast).to eq([{ positional: "a" }])
       ast = parser.parse("[a,b]")
-      expect(ast).to eq([{positional: "a"}, {positional: "b"}])
+      expect(ast).to eq([{ positional: "a" }, { positional: "b" }])
       ast = parser.parse("[a,b,c]")
-      expect(ast).to eq([{positional: "a"}, {positional: "b"}, {positional: "c"}])
+      expect(ast).to eq([{ positional: "a" }, { positional: "b" },
+                         { positional: "c" }])
       ast = parser.parse("[a=b]")
-      expect(ast).to eq([{named: {named_key:"a", named_value:"b"}}])
+      expect(ast).to eq([{ named: { named_key: "a", named_value: "b" } }])
       ast = parser.parse("[a,b=c]")
-      expect(ast).to eq([{positional: "a"}, {named: {named_key:"b", named_value:"c"}}])
+      expect(ast).to eq([{ positional: "a" },
+                         { named: { named_key: "b", named_value: "c" } }])
       ast = parser.parse("[a,b,c=d]")
-      expect(ast).to eq([{positional: "a"}, {positional: "b"},
-        {named: {named_key:"c", named_value:"d"}}])
+      expect(ast).to eq([{ positional: "a" }, { positional: "b" },
+                         { named: { named_key: "c", named_value: "d" } }])
       ast = parser.parse("[a,b=c,d=e]")
-      expect(ast).to eq([{positional: "a"},
-        {named: {named_key:"b", named_value:"c"}},
-        {named: {named_key:"d", named_value:"e"}}])
+      obj = [{ positional: "a" },
+             { named: { named_key: "b", named_value: "c" } },
+             { named: { named_key: "d", named_value: "e" } }]
+      expect(ast).to eq(obj)
+
       ast = parser.parse("[a,b,c=d,e=f]")
-      expect(ast).to eq([{positional: "a"}, {positional: "b"},
-        {named: {named_key:"c", named_value:"d"}},
-        {named: {named_key:"e", named_value:"f"}}])
+      obj = [{ positional: "a" },
+             { positional: "b" },
+             { named: { named_key: "c", named_value: "d" } },
+             { named: { named_key: "e", named_value: "f" } }]
+      expect(ast).to eq(obj)
     end
   end
 end
 
-
 module Asciidoc
-  class AttributeListTester < Parslet::Parser
-    include Coradoc::Parser::Asciidoc::Base
-
+  class AttributeListTester < Coradoc::Parser::Asciidoc::Base
     rule(:document) { (attribute_list | any.as(:unparsed)).repeat(1) }
     root :document
 

@@ -25,9 +25,19 @@ module Coradoc
           literal_space.maybe
         end
 
+        def list_prefix
+          (line_start? >> match('^[*\.]') >> str(' '))
+        end
+
+        def section_prefix
+          (line_start? >> match('^[=]') >> str('=').repeat(0) >> match('[^\n]'))
+        end
+
         # Text
-        def text_line(many_breaks = false)
-            tl = (asciidoc_char_with_id.absent? | text_id) >> literal_space? >>
+        def text_line(many_breaks = false)  #:zero :one :many
+            tl = #section_prefix.absent? >>
+                 # list_prefix.absent? >>
+            (asciidoc_char_with_id.absent? | text_id) >> literal_space? >>
             text.as(:text)
             if many_breaks
               tl >> line_ending.repeat(1).as(:line_break)
@@ -37,7 +47,7 @@ module Coradoc
         end
 
         def asciidoc_char
-          match('^[*_:=\-+]')
+          line_start? >> match['*_:+=\-']
         end
 
         def asciidoc_char_with_id
