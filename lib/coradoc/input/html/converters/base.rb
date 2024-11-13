@@ -72,14 +72,14 @@ module Coradoc::Input::HTML
         leading_whitespace = $1
         if !leading_whitespace.nil?
           first_text = node.at_xpath("./text()[1]")
-          first_text.replace(first_text.text.lstrip)
+          first_text.replace(first_text.text.lstrip) if first_text
           leading_whitespace = " "
         end
         node.text =~ /(\s+)$/
         trailing_whitespace = $1
         if !trailing_whitespace.nil?
           last_text = node.at_xpath("./text()[last()]")
-          last_text.replace(last_text.text.rstrip)
+          last_text.replace(last_text.text.rstrip) if last_text
           trailing_whitespace = " "
         end
         [leading_whitespace, trailing_whitespace]
