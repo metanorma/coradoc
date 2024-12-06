@@ -114,6 +114,12 @@ module Coradoc::Input::HTML
           columns = row.xpath("./td | ./th")
           column_id = 0
 
+          cell_references[i] ||= []
+          cell_matrix[i] ||= []
+
+          # Empty row support: pass row object via an instance variable
+          cell_references[i].instance_variable_set(:@row_obj, row)
+
           columns.each do |cell|
             colspan = cell["colspan"]&.to_i || 1
             rowspan = cell["rowspan"]&.to_i || 1
@@ -179,7 +185,7 @@ module Coradoc::Input::HTML
           min_rows.each do |row|
             break if row.length != cpr_min
 
-            row_obj = row.last.first.parent
+            row_obj = row.last&.first&.parent || row.instance_variable_get(:@row_obj)
             doc = row_obj.document
             added_node = Nokogiri::XML::Node.new("td", doc)
             added_node["x-added"] = "x-added"
