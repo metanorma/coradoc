@@ -1,6 +1,8 @@
 module Coradoc
-  def self.strip_unicode(str)
-    str.gsub(/\A[[:space:]]+|[[:space:]]+\z/, "")
+  def self.strip_unicode(str, only: nil)
+    str = str.gsub(/\A[[:space:]]+/, "") unless only == :end
+    str = str.gsub(/[[:space:]]+\z/, "") unless only == :begin
+    str
   end
 
   def self.a_single?(obj, klass)
