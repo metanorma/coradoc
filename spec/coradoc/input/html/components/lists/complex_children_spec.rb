@@ -16,6 +16,11 @@ describe Coradoc::Element::ListItem do
       should_convert_to: "* abc link:c[ddd]ghi\n"
   end
 
+  it "should strip spaces only where it makes sense" do
+    input "<ul><li> test <b>test</b> test</li> </ul>",
+      should_convert_to: "* test *test* test\n"
+  end
+
   it "should expand non-inline elements like tables" do
     input "<ul><li>xx<table><tr><td>test</td></tr></table></li></ul>",
       should_convert_to: <<~ADOC

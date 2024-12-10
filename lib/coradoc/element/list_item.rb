@@ -40,16 +40,22 @@ module Coradoc
           content = Array(content.first.contents)
         end
 
-        content.each do |subitem|
+        content.each_with_index do |subitem, idx|
           subcontent = Coradoc::Generator.gen_adoc(subitem)
+
+          inline = inline?(subitem)
+          next_inline = idx+1 == content.length ? :end : inline?(content[idx+1])
 
           # Only try to postprocess elements that are text,
           # otherwise we could strip markup.
           if subitem.is_a? Coradoc::Element::TextElement
-            subcontent = Coradoc.strip_unicode(subcontent)
+            if [:hardbreak, :init, false].include?(prev_inline)
+              subcontent = Coradoc.strip_unicode(subcontent, only: :begin)
+            end
+            if [:hardbreak, :end, false].include?(next_inline)
+              subcontent = Coradoc.strip_unicode(subcontent, only: :end)
+            end
           end
-
-          inline = inline?(subitem)
 
           case inline
           when true
