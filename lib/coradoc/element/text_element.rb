@@ -25,7 +25,10 @@ module Coradoc
       end
 
       def to_adoc
-        Coradoc::Generator.gen_adoc(@content) + @line_break
+        str = ""
+        str += "[[#{@id.to_s}]] " if @id
+        str += Coradoc::Generator.gen_adoc(@content) + @line_break.to_s
+        str
       end
 
       def treat_text_to_adoc(text)

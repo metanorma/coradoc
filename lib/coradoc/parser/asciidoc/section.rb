@@ -5,8 +5,6 @@ module Coradoc
 
         def contents
           (
-            citation |
-            term | term2 |
             bib_entry |
             block_image |
             tag |
@@ -16,8 +14,8 @@ module Coradoc
             admonition_line |
             block |
             table.as(:table) |
-            highlight.as(:highlight) |
-            glossaries.as(:glossaries) |
+            # highlight.as(:highlight) |
+            # glossaries.as(:glossaries) |
             paragraph |
             list |
             empty_line.as(:line_break)
@@ -27,17 +25,14 @@ module Coradoc
         def section_block(level = 2)
           return nil if level > 8
           (attribute_list >> newline).maybe >>
-          section_id.maybe >>
+          element_id.maybe >>
           (attribute_list >> newline).maybe >>
             section_title(level).as(:title) >>
             contents.as(:contents).maybe
         end
 
-        # Section id
-        def section_id
-          line_start? >>
-          (str("[[") >> keyword.as(:id) >> str("]]") |
-            str("[#") >> keyword.as(:id) >> str("]")) >> newline
+        def section_prefix
+          (line_start? >> match('^[=]') >> str('=').repeat(0) >> match('[^\n]'))
         end
 
         # Heading
