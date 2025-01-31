@@ -14,8 +14,6 @@ module Coradoc
           admonition_line |
           bib_entry |
           block_image |
-          term | term2 |
-          citation |
           tag |
           comment_block |
           comment_line |
