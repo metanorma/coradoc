@@ -3,18 +3,55 @@ module Coradoc
     module Asciidoc
       module Inline
 
+        def attribute_reference
+          str('{').present? >> str('{') >>
+            match('[a-zA-Z0-9_-]').repeat(1).as(:attribute_reference) >>
+            str('}')
+        end
+
         def bold_constrained
-          (str('*') >>
+          (str('*').present? >> str('*') >>
             match("[^*]").repeat(1).as(:text).repeat(1,1) >>
-             str('*')  >> str('*').absent?
+             str('*')  >> str('*').absent? >>
+             str("\n\n").absent?
             ).as(:bold_constrained)
         end
 
         def bold_unconstrained
-          (str('**') >>
-            match("[^*\n]").repeat(1).as(:text).repeat(1,1) >>
+          (str('**').present? >> str('**') >>
+            match("[^*]").repeat(1).as(:text).repeat(1,1) >>
              str('**')
             ).as(:bold_unconstrained)
+        end
+
+        def span_constrained
+          (attribute_list >> 
+            str('#') >>
+            match('[^#]').repeat(1).as(:text) >>
+             str('#') >> str('#').absent?
+            ).as(:span_constrained)
+        end
+
+        def span_unconstrained
+          (attribute_list >> 
+            str('##') >>
+            match('[^#]').repeat(1).as(:text) >>
+             str('##')
+            ).as(:span_unconstrained)
+        end
+
+        def italic_constrained
+          (str('_') >> str('_').absent? >>
+            match('[^_]').repeat(1).as(:text).repeat(1,1) >>
+             str('_') >> str('_').absent?
+            ).as(:italic_constrained)
+        end
+
+        def italic_unconstrained
+          (str('__') >>
+            match('[^_]').repeat(1).as(:text).repeat(1,1) >>
+             str('__')
+            ).as(:italic_unconstrained)
         end
 
         def highlight_constrained
@@ -31,40 +68,86 @@ module Coradoc
             ).as(:highlight_unconstrained)
         end
 
-        def italic_constrained
-          (str('_') >>
-            match('[^_]').repeat(1).as(:text).repeat(1,1) >>
-             str('_') >> str('_').absent?
-            ).as(:italic_constrained)
+
+        def monospace_constrained
+          (str('`') >>
+            match('[^`]').repeat(1).as(:text).repeat(1,1) >>
+             str('`') >> str('`').absent?
+            ).as(:monospace_constrained)
         end
 
-        def italic_unconstrained
-          (str('__') >>
-            match('[^_]').repeat(1).as(:text).repeat(1,1) >>
-             str('__')
-            ).as(:italic_unconstrained)
+        def monospace_unconstrained
+          (str('``') >>
+            match('[^`]').repeat(1).as(:text).repeat(1,1) >>
+             str('``')
+            ).as(:monospace_unconstrained)
+        end
+
+        def superscript
+          (str("^") >>
+            match('[^^]').repeat(1).as(:text).repeat(1,1) >>
+             str("^")
+            ).as(:superscript)
+        end
+
+        def subscript
+          (str("~") >>
+            match('[^~]').repeat(1).as(:text).repeat(1,1) >>
+             str("~")
+            ).as(:subscript)
+        end
+
+        def span
+          attribute_list >> 
+          (str('#') >>
+            match('[^#]').repeat(1).as(:text) >>
+             str('#') >> str('#').absent?
+          ).as(:span)
+        end
+
+        def inline_chars?
+          match('[\[*#_{<^~`]').present? |
+          term_type.present? |
+          str('footnote').present?
+        end
+
+        def inline
+          bold_unconstrained |
+          bold_constrained |
+          span_unconstrained |
+          span_constrained |
+          italic_unconstrained |
+          italic_constrained |
+          highlight_unconstrained |
+          highlight_constrained |
+          monospace_unconstrained |
+          monospace_constrained |
+          superscript |
+          subscript |
+          attribute_reference |
+          cross_reference |
+          term_inline |
+          term_inline2 |
+          footnote
         end
 
         def text_unformatted
-          (admonition_line.absent? >>
-          (cross_reference.absent? |
-            bold_unconstrained.absent? |
-            bold_constrained.absent? |
-            highlight_unconstrained.absent? |
-            highlight_constrained.absent? |
-            italic_unconstrained.absent? |
-            italic_constrained.absent?) >>
-            match('[^\n]').repeat(1)
-            )
+          # line_not_text? >>
+          (inline.absent? >>
+            match("[^\n]") 
+          ).repeat(1)
         end
 
         def text_formatted
-           ((cross_reference |
-            bold_unconstrained | bold_constrained |
-            highlight_unconstrained | highlight_constrained |
-            italic_unconstrained | italic_constrained )|
-            text_unformatted).repeat(1)
-           
+           (inline_chars? >> inline )
+        end
+
+        def text_any
+          tl = (text_formatted |
+                  text_unformatted.as(:text)
+                ).repeat(2) | 
+                text_formatted.repeat(1,1) | 
+                text_unformatted
         end
       end
     end

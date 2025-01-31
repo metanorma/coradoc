@@ -7,25 +7,44 @@ module Coradoc
           attribute_name
         end
 
-        def named_attribute_value
+        def named_value_noquote
           match('[^\],]').repeat(1)
         end
 
+        def named_value_single_quote
+          str("'") >>
+            match("[^']").repeat(1) >>
+            str("'")
+        end
+
+        def named_value_double_quote
+          str('"') >>
+            match('[^"]').repeat(1) >>
+            str('"')
+        end
+
+        def named_value
+          ( named_value_single_quote |
+            named_value_double_quote |
+            named_value_noquote
+            ).as(:named_value)
+        end
+
         def named_key
-          (str('reviewer') | 
+          (
             match('[a-zA-Z0-9_-]').repeat(1)).as(:named_key)
         end
 
         def named_attribute
           ( named_key >>
             str(' ').maybe >> str("=") >> str(' ').maybe >>
-            match['a-zA-Z0-9_\- \"'].repeat(1).as(:named_value) >>
-            str(' ').maybe
+              named_value >>
+              str(' ').maybe
             ).as(:named)
         end
 
         def positional_attribute
-          (match['a-zA-Z0-9_\-%'].repeat(1) >>
+          (match['a-zA-Z0-9_\-%.'].repeat(1) >>
             str("=").absent?
             ).as(:positional)
         end

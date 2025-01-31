@@ -3,19 +3,6 @@ module Coradoc
     module Asciidoc
       module Content
 
-        def highlight
-          text_id >> newline >>
-            underline >> highlight_text >> newline
-        end
-
-        def underline
-          str("[underline]") | str("[.underline]")
-        end
-
-        def highlight_text
-          str("#") >> words.as(:text) >> str("#")
-        end
-
         def literal_space
           (match[" "] | match[' \t']).repeat(1)
         end
@@ -26,23 +13,20 @@ module Coradoc
         end
 
         def list_prefix
-          (line_start? >> match('^[*\.]') >> str(' '))
-        end
-
-        def section_prefix
-          (line_start? >> match('^[=]') >> str('=').repeat(0) >> match('[^\n]'))
+          (line_start? >>
+            (match('^[*]') >> str('*').repeat(1,5) |
+            match('^[\.]') >> str('.').repeat(1,5)) >>
+            str(' '))
         end
 
         # Text
         def text_line(many_breaks = false)  #:zero :one :many
-            tl = #section_prefix.absent? >>
-                 # list_prefix.absent? >>
-            (asciidoc_char_with_id.absent? | text_id) >> literal_space? >>
-            text.as(:text)
+            tl = (asciidoc_char_with_id.absent? | element_id_inline) >>
+            literal_space? >> text_any.as(:text)
             if many_breaks
-              tl >> line_ending.repeat(1).as(:line_break)
+              tl >> (line_ending.repeat(1).as(:line_break) | eof?)
             else
-              tl >> line_ending.as(:line_break)
+              tl >> (line_ending.as(:line_break) | eof?)
             end
         end
 
@@ -54,8 +38,15 @@ module Coradoc
           asciidoc_char | str('[#') | str('[[')
         end
 
-        def text_id
-          str("[[") >> str('[').absent? >> keyword.as(:id) >> str("]]") |
+        def element_id
+          line_start? >>
+          ( str("[[")  >> keyword.as(:id) >> str("]]")  |
+             str("[#") >> keyword.as(:id) >> str("]")
+          ) >> newline
+        end
+
+        def element_id_inline
+          str("[[") >> keyword.as(:id) >> str("]]") |
             str("[#") >> keyword.as(:id) >> str("]")
         end
 

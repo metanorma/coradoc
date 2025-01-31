@@ -21,10 +21,10 @@ RSpec.describe Coradoc::Parser do
       content = clause_5_1[:contents].first
 
       expect(section[:title][:text]).to eq("Organizational controls")
-      expect(content[:glossaries].first[:key]).to eq("Clause")
-      expect(content[:glossaries].first[:value]).to eq("5.1")
-      expect(content[:glossaries][6][:key]).to eq("Domain")
-      expect(content[:glossaries][6][:value]).to eq("Governance_and_Ecosystem, Resilience")
+      expect(content[:list][:definition_list][0][:definition_list_item][:terms][0][:dlist_term]).to eq("Clause")
+      expect(content[:list][:definition_list][0][:definition_list_item][:definition]).to eq("5.1")
+      expect(content[:list][:definition_list][6][:definition_list_item][:terms][0][:dlist_term]).to eq("Domain")
+      expect(content[:list][:definition_list][6][:definition_list_item][:definition]).to eq("Governance_and_Ecosystem, Resilience")
 
       control_section = clause_5_1[:sections][0][:section]
       expect(control_section[:id]).to eq("control_5.1")
@@ -58,10 +58,11 @@ RSpec.describe Coradoc::Parser do
       expect(diff_table[:rows][0][:cols][0][:text]).to eq("  ")
       expect(diff_table[:rows][1][:cols][0][:text]).to eq("*Level of detail*")
 
+
       purpose_5_9 = section[:sections][8][:section][:sections][1][:section]
-      highlight_5_9 = purpose_5_9[:contents][1][:highlight]
+      highlight_5_9 = purpose_5_9[:contents][1][:paragraph]
       expect(highlight_5_9[:id]).to eq("scls_5-9")
-      expect(highlight_5_9[:text]).to eq("Inventory")
+      expect(highlight_5_9[:lines][0][:text][0][:span_constrained][:text]).to eq("Inventory")
     end
   end
 end

@@ -9,6 +9,8 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       TEXT
 
       ast = Asciidoc::ContentTester.parse(content)
+      # puts content
+      # pp ast
       lines = ast.first[:paragraph][:lines]
 
       expect(lines[0][:text]).to eq("This is are the sample text for content")
@@ -172,27 +174,6 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       end
     end
 
-    it "parses content with glossaries" do
-      content = <<~TEXT
-        Clause:: 5.1
-        Maps_27002_2013:: iso:5.1.1, iso:5.1.2
-
-        This content block also contains some text
-      TEXT
-
-      ast = Asciidoc::ContentTester.parse(content)
-      glossaries = ast.first[:glossaries]
-      lines = ast[2][:paragraph][:lines]
-
-      expect(glossaries[0][:key]).to eq("Clause")
-      expect(glossaries[0][:value]).to eq("5.1")
-
-      expect(glossaries[1][:key]).to eq("Maps_27002_2013")
-      expect(glossaries[1][:value]).to eq("iso:5.1.1, iso:5.1.2")
-
-      expect(lines[0][:text]).to eq("This content block also contains some text")
-    end
-
     it "parses content with inline id" do
       content = <<~TEXT
         [[id_1.1_part_1]] This is the content with id
@@ -213,8 +194,8 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       expect(paragraph_one[1][:text]).to eq("This is content without any id")
 
       expect(paragraph_two[0][:id]).to eq("guidance_5.1_part_1")
-      expect(paragraph_three[0][:id]).to eq("guidance_5.1_part_2")
       expect(paragraph_two[0][:text]).to eq("At highest level organization")
+      expect(paragraph_three[0][:id]).to eq("guidance_5.1_part_2")
     end
 
     context "paragraph" do
@@ -311,11 +292,47 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       DOC
 
       ast = Asciidoc::ContentTester.parse(content)
-
-      expect(ast[0][:highlight][:id]).to eq("scls_5-9")
-      expect(ast[0][:highlight][:text]).to eq("Ownership")
-      expect(ast[1][:paragraph][:lines][0][:text]).to eq("This is a pragraph block")
+      obj = [{:paragraph=>
+               {:id=>"scls_5-9",
+                :lines=>
+                 [{:text=>
+                    [{:span_constrained=>
+                       {:attribute_list=>
+                         {:attribute_array=>[{:positional=>"underline"}]},
+                        :text=>"Ownership"}}],
+                   :line_break=>"\n"}]}},
+             {:paragraph=>
+               {:lines=>
+                 [{:text=>"This is a pragraph block", :line_break=>"\n"}]}}]
+      expect(ast).to eq(obj)
+      # expect(ast[0][:highlight][:id]).to eq("scls_5-9")
+      # expect(ast[0][:highlight][:text]).to eq("Ownership")
+      # expect(ast[1][:paragraph][:lines][0][:text]).to eq("This is a pragraph block")
     end
+
+    it "parses highlighted text block" do
+      content = <<~DOC
+        [[scls_5-9]]
+        #Ownership#
+
+        This is a pragraph block
+      DOC
+
+      ast = Asciidoc::ContentTester.parse(content)
+      obj = [{:paragraph=>
+               {:id=>"scls_5-9",
+                :lines=>
+                 [{:text=>[{:highlight_constrained=>[{:text=>"Ownership"}]}],
+                   :line_break=>"\n"}]}},
+             {:paragraph=>
+               {:lines=>
+                 [{:text=>"This is a pragraph block", :line_break=>"\n"}]}}]
+      expect(ast).to eq(obj)
+      # expect(ast[0][:highlight][:id]).to eq("scls_5-9")
+      # expect(ast[0][:highlight][:text]).to eq("Ownership")
+      # expect(ast[1][:paragraph][:lines][0][:text]).to eq("This is a pragraph block")
+    end
+
   end
 end
 

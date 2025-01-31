@@ -82,8 +82,9 @@ module Coradoc
         adoc << "," if @positional.any? && @named.any?
         adoc << @named.map do |k, v|
           if v.is_a?(String)
-            v = v.gsub("\"", "\\\"")
-            if v.include?(",") || v.include?('"')
+            if (v[0] == '"' && v[-1] == '"') || (v[0] == "'" && v[-1] == "'")
+            elsif v.include?(",") || v.include?('"')
+              v = v.gsub("\"", "\\\"")
               v = "\"#{v}\""
             end
           elsif v.is_a?(Array)

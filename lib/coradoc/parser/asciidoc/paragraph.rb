@@ -5,32 +5,41 @@ module Coradoc
 
         def line_not_text?
           line_start? >>
-          attribute_list.absent? >>
+          (attribute_list >> newline).absent? >>
           block_delimiter.absent? >>
           list.absent? >>
-          # list_prefix.absent? >>
-          section_id.absent? >>
+          list_prefix.absent? >>
+          list_continuation.absent? >>
+          element_id.absent? >>
           section_prefix.absent?
         end
 
-        def paragraph_text_line
-          line_not_text? >>
-          (asciidoc_char_with_id.absent? | text_id ) >>
-          literal_space? >>
-          (line_not_text? >>
-            text_formatted.as(:text) # >>
-          ) | term | term2
+        def paragraph_text_line(many_breaks = false)
+          tl = line_not_text? >>
+          (asciidoc_char_with_id.absent? |
+            element_id_inline >> literal_space? |
+            line_start? >> line_not_text?) >>
+            text_any.as(:text)
+          if many_breaks == 0
+            tl >> eof?
+          elsif many_breaks
+            tl >> (newline.as(:line_break)  | eof?)
+          else
+            tl >> (newline_single.as(:line_break) | eof? )
+          end
         end
 
         def paragraph
-          ( block_id.maybe >>
+          ( element_id.maybe >>
             block_title.maybe >>
             (attribute_list >> newline).maybe >>
-            (line_not_text? >> paragraph_text_line.repeat(1,1) >> any.absent? |
-              (line_not_text? >> paragraph_text_line >> newline_single.as(:line_break)).repeat(1) >>
-              (line_not_text? >> paragraph_text_line.repeat(1,1)).repeat(0,1)
+            ((paragraph_text_line(0).repeat(1,1) >>
+                   (newline.repeat(1).as(:line_break) | eof?)) |
+              (paragraph_text_line(false)).repeat(1) >>
+              (paragraph_text_line(true).repeat(1,1) >>
+                   (newline.repeat(1).as(:line_break) | eof?)).repeat(0,1)
             ).as(:lines) >>
-            newline.repeat(0)
+            (newline.repeat(0) | eof?)
           ).as(:paragraph)
         end
 
