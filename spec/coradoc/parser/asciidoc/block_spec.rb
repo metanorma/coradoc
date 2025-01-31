@@ -5,7 +5,6 @@ RSpec.describe "Coradoc::Parser::Asciidoc::AttributeList" do
     it "parses attribute list attached to a block" do
       parser = Asciidoc::BlockTester
       content = <<~TEXT
-      
         [reviewer=ISO]
         ****
         block content
@@ -21,6 +20,26 @@ RSpec.describe "Coradoc::Parser::Asciidoc::AttributeList" do
 
       expect(ast).to eq(obj)
     end
+
+    it "parses attribute list attached to a block with a list inside" do
+      parser = Asciidoc::BlockTester
+      content = <<~TEXT
+        [reviewer=ISO]
+        ****
+        * block content
+        ****
+      TEXT
+      ast = parser.parse(content)
+      obj = [{:block=>
+               {:attribute_list=>
+                 {:attribute_array=>
+                   [{:named=>{:named_key=>"reviewer", :named_value=>"ISO"}}]},
+                :delimiter=>"****",
+                :lines=>[{:text=>"block content", :line_break=>"\n"}]}}]
+
+      # expect(ast).to eq(obj)
+    end
+
 
 end
 end

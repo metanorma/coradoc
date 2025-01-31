@@ -17,30 +17,12 @@ module Coradoc
         end
 
         def cross_reference
-          str('<<') >> xref_anchor >>
+          (str('<<') >> xref_anchor >>
           ( (str(',') >> xref_arg).repeat(1) |
             (str(',') >> xref_str).repeat(1)
             ).maybe >>
             str('>>')
-        end
-
-        def citation_xref
-          cross_reference.as(:cross_reference) >> newline |
-          cross_reference.as(:cross_reference) >>
-            (text_line.repeat(1)
-            ).as(:comment).maybe
-        end
-
-        def citation_noxref
-          (text_line.repeat(1)
-          ).as(:comment)
-        end
-
-        def citation
-          match('^[\[]') >> str(".source]\n") >>
-          ( citation_xref |
-            citation_noxref
-          ).as(:citation)
+            ).as(:cross_reference)
         end
       end
     end

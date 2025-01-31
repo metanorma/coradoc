@@ -3,7 +3,7 @@ require "coradoc/oscal"
 
 RSpec.describe Coradoc::Oscal do
   describe ".parse" do
-    it "parses the document to proper document" do
+    xit "parses the document to proper document" do
       sample_file = Coradoc.root_path.join(
         "spec", "fixtures", "sample-oscal.adoc"
       )

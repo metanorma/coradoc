@@ -117,7 +117,7 @@ module Coradoc
         end
 
         def block_image
-          (block_id.maybe >>
+          (element_id.maybe >>
             block_title.maybe >>
             (attribute_list >> newline).maybe >>
             match('^i') >> str("mage::") >>
@@ -157,5 +157,3 @@ module Coradoc
     end
   end
 end
-
-

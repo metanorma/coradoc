@@ -10,6 +10,7 @@ module Coradoc
         @id = options.fetch(:id, nil)
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
         @content = content
+        # @content = [@content] unless @content.class == Array
         @attached = options.fetch(:attached, [])
         @nested = options.fetch(:nested, nil)
         @line_break = options.fetch(:line_break, "\n")
@@ -30,7 +31,7 @@ module Coradoc
 
       def to_adoc
         anchor = @anchor.nil? ? "" : " #{@anchor.to_adoc.to_s} "
-        # text = Coradoc::Generator.gen_adoc(@content)
+        
         content = Array(@content).flatten.compact
         out = ""
         prev_inline = :init
@@ -42,7 +43,6 @@ module Coradoc
 
         content.each_with_index do |subitem, idx|
           subcontent = Coradoc::Generator.gen_adoc(subitem)
-
           inline = inline?(subitem)
           next_inline = idx+1 == content.length ? :end : inline?(content[idx+1])
 
@@ -69,9 +69,9 @@ module Coradoc
             when :hardbreak
               out += subcontent.strip
             when :init
-              out += "{empty}\n+\n" + subcontent.strip
+              out += "{empty}\n+\n" + subcontent.to_s.strip
             else
-              out += "\n+\n" + subcontent.strip
+              out += "\n+\n" + subcontent.to_s.strip
             end
           when :hardbreak
             if %i[hardbreak init].include? prev_inline
@@ -86,7 +86,6 @@ module Coradoc
         out += "{empty}" if prev_inline == :hardbreak
         out = "{empty}" if out.empty?
 
-        # attach = Coradoc::Generator.gen_adoc(@attached)
         attach = @attached.map do |elem|
           "+\n" + Coradoc::Generator.gen_adoc(elem)
         end.join

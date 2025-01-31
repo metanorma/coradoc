@@ -52,6 +52,7 @@ module Coradoc
       NamedAttribute.new(key.to_s, value.to_s)
     }
 
+
     rule(positional: simple(:positional)){
       positional.to_s
     }
@@ -90,8 +91,16 @@ module Coradoc
       Element::TextElement.new(text.to_s)
     }
 
+    rule(text_string: subtree(:text_string)) {
+      text_string.to_s
+    }
+
     rule(text: simple(:text), line_break: simple(:line_break)) {
       Element::TextElement.new(text.to_s, line_break: line_break)
+    }
+
+    rule(text: sequence(:text), line_break: simple(:line_break)) {
+      Element::TextElement.new(text, line_break: line_break)
     }
 
     rule(id: simple(:id), text: simple(:text)) do
@@ -99,7 +108,7 @@ module Coradoc
     end
 
     rule(text: sequence(:text)) {
-      Element::TextElement.new(text)
+        Element::TextElement.new(text)
     }
 
     rule(
@@ -118,7 +127,7 @@ module Coradoc
     ) do
       Element::TextElement.new(
         text.to_s,
-        id: id,
+        id: id.to_s,
         line_break: line_break)
     end
 
@@ -129,7 +138,7 @@ module Coradoc
     ) do
       Element::TextElement.new(
         text,
-        id: id,
+        id: id.to_s,
         line_break: line_break)
     end
 
@@ -141,6 +150,7 @@ module Coradoc
         line_break: line_break)
     end
 
+    # Inlines
     rule(href: simple(:href)){
       Element::Inline::CrossReference.new(
         href.to_s
@@ -164,11 +174,14 @@ module Coradoc
       Element::Inline::Bold.new(text, unconstrained: true)
     }
 
-    rule(highlight_constrained: sequence(:text)) {
-      Element::Inline::Highlight.new(text, unconstrained: false)
+    rule(span_constrained: subtree(:span_constrained)) {
+      Element::Inline::Span.new(span_constrained[:text],
+                                :unconstrained => false,
+                                :attributes => span_constrained[:attribute_list])
     }
-    rule(highlight_unconstrained: sequence(:text)) {
-      Element::Inline::Highlight.new(text, unconstrained: true)
+    rule(span_unconstrained: subtree(:span_unconstrained)) {
+      Element::Inline::Span.new(span_unconstrained[:text], unconstrained: true,
+        attributes: span_unconstrained[:attribute_list])
     }
 
     rule(italic_constrained: sequence(:text)) {
@@ -176,6 +189,30 @@ module Coradoc
     }
     rule(italic_unconstrained: sequence(:text)) {
       Element::Inline::Italic.new(text, unconstrained: true)
+    }
+
+    rule(highlight_constrained: sequence(:text)) {
+      Element::Inline::Highlight.new(text, unconstrained: false)
+    }
+    rule(highlight_unconstrained: sequence(:text)) {
+      Element::Inline::Highlight.new(text, unconstrained: true)
+    }
+
+    rule(monospace_constrained: sequence(:text)) {
+      Element::Inline::Monospace.new(text, unconstrained: false)
+    }
+    rule(monospace_unconstrained: sequence(:text)) {
+      Element::Inline::Monospace.new(text, unconstrained: true)
+    }
+
+
+
+    rule(superscript: sequence(:content)) {
+      Element::Inline::Superscript.new(content)
+    }
+
+    rule(subscript: sequence(:content)) {
+      Element::Inline::Subscript.new(content)
     }
 
 
@@ -253,26 +290,26 @@ module Coradoc
         href_arg.to_s
     }
 
-    rule(citation: subtree(:citation)){
-      xref = citation[:cross_reference]
-      xref = Element::Inline::CrossReference.new(xref[0], xref[1..-1]) if xref
-      comment = citation[:comment]
-      opts = {}
-      opts[:cross_reference] = xref if xref
-      opts[:comment] = comment if comment
-      Element::Inline::Citation.new(opts)
+    rule(cross_reference: sequence(:xref)){
+        Element::Inline::CrossReference.new(xref[0], xref[1..-1])
+    }
+
+
+    rule(attribute_reference: simple(:name)){
+        Element::Inline::AttributeReference.new(name)
     }
 
     rule(term_type: simple(:term_type),
-      term: simple(:term),
-      line_break: simple(:line_break)){
-      Coradoc::Element::Term.new(term, type: term_type, line_break: line_break, lang: :en)
+      term: simple(:term)){
+      Coradoc::Element::Term.new(term, type: term_type, lang: :en)
     }
 
-    rule(term_type: simple(:term_type),
-      term2: simple(:term2),
-      line_break: simple(:line_break)){
-      Coradoc::Element::Term.new(term2, type: term_type, line_break: line_break, lang: :fr)
+    rule(footnote: simple(:footnote)){
+      Coradoc::Element::Inline::Footnote.new(footnote)
+    }
+
+    rule(footnote: simple(:footnote), id: simple(:id)){
+      Coradoc::Element::Inline::Footnote.new(footnote, id)
     }
 
 
@@ -343,12 +380,12 @@ module Coradoc
 
     # Attribute
     rule(key: simple(:key), value: simple(:value)) do
-      Element::Attribute.new(key, value)
+      Element::Attribute.new(key.to_s, value.to_s)
     end
 
     rule(key: simple(:key), value: simple(:value),
          line_break: simple(:line_break)) do
-      Element::Attribute.new(key, value, line_break: line_break)
+      Element::Attribute.new(key.to_s, value.to_s, line_break: line_break.to_s)
     end
 
     rule(line_break: simple(:line_break)) {
@@ -380,6 +417,7 @@ module Coradoc
       marker = list_item[:marker]
       id = list_item[:id]
       text = list_item[:text]
+      text = list_item[:text].to_s if list_item[:text].class == Parslet::Slice
       attached = list_item[:attached]
       nested = list_item[:nested]
       line_break = list_item[:line_break]
@@ -410,11 +448,20 @@ module Coradoc
     end
 
 
-    rule(terms: simple(:terms), definition: simple(:definition)) do
+
+
+    rule(dlist_term: simple(:t),
+      delimiter: simple(:d) ) {
+      # DefinitionListTerm.new(t.to_s, d.to_s)
+      t.to_s
+    }
+
+    rule(definition_list_item: {terms: sequence(:terms),
+                              definition: simple(:contents)}) do
       Element::ListItemDefinition.new(terms, contents)
     end
 
-    rule(definition_list: sequence(:definition_list)) do
+    rule(definition_list: sequence(:list_items)) do
       Element::List::Definition.new(list_items)
     end
 
