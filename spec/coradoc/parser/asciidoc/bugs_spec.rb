@@ -20,11 +20,10 @@ RSpec.describe "Coradoc::Parser::Asciidoc::List" do
         ====
       ADOC
       ast = Coradoc::Parser::Base.new.parse(content)
-      # pp ast
 
     end
 
-    xit "some problem with nested blocks" do
+    it "some problem with nested blocks" do
       content =<<~TEXT
         .Source block (open block syntax)
         [source]
@@ -35,7 +34,8 @@ RSpec.describe "Coradoc::Parser::Asciidoc::List" do
         --
       TEXT
       ast = Coradoc::Parser::Base.new.parse(content)
-    # pp ast
+      expect(ast[:document][0][:block][:lines][0][:block][:lines][0][:text]).to eq("Text inside of a block.")
+
     end
   end
 end

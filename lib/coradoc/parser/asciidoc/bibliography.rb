@@ -4,7 +4,7 @@ module Coradoc
       module Bibliography
 
         def bibliography
-          (section_id.maybe >>
+          (element_id.maybe >>
           str("[bibliography]\n") >>
           str("== ") >> match("[^\n]").repeat(1).as(:title) >> str("\n") >>
           bib_entry.repeat(1).as(:entries)

@@ -30,7 +30,7 @@ module Coradoc
 
         def definition_list(delimiter = "::")
           (attribute_list >> newline).maybe >>
-          dlist_item(delimiter).as(:definition_list).repeat(1) >>
+          dlist_item(delimiter).repeat(1).as(:definition_list) >>
           dlist_item(delimiter).absent?
         end
 
@@ -44,7 +44,8 @@ module Coradoc
 
         def olist_item(nesting_level = 1)
           item = olist_marker(nesting_level).as(:marker) >>
-          match("\n").absent? >> space >> text_line(true)# >>
+          match("\n").absent? >> space >> text_line(true)
+          # >>
           # (list_continuation.present? >> list_continuation >> 
           # paragraph #| example_block(n_deep: 1)
           # ).repeat(0).as(:attached)
@@ -94,7 +95,7 @@ module Coradoc
 
         def dlist_term(delimiter)
           (match("[^\n:]").repeat(1) #>> empty_line.repeat(0)
-            ).as(:term) >> dlist_delimiter
+            ).as(:dlist_term) >> dlist_delimiter
         end
 
         def dlist_definition
@@ -106,8 +107,9 @@ module Coradoc
           (((dlist_term(delimiter).as(:terms).repeat(1) >> line_ending >>
             empty_line.repeat(0)).repeat(1) >>
             dlist_definition)  |
-            (dlist_term(delimiter).repeat(1,1).as(:terms) >> space >> dlist_definition)
-            ).as(:definition_list_item).repeat(1)
+            (dlist_term(delimiter).repeat(1,1).as(:terms) >>space >>
+              dlist_definition)
+            ).as(:definition_list_item)
         end
       end
     end

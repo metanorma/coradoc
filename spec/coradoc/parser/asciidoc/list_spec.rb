@@ -342,6 +342,51 @@ RSpec.describe "Coradoc::Parser::Asciidoc::List" do
       expect(ast).to eq(obj)
     end
   end
+
+
+  it "parses ordered list containing inline" do
+    content = <<~DOC
+      . Ordered list item *number one*
+      . Ordered item #number two#
+      . [[list_item_id]] Ordered last item _number three_
+    DOC
+
+    ast = Asciidoc::ListTester.parse(content)
+    list_items = ast[:list][:ordered]
+
+    expect(list_items.count).to eq(3)
+    expect(list_items[0][:list_item][:text][0][:text]).to eq("Ordered list item ")
+    expect(list_items[0][:list_item][:text][1][:bold_constrained][0][:text]).to eq("number one")
+    expect(list_items[1][:list_item][:text][0][:text]).to eq("Ordered item ")
+    expect(list_items[1][:list_item][:text][1][:highlight_constrained][0][:text]).to eq("number two")
+    expect(list_items[2][:list_item][:id]).to eq("list_item_id")
+    expect(list_items[2][:list_item][:text][0][:text]).to eq("Ordered last item ")
+    expect(list_items[2][:list_item][:text][1][:italic_constrained][0][:text]).to eq("number three")
+  end
+
+
+  it "parses definition list" do
+    content = <<~TEXT
+      Clause:: 5.1
+      Maps_27002_2013:: iso:5.1.1, iso:5.1.2
+
+      This content block also contains some text
+    TEXT
+
+    ast = Asciidoc::ListTester.parse(content)
+    obj = {:list=>
+            {:definition_list=>
+             [{:definition_list_item=>
+                {:terms=>[{:dlist_term=>"Clause", :delimiter=>"::"}],
+                 :definition=>"5.1"}},
+              {:definition_list_item=>
+                {:terms=>
+                  [{:dlist_term=>"Maps_27002_2013", :delimiter=>"::"}],
+                 :definition=>"iso:5.1.1, iso:5.1.2"}}]}}
+
+    expect(ast).to eq(obj)
+  end
+
 end
 
 
