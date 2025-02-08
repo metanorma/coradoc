@@ -33,7 +33,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "nokogiri", "~> 1.13"
   spec.add_dependency "oscal", "~> 0.1.1"
   spec.add_dependency "parslet"
-  spec.add_dependency "premailer", "~> 1.11.0"
   spec.add_dependency "word-to-markdown"
   spec.add_dependency "base64"
   spec.add_dependency "thor", ">= 1.3.0"
