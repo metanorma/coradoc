@@ -2,7 +2,7 @@
 # this is cheating: we're injecting MathML into Asciidoctor, but
 # Asciidoctor only understands AsciiMath or LaTeX
 
-require "mathml2asciimath"
+require "plurimath"
 
 module Coradoc::Input::HTML
   module Converters
@@ -14,7 +14,10 @@ module Coradoc::Input::HTML
 
       def convert(node, _state = {})
         stem = node.to_s.gsub(/\n/, " ")
-        stem = MathML2AsciiMath.m2a(stem) if Coradoc::Input::HTML.config.mathml2asciimath
+        if Coradoc::Input::HTML.config.mathml2asciimath
+          stem = Plurimath::Math.parse(stem, :mathml).to_asciimath
+        end
+
         unless stem.nil?
           stem = stem.gsub(/\[/, "\\[").gsub(/\]/, "\\]").gsub(
             /\(\(([^\)]+)\)\)/, "(\\1)"
