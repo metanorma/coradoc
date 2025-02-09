@@ -1,4 +1,5 @@
 require_relative "parser/base"
+require_relative "parser/markdown"
 
 module Coradoc
   module Parser
