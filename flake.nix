@@ -41,6 +41,13 @@
         ];
         commands = [
           {
+            name = "soffice-test";
+            # name = "soffice"; # This for some reason will stall the shell.
+            command = "${pkgs.libreoffice-bin}/Applications/LibreOffice.app/Contents/MacOS/soffice \"$@\"";
+            help = "Run libreoffice CLI";
+            category = "App";
+          }
+          {
             name = "reverse_adoc";
             command = "exe/reverse_adoc \"$@\"";
             help = "Run reverse_adoc CLI";
@@ -115,6 +122,10 @@
           rubyPackages.ruby-lsp
           rubyPackages.sorbet-runtime
           wget
+          # libreoffice-still # unsupported in darwin
+          # libreoffice-unwrapped # unsupported in darwin
+          # libreoffice # unsupported in darwin
+          # libreoffice-bin # soffice returns nothing. Wrapper to call LibreOffice.App/Contents/MacOS/soffice implemented in devShell's command
           pkg-config # for building native extensions
         ] ++
         runtimeDependencies;
