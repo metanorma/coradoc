@@ -1,5 +1,10 @@
 = Coradoc: object-oriented AsciiDoc parser
 
+image:https://img.shields.io/gem/v/coradoc.svg["Gem Version", link="https://rubygems.org/gems/coradoc"]
+image:https://github.com/metanorma/coradoc/workflows/rake/badge.svg["Build Status", link="https://github.com/metanorma/coradoc/actions?workflow=rake"]
+image:https://img.shields.io/github/issues-pr-raw/metanorma/coradoc.svg["Pull Requests", link="https://github.com/metanorma/coradoc/pulls"]
+image:https://img.shields.io/github/commits-since/metanorma/coradoc/latest.svg["Commits since latest",link="https://github.com/metanorma/coradoc/releases"]
+
 Coradoc is a modern Parser for Asciidoc document. It defines a grammar for
 AsciiDoc, and then build the Parser for that grammar.
 
