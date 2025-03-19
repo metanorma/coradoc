@@ -12,3 +12,6 @@ AllCops:
 
 Layout/HashAlignment:
   EnforcedHashRocketStyle: table
+
+Naming/BlockForwarding:
+  EnforcedStyle: explicit
