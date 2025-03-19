@@ -1,8 +1,8 @@
 require "spec_helper"
 
-describe Coradoc::Input::HTML do
+describe Coradoc::Input::Html do
   let(:document) { Nokogiri::HTML(input) }
-  let(:adoc) { Coradoc::Input::HTML.convert(document) }
+  let(:adoc) { Coradoc::Input::Html.convert(document) }
 
   shared_examples "test" do |name, test, expected_result|
     context name do

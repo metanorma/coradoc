@@ -1,4 +1,4 @@
-module Coradoc::Input::HTML
+module Coradoc::Input::Html
   module Converters
     class Tr < Base
       def to_coradoc(node, state = {})

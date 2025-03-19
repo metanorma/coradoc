@@ -15,4 +15,4 @@ WARN
 require 'coradoc'
 require 'coradoc/input/html'
 
-Coradoc::ReverseAdoc = Coradoc::Input::HTML
+Coradoc::ReverseAdoc = Coradoc::Input::Html

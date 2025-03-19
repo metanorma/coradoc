@@ -1,5 +1,5 @@
 module Coradoc
-  module Input::HTML
+  module Input::Html
     class Error < StandardError
     end
 

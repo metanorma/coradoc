@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe Coradoc::Input::HTML::Converters::Text do
-  let(:converter) { Coradoc::Input::HTML::Converters::Text.new }
+describe Coradoc::Input::Html::Converters::Text do
+  let(:converter) { Coradoc::Input::Html::Converters::Text.new }
 
   it "treats newline within text as a single whitespace" do
     input = node_for("<p>foo\nbar</p>")

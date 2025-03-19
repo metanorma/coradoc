@@ -16,7 +16,7 @@ RSpec.configure do |config|
 
   # Input::HTML:
   config.after(:each) do
-    Coradoc::Input::HTML.instance_variable_set(:@config, nil)
+    Coradoc::Input::Html.instance_variable_set(:@config, nil)
   end
 end
 

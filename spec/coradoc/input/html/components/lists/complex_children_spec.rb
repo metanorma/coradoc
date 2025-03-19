@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Coradoc::Element::ListItem do
   def input(input, should_convert_to:)
-    Coradoc::Input::HTML.convert(input).should be == should_convert_to
+    Coradoc::Input::Html.convert(input).should be == should_convert_to
   end
 
   it "should work with simple blocks" do

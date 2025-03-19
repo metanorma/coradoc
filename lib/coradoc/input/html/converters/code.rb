@@ -1,4 +1,4 @@
-module Coradoc::Input::HTML
+module Coradoc::Input::Html
   module Converters
     class Code < Markup
       def coradoc_class

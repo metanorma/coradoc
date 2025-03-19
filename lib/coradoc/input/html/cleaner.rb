@@ -1,4 +1,4 @@
-module Coradoc::Input::HTML
+module Coradoc::Input::Html
   class Cleaner
     def tidy(string)
       if string.is_a? Hash
@@ -74,7 +74,7 @@ module Coradoc::Input::HTML
 
       result = string.gsub(/\s?~{2,}.*?~{2,}\s?/) do |match|
         preserve_border_whitespaces(match,
-                                    default_border: Coradoc::Input::HTML.config.tag_border) do
+                                    default_border: Coradoc::Input::Html.config.tag_border) do
           match.strip.sub("~~ ", "~~").sub(" ~~", "~~")
         end
       end

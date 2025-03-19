@@ -1,4 +1,4 @@
-module Coradoc::Input::HTML
+module Coradoc::Input::Html
   class Plugin
     # This plugin enhances documents from the PLATEAU project
     # to extract more data.
@@ -203,4 +203,4 @@ module Coradoc::Input::HTML
   end
 end
 
-Coradoc::Input::HTML.config.plugins << Coradoc::Input::HTML::Plugin::Plateau
+Coradoc::Input::Html.config.plugins << Coradoc::Input::Html::Plugin::Plateau

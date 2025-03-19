@@ -17,7 +17,7 @@ module Coradoc
 
     def self.processor_postprocess(input, options)
       if options[:output_processor] == :adoc
-        Coradoc::Input::HTML::Cleaner.new.tidy(input)
+        Coradoc::Input::Html::Cleaner.new.tidy(input)
       else
         input
       end

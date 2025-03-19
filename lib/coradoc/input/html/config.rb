@@ -1,7 +1,7 @@
 require "tmpdir"
 
 module Coradoc
-  module Input::HTML
+  module Input::Html
     class Config
       def initialize
         @unknown_tags     = :pass_through

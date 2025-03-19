@@ -1,4 +1,4 @@
-module Coradoc::Input::HTML
+module Coradoc::Input::Html
   module Converters
     class Blockquote < Base
       def to_coradoc(node, state = {})
@@ -7,7 +7,7 @@ module Coradoc::Input::HTML
         attributes = Coradoc::Element::AttributeList.new
         attributes.add_positional("quote", cite) if !cite.nil?
         content = treat_children(node, state).strip
-        content = Coradoc::Input::HTML.cleaner.remove_newlines(content)
+        content = Coradoc::Input::Html.cleaner.remove_newlines(content)
         Coradoc::Element::Block::Quote.new(nil, lines: content,
                                                 attributes: attributes)
       end

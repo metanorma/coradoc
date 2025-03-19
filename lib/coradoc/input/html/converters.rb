@@ -1,5 +1,5 @@
 module Coradoc
-  module Input::HTML
+  module Input::Html
     module Converters
       def self.register(tag_name, converter)
         @@converters ||= {}
@@ -38,18 +38,18 @@ module Coradoc
       end
 
       def self.default_converter(tag_name)
-        case Coradoc::Input::HTML.config.unknown_tags.to_sym
+        case Coradoc::Input::Html.config.unknown_tags.to_sym
         when :pass_through
-          Coradoc::Input::HTML::Converters::PassThrough.new
+          Coradoc::Input::Html::Converters::PassThrough.new
         when :drop
-          Coradoc::Input::HTML::Converters::Drop.new
+          Coradoc::Input::Html::Converters::Drop.new
         when :bypass
-          Coradoc::Input::HTML::Converters::Bypass.new
+          Coradoc::Input::Html::Converters::Bypass.new
         when :raise
           raise UnknownTagError, "unknown tag: #{tag_name}"
         else
           raise InvalidConfigurationError,
-                "unknown value #{Coradoc::Input::HTML.config.unknown_tags.inspect} for Coradoc::Input::HTML.config.unknown_tags"
+                "unknown value #{Coradoc::Input::Html.config.unknown_tags.inspect} for Coradoc::Input::HTML.config.unknown_tags"
         end
       end
     end

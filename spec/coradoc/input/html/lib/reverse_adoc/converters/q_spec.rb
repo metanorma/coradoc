@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe Coradoc::Input::HTML::Converters::Q do
-  let(:converter) { Coradoc::Input::HTML::Converters::Q.new }
+describe Coradoc::Input::Html::Converters::Q do
+  let(:converter) { Coradoc::Input::Html::Converters::Q.new }
 
   it "renders q" do
     input = node_for("<q>A</q>")

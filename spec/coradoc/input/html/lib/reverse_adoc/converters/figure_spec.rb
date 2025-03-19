@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe Coradoc::Input::HTML::Converters::Figure do
-  let(:converter) { Coradoc::Input::HTML::Converters::Figure.new }
+describe Coradoc::Input::Html::Converters::Figure do
+  let(:converter) { Coradoc::Input::Html::Converters::Figure.new }
 
   it "converts figure" do
     node = node_for("<figure id='A'><img src='example.jpg'/><figcaption>Figure <i>caption</i></figcaption></figure>")
