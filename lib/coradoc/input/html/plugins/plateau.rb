@@ -31,8 +31,9 @@ module Coradoc::Input::HTML
         html_tree_change_tag_name_by_css(".sitemdata", "h4")
         html_tree_change_tag_name_by_css('td[bgcolor="#D0CECE"]', "th")
         html_tree_change_tag_name_by_css('td[bgcolor="#d0cece"]', "th")
-        html_tree_change_tag_name_by_css('.framedata, .frame_container_box', 'aside')
-        html_tree_change_tag_name_by_css('.frame2data', 'pre')
+        html_tree_change_tag_name_by_css(".framedata, .frame_container_box",
+                                         "aside")
+        html_tree_change_tag_name_by_css(".frame2data", "pre")
         # Assumption that all code snippets in those documents are XML...
         html_tree_change_properties_by_css(".frame2data", class: "brush:xml;")
 
@@ -114,7 +115,7 @@ module Coradoc::Input::HTML
 
       IM = /[A-Z0-9]{1,3}/
 
-      def handle_headers(node, coradoc, state)
+      def handle_headers(node, coradoc, _state)
         content = coradoc.content.map(&:content).join
 
         if %w[toc0 toc_0].any? { |i| coradoc.id&.start_with?(i) }
@@ -143,20 +144,18 @@ module Coradoc::Input::HTML
           end
         end
 
-        if node.name == "h1"
-          if content.start_with?("Annex")
-            coradoc.style = "appendix"
-            coradoc.content.first.content.sub!(/\AAnnex [A-Z]/, "")
-          end
+        if node.name == "h1" && content.start_with?("Annex")
+          coradoc.style = "appendix"
+          coradoc.content.first.content.sub!(/\AAnnex [A-Z]/, "")
         end
 
         # Remove numbers
-        coradoc.content.first.content.sub!(/\A(#{IM}\.)*#{IM}[[:space:]]/, "")
+        coradoc.content.first.content.sub!(/\A(#{IM}\.)*#{IM}[[:space:]]/o, "")
 
         coradoc
       end
 
-      def handle_headers_h4(node, coradoc, state)
+      def handle_headers_h4(_node, coradoc, _state)
         title = Coradoc.strip_unicode(coradoc.content.first.content)
         case title
         when /\A\(\d+\)(.*)/
@@ -167,7 +166,7 @@ module Coradoc::Input::HTML
           coradoc.level_int = 5
           coradoc.content.first.content = $1.strip
           coradoc
-        when /\A#{IM}\.#{IM}\.#{IM}\.#{IM}(.*)/
+        when /\A#{IM}\.#{IM}\.#{IM}\.#{IM}(.*)/o
           coradoc.level_int = 4
           coradoc.content.first.content = $1.strip
         else
@@ -181,7 +180,7 @@ module Coradoc::Input::HTML
       end
 
       def postprocess_asciidoc_string
-        str = self.asciidoc_string
+        str = asciidoc_string
 
         ### Custom indentation handling
         # If there's a step up, add [none]

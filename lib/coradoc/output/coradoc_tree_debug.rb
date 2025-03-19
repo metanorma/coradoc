@@ -4,7 +4,7 @@ module Coradoc
       :coradoc_tree_debug
     end
 
-    def self.processor_match?(filename)
+    def self.processor_match?(_filename)
       false
     end
 

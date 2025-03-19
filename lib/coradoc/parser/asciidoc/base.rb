@@ -1,7 +1,6 @@
 require "parslet"
 require "parslet/convenience"
 
-
 require_relative "admonition"
 require_relative "attribute_list"
 require_relative "bibliography"
@@ -39,7 +38,7 @@ module Coradoc
         include Coradoc::Parser::Asciidoc::Text
 
         def rule_dispatch(rule_name, *args, **kwargs)
-          @dispatch_data = {} unless @dispatch_data
+          @dispatch_data ||= {}
           dispatch_key = [rule_name, args, kwargs.to_a.sort]
           dispatch_hash = dispatch_key.hash.abs
           unless @dispatch_data.has_key?(dispatch_hash)
@@ -58,9 +57,9 @@ module Coradoc
         add_dispatch = true
         with_params = true
 
-        parser_methods = (Coradoc::Parser::Asciidoc.constants - [:Base]).map{ |const|
+        parser_methods = (Coradoc::Parser::Asciidoc.constants - [:Base]).map do |const|
           Coradoc::Parser::Asciidoc.const_get(const).instance_methods
-        }.flatten.uniq
+        end.flatten.uniq
 
         parser_methods.each do |rule_name|
           params = Coradoc::Parser::Asciidoc::Base.instance_method(rule_name).parameters
@@ -79,11 +78,9 @@ module Coradoc
               define_method(rule_name) do |*args, **kwargs|
                 rule_dispatch(alias_name, *args, **kwargs)
               end
-
             end
           end
         end
-
       end
     end
   end

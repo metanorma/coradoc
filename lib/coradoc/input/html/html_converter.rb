@@ -92,7 +92,7 @@ module Coradoc
 
       def self.convert(input, options = {})
         Input::HTML.config.with(options) do
-          plugin_instances = prepare_plugin_instances(options)
+          prepare_plugin_instances(options)
 
           coradoc = to_coradoc(input, options)
 
@@ -110,7 +110,7 @@ module Coradoc
       end
 
       def self.convert_single_coradoc_to_adoc(_file, coradoc, options)
-        plugin_instances = prepare_plugin_instances(options)
+        prepare_plugin_instances(options)
 
         result = track_time "Converting Coradoc tree into Asciidoc" do
           Coradoc::Generator.gen_adoc(coradoc)

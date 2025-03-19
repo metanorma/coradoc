@@ -19,7 +19,7 @@ module Coradoc
         case elem
         when Inline::HardLineBreak
           :hardbreak
-        when ->(i){ i.class.name.to_s.include? "::Inline::" }
+        when ->(i) { i.class.name.to_s.include? "::Inline::" }
           true
         when String, TextElement, Image::InlineImage
           true
@@ -29,7 +29,7 @@ module Coradoc
       end
 
       def to_adoc
-        anchor = @anchor.nil? ? "" : " #{@anchor.to_adoc.to_s} "
+        anchor = @anchor.nil? ? "" : " #{@anchor.to_adoc} "
         # text = Coradoc::Generator.gen_adoc(@content)
         content = Array(@content).flatten.compact
         out = ""
@@ -44,7 +44,7 @@ module Coradoc
           subcontent = Coradoc::Generator.gen_adoc(subitem)
 
           inline = inline?(subitem)
-          next_inline = idx+1 == content.length ? :end : inline?(content[idx+1])
+          next_inline = idx + 1 == content.length ? :end : inline?(content[idx + 1])
 
           # Only try to postprocess elements that are text,
           # otherwise we could strip markup.
@@ -59,20 +59,20 @@ module Coradoc
 
           case inline
           when true
-            if prev_inline == false
-              out += "\n+\n" + subcontent
-            else
-              out += subcontent
-            end
+            out += if prev_inline == false
+                     "\n+\n" + subcontent
+                   else
+                     subcontent
+                   end
           when false
-            case prev_inline
-            when :hardbreak
-              out += subcontent.strip
-            when :init
-              out += "{empty}\n+\n" + subcontent.strip
-            else
-              out += "\n+\n" + subcontent.strip
-            end
+            out += case prev_inline
+                   when :hardbreak
+                     subcontent.strip
+                   when :init
+                     "{empty}\n+\n" + subcontent.strip
+                   else
+                     "\n+\n" + subcontent.strip
+                   end
           when :hardbreak
             if %i[hardbreak init].include? prev_inline
               # can't have two hard breaks in a row; can't start with a hard break

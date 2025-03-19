@@ -5,10 +5,8 @@ module Coradoc::Input::HTML
         id = node["id"]
         internal_anchor = treat_children_anchors(node, state)
 
-        if id.to_s.empty? && internal_anchor.size.positive?
-          if internal_anchor.first.respond_to? :id
-            id = internal_anchor.first.id
-          end
+        if id.to_s.empty? && internal_anchor.size.positive? && internal_anchor.first.respond_to?(:id)
+          id = internal_anchor.first.id
         end
 
         level = node.name[/\d/].to_i

@@ -13,7 +13,7 @@ module Coradoc
           @src = src
           @attributes = options.fetch(:attributes, AttributeList.new)
           @annotate_missing = options.fetch(:annotate_missing, nil)
-          @title = options.fetch(:title, nil) unless @title
+          @title ||= options.fetch(:title, nil)
           if @attributes.any?
             @attributes.validate_positional(VALIDATORS_POSITIONAL)
             @attributes.validate_named(VALIDATORS_NAMED)
@@ -26,7 +26,8 @@ module Coradoc
           anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
           title = ".#{@title}\n" unless @title.to_s.empty?
           attrs = @attributes_macro.to_adoc
-          [missing, anchor, title, "image", @colons, @src, attrs, @line_break].join("")
+          [missing, anchor, title, "image", @colons, @src, attrs,
+           @line_break].join("")
         end
 
         extend AttributeList::Matchers

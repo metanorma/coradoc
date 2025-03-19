@@ -2,7 +2,6 @@ module Coradoc
   module Parser
     module Asciidoc
       module Content
-
         def highlight
           text_id >> newline >>
             underline >> highlight_text >> newline
@@ -26,24 +25,24 @@ module Coradoc
         end
 
         def list_prefix
-          (line_start? >> match('^[*\.]') >> str(' '))
+          (line_start? >> match('^[*\.]') >> str(" "))
         end
 
         def section_prefix
-          (line_start? >> match('^[=]') >> str('=').repeat(0) >> match('[^\n]'))
+          (line_start? >> match("^[=]") >> str("=").repeat(0) >> match('[^\n]'))
         end
 
         # Text
-        def text_line(many_breaks = false)  #:zero :one :many
-            tl = #section_prefix.absent? >>
-                 # list_prefix.absent? >>
+        def text_line(many_breaks = false) # :zero :one :many
+          tl = # section_prefix.absent? >>
+            # list_prefix.absent? >>
             (asciidoc_char_with_id.absent? | text_id) >> literal_space? >>
             text.as(:text)
-            if many_breaks
-              tl >> line_ending.repeat(1).as(:line_break)
-            else
-              tl >> line_ending.as(:line_break)
-            end
+          if many_breaks
+            tl >> line_ending.repeat(1).as(:line_break)
+          else
+            tl >> line_ending.as(:line_break)
+          end
         end
 
         def asciidoc_char
@@ -51,11 +50,11 @@ module Coradoc
         end
 
         def asciidoc_char_with_id
-          asciidoc_char | str('[#') | str('[[')
+          asciidoc_char | str("[#") | str("[[")
         end
 
         def text_id
-          str("[[") >> str('[').absent? >> keyword.as(:id) >> str("]]") |
+          str("[[") >> str("[").absent? >> keyword.as(:id) >> str("]]") |
             str("[#") >> keyword.as(:id) >> str("]")
         end
 
@@ -67,7 +66,6 @@ module Coradoc
         def glossaries
           glossary.repeat(1)
         end
-
       end
     end
   end

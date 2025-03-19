@@ -12,7 +12,7 @@ module Coradoc
 
       def to_hash
         @data.to_h do |attribute|
-          [attribute.key.to_s, attribute.value.to_s.gsub("'", "")]
+          [attribute.key.to_s, attribute.value.to_s.delete("'")]
         end
       end
 

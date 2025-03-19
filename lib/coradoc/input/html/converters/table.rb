@@ -6,7 +6,8 @@ module Coradoc::Input::HTML
         title = extract_title(node)
         attributes = style(node)
         content = treat_children_coradoc(node, state)
-        Coradoc::Element::Table.new(title, content, { id: id, attributes: attributes })
+        Coradoc::Element::Table.new(title, content,
+                                    { id: id, attributes: attributes })
       end
 
       def extract_title(node)
@@ -61,7 +62,9 @@ module Coradoc::Input::HTML
 
           # Header first rows can't span multiple riws - drop header if they do.
           header = node.at_xpath(".//tr")
-          unless header.xpath("./td | ./th").all? { |i| [nil, "1", ""].include? i["rowspan"] }
+          unless header.xpath("./td | ./th").all? do |i|
+            [nil, "1", ""].include? i["rowspan"]
+          end
             attrs.add_named("options", ["noheader"])
           end
         end
@@ -102,10 +105,10 @@ module Coradoc::Input::HTML
           return ensure_row_column_integrity_and_get_column_sizes(node)
         end
 
-        fits_in_cell_matrix = proc do |y,x,rowspan,colspan|
+        fits_in_cell_matrix = proc do |y, x, rowspan, colspan|
           rowspan.times.all? do |yy|
             colspan.times.all? do |xx|
-              !cell_matrix.dig(y+yy, x+xx)
+              !cell_matrix.dig(y + yy, x + xx)
             end
           end
         end
@@ -124,7 +127,8 @@ module Coradoc::Input::HTML
             colspan = cell["colspan"]&.to_i || 1
             rowspan = cell["rowspan"]&.to_i || 1
 
-            column_id += 1 until fits_in_cell_matrix.(i,column_id,rowspan,colspan)
+            column_id += 1 until fits_in_cell_matrix.(i, column_id, rowspan,
+                                                      colspan)
 
             rowspan.times do |j|
               # Let's increase the table for particularly bad documents
@@ -225,7 +229,7 @@ module Coradoc::Input::HTML
           recompute.() if needs_recompute
 
           # But otherwise... we've got a really nasty table.
-          warn <<~WARNING.gsub("\n", " ")
+          warn <<~WARNING.tr("\n", " ")
             **** Couldn't construct a valid image of a table on line
             #{node.line}. We need that to reliably compute column
             widths of that table. Please report a bug to metanorma/coradoc
@@ -236,7 +240,7 @@ module Coradoc::Input::HTML
         # Compute column sizes
         column_sizes = []
         cell_matrix.each do |row|
-          row.each_with_index do |(cell,_), i|
+          row.each_with_index do |(cell, _), i|
             next unless !cell || [nil, "", "1"].include?(cell["colspan"])
 
             column_sizes[i] ||= []
@@ -270,10 +274,9 @@ module Coradoc::Input::HTML
 
         # The table seems bigger than the document... let's scale all
         # values.
-        while sizes.map { |i|
-                          i.zero? ? document_width / 3 / sizes.length : i
-                        }.sum > document_width
-
+        while (sizes.map do |i|
+          i.zero? ? document_width / 3 / sizes.length : i
+        end).sum > document_width
           sizes = sizes.map { |i| i * 4 / 5 }
         end
 
@@ -290,11 +293,11 @@ module Coradoc::Input::HTML
         end
 
         # Scale to integers
-        lcm = sizes.map(&:denominator).inject(1) { |i,j| i.lcm(j) }
+        lcm = sizes.map(&:denominator).inject(1) { |i, j| i.lcm(j) }
         sizes = sizes.map { |i| i * lcm }.map(&:to_i)
 
         # Scale down by gcd
-        gcd = sizes.inject(sizes.first) { |i,j| i.gcd(j) }
+        gcd = sizes.inject(sizes.first) { |i, j| i.gcd(j) }
         sizes = sizes.map { |i| i / gcd }
 
         # Try to generate a shorter definition

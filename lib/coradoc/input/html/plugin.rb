@@ -7,9 +7,9 @@ module Coradoc::Input::HTML
     #   def name = "Test"
     # end
 
-    def self.new(&block)
+    def self.new(&)
       if self == Plugin
-        Class.new(Plugin, &block)
+        Class.new(Plugin, &)
       else
         super
       end
@@ -27,7 +27,7 @@ module Coradoc::Input::HTML
 
     #### HTML Tree functionalities
 
-    attr_accessor :html_tree
+    attr_accessor :html_tree, :coradoc_tree, :asciidoc_string
 
     def html_tree_change_tag_name_by_css(css, new_name)
       html_tree.css(css).each do |e|
@@ -37,7 +37,7 @@ module Coradoc::Input::HTML
 
     def html_tree_change_properties_by_css(css, properties)
       html_tree.css(css).each do |e|
-        properties.each do |k,v|
+        properties.each do |k, v|
           e[k.to_s] = v
         end
       end
@@ -118,13 +118,9 @@ module Coradoc::Input::HTML
 
     #### Coradoc tree functionalities
 
-    attr_accessor :coradoc_tree
-
     # define postprocess_coradoc_tree to change coradoc tree
 
     #### AsciiDoc string functionalities
-
-    attr_accessor :asciidoc_string
 
     # define postprocess_asciidoc_string to change the coradoc string
   end

@@ -59,7 +59,7 @@ module Coradoc
       end
 
       def validate_named(validators)
-        @named.each_with_index do |(name, value), i|
+        @named.each_with_index do |(name, value), _i|
           name = name.to_sym
           validator = validators[name]
 
@@ -100,8 +100,8 @@ module Coradoc
       end
 
       module Matchers
-        def one(*args)
-          One.new(*args)
+        def one(*)
+          One.new(*)
         end
 
         class One
@@ -114,8 +114,8 @@ module Coradoc
           end
         end
 
-        def many(*args)
-          Many.new(*args)
+        def many(*)
+          Many.new(*)
         end
 
         # TODO: Find a way to only reject some values but not all?

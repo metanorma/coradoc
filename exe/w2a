@@ -13,7 +13,7 @@ ARGV.push("-h") if ARGV.empty?
 config = {
   input_options: input_options = {},
   input_processor: :docx,
-  output_options: output_options = {},
+  output_options: {},
   output_processor: :adoc,
 }
 destination = nil

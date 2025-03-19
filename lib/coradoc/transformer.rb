@@ -28,39 +28,39 @@ module Coradoc
     end
 
     # Comments
-    rule(comment_line: {comment_text: simple(:comment_text)}) {
+    rule(comment_line: { comment_text: simple(:comment_text) }) do
       Element::Comment::Line.new(comment_text)
-    }
+    end
 
-    rule(comment_block: {comment_text: simple(:comment_text)}) {
+    rule(comment_block: { comment_text: simple(:comment_text) }) do
       Element::Comment::Block.new(comment_text)
-    }
+    end
 
-    rule(tag: subtree(:tag)) {
+    rule(tag: subtree(:tag)) do
       opts = {}
       opts[:prefix] = tag[:prefix]
       opts[:attribute_list] = tag[:attribute_list]
       opts[:line_break] = tag[:line_break]
       Element::Tag.new(tag[:name], opts)
-    }
+    end
 
     # AttributeList
     class NamedAttribute < Struct.new(:key, :value); end
 
-    rule(:named => {named_key: simple(:key),
-      named_value: simple(:value)} ) {
+    rule(named: { named_key: simple(:key),
+                  named_value: simple(:value) }) do
       NamedAttribute.new(key.to_s, value.to_s)
-    }
+    end
 
-    rule(positional: simple(:positional)){
+    rule(positional: simple(:positional)) do
       positional.to_s
-    }
+    end
 
-    rule(attribute_array: nil){
+    rule(attribute_array: nil) do
       Element::AttributeList.new
-    }
+    end
 
-    rule(attribute_array: sequence(:attributes)){
+    rule(attribute_array: sequence(:attributes)) do
       attr_list = Element::AttributeList.new
       attributes.each do |a|
         if a.is_a?(String)
@@ -70,114 +70,115 @@ module Coradoc
         end
       end
       attr_list
-    }
+    end
 
     # Include
     rule(include: {
-      path: simple(:path),
-      attribute_list: simple(:attribute_list),
-      line_break: simple(:line_break)}
-    ) {
+           path: simple(:path),
+           attribute_list: simple(:attribute_list),
+           line_break: simple(:line_break),
+         }) do
       Element::Include.new(
         path.to_s,
         attributes: attribute_list,
-        line_break: line_break)
-    }
-
+        line_break: line_break,
+      )
+    end
 
     # Text Element
-    rule(text: simple(:text)) {
+    rule(text: simple(:text)) do
       Element::TextElement.new(text.to_s)
-    }
+    end
 
-    rule(text: simple(:text), line_break: simple(:line_break)) {
+    rule(text: simple(:text), line_break: simple(:line_break)) do
       Element::TextElement.new(text.to_s, line_break: line_break)
-    }
+    end
 
     rule(id: simple(:id), text: simple(:text)) do
       Element::TextElement.new(text.to_s, id: id.to_s)
     end
 
-    rule(text: sequence(:text)) {
+    rule(text: sequence(:text)) do
       Element::TextElement.new(text)
-    }
+    end
 
     rule(
       text: simple(:text),
-      line_break: simple(:line_break)
+      line_break: simple(:line_break),
     ) do
       Element::TextElement.new(
         text.to_s,
-        line_break: line_break)
+        line_break: line_break,
+      )
     end
 
     rule(
       id: simple(:id),
       text: simple(:text),
-      line_break: simple(:line_break)
+      line_break: simple(:line_break),
     ) do
       Element::TextElement.new(
         text.to_s,
         id: id,
-        line_break: line_break)
+        line_break: line_break,
+      )
     end
 
     rule(
       id: simple(:id),
       text: sequence(:text),
-      line_break: simple(:line_break)
+      line_break: simple(:line_break),
     ) do
       Element::TextElement.new(
         text,
         id: id,
-        line_break: line_break)
+        line_break: line_break,
+      )
     end
 
     rule(text: sequence(:text),
-      line_break: simple(:line_break)
-    ) do
+         line_break: simple(:line_break)) do
       Element::TextElement.new(
         text,
-        line_break: line_break)
+        line_break: line_break,
+      )
     end
 
-    rule(href: simple(:href)){
-      Element::Inline::CrossReference.new(
-        href.to_s
-      )
-    }
-
-    rule(href: simple(:href),
-      name: simple(:name)
-    ){
+    rule(href: simple(:href)) do
       Element::Inline::CrossReference.new(
         href.to_s,
-        name.to_s
       )
-    }
+    end
 
-    rule(bold_constrained: sequence(:text)){
+    rule(href: simple(:href),
+         name: simple(:name)) do
+      Element::Inline::CrossReference.new(
+        href.to_s,
+        name.to_s,
+      )
+    end
+
+    rule(bold_constrained: sequence(:text)) do
       Element::Inline::Bold.new(text, unconstrained: false)
-    }
+    end
 
-    rule(bold_unconstrained: sequence(:text)) {
+    rule(bold_unconstrained: sequence(:text)) do
       Element::Inline::Bold.new(text, unconstrained: true)
-    }
+    end
 
-    rule(highlight_constrained: sequence(:text)) {
+    rule(highlight_constrained: sequence(:text)) do
       Element::Inline::Highlight.new(text, unconstrained: false)
-    }
-    rule(highlight_unconstrained: sequence(:text)) {
+    end
+    rule(highlight_unconstrained: sequence(:text)) do
       Element::Inline::Highlight.new(text, unconstrained: true)
-    }
+    end
 
-    rule(italic_constrained: sequence(:text)) {
+    rule(italic_constrained: sequence(:text)) do
       Element::Inline::Italic.new(text, unconstrained: false)
-    }
-    rule(italic_unconstrained: sequence(:text)) {
+    end
+    rule(italic_unconstrained: sequence(:text)) do
       Element::Inline::Italic.new(text, unconstrained: true)
-    }
-
+    end
 
     # Paragraph
     rule(paragraph: subtree(:paragraph)) do
@@ -185,11 +186,9 @@ module Coradoc
         paragraph[:lines],
         id: paragraph[:id],
         attributes: paragraph[:attribute_list],
-        title: paragraph[:title]
-        )
+        title: paragraph[:title],
+      )
     end
-
-
 
     # Title Element
     rule(
@@ -216,44 +215,43 @@ module Coradoc
       attribute_list = section[:attribute_list] || nil
       contents = section[:contents] || []
       sections = section[:sections]
-      opts = {id:,attribute_list:,contents:,sections: }
+      opts = { id:, attribute_list:, contents:, sections: }
       Element::Section.new(title, opts)
     end
-
 
     rule(example: sequence(:example)) do
       Element::Core.new("", type: "example", lines: example)
     end
 
-    rule(bibliography_entry: subtree(:bib_entry) ){
+    rule(bibliography_entry: subtree(:bib_entry)) do
       Element::BibliographyEntry.new(bib_entry)
-    }
+    end
 
     rule(
       id: simple(:id),
       title: simple(:title),
-      entries: sequence(:entries)
-    ){
+      entries: sequence(:entries),
+    ) do
       Element::Bibliography.new(
         id: id,
         title: title,
-        entries: entries
-        )
-    }
+        entries: entries,
+      )
+    end
 
     rule(
       key: simple(:key),
       delimiter: simple(:delimiter),
-      value: simple(:value)
-      ){
+      value: simple(:value),
+    ) do
       Element::Inline::CrossReferenceArg.new(key, delimiter, value)
-    }
+    end
 
-    rule(href_arg: simple(:href_arg)){
-        href_arg.to_s
-    }
+    rule(href_arg: simple(:href_arg)) do
+      href_arg.to_s
+    end
 
-    rule(citation: subtree(:citation)){
+    rule(citation: subtree(:citation)) do
       xref = citation[:cross_reference]
       xref = Element::Inline::CrossReference.new(xref[0], xref[1..-1]) if xref
       comment = citation[:comment]
@@ -261,46 +259,46 @@ module Coradoc
       opts[:cross_reference] = xref if xref
       opts[:comment] = comment if comment
       Element::Inline::Citation.new(opts)
-    }
+    end
 
     rule(term_type: simple(:term_type),
-      term: simple(:term),
-      line_break: simple(:line_break)){
-      Coradoc::Element::Term.new(term, type: term_type, line_break: line_break, lang: :en)
-    }
+         term: simple(:term),
+         line_break: simple(:line_break)) do
+      Coradoc::Element::Term.new(term, type: term_type, line_break: line_break,
+                                       lang: :en)
+    end
 
     rule(term_type: simple(:term_type),
-      term2: simple(:term2),
-      line_break: simple(:line_break)){
-      Coradoc::Element::Term.new(term2, type: term_type, line_break: line_break, lang: :fr)
-    }
+         term2: simple(:term2),
+         line_break: simple(:line_break)) do
+      Coradoc::Element::Term.new(term2, type: term_type,
+                                        line_break: line_break, lang: :fr)
+    end
 
-
-    rule(block: subtree(:block)
-    ) {
-
+    rule(block: subtree(:block)) do
       id = block[:id]
       title = block[:title]
       attribute_list = block[:attribute_list]
       delimiter = block[:delimiter].to_s
       delimiter_c = delimiter[0]
       lines = block[:lines]
-      ordering = block.keys.select{|k|
-        [:id, :title, :attribute_list, :attribute_list2].include?(k)}
+      ordering = block.keys.select do |k|
+        %i[id title attribute_list attribute_list2].include?(k)
+      end
 
-      opts = {id: id,
-        title: title, 
-        delimiter_len: delimiter.size,
-        lines: lines,
-        ordering: ordering}
+      opts = { id: id,
+               title: title,
+               delimiter_len: delimiter.size,
+               lines: lines,
+               ordering: ordering }
       opts[:attributes] = attribute_list if attribute_list
       if delimiter_c == "*"
         if attribute_list
-          if (attribute_list.positional == [] &&
-           attribute_list.named.keys[0] == "reviewer")
+          if attribute_list.positional == [] &&
+              attribute_list.named.keys[0] == "reviewer"
             Element::Block::ReviewerComment.new(opts)
-          elsif (attribute_list.positional[0] == "sidebar" &&
-            attribute_list.named == {})
+          elsif attribute_list.positional[0] == "sidebar" &&
+              attribute_list.named == {}
             Element::Block::Side.new(opts)
           else
             Element::Block::Side.new(opts)
@@ -314,17 +312,16 @@ module Coradoc
         Element::Block::Pass.new(opts)
       elsif delimiter_c == "-" && delimiter.size == 2
         Element::Block::Open.new(title, opts)
-      elsif delimiter_c == "-"&& delimiter.size >= 4
+      elsif delimiter_c == "-" && delimiter.size >= 4
         Element::Block::SourceCode.new(title, opts)
       elsif delimiter_c == "_"
         Element::Block::Quote.new(title, opts)
       end
-    }
+    end
 
     # Admonition
     rule(admonition_type: simple(:admonition_type),
-      content: sequence(:content),
-      ) do
+         content: sequence(:content)) do
       Element::Admonition.new(content, admonition_type.to_s)
     end
 
@@ -334,12 +331,10 @@ module Coradoc
       path = block_image[:path]
       opts = {
         attributes: block_image[:attribute_list_macro],
-        line_break: block_image[:line_break]
+        line_break: block_image[:line_break],
       }
       Element::Image::BlockImage.new(title, id, path, opts)
     end
-
-
 
     # Attribute
     rule(key: simple(:key), value: simple(:value)) do
@@ -351,9 +346,9 @@ module Coradoc
       Element::Attribute.new(key, value, line_break: line_break)
     end
 
-    rule(line_break: simple(:line_break)) {
+    rule(line_break: simple(:line_break)) do
       Element::LineBreak.new(line_break)
-    }
+    end
 
     rule(document_attributes: sequence(:document_attributes)) do
       Element::DocumentAttributes.new(document_attributes)
@@ -361,17 +356,17 @@ module Coradoc
 
     # Table
 
-    rule(cols: sequence(:cols)) {
-      cells = cols.map{|c| Element::Table::Cell.new(content: c)}
+    rule(cols: sequence(:cols)) do
+      cells = cols.map { |c| Element::Table::Cell.new(content: c) }
       Element::Table::Row.new(cells)
-    }
+    end
 
     rule(table: subtree(:table)) do
       title = table[:title] || nil
       rows = table[:rows] || []
       opts = {
         id: table[:id] || nil,
-        attributes: table[:attribute_list] || nil
+        attributes: table[:attribute_list] || nil,
       }
       Element::Table.new(title, rows, opts)
     end
@@ -384,9 +379,9 @@ module Coradoc
       nested = list_item[:nested]
       line_break = list_item[:line_break]
       Element::ListItem.new(
-        text, id:, marker:, attached:, nested:, line_break: )
+        text, id:, marker:, attached:, nested:, line_break:
+      )
     end
-
 
     # List
     rule(list: simple(:list)) { list }
@@ -394,8 +389,7 @@ module Coradoc
       Element::List::Unordered.new(list_items)
     end
     rule(attribute_list: simple(:attribute_list),
-      unordered: sequence(:list_items)
-    ) do
+         unordered: sequence(:list_items)) do
       Element::List::Unordered.new(list_items, attrs: attribute_list)
     end
 
@@ -404,11 +398,9 @@ module Coradoc
     end
 
     rule(attribute_list: simple(:attribute_list),
-      ordered: sequence(:list_items)
-    ) do
+         ordered: sequence(:list_items)) do
       Element::List::Ordered.new(list_items, attrs: attribute_list)
     end
-
 
     rule(terms: simple(:terms), definition: simple(:definition)) do
       Element::ListItemDefinition.new(terms, contents)
@@ -417,7 +409,6 @@ module Coradoc
     rule(definition_list: sequence(:definition_list)) do
       Element::List::Definition.new(list_items)
     end
-
 
     # Highlight
     rule(highlight: simple(:text)) { Element::Highlight.new(text) }
@@ -433,7 +424,6 @@ module Coradoc
     rule(document: sequence(:elements)) do
       Document.from_ast(elements)
     end
-
 
     # rule(unparsed: simple(:text)) do
     #   text.to_s

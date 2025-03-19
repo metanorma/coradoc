@@ -11,7 +11,7 @@ module Coradoc::Input::HTML
 
       def process_dl(node, state = {})
         groups = []
-        current = {name: [], value: []}
+        current = { name: [], value: [] }
 
         seen_dd = false
         child = node.at_xpath("*[1]")
@@ -20,11 +20,13 @@ module Coradoc::Input::HTML
           if child.name == "div"
             grandchild = child.at_xpath("*[1]")
             while !grandchild.nil?
-              groups, current, seen_dd = process_dt_or_dd(groups, current, seen_dd, grandchild, state)
+              groups, current, seen_dd = process_dt_or_dd(groups, current,
+                                                          seen_dd, grandchild, state)
               grandchild = grandchild.at_xpath("following-sibling::*[1]")
             end
           elsif ["dt", "dd"].include?(child.name)
-            groups, current, seen_dd = process_dt_or_dd(groups, current, seen_dd, child, state)
+            groups, current, seen_dd = process_dt_or_dd(groups, current,
+                                                        seen_dd, child, state)
           end
           child = child.at_xpath("following-sibling::*[1]")
           if current[:name].any? && current[:value].any?
@@ -38,7 +40,7 @@ module Coradoc::Input::HTML
         if subnode.name == "dt"
           if seen_dd
             # groups << current
-            current = {name: [], value: []}
+            current = { name: [], value: [] }
             seen_dd = false
           end
           current[:name] += treat_children_coradoc(subnode, state)

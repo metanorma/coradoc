@@ -14,8 +14,8 @@ RSpec.describe Coradoc::Element::AttributeList do
     end
 
     it "validates attributes" do
-      V_POS = [ [:alt, String], [:width, Integer], [:broken, String]]
-      V_NAM = {alt: String, width: Integer, broken: String}
+      V_POS = [[:alt, String], [:width, Integer], [:broken, String]]
+      V_NAM = { alt: String, width: Integer, broken: String }
       attributes = Coradoc::Element::AttributeList.new
       attributes.add_positional("Alt text")
       attributes.add_positional(256)
@@ -46,7 +46,8 @@ RSpec.describe Coradoc::Element::AttributeList do
       incorrect2.validate_named(VALIDATOR)
 
       expect(correct.rejected_named).to eq([])
-      expect(incorrect.rejected_named).to eq([[:x1, "Abc"], [:x2, "Def"], [:x3, 1]])
+      expect(incorrect.rejected_named).to eq([[:x1, "Abc"], [:x2, "Def"],
+                                              [:x3, 1]])
       expect(incorrect2.rejected_named).to eq([[:x3, ["ghi", "mno"]]])
     end
   end

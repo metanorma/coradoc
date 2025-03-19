@@ -27,7 +27,8 @@ module Coradoc::Input::HTML
         ambigous_characters = /[\w.?&#=%;\[\u{ff}-\u{10ffff}]/
         if name&.strip == href
           name = ""
-          right_constrain = textnode_after_start_with?(node, ambigous_characters)
+          right_constrain = textnode_after_start_with?(node,
+                                                       ambigous_characters)
         end
 
         out = []
