@@ -111,7 +111,7 @@
         packages = with pkgs; [
           # rubocop                  # Install with your Gemfile / gemspec
           # ruby                     # Install with your favourite Ruby version manager, etc.
-          # rubyPackages.solargraph  # Bring your own
+          rubyPackages.solargraph # Bring your own
           # rubyfmt                  # Broken
           bash
           curl
