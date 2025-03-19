@@ -13,13 +13,13 @@ require_relative "html/plugin"
 require_relative "html/postprocessor"
 
 module Coradoc
-  module Input::HTML
+  module Input::Html
     def self.convert(input, options = {})
-      Coradoc::Input::HTML::HtmlConverter.convert(input, options)
+      Coradoc::Input::Html::HtmlConverter.convert(input, options)
     end
 
     def self.to_coradoc(input, options = {})
-      Input::HTML::HtmlConverter.to_coradoc(input, options)
+      Input::Html::HtmlConverter.to_coradoc(input, options)
     end
 
     def self.config
@@ -47,7 +47,7 @@ module Coradoc
     def self.processor_postprocess(data, options)
       if options[:output_processor] == :adoc
         data.transform_values do |v|
-          Input::HTML::HtmlConverter.cleanup_result(v, options)
+          Input::Html::HtmlConverter.cleanup_result(v, options)
         end
       else
         data
