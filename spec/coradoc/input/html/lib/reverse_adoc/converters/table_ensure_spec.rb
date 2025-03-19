@@ -3,8 +3,8 @@ require "spec_helper"
 # We know better what syntax looks nice :)
 # rubocop:disable all
 
-describe Coradoc::Input::HTML::Converters::Table do
-  let(:converter) { Coradoc::Input::HTML::Converters::Table.new }
+describe Coradoc::Input::Html::Converters::Table do
+  let(:converter) { Coradoc::Input::Html::Converters::Table.new }
 
   let(:c) { '<td colspan="1" rowspan="1"></td>' }
   let(:e) { '<td x-added="x-added"></td>' } # Added cell

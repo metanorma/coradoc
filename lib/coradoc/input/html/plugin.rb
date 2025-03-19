@@ -1,4 +1,4 @@
-module Coradoc::Input::HTML
+module Coradoc::Input::Html
   class Plugin
     #### Plugin system general
 
@@ -54,11 +54,11 @@ module Coradoc::Input::HTML
     end
 
     def html_tree_process_to_coradoc(tree, state = {})
-      Coradoc::Input::HTML::Converters.process_coradoc(tree, state)
+      Coradoc::Input::Html::Converters.process_coradoc(tree, state)
     end
 
     def html_tree_process_to_adoc(tree, state = {})
-      Coradoc::Input::HTML::Converters.process(tree, state)
+      Coradoc::Input::Html::Converters.process(tree, state)
     end
 
     def html_tree_preview

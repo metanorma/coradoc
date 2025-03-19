@@ -1,6 +1,6 @@
 require "coradoc"
 
-module Coradoc::Input::HTML
+module Coradoc::Input::Html
   module Converters
     class A < Base
       def to_coradoc(node, state = {})

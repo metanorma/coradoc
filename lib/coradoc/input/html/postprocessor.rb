@@ -1,4 +1,4 @@
-module Coradoc::Input::HTML
+module Coradoc::Input::Html
   # Postprocessor's aim is to convert a Coradoc tree from
   # a mess that has been created from HTML into a tree that
   # is compatible with what we would get out of Coradoc, if
@@ -134,7 +134,7 @@ module Coradoc::Input::HTML
     end
 
     def split_sections
-      max_level = Coradoc::Input::HTML.config.split_sections
+      max_level = Coradoc::Input::Html.config.split_sections
 
       return unless max_level
 

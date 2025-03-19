@@ -1,11 +1,11 @@
 require "spec_helper"
 
-describe Coradoc::Input::HTML::Plugin do
+describe Coradoc::Input::Html::Plugin do
   let(:input) do
     "<html><body><div><table><tr><td>hello</td></tr></table></div></body></html>"
   end
   let(:document) { Nokogiri::HTML(input) }
-  subject { Coradoc::Input::HTML.convert(input, plugins: plugins) }
+  subject { Coradoc::Input::Html.convert(input, plugins: plugins) }
   let(:plugins) { [plugin] }
 
   context "#preprocess_html_tree" do

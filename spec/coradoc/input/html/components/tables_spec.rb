@@ -1,9 +1,9 @@
 require "spec_helper"
 
-describe Coradoc::Input::HTML do
+describe Coradoc::Input::Html do
   let(:input)    { File.read("spec/coradoc/input/html/assets/tables.html") }
   let(:document) { Nokogiri::HTML(input) }
-  subject { Coradoc::Input::HTML.convert(input) }
+  subject { Coradoc::Input::Html.convert(input) }
 
   it {
     is_expected.to match /\[\[A\]\]\n\[cols=3\]\n\|===\n\| \[\[C\]\]header 1 \| header 2 \| header 3\n\n/

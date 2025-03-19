@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe Coradoc::Input::HTML::Converters::Img do
-  let(:converter) { Coradoc::Input::HTML::Converters::Img.new }
+describe Coradoc::Input::Html::Converters::Img do
+  let(:converter) { Coradoc::Input::Html::Converters::Img.new }
 
   it "converts image with no attributes" do
     node = node_for("<img src='example.jpg'/>")
@@ -12,7 +12,7 @@ describe Coradoc::Input::HTML::Converters::Img do
     expect(Kernel).to receive(:warn).with(/example\.jpg/)
 
     tmp = Dir.mktmpdir("coradoc-test")
-    Coradoc::Input::HTML.config.with(
+    Coradoc::Input::Html.config.with(
       external_images: true,
       destination: "#{tmp}/index.adoc",
       sourcedir: "#{tmp}/non-existent",

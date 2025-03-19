@@ -17,4 +17,4 @@ WARN
 
 require "coradoc/input/html"
 
-ReverseAdoc = Coradoc::Input::HTML
+ReverseAdoc = Coradoc::Input::Html

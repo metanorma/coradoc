@@ -1,4 +1,4 @@
-module Coradoc::Input::HTML
+module Coradoc::Input::Html
   module Converters
     class Table < Base
       def to_coradoc(node, state = {})
@@ -248,7 +248,7 @@ module Coradoc::Input::HTML
           end
         end
 
-        document_width = Coradoc::Input::HTML.config.doc_width.to_r
+        document_width = Coradoc::Input::Html.config.doc_width.to_r
 
         column_sizes += [nil] * (cpr.first - column_sizes.length)
 
