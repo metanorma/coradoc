@@ -39,6 +39,14 @@ module Coradoc
 
       def self.declare_children(*children)
         @children = (@children || []).dup + children
+        access_children
+      end
+
+      # Make each child available for access
+      def self.access_children
+        @children.each do |child|
+          attr_accessor child
+        end
       end
 
       def self.visit(element, &block)
