@@ -1,10 +1,10 @@
 require "spec_helper"
 
-describe Coradoc::Input::HTML do
+describe Coradoc::Input::Html do
   let(:input)    { File.read("spec/coradoc/input/html/assets/sections.html") }
   let(:document) { Nokogiri::HTML(input) }
   let(:level)    { 1 }
-  subject { Coradoc::Input::HTML.convert(input, split_sections: level) }
+  subject { Coradoc::Input::Html.convert(input, split_sections: level) }
   let(:l1sections) do
     %w[sections/section-01.adoc
        sections/section-02.adoc

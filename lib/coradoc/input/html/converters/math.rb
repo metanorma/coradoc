@@ -4,7 +4,7 @@
 
 require "plurimath"
 
-module Coradoc::Input::HTML
+module Coradoc::Input::Html
   module Converters
     class Math < Base
       # FIXIT
@@ -13,8 +13,8 @@ module Coradoc::Input::HTML
       end
 
       def convert(node, _state = {})
-        stem = node.to_s.gsub(/\n/, " ")
-        if Coradoc::Input::HTML.config.mathml2asciimath
+        stem = node.to_s.tr("\n", " ")
+        if Coradoc::Input::Html.config.mathml2asciimath
           stem = Plurimath::Math.parse(stem, :mathml).to_asciimath
         end
 

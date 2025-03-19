@@ -37,10 +37,10 @@ require_relative "converters/video"
 require_relative "converters/math"
 
 module Coradoc
-  module Input::HTML
+  module Input::Html
     class HtmlConverter
       def self.to_coradoc(input, options = {})
-        Input::HTML.config.with(options) do
+        Input::Html.config.with(options) do
           plugin_instances = prepare_plugin_instances(options)
 
           root = track_time "Loading input HTML document" do
@@ -91,8 +91,8 @@ module Coradoc
       end
 
       def self.convert(input, options = {})
-        Input::HTML.config.with(options) do
-          plugin_instances = prepare_plugin_instances(options)
+        Input::Html.config.with(options) do
+          prepare_plugin_instances(options)
 
           coradoc = to_coradoc(input, options)
 
@@ -119,11 +119,11 @@ module Coradoc
       end
 
       def self.cleanup_result(result, options)
-        Input::HTML.config.with(options) do
+        Input::Html.config.with(options) do
           plugin_instances = prepare_plugin_instances(options)
 
           result = track_time "Cleaning up the result" do
-            Input::HTML.cleaner.tidy(result)
+            Input::Html.cleaner.tidy(result)
           end
           plugin_instances.each do |plugin|
             if plugin.respond_to?(:postprocess_asciidoc_string)
@@ -140,12 +140,12 @@ module Coradoc
       end
 
       def self.prepare_plugin_instances(options)
-        options[:plugin_instances] || Coradoc::Input::HTML.config.plugins.map(&:new)
+        options[:plugin_instances] || Coradoc::Input::Html.config.plugins.map(&:new)
       end
 
       @track_time_indentation = 0
       def self.track_time(task)
-        if Input::HTML.config.track_time
+        if Input::Html.config.track_time
           warn "  " * @track_time_indentation +
             "* #{task} is starting..."
           @track_time_indentation += 1
