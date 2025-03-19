@@ -22,3 +22,6 @@ Layout/HashAlignment:
 
 RSpec/ImplicitSubject:
   EnforcedStyle: require_implicit
+
+Naming/BlockForwarding:
+  EnforcedStyle: explicit
