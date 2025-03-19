@@ -100,8 +100,8 @@ module Coradoc
       end
 
       module Matchers
-        def one(*)
-          One.new(*)
+        def one(*args)
+          One.new(*args)
         end
 
         class One
@@ -114,8 +114,8 @@ module Coradoc
           end
         end
 
-        def many(*)
-          Many.new(*)
+        def many(*args)
+          Many.new(*args)
         end
 
         # TODO: Find a way to only reject some values but not all?
