@@ -293,7 +293,7 @@ end
 require 'coradoc/input/html'
 
 # Options can be supplied as keyword arguments
-Coradoc::Input::HTML::HtmlConverter.to_coradoc("<b><i>Some input</i></b>")
+Coradoc::Input::Html::HtmlConverter.to_coradoc("<b><i>Some input</i></b>")
 ----
 
 

@@ -3,7 +3,7 @@ module Coradoc::Input::Html
     #### Plugin system general
 
     # Allow building plugins with a shorthand syntax:
-    # plugin = Coradoc::Input::HTML::Plugin.new do
+    # plugin = Coradoc::Input::Html::Plugin.new do
     #   def name = "Test"
     # end
 
