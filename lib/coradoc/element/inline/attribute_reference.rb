@@ -1,7 +1,7 @@
 module Coradoc
   module Element
     module Inline
-      class AttributeRefrence < Base
+      class AttributeReference < Base
         attr_accessor :name
 
         declare_children :name

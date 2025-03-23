@@ -286,7 +286,8 @@ module Coradoc
     end
 
     rule(cross_reference: sequence(:xref)) do
-      Element::Inline::CrossReference.new(xref[0], xref[1..])
+      args = xref.size > 1 ? xref[1..-1] : []
+      Element::Inline::CrossReference.new(xref[0], args)
     end
 
     rule(attribute_reference: simple(:name)) do

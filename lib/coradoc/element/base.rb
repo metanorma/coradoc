@@ -49,17 +49,20 @@ module Coradoc
         end
       end
 
-      # TODO: This is very broken!! FIXME!!!
       def self.visit(element, &block)
+        return element if element.nil?
+
         element = yield element, :pre
         element = if element.respond_to? :visit
                     element.visit(&block)
                   elsif element.is_a? Array
                     element.map { |child| visit(child, &block) }.flatten.compact
                   elsif element.is_a? Hash
-                    element.to_h do |k, v|
-                      [visit(k, &block), visit(v, &block)]
+                    result = {}
+                    element.each do |k, v|
+                      result[k] = visit(v, &block)
                     end
+                    result
                   else
                     element
                   end
