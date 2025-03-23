@@ -37,7 +37,15 @@ module Coradoc
       sections.map do |section|
         Hash.new.tap do |hash|
           hash["id"] = section.id
-          hash["props"] = build_oscal_props(section.glossaries.items)
+          # Use definition lists if present, otherwise fall back to glossaries
+          props_items = if section.respond_to?(:definition_lists) && section.definition_lists && !section.definition_lists.empty?
+                          section.definition_lists.first.items
+                        elsif section.glossaries && !section.glossaries.empty?
+                          section.glossaries.items
+                        else
+                          []
+                        end
+          hash["props"] = build_oscal_props(props_items)
           hash["parts"] = build_oscal_parts(section.sections)
         end
       end
