@@ -79,16 +79,21 @@ module Coradoc
     end
 
     def build_oscal_props(attributes)
+      return [] unless attributes.respond_to?(:map)
+
       attributes.map do |attribute|
+        next unless attribute.respond_to?(:key) && attribute.respond_to?(:value)
+
         Hash.new.tap do |hash|
           hash["name"] = attribute.key.to_s.downcase
-          hash["value"] = attribute.value
+          hash["value"] = attribute.value.to_s
         end
-      end
+      end.compact
     end
 
     def build_oscal_prose(paragraph)
-      paragraph&.texts&.join(" ")
+      return nil unless paragraph.respond_to?(:texts)
+      paragraph.texts&.join(" ")
     end
   end
 end
