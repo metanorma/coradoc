@@ -49,6 +49,7 @@ module Coradoc
         end
       end
 
+      # TODO: This is very broken!! FIXME!!!
       def self.visit(element, &block)
         element = yield element, :pre
         element = if element.respond_to? :visit

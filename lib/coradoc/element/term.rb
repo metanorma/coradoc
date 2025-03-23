@@ -14,6 +14,7 @@ module Coradoc
 
       def to_adoc
         return "#{@type}:[#{@term}]#{@line_break}" if @lang == :en
+
         "[#{@type}]##{@term}##{@line_break}"
       end
     end

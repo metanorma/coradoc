@@ -1,55 +1,62 @@
-module Coradoc::Input::Html
-  module Converters
-    class Dl < Base
-      def to_coradoc(node, state = {})
-        items = process_dl(node, state)
-        items2 = items.map do |item|
-          Coradoc::Element::ListItemDefinition.new(item[:name], item[:value])
-        end
-        Coradoc::Element::List::Definition.new(items2, delimiter: "::")
-      end
-
-      def process_dl(node, state = {})
-        groups = []
-        current = {name: [], value: []}
-
-        seen_dd = false
-        child = node.at_xpath("*[1]")
-        grandchild = nil
-        while !child.nil?
-          if child.name == "div"
-            grandchild = child.at_xpath("*[1]")
-            while !grandchild.nil?
-              groups, current, seen_dd = process_dt_or_dd(groups, current, seen_dd, grandchild, state)
-              grandchild = grandchild.at_xpath("following-sibling::*[1]")
+module Coradoc
+  module Input
+    module Html
+      module Converters
+        class Dl < Base
+          def to_coradoc(node, state = {})
+            items = process_dl(node, state)
+            items2 = items.map do |item|
+              Coradoc::Element::ListItemDefinition.new(item[:name],
+                                                       item[:value])
             end
-          elsif ["dt", "dd"].include?(child.name)
-            groups, current, seen_dd = process_dt_or_dd(groups, current, seen_dd, child, state)
+            Coradoc::Element::List::Definition.new(items2, delimiter: "::")
           end
-          child = child.at_xpath("following-sibling::*[1]")
-          if current[:name].any? && current[:value].any?
-            groups << current
-          end
-        end
-        groups
-      end
 
-      def process_dt_or_dd(groups, current, seen_dd, subnode, state = {})
-        if subnode.name == "dt"
-          if seen_dd
-            # groups << current
-            current = {name: [], value: []}
+          def process_dl(node, state = {})
+            groups = []
+            current = { name: [], value: [] }
+
             seen_dd = false
+            child = node.at_xpath("*[1]")
+            grandchild = nil
+            while !child.nil?
+              if child.name == "div"
+                grandchild = child.at_xpath("*[1]")
+                while !grandchild.nil?
+                  groups, current, seen_dd = process_dt_or_dd(groups, current,
+                                                              seen_dd, grandchild, state)
+                  grandchild = grandchild.at_xpath("following-sibling::*[1]")
+                end
+              elsif ["dt", "dd"].include?(child.name)
+                groups, current, seen_dd = process_dt_or_dd(groups, current,
+                                                            seen_dd, child, state)
+              end
+              child = child.at_xpath("following-sibling::*[1]")
+              if current[:name].any? && current[:value].any?
+                groups << current
+              end
+            end
+            groups
           end
-          current[:name] += treat_children_coradoc(subnode, state)
-        elsif subnode.name == "dd"
-          current[:value] += treat_children_coradoc(subnode, state)
-          seen_dd = true
+
+          def process_dt_or_dd(groups, current, seen_dd, subnode, state = {})
+            if subnode.name == "dt"
+              if seen_dd
+                # groups << current
+                current = { name: [], value: [] }
+                seen_dd = false
+              end
+              current[:name] += treat_children_coradoc(subnode, state)
+            elsif subnode.name == "dd"
+              current[:value] += treat_children_coradoc(subnode, state)
+              seen_dd = true
+            end
+            [groups, current, seen_dd]
+          end
         end
-        [groups, current, seen_dd]
+
+        register :dl, Dl.new
       end
     end
-
-    register :dl, Dl.new
   end
 end

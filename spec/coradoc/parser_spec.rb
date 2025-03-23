@@ -58,7 +58,6 @@ RSpec.describe Coradoc::Parser do
       expect(diff_table[:rows][0][:cols][0][:text]).to eq("  ")
       expect(diff_table[:rows][1][:cols][0][:text]).to eq("*Level of detail*")
 
-
       purpose_5_9 = section[:sections][8][:section][:sections][1][:section]
       highlight_5_9 = purpose_5_9[:contents][1][:paragraph]
       expect(highlight_5_9[:id]).to eq("scls_5-9")

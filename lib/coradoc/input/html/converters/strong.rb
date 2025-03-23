@@ -1,16 +1,20 @@
-module Coradoc::Input::Html
-  module Converters
-    class Strong < Markup
-      def coradoc_class
-        Coradoc::Element::Inline::Bold
-      end
+module Coradoc
+  module Input
+    module Html
+      module Converters
+        class Strong < Markup
+          def coradoc_class
+            Coradoc::Element::Inline::Bold
+          end
 
-      def markup_ancestor_tag_names
-        %w[strong b]
+          def markup_ancestor_tag_names
+            %w[strong b]
+          end
+        end
+
+        register :strong, Strong.new
+        register :b,      Strong.new
       end
     end
-
-    register :strong, Strong.new
-    register :b,      Strong.new
   end
 end

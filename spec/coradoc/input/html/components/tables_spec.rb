@@ -35,12 +35,13 @@ describe Coradoc::Input::Html do
     is_expected.to match /\n\[frame=topbot,rules=cols,cols=1\]\n\|===\n\| topbot\n/
   }
 
-  it { is_expected.to include <<~ADOC
-    | | 
-    
-    | This table has empty rows | x
-    | | 
-    | This table has empty rows | x
+  it {
+    is_expected.to include <<~ADOC
+      | |#{' '}
+
+      | This table has empty rows | x
+      | |#{' '}
+      | This table has empty rows | x
     ADOC
   }
 

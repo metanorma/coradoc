@@ -55,16 +55,7 @@ describe Coradoc::Input::Html do
 
     it "should have a correct level2 index" do
       subject["sections/section-02.adoc"].should be ==
-        "== Section 2\n" +
-          "\n" +
-          "This document describes something.\n" +
-          "\n" +
-          "include::../sections/section-02/section-01.adoc[]\n" +
-          "\n" +
-          "include::../sections/section-02/section-02.adoc[]\n" +
-          "\n" +
-          "include::../sections/section-02/section-03.adoc[]\n" +
-          "\n"
+        "== Section 2\n\nThis document describes something.\n\ninclude::../sections/section-02/section-01.adoc[]\n\ninclude::../sections/section-02/section-02.adoc[]\n\ninclude::../sections/section-02/section-03.adoc[]\n\n"
     end
   end
 end

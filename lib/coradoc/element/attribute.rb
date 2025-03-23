@@ -5,11 +5,11 @@ module Coradoc
 
       def initialize(key, value, _options = {})
         @key = key.to_s
-        if extensions_value?(value.to_s)
-          @value = build_values(value.to_s)
-        else
-          @value = value.to_s.strip
-        end
+        @value = if extensions_value?(value.to_s)
+                   build_values(value.to_s)
+                 else
+                   value.to_s.strip
+                 end
       end
 
       def extensions_value?(value)

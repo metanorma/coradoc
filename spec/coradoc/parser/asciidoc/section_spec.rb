@@ -30,9 +30,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(paragraph[:lines][0][:text]).to eq("Section content")
     end
 
-
     it "it parses section id, title and body" do
-      
       section = <<~TEXT
         [[section_id]]
         == Section title
@@ -47,7 +45,6 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(ast.first[:section][:title][:text]).to eq("Section title")
       expect(paragraph[:lines][0][:text]).to eq("Section content")
     end
-
 
     it "it parses section id, title and body" do
       section = <<~TEXT
@@ -221,7 +218,6 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
 
   module Asciidoc
     class SectionTester < Coradoc::Parser::Asciidoc::Base
-
       rule(:document) { (section | any.as(:unparsed)).repeat(1) }
       root :document
 
