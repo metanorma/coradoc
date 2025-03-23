@@ -24,7 +24,7 @@ module Coradoc
         content = Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(@content))
         <<~HERE
 
-        #{anchor}#{style_str}#{level_str} #{content}
+          #{anchor}#{style_str}#{level_str} #{content}
         HERE
       end
 

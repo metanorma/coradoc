@@ -16,8 +16,8 @@ module Coradoc
       yield if block_given?
     end
 
-    def self.call(*args, **kwargs, &block)
-      new(*args, **kwargs, &block).convert
+    def self.call(...)
+      new(...).convert
     end
 
     def input_processor
@@ -37,7 +37,7 @@ module Coradoc
     end
 
     def convert(data = nil)
-      input_id = input_processor.processor_id
+      input_processor.processor_id
       output_id = output_processor.processor_id
 
       unless data
@@ -51,8 +51,7 @@ module Coradoc
       if input_processor.respond_to? :processor_wants_filenames
         unless input.respond_to? :path
           raise NoInputPathError,
-                "no input path given, but #{input_processor} wants that " +
-                  "form. Ensure you don't read from standard input."
+                "no input path given, but #{input_processor} wants that form. Ensure you don't read from standard input."
         end
 
         data = input.path

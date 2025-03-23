@@ -2,7 +2,6 @@ module Coradoc
   module Parser
     module Asciidoc
       module Bibliography
-
         def bibliography
           (element_id.maybe >>
           str("[bibliography]\n") >>
@@ -12,13 +11,13 @@ module Coradoc
         end
 
         def bib_entry
-          (match("^*") >> str(' [[[') >>
+          (match("^*") >> str(" [[[") >>
             match('[^,\[\]\n]').repeat(1).as(:anchor_name) >>
-          (  str(",") >>
+          (str(",") >>
             match('[^\]\n]').repeat(1).as(:document_id)
-            ).maybe  >>
+          ).maybe >>
           str("]]]") >>
-            (text_line.repeat(0,1) >>
+            (text_line.repeat(0, 1) >>
               text_line.repeat(0)
             ).as(:ref_text).maybe >>
             line_ending.repeat(1).as(:line_break).maybe

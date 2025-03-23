@@ -11,12 +11,11 @@ RSpec.describe "Coradoc::Parser::Asciidoc::AttributeList" do
         ****
       TEXT
       ast = parser.parse(content)
-      obj = [{:block=>
-               {:attribute_list=>
-                 {:attribute_array=>
-                   [{:named=>{:named_key=>"reviewer", :named_value=>"ISO"}}]},
-                :delimiter=>"****",
-                :lines=>[{:text=>"block content", :line_break=>"\n"}]}}]
+      obj = [{ block: { attribute_list: { attribute_array: [{ named: { named_key: "reviewer",
+                                                                       named_value: "ISO" } }] },
+                        delimiter: "****",
+                        lines: [{ text: "block content",
+                                  line_break: "\n" }] } }]
 
       expect(ast).to eq(obj)
     end
@@ -29,25 +28,21 @@ RSpec.describe "Coradoc::Parser::Asciidoc::AttributeList" do
         * block content
         ****
       TEXT
-      ast = parser.parse(content)
-      obj = [{:block=>
-               {:attribute_list=>
-                 {:attribute_array=>
-                   [{:named=>{:named_key=>"reviewer", :named_value=>"ISO"}}]},
-                :delimiter=>"****",
-                :lines=>[{:text=>"block content", :line_break=>"\n"}]}}]
+      parser.parse(content)
+      [{ block: { attribute_list: { attribute_array: [{ named: { named_key: "reviewer",
+                                                                 named_value: "ISO" } }] },
+                  delimiter: "****",
+                  lines: [{ text: "block content",
+                            line_break: "\n" }] } }]
 
       # expect(ast).to eq(obj)
     end
-
-
+  end
 end
-end
-
 
 module Asciidoc
   class BlockTester < Coradoc::Parser::Asciidoc::Base
-    rule(:document) { (block| any.as(:unparsed)).repeat(1) }
+    rule(:document) { (block | any.as(:unparsed)).repeat(1) }
     root :document
 
     def self.parse(text)

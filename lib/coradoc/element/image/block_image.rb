@@ -12,7 +12,8 @@ module Coradoc
           anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
           title = ".#{@title}\n" unless @title.to_s.empty?
           attrs = @attributes.to_adoc
-          [missing, anchor, title, "image", @colons, @src, attrs, @line_break].join("")
+          [missing, anchor, title, "image", @colons, @src, attrs,
+           @line_break].join("")
         end
 
         def validate_named
@@ -24,7 +25,7 @@ module Coradoc
           caption: String,
           align: one("left", "center", "right"),
           float: one("left", "right"),
-        }
+        }.freeze
       end
     end
   end

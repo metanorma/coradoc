@@ -15,8 +15,9 @@ module Coradoc
 
         def to_adoc
           if @args
-            args = @args.map{|a|
-              Coradoc::Generator.gen_adoc(a)}.join(',')
+            args = @args.map do |a|
+              Coradoc::Generator.gen_adoc(a)
+            end.join(",")
             if args.empty?
               return "<<#{@href}>>"
             else
@@ -37,7 +38,7 @@ module Coradoc
         end
 
         def to_adoc
-          [@key,@delimiter,@value].join
+          [@key, @delimiter, @value].join
         end
       end
     end

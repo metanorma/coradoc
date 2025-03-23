@@ -3,7 +3,7 @@ module Coradoc
     module Asciidoc
       module Term
         def term_type
-          ( str("term") |
+          (str("term") |
             str("alt") |
             str("deprecated") |
             str("domain")).as(:term_type)
@@ -11,13 +11,13 @@ module Coradoc
 
         def term
           line_start? >>
-          term_type >> str(':[') >>
-          match('[^\]]').repeat(1).as(:term) >>
-          str("]") >> str("\n").repeat(1).as(:line_break)
+            term_type >> str(":[") >>
+            match('[^\]]').repeat(1).as(:term) >>
+            str("]") >> str("\n").repeat(1).as(:line_break)
         end
 
         def footnote
-            str("footnote:") >>
+          str("footnote:") >>
             keyword.as(:id).maybe >>
             str("[") >>
             match('[^\]]').repeat(1).as(:footnote) >>
@@ -25,17 +25,16 @@ module Coradoc
         end
 
         def term_inline
-          term_type >> str(':[') >>
-          match('[^\]]').repeat(1).as(:term) >>
-          str("]")
+          term_type >> str(":[") >>
+            match('[^\]]').repeat(1).as(:term) >>
+            str("]")
         end
 
         def term_inline2
           line_start? >>
-          match('^\[') >> term_type >> str(']#') >>
-          match('[^\#]').repeat(1).as(:term2) >> str('#')
+            match('^\[') >> term_type >> str("]#") >>
+            match('[^\#]').repeat(1).as(:term2) >> str("#")
         end
-
       end
     end
   end

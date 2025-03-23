@@ -15,7 +15,7 @@ module Coradoc
           if @role
             "[.#{@role}]##{@text}#"
           else
-            "#{@text}"
+            @text.to_s
           end
         end
       end

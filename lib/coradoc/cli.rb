@@ -57,7 +57,7 @@ module Coradoc
       config = {
         input_options: input_options = {},
         input_processor: nil,
-        output_options: output_options = {},
+        output_options: {},
         output_processor: nil,
       }
 

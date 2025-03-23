@@ -1,12 +1,14 @@
 module Coradoc
-  module Input::Html
-    class Error < StandardError
-    end
+  module Input
+    module Html
+      class Error < StandardError
+      end
 
-    class UnknownTagError < Error
-    end
+      class UnknownTagError < Error
+      end
 
-    class InvalidConfigurationError < Error
+      class InvalidConfigurationError < Error
+      end
     end
   end
 end

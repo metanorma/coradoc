@@ -36,15 +36,14 @@ RSpec.describe "Coradoc::Parser::Asciidoc::AttributeList" do
       expect(ast).to eq(obj)
 
       ast = parser.parse("[a='single quoted']")
-      obj = [{:named=>
-              {:named_key=>"a", :named_value=>"'single quoted'"}}]
+      obj = [{ named: { named_key: "a",
+                        named_value: "'single quoted'" } }]
       expect(ast).to eq(obj)
 
       ast = parser.parse('[a="double quoted"]')
-      obj = [{:named=>
-              {:named_key=>"a", :named_value=>'"double quoted"'}}]
+      obj = [{ named: { named_key: "a",
+                        named_value: '"double quoted"' } }]
       expect(ast).to eq(obj)
-
     end
   end
 end

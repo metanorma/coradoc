@@ -12,7 +12,7 @@ warn <<~WARN
   | in your code with Coradoc::Input::HTML.
 WARN
 
-require 'coradoc'
-require 'coradoc/input/html'
+require "coradoc"
+require "coradoc/input/html"
 
 Coradoc::ReverseAdoc = Coradoc::Input::Html

@@ -39,7 +39,6 @@ RSpec.describe "Coradoc::Asciidoc::DocumentAttributes" do
 
   module Asciidoc
     class DocumentAttributesTester < Coradoc::Parser::Asciidoc::Base
-
       rule(:document) do
         (document_attributes | any.as(:unparsed)).repeat(1)
       end

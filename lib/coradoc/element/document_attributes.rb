@@ -19,12 +19,12 @@ module Coradoc
       def to_adoc
         to_hash.map do |key, value|
           v = if value.to_s.empty?
-            ""
-          elsif value.is_a? Array
-            " #{value.join(',')}"
-          else
-            " #{value}"
-          end
+                ""
+              elsif value.is_a? Array
+                " #{value.join(',')}"
+              else
+                " #{value}"
+              end
           ":#{key}:#{v}\n"
         end.join + "\n"
       end

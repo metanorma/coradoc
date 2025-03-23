@@ -29,7 +29,7 @@ module Coradoc
         [:alt, String],
         [:width, Integer],
         [:height, Integer],
-      ]
+      ].freeze
 
       VALIDATORS_NAMED = {
         title: String,
@@ -44,7 +44,7 @@ module Coradoc
         playlist: String,
         options: many("autoplay", "loop", "modest",
                       "nocontrols", "nofullscreen", "muted"),
-      }
+      }.freeze
     end
   end
 end

@@ -183,9 +183,9 @@ module Coradoc
         end
 
         def text_any
-          tl = (text_formatted |
+          (text_formatted |
                   text_unformatted.as(:text)
-               ).repeat(2) |
+          ).repeat(2) |
             text_formatted.repeat(1, 1) |
             text_unformatted
         end
