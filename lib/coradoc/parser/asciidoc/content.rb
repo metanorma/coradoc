@@ -2,7 +2,6 @@ module Coradoc
   module Parser
     module Asciidoc
       module Content
-
         def literal_space
           (match[" "] | match[' \t']).repeat(1)
         end
@@ -14,20 +13,21 @@ module Coradoc
 
         def list_prefix
           (line_start? >>
-            (match('^[*]') >> str('*').repeat(1,5) |
-            match('^[\.]') >> str('.').repeat(1,5)) >>
-            str(' '))
+            (match("^[*]") >> str("*").repeat(1, 5) |
+            match('^[\.]') >> str(".").repeat(1, 5)) >>
+            str(" "))
         end
 
         # Text
-        def text_line(many_breaks = false)  #:zero :one :many
-            tl = (asciidoc_char_with_id.absent? | element_id_inline) >>
+        # :zero :one :many
+        def text_line(many_breaks = false)
+          tl = (asciidoc_char_with_id.absent? | element_id_inline) >>
             literal_space? >> text_any.as(:text)
-            if many_breaks
-              tl >> (line_ending.repeat(1).as(:line_break) | eof?)
-            else
-              tl >> (line_ending.as(:line_break) | eof?)
-            end
+          if many_breaks
+            tl >> (line_ending.repeat(1).as(:line_break) | eof?)
+          else
+            tl >> (line_ending.as(:line_break) | eof?)
+          end
         end
 
         def asciidoc_char
@@ -35,14 +35,14 @@ module Coradoc
         end
 
         def asciidoc_char_with_id
-          asciidoc_char | str('[#') | str('[[')
+          asciidoc_char | str("[#") | str("[[")
         end
 
         def element_id
           line_start? >>
-          ( str("[[")  >> keyword.as(:id) >> str("]]")  |
-             str("[#") >> keyword.as(:id) >> str("]")
-          ) >> newline
+            (str("[[") >> keyword.as(:id) >> str("]]") |
+               str("[#") >> keyword.as(:id) >> str("]")
+            ) >> newline
         end
 
         def element_id_inline
@@ -58,7 +58,6 @@ module Coradoc
         def glossaries
           glossary.repeat(1)
         end
-
       end
     end
   end

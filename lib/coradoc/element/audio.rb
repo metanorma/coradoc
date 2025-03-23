@@ -27,7 +27,7 @@ module Coradoc
         end: Integer,
         options: many("nofollow", "noopener", "inline", "interactive"),
         opts: many("nofollow", "noopener", "inline", "interactive"),
-      }
+      }.freeze
     end
   end
 end

@@ -15,7 +15,7 @@ module Coradoc
         adoc = "* [[[#{@anchor_name}"
         adoc << ",#{@document_id}" if @document_id
         adoc << "]]]"
-        adoc << "#{text}" if @ref_text
+        adoc << text.to_s if @ref_text
         adoc << @line_break
         adoc
       end

@@ -59,7 +59,7 @@ module Coradoc
       end
 
       def validate_named(validators)
-        @named.each_with_index do |(name, value), i|
+        @named.each_with_index do |(name, value), _i|
           name = name.to_sym
           validator = validators[name]
 

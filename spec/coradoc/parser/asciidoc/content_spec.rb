@@ -137,15 +137,15 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
 
         ast = Asciidoc::ContentTester.parse(content)
 
-        obj = [{:block=>
-                 {:title=>"Source block (open block syntax)",
-                  :attribute_list=>{:attribute_array=>[{:positional=>"source"}]},
-                  :delimiter=>"--",
-                  :lines=>[{:text=>"This renders in monospace.", :line_break=>"\n"}]}},
-               {:block=>
-                 {:title=>"Source block (with block perimeter type)",
-                  :delimiter=>"----",
-                  :lines=>[{:text=>"This renders in monospace.", :line_break=>"\n"}]}}]
+        obj = [{ block: { title: "Source block (open block syntax)",
+                          attribute_list: { attribute_array: [{ positional: "source" }] },
+                          delimiter: "--",
+                          lines: [{ text: "This renders in monospace.",
+                                    line_break: "\n" }] } },
+               { block: { title: "Source block (with block perimeter type)",
+                          delimiter: "----",
+                          lines: [{ text: "This renders in monospace.",
+                                    line_break: "\n" }] } }]
         expect(ast).to eq(obj)
       end
 
@@ -223,18 +223,14 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
           this is going to be the next line
         TEXT
         ast = Asciidoc::ContentTester.parse(content)
-        obj = [{:paragraph=>
-                 {:attribute_list=>
-                   {:attribute_array=>
-                     [{:named=>{:named_key=>"id", :named_value=>"myblock"}}]},
-                  :lines=>
-                   [{:text=>"This is my block with a defined ID.", :line_break=>"\n"},
-                    {:text=>"this is going to be the next line", :line_break=>"\n"}]}}]
+        obj = [{ paragraph: { attribute_list: { attribute_array: [{ named: { named_key: "id",
+                                                                             named_value: "myblock" } }] },
+                              lines: [{ text: "This is my block with a defined ID.", line_break: "\n" },
+                                      { text: "this is going to be the next line",
+                                        line_break: "\n" }] } }]
         expect(ast).to eq(obj)
       end
     end
-
-
 
     it "parses the table block" do
       content = <<~DOC
@@ -267,20 +263,16 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       DOC
 
       ast = Asciidoc::ContentTester.parse(content)
-      table = ast.first[:table]
+      ast.first[:table]
 
-
-      obj = {:table=>
-              {:title=>"Person table",
-               :rows=>
-                [{:cols=>[{:text=>"*first_name*"}, {:text=>"last_name"}, {:text=>"email"}]},
-                 {:cols=>
-                   [{:text=>"John"}, {:text=>"Doe"}, {:text=>"john.doe@example.com"}]},
-                 {:cols=>
-                   [{:text=>" "}, {:text=>"doe"}, {:text=>"jennie.doe@example.com"}]}]}}
+      obj = { table: { title: "Person table",
+                       rows: [{ cols: [{ text: "*first_name*" }, { text: "last_name" }, { text: "email" }] },
+                              { cols: [{ text: "John" }, { text: "Doe" },
+                                       { text: "john.doe@example.com" }] },
+                              { cols: [{ text: " " }, { text: "doe" },
+                                       { text: "jennie.doe@example.com" }] }] } }
 
       expect(ast.first).to eq(obj)
-
     end
 
     it "parses highlighted text block" do
@@ -292,18 +284,12 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       DOC
 
       ast = Asciidoc::ContentTester.parse(content)
-      obj = [{:paragraph=>
-               {:id=>"scls_5-9",
-                :lines=>
-                 [{:text=>
-                    [{:span_constrained=>
-                       {:attribute_list=>
-                         {:attribute_array=>[{:positional=>"underline"}]},
-                        :text=>"Ownership"}}],
-                   :line_break=>"\n"}]}},
-             {:paragraph=>
-               {:lines=>
-                 [{:text=>"This is a pragraph block", :line_break=>"\n"}]}}]
+      obj = [{ paragraph: { id: "scls_5-9",
+                            lines: [{ text: [{ span_constrained: { attribute_list: { attribute_array: [{ positional: "underline" }] },
+                                                                   text: "Ownership" } }],
+                                      line_break: "\n" }] } },
+             { paragraph: { lines: [{ text: "This is a pragraph block",
+                                      line_break: "\n" }] } }]
       expect(ast).to eq(obj)
       # expect(ast[0][:highlight][:id]).to eq("scls_5-9")
       # expect(ast[0][:highlight][:text]).to eq("Ownership")
@@ -319,26 +305,21 @@ RSpec.describe "Coradoc::Asciidoc::Content" do
       DOC
 
       ast = Asciidoc::ContentTester.parse(content)
-      obj = [{:paragraph=>
-               {:id=>"scls_5-9",
-                :lines=>
-                 [{:text=>[{:highlight_constrained=>[{:text=>"Ownership"}]}],
-                   :line_break=>"\n"}]}},
-             {:paragraph=>
-               {:lines=>
-                 [{:text=>"This is a pragraph block", :line_break=>"\n"}]}}]
+      obj = [{ paragraph: { id: "scls_5-9",
+                            lines: [{ text: [{ highlight_constrained: [{ text: "Ownership" }] }],
+                                      line_break: "\n" }] } },
+             { paragraph: { lines: [{ text: "This is a pragraph block",
+                                      line_break: "\n" }] } }]
       expect(ast).to eq(obj)
       # expect(ast[0][:highlight][:id]).to eq("scls_5-9")
       # expect(ast[0][:highlight][:text]).to eq("Ownership")
       # expect(ast[1][:paragraph][:lines][0][:text]).to eq("This is a pragraph block")
     end
-
   end
 end
 
 module Asciidoc
   class ContentTester < Coradoc::Parser::Asciidoc::Base
-
     rule(:document) { (contents | any.as(:unparsed)).repeat(1) }
     root :document
 

@@ -15,7 +15,7 @@ module Coradoc
     def to_oscal
       {
         "metadata" => _doc.document_attributes.to_hash,
-        "groups" => sections_as_groups,
+        "groups"   => sections_as_groups,
       }
     end
 

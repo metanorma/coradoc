@@ -1,14 +1,18 @@
-module Coradoc::Input::Html
-  module Converters
-    class Th < Td
-      def cellstyle(node)
-        # this is the header row
-        return "" if node.parent.previous_element.nil?
+module Coradoc
+  module Input
+    module Html
+      module Converters
+        class Th < Td
+          def cellstyle(node)
+            # this is the header row
+            return "" if node.parent.previous_element.nil?
 
-        "h"
+            "h"
+          end
+        end
+
+        register :th, Th.new
       end
     end
-
-    register :th, Th.new
   end
 end

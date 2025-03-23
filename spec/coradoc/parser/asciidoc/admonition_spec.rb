@@ -6,18 +6,19 @@ RSpec.describe "Coradoc::Parser::Asciidoc::Admonition" do
       parser = Asciidoc::AdmonitionTester
 
       ast = parser.parse("NOTE: some text\n")
-      exp = [{:admonition_type=>"NOTE",
-                :content=>[{:text=>"some text", :line_break=>"\n"}]}]
+      exp = [{ admonition_type: "NOTE",
+               content: [{ text: "some text",
+                           line_break: "\n" }] }]
       expect(ast).to eq(exp)
     end
     it "parses multi line admonition" do
       parser = Asciidoc::AdmonitionTester
 
       ast = parser.parse("NOTE: some text\ncontinued\n")
-      exp = [{:admonition_type=>"NOTE",
-                :content=>
-                 [{:text=>"some text", :line_break=>"\n"},
-                  {:text=>"continued", :line_break=>"\n"}]}]
+      exp = [{ admonition_type: "NOTE",
+               content: [{ text: "some text", line_break: "\n" },
+                         { text: "continued",
+                           line_break: "\n" }] }]
 
       expect(ast).to eq(exp)
     end

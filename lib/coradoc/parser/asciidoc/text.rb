@@ -2,13 +2,12 @@ module Coradoc
   module Parser
     module Asciidoc
       module Text
-
         def space?
           space.maybe
         end
 
         def space
-          str(' ').repeat(1)
+          str(" ").repeat(1)
         end
 
         def text
@@ -20,7 +19,7 @@ module Coradoc
         end
 
         def line_ending
-          str("\n") #| match('[\z]')# | match('$')
+          str("\n") # | match('[\z]')# | match('$')
         end
 
         def eof?
@@ -101,7 +100,7 @@ module Coradoc
         end
 
         def include_directive
-          (str("include::") >> 
+          (str("include::") >>
             file_path.as(:path) >>
             attribute_list >>
           (newline | str("")).as(:line_break)
@@ -109,7 +108,7 @@ module Coradoc
         end
 
         def inline_image
-          (str("image::") >> 
+          (str("image::") >>
             file_path.as(:path) >>
             attribute_list >>
           (line_ending)
@@ -120,37 +119,37 @@ module Coradoc
           (element_id.maybe >>
             block_title.maybe >>
             (attribute_list >> newline).maybe >>
-            match('^i') >> str("mage::") >>
+            match("^i") >> str("mage::") >>
             file_path.as(:path) >>
             attribute_list(:attribute_list_macro) >>
             newline.as(:line_break)
-            ).as(:block_image)
+          ).as(:block_image)
         end
 
         def comment_line
           tag.absent? >>
-          (str('//') >> str("/").absent? >>
-            space? >>
-            text.as(:comment_text)
+            (str("//") >> str("/").absent? >>
+              space? >>
+              text.as(:comment_text)
             ).as(:comment_line)
         end
 
         def tag
-          (str('//') >> str('/').absent? >>
+          (str("//") >> str("/").absent? >>
             space? >>
-            (str('tag') | str('end')).as(:prefix) >>
-            str('::') >> str(':').absent? >>
+            (str("tag") | str("end")).as(:prefix) >>
+            str("::") >> str(":").absent? >>
             match('[^\[]').repeat(1).as(:name) >>
             attribute_list >>
             line_ending.maybe.as(:line_break)
-            ).as(:tag)
+          ).as(:tag)
         end
 
         def comment_block
-          ( str('////') >> line_ending >>
-          ((line_ending >> str('////')).absent? >> any
-            ).repeat.as(:comment_text) >> 
-          line_ending >> str('////')
+          (str("////") >> line_ending >>
+          ((line_ending >> str("////")).absent? >> any
+          ).repeat.as(:comment_text) >>
+          line_ending >> str("////")
           ).as(:comment_block)
         end
       end

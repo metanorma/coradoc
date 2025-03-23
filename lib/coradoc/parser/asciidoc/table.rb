@@ -6,9 +6,9 @@ module Coradoc
 
         def table
           element_id.maybe >>
-          (attribute_list >> newline).maybe >>
-          block_title.maybe >>
-          (attribute_list >> newline).maybe >>
+            (attribute_list >> newline).maybe >>
+            block_title.maybe >>
+            (attribute_list >> newline).maybe >>
             str("|===") >> line_ending >>
             table_row.repeat(1).as(:rows) >>
             str("|===") >> line_ending

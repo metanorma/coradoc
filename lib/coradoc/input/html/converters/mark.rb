@@ -1,15 +1,19 @@
-module Coradoc::Input::Html
-  module Converters
-    class Mark < Markup
-      def coradoc_class
-        Coradoc::Element::Inline::Highlight
-      end
+module Coradoc
+  module Input
+    module Html
+      module Converters
+        class Mark < Markup
+          def coradoc_class
+            Coradoc::Element::Inline::Highlight
+          end
 
-      def markup_ancestor_tag_names
-        %w[mark]
+          def markup_ancestor_tag_names
+            %w[mark]
+          end
+        end
+
+        register :mark, Mark.new
       end
     end
-
-    register :mark, Mark.new
   end
 end
