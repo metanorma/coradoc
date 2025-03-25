@@ -37,7 +37,7 @@ module Coradoc
         end
 
         def asciidoc?
-          @columns.any?(&:asciidoc?)
+          @columns.any? { |c| c.respond_to?(:asciidoc?) && c.asciidoc? }
         end
 
         def to_adoc
