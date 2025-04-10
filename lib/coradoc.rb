@@ -12,6 +12,7 @@ require_relative "coradoc/generator"
 require_relative "coradoc/converter"
 require_relative "coradoc/input"
 require_relative "coradoc/output"
+require_relative "coradoc/model"
 
 module Coradoc
   class Error < StandardError; end

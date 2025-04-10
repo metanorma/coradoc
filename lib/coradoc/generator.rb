@@ -5,6 +5,8 @@ module Coradoc
         content.map do |elem|
           Coradoc::Generator.gen_adoc(elem)
         end.join
+      elsif content.respond_to? :to_asciidoc
+        content.to_asciidoc
       elsif content.respond_to? :to_adoc
         content.to_adoc
       elsif content.is_a?(String)

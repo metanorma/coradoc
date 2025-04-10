@@ -1,0 +1,49 @@
+# frozen_string_literal: true
+
+module Coradoc
+  module Model
+    module Block
+      class Core < Base
+        attribute :id, :string
+        attribute :title, :string
+        attribute :attributes, AttributeList, default: -> { AttributeList.new }
+        attribute :anchor, Inline::Anchor, default: -> { id.nil? ? nil : Inline::Anchor.new(id) }
+        attribute :lines, :string, collection: true, initialize_empty: true
+        attribute :delimiter, :string
+        attribute :delimiter_char, :string
+        attribute :delimiter_len, :integer
+        attribute :lang, :string
+        attribute :type_str, :string
+
+        # TODO: and many methods from Coradoc::Element::Block::Core
+        def gen_anchor
+          anchor.nil? ? "" : "#{anchor.to_asciidoc}\n"
+        end
+
+        def gen_title
+          t = Coradoc::Generator.gen_adoc(title)
+          return "" if t.empty?
+
+          ".#{t}\n"
+        end
+
+        def gen_attributes
+          attrs = attributes.to_asciidoc(false)
+          return "#{attrs}\n" if !attrs.empty?
+
+          ""
+        end
+
+        def gen_delimiter
+          delimiter_char * delimiter_len
+        end
+
+        def gen_lines
+          Coradoc::Generator.gen_adoc(lines)
+        end
+
+
+      end
+    end
+  end
+end
