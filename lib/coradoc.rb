@@ -11,6 +11,8 @@ require "coradoc/generator"
 require "coradoc/converter"
 require "coradoc/input"
 require "coradoc/output"
+require "coradoc/model"
+puts "done requries"
 
 module Coradoc
   class Error < StandardError; end
