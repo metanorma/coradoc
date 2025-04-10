@@ -73,7 +73,7 @@
           }
           {
             name = "update-flakes";
-            command = "make update-flakes \"$@\"";
+            command = "nix flake update";
             help = "Update all flakes";
             category = "Nix";
           }
@@ -81,13 +81,14 @@
         # Only append these if there is no .tool-verions file
         # to avoid conflicts:
         (if ! builtins.pathExists ./.tool-versions then
-          [{
+          [
+            {
 
-            name = "irb";
-            command = "bundle exec irb \"$@\"";
-            help = "Run console IRB (has completion menu)";
-            category = "Ruby";
-          }
+              name = "irb";
+              command = "bundle exec irb \"$@\"";
+              help = "Run console IRB (has completion menu)";
+              category = "Ruby";
+            }
             {
               name = "console";
               command = "bundle exec irb \"$@\"";
@@ -105,7 +106,8 @@
               command = "bundle exec rspec \"$@\"";
               help = "Run test suite";
               category = "Ruby";
-            }]
+            }
+          ]
         else [ ]);
 
         packages = with pkgs; [
