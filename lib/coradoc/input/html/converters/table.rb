@@ -7,8 +7,9 @@ module Coradoc::Input
         title = extract_title(node)
         attributes = style(node)
         content = treat_children_coradoc(node, state)
-        Coradoc::Element::Table.new(title, content,
-{ id: id, attributes: attributes })
+        Coradoc::Element::Table.new(
+          title, content, { id: id, attributes: attributes }
+        )
       end
 
       def extract_title(node)
