@@ -3,7 +3,7 @@
 module Coradoc
   module Model
     module List
-      class Core < Base
+      class Core < Nestable
         attribute :id, :string
         attribute :prefix, :string
         attribute :anchor, Inline::Anchor, default: -> { id.nil? ? nil : Inline::Anchor.new(id) }

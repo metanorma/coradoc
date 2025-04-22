@@ -9,12 +9,15 @@ module Coradoc
       attribute :marker, :string
       attribute :subitem, :string
       attribute :line_break, :string
-      attribute :nested, List::Core
+
       attribute :attached, Coradoc::Model::Attached, polymorphic: [
         Coradoc::Model::Admonition,
         Coradoc::Model::Paragraph,
         Coradoc::Model::Block::Core,
       ]
+
+      # attribute :nested, Coradoc::Model::List::Core # TODO: circular dependencies?!
+      attribute :nested, Coradoc::Model::List::Nestable
 
       asciidoc do
         map_content to: :content
