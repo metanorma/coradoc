@@ -19,7 +19,6 @@ module Coradoc
             "##{_content}"
           end
         end
-
       end
     end
   end
