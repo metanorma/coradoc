@@ -7,6 +7,7 @@ module Coradoc
   end
 end
 
+require_relative "list/nestable"
 require_relative "list_item"
 require_relative "list_item_definition"
 require_relative "list/core"
