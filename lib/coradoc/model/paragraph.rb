@@ -2,7 +2,7 @@
 
 module Coradoc
   module Model
-    class Paragraph < Base
+    class Paragraph < Attached
       attribute :id, :string
       attribute :content, :string
       attribute :title, :string
