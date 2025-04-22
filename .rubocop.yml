@@ -25,3 +25,6 @@ RSpec/ImplicitSubject:
 
 Naming/BlockForwarding:
   EnforcedStyle: explicit
+
+Metrics/MethodLength:
+  Max: 20
