@@ -22,7 +22,7 @@ class_files = Dir.entries(path).select { |x| File.file?(path + x) }
 $all_defs = {}
 
 class_files.each do |cf|
-  a = ast_from(File.open(path + cf).read)
+  a = ast_from(File.read(path + cf))
   next if a.nil?
 
   sexp = a.to_sexp_array

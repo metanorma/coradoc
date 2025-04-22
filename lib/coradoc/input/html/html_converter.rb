@@ -148,14 +148,14 @@ module Coradoc
         @track_time_indentation = 0
         def self.track_time(task)
           if Input::Html.config.track_time
-            warn "  " * @track_time_indentation +
+            warn ("  " * @track_time_indentation) +
               "* #{task} is starting..."
             @track_time_indentation += 1
             t0 = Time.now
             ret = yield
             time_elapsed = Time.now - t0
             @track_time_indentation -= 1
-            warn "  " * @track_time_indentation +
+            warn ("  " * @track_time_indentation) +
               "* #{task} took #{time_elapsed.round(3)} seconds"
             ret
           else

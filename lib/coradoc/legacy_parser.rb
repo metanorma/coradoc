@@ -93,7 +93,7 @@ module Coradoc
     rule(:unordered_list) { ulist_item.repeat(1) }
     rule(:definition_list) { dlist_item.repeat(1) }
 
-    rule(:olist_item) { match("\.") >> space >> text_line }
+    rule(:olist_item) { match(".") >> space >> text_line }
     rule(:ulist_item) { match("\\*") >> space >> text_line }
     rule(:dlist_item) do
       str("term") >> space >> digits >> str("::") >> space >> text_line

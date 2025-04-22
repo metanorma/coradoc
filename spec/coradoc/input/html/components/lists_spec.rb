@@ -71,15 +71,15 @@ describe Coradoc::Input::Html do
   end
 
   context "it produces correct numbering" do
-    it { is_expected.to include "\. one" }
-    it { is_expected.to include "\.\. one one" }
-    it { is_expected.to include "\.\. one two" }
-    it { is_expected.to include "\. two" }
-    it { is_expected.to include "\.\. two one" }
-    it { is_expected.to include "\.\.\. two one one" }
-    it { is_expected.to include "\.\.\. two one two" }
-    it { is_expected.to include "\.\. two two" }
-    it { is_expected.to include "\. three" }
+    it { is_expected.to include ". one" }
+    it { is_expected.to include ".. one one" }
+    it { is_expected.to include ".. one two" }
+    it { is_expected.to include ". two" }
+    it { is_expected.to include ".. two one" }
+    it { is_expected.to include "... two one one" }
+    it { is_expected.to include "... two one two" }
+    it { is_expected.to include ".. two two" }
+    it { is_expected.to include ". three" }
   end
 
   context "properly embeds a nested list between adjacent list items" do

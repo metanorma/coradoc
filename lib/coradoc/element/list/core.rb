@@ -1,5 +1,4 @@
 require_relative "../inline/anchor"
-require_relative "core"
 
 module Coradoc
   module Element

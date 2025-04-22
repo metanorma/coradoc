@@ -44,7 +44,7 @@ module Coradoc
 
         def remove_inner_whitespaces(string)
           unless string.nil?
-            string.gsub!(/\n stem:\[/, "\nstem:[")
+            string.gsub!("\n stem:[", "\nstem:[")
             string.gsub!(/(stem:\[([^\]]|\\\])*\])\n(?=\S)/, "\\1 ")
             string.gsub!(/(stem:\[([^\]]|\\\])*\])\s+(?=[\^-])/, "\\1")
           end
@@ -101,7 +101,7 @@ module Coradoc
           string.gsub!(/&nbsp;|&#xA0;|\u00a0/i, "&#xA0;") # HTML encoded spaces
           string = Coradoc.strip_unicode(string) # Strip document-level leading and trailing whitespace
           string.gsub!(/( +)$/, " ") # line trailing whitespace
-          string.gsub!(/\n\n\n\n/, "\n\n") # Quadruple line breaks
+          string.gsub!("\n\n\n\n", "\n\n") # Quadruple line breaks
           # string.delete!('?| ')               # Unicode non-breaking spaces, injected as tabs
           string
         end

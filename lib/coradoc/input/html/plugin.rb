@@ -9,9 +9,9 @@ module Coradoc
         #   def name = "Test"
         # end
 
-        def self.new(&)
+        def self.new(&block)
           if self == Plugin
-            Class.new(Plugin, &)
+            Class.new(Plugin, &block)
           else
             super
           end

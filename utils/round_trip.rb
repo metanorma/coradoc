@@ -31,7 +31,7 @@ adoc_files.each do |file_path|
   FileUtils.rm(file_path_rt) if File.exist?(file_path_rt)
   FileUtils.rm(file_path_diff) if File.exist?(file_path_diff)
   # begin
-  adoc_file = File.open(file_path).read
+  adoc_file = File.read(file_path)
   next if adoc_file.empty?
 
   puts "parsing..."
@@ -39,13 +39,13 @@ adoc_files.each do |file_path|
   sio = StringIO.new
   PP.pp(ast, sio)
   ast_string = sio.string
-  File.open(file_path_ast, "w") { |f| f.write(ast_string) }
+  File.write(file_path_ast, ast_string)
   puts "transforming..."
   doc = Coradoc::Transformer.transform(ast[:document])
   puts "generating..."
   generated_adoc = Coradoc::Generator.gen_adoc(doc)
   cleaned_adoc = Coradoc::Input::HTML.cleaner.tidy(generated_adoc)
-  File.open("#{file_path}.roundtrip", "w") { |f| f.write(cleaned_adoc) }
+  File.write("#{file_path}.roundtrip", cleaned_adoc)
   `diff -B #{file_path} #{file_path}.roundtrip > #{file_path}.roundtrip.diff`
   # rescue
   # puts "unsuccessful..."

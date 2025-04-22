@@ -7,7 +7,7 @@ module Coradoc
         end
 
         def attribute_value
-          text | str("") >> str("\n").absent?
+          text | (str("") >> str("\n").absent?)
         end
 
         def document_attributes
