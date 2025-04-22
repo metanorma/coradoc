@@ -12,7 +12,7 @@ module Coradoc
 
         def to_asciidoc
           _content = Coradoc::Generator.gen_adoc(content)
-          "#{_content[/^\s*/]}\"#{_content.strip}\"#{_content[/\s*$/]}"
+          "#{_content[/^\s*/]}\"#{_content.strip}\"#{_content[/(?<!\s)\s*+$/]}"
         end
       end
     end
