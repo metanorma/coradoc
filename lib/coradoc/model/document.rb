@@ -9,23 +9,28 @@ require_relative "section"
 module Coradoc
   module Model
     class Document < Base
-      attribute :title, Title
-      attribute :document_attributes, DocumentAttributes, default: -> {
-        DocumentAttributes.new
+      attribute :document_attributes,
+        Coradoc::Model::DocumentAttributes, default: -> {
+          Coradoc::Model::DocumentAttributes.new
+        }
+      attribute :header, Coradoc::Model::Header, default: -> {
+        Coradoc::Model::Header.new("")
       }
-      attribute :header, Header
-      attribute :sections, Section, collection: true, initialize_empty: true
-      attribute :authors, Author, collection: true, initialize_empty: true
-      attribute :revisions, Revision, collection: true, initialize_empty: true
+      attribute :sections, Coradoc::Model::Section,
+        collection: true,
+        initialize_empty: true
 
       asciidoc do
         map_content to: :content
-        map_attribute :title, to: :title
-        map_attribute :document_attributes, to: :attributes
+        map_attribute :document_attributes, to: :document_attributes
         map_attribute :header, to: :header
         map_attribute :sections, to: :sections
-        map_attribute :authors, to: :authors
-        map_attribute :revisions, to: :revisions
+      end
+
+      def to_asciidoc
+        Coradoc::Generator.gen_adoc(header) +
+          Coradoc::Generator.gen_adoc(document_attributes) +
+          Coradoc::Generator.gen_adoc(sections)
       end
     end
   end
