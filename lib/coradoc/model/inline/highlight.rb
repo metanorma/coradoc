@@ -3,8 +3,9 @@
 module Coradoc
   module Model
     module Inline
-      class Quotation < Base
+      class Highlight < Base
         attribute :content, :string
+        attribute :unconstrained, :boolean, default: -> { false }
 
         asciidoc do
           map_content to: :content
@@ -12,8 +13,13 @@ module Coradoc
 
         def to_asciidoc
           _content = Coradoc::Generator.gen_adoc(content)
-          "#{_content[/^\s*/]}\"#{_content.strip}\"#{_content[/\s*$/]}"
+          if unconstrained
+            "###{_content}"
+          else
+            "##{_content}"
+          end
         end
+
       end
     end
   end
