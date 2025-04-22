@@ -15,3 +15,6 @@ Layout/HashAlignment:
 
 Naming/BlockForwarding:
   EnforcedStyle: explicit
+
+Metrics/MethodLength:
+  Max: 20
