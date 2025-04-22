@@ -2,7 +2,7 @@
 
 module Coradoc
   module Model
-    class Admonition < Base
+    class Admonition < Attached
       attribute :content, :string
       attribute :type, :string
       attribute :line_break, :string, default: -> { "" }

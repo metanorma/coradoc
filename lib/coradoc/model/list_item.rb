@@ -9,33 +9,86 @@ module Coradoc
       attribute :marker, :string
       attribute :subitem, :string
       attribute :line_break, :string
-      attribute :attached_type, :string, values: %w[admonition paragraph block]
-      attribute :attached_admonition, Admonition
-      attribute :attached_paragraph, Paragraph
-      attribute :attached_block, Block
       attribute :nested, List::Core
+      attribute :attached, Coradoc::Model::Attached, polymorphic: [
+        Coradoc::Model::Admonition,
+        Coradoc::Model::Paragraph,
+        Coradoc::Model::Block::Core,
+      ]
 
       asciidoc do
+        map_content to: :content
         map_attribute "id", to: :id
         map_attribute "anchor", to: :anchor
-        map_attribute "contents", to: :contents
-        map_attribute "terms", to: :terms
+        map_attribute "marker", to: :marker
+        map_attribute "subitem", to: :subitem
       end
 
       def to_asciidoc(delimiter)
         _anchor = anchor.nil? ? "" : anchor.to_asciidoc.to_s
-        content = ""
-        if terms.size == 1
-          t = Coradoc::Generator.gen_adoc(terms)
-          content << "#{_anchor}#{t}#{delimiter} "
-        else
-          terms.map do |term|
-            t = Coradoc::Generator.gen_adoc(term)
-            content << "#{t}#{delimiter}\n"
-          end
+        _content = content.dup.flatten.compact # ???
+        # content = Array(@content).flatten.compact
+        out = ""
+        prev_inline = :init
+
+        # Collapse meaningless <DIV>s
+        while _content.map(&:class) == [Section] && _content.first.safe_to_collapse?
+          _content = Array(_content.first.contents)
         end
-        d = Coradoc::Generator.gen_adoc(contents)
-        content << "#{d}\n"
+
+        _content.each_with_index do |subitem, idx|
+          subcontent = Coradoc::Generator.gen_adoc(subitem)
+
+          inline = inline?(subitem)
+          next_inline = idx + 1 == _content.length ? :end : inline?(_content[idx + 1])
+
+          # Only try to postprocess elements that are text,
+          # otherwise we could strip markup.
+          if subitem.is_a? Coradoc::Element::TextElement
+            if [:hardbreak, :init, false].include?(prev_inline)
+              subcontent = Coradoc.strip_unicode(subcontent, only: :begin)
+            end
+            if [:hardbreak, :end, false].include?(next_inline)
+              subcontent = Coradoc.strip_unicode(subcontent, only: :end)
+            end
+          end
+
+          case inline
+          when true
+            out += if prev_inline == false
+                     "\n+\n#{subcontent}"
+                   else
+                     subcontent
+                   end
+          when false
+            out += case prev_inline
+                   when :hardbreak
+                     subcontent.strip
+                   when :init
+                     "{empty}\n+\n#{subcontent.strip}"
+                   else
+                     "\n+\n#{subcontent.strip}"
+                   end
+          when :hardbreak
+            if %i[hardbreak init].include? prev_inline
+              # can't have two hard breaks in a row; can't start with a hard break
+            else
+              out += "\n+\n"
+            end
+          end
+
+          prev_inline = inline
+        end
+        out += "{empty}" if prev_inline == :hardbreak
+        out = "{empty}" if out.empty?
+
+        # attach = Coradoc::Generator.gen_adoc(@attached)
+        attach = @attached.map do |elem|
+          "+\n#{Coradoc::Generator.gen_adoc(elem)}"
+        end.join
+        nest = Coradoc::Generator.gen_adoc(@nested)
+        out = " #{anchor}#{out}#{@line_break}"
+        out + attach + nest
       end
     end
   end

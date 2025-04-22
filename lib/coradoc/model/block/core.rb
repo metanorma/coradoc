@@ -3,7 +3,7 @@
 module Coradoc
   module Model
     module Block
-      class Core < Base
+      class Core < Attached
         attribute :id, :string
         attribute :title, :string
         attribute :attributes, AttributeList, default: -> { AttributeList.new }
