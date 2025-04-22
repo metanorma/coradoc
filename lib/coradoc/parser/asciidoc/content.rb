@@ -13,8 +13,8 @@ module Coradoc
 
         def list_prefix
           (line_start? >>
-            (match("^[*]") >> str("*").repeat(1, 5) |
-            match('^[\.]') >> str(".").repeat(1, 5)) >>
+            ((match("^[*]") >> str("*").repeat(1, 5)) |
+            (match('^[\.]') >> str(".").repeat(1, 5))) >>
             str(" "))
         end
 
@@ -40,14 +40,14 @@ module Coradoc
 
         def element_id
           line_start? >>
-            (str("[[") >> keyword.as(:id) >> str("]]") |
-               str("[#") >> keyword.as(:id) >> str("]")
+            ((str("[[") >> keyword.as(:id) >> str("]]")) |
+               (str("[#") >> keyword.as(:id) >> str("]"))
             ) >> newline
         end
 
         def element_id_inline
-          str("[[") >> keyword.as(:id) >> str("]]") |
-            str("[#") >> keyword.as(:id) >> str("]")
+          (str("[[") >> keyword.as(:id) >> str("]]")) |
+            (str("[#") >> keyword.as(:id) >> str("]"))
         end
 
         def glossary

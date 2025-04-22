@@ -31,14 +31,14 @@ describe Coradoc::Input::Html do
     it { is_expected.to be_a Hash }
 
     it "has a correct keys" do
-      expect(subject.keys).to be == expected_sections
+      expect(subject.keys).to eq expected_sections
     end
 
     it "has a correct index" do
       section_content = l1sections.compact.map do |i|
         "include::#{i}[]\n\n"
       end.join
-      expect(subject[nil]).to be == "[[__brokendiv]]\nPreface\n#{section_content}"
+      expect(subject[nil]).to eq "[[__brokendiv]]\nPreface\n#{section_content}"
     end
   end
 
@@ -46,18 +46,18 @@ describe Coradoc::Input::Html do
     let(:level) { 1 }
     let(:expected_sections) { l1sections }
 
-    include_examples "can split and generate correct index"
+    it_behaves_like "can split and generate correct index"
   end
 
   context "splitting in level 2" do
     let(:level) { 2 }
     let(:expected_sections) { l2sections }
 
-    include_examples "can split and generate correct index"
+    it_behaves_like "can split and generate correct index"
 
     it "has a correct level2 index" do
-      expect(subject["sections/section-02.adoc"]).to be ==
-        "== Section 2\n\nThis document describes something.\n\ninclude::../sections/section-02/section-01.adoc[]\n\ninclude::../sections/section-02/section-02.adoc[]\n\ninclude::../sections/section-02/section-03.adoc[]\n\n"
+      expect(subject["sections/section-02.adoc"]).to eq
+      "== Section 2\n\nThis document describes something.\n\ninclude::../sections/section-02/section-01.adoc[]\n\ninclude::../sections/section-02/section-02.adoc[]\n\ninclude::../sections/section-02/section-03.adoc[]\n\n"
     end
   end
 end

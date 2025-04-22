@@ -10,14 +10,14 @@ describe Coradoc::Input::Html do
       let(:subject) { adoc }
 
       it "is fixed" do
-        expect(subject.chomp.chomp).to be == expected_result
+        expect(subject.chomp.chomp).to eq expected_result
       end
     end
   end
 
   def self.t(name = nil, test, expected_result)
     name ||= expected_result
-    include_examples "test", name, test, expected_result
+    it_behaves_like "test", name, test, expected_result
   end
 
   # https://github.com/metanorma/reverse_adoc/issues/93

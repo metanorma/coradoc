@@ -42,7 +42,7 @@ module Coradoc
       end
 
       def preserve_nbsp(text)
-        text.gsub(/\u00A0/, "&nbsp;")
+        text.gsub("\u00A0", "&nbsp;")
       end
 
       def escape_links(text)

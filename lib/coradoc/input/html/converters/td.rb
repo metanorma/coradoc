@@ -14,7 +14,7 @@ module Coradoc
             state[:tdsinglepara] = singlepara if singlepara
 
             adoccell = node.at(".//ul | .//ol | .//pre | .//blockquote | .//br | .//hr | .//img[@src]") ||
-              node.at(".//p") && !singlepara
+              (node.at(".//p") && !singlepara)
 
             style = "a" if adoccell
             content = treat_children_coradoc(node, state)

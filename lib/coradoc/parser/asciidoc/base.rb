@@ -42,7 +42,7 @@ module Coradoc
           dispatch_key = [rule_name, args, kwargs.to_a.sort]
           dispatch_hash = dispatch_key.hash.abs
           unless @dispatch_data.has_key?(dispatch_hash)
-            alias_name = "#{rule_name}_#{dispatch_hash}".to_sym
+            alias_name = :"#{rule_name}_#{dispatch_hash}"
             Coradoc::Parser::Asciidoc::Base.class_exec do
               rule(alias_name) do
                 send(rule_name, *args, **kwargs)

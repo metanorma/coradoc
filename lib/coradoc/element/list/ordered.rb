@@ -3,7 +3,7 @@ module Coradoc
     module List
       class Ordered < Core
         def initialize(items, options = {})
-          super(items, options)
+          super
         end
 
         def prefix

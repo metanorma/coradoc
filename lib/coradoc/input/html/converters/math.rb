@@ -21,7 +21,7 @@ module Coradoc
             end
 
             unless stem.nil?
-              stem = stem.gsub(/\[/, "\\[").gsub(/\]/, "\\]").gsub(
+              stem = stem.gsub("[", "\\[").gsub("]", "\\]").gsub(
                 /\(\(([^\)]+)\)\)/, "(\\1)"
               )
             end
