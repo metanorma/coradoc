@@ -14,7 +14,7 @@ module Coradoc
       def to_asciidoc
         _anchor = anchor.nil? ? "" : "#{anchor.to_asciidoc}\n"
         _title = ".#{title}\n" unless title.empty?
-        _attrs = attributes.empty? ? "\[\]" : attributes.to_asciidoc
+        _attrs = attributes.empty? ? "[]" : attributes.to_asciidoc
         [_anchor, _title, "audio::", src, _attrs].join
       end
     end
