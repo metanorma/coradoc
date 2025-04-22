@@ -13,7 +13,8 @@ module Coradoc
         def validate
           errors = super
           if id.nil? || id.empty?
-            errors << Lutaml::Model::Error.new("ID cannot be nil or empty for Anchor")
+            errors <<
+              Lutaml::Model::Error.new("ID cannot be nil or empty for Anchor")
           end
         end
 

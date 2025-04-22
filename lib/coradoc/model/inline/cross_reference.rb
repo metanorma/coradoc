@@ -13,10 +13,11 @@ module Coradoc
         end
 
         def to_asciidoc
-          if args
+          if args&.length&.> 0
             _args = args.map do |a|
               Coradoc::Generator.gen_adoc(a)
             end.join(",")
+
             if _args.empty?
               return "<<#{href}>>"
             else

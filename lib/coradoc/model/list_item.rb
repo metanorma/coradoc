@@ -18,7 +18,6 @@ module Coradoc
         Coradoc::Model::Block::Core,
       ]
 
-      # attribute :nested, Coradoc::Model::List::Core # TODO: circular dependencies?!
       attribute :nested, Coradoc::Model::List::Nestable
 
       asciidoc do
@@ -29,6 +28,10 @@ module Coradoc
         map_attribute "subitem", to: :subitem
       end
 
+      HARDBREAK_MARKERS = %i[hardbreak init].freeze
+      STRIP_UNICODE_BEGIN_MARKERS = (HARDBREAK_MARKERS.dup + [false]).freeze
+      STRIP_UNICODE_END_MARKERS = [:hardbreak, :end, false].freeze
+
       def to_asciidoc
         _anchor = anchor.nil? ? "" : anchor.to_asciidoc.to_s
         _content = content.dup.flatten.compact # ???
@@ -37,7 +40,10 @@ module Coradoc
         prev_inline = :init
 
         # Collapse meaningless <DIV>s
-        while _content.map(&:class) == [Section] && _content.first.safe_to_collapse?
+        while
+          _content.map(&:class) == [Section] &&
+              _content.first.safe_to_collapse?
+
           _content = Array(_content.first.contents)
         end
 
@@ -50,10 +56,10 @@ module Coradoc
           # Only try to postprocess elements that are text,
           # otherwise we could strip markup.
           if subitem.is_a? Coradoc::Element::TextElement
-            if [:hardbreak, :init, false].include?(prev_inline)
+            if STRIP_UNICODE_BEGIN.include?(prev_inline)
               subcontent = Coradoc.strip_unicode(subcontent, only: :begin)
             end
-            if [:hardbreak, :end, false].include?(next_inline)
+            if STRIP_UNICODE_END.include?(next_inline)
               subcontent = Coradoc.strip_unicode(subcontent, only: :end)
             end
           end
@@ -75,8 +81,9 @@ module Coradoc
                      "\n+\n#{subcontent.strip}"
                    end
           when :hardbreak
-            if %i[hardbreak init].include? prev_inline
-              # can't have two hard breaks in a row; can't start with a hard break
+            if HARDBREAK_MARKERS.include?(prev_inline)
+              # can't have two hard breaks in a row
+              # can't start with a hard break
             else
               out += "\n+\n"
             end
