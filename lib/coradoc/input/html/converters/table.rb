@@ -7,7 +7,9 @@ module Coradoc::Input
         title = extract_title(node)
         attributes = style(node)
         content = treat_children_coradoc(node, state)
-        Coradoc::Element::Table.new(title, content, { id: id, attributes: attributes })
+        Coradoc::Element::Table.new(
+          title, content, { id: id, attributes: attributes }
+        )
       end
 
       def extract_title(node)
@@ -273,13 +275,13 @@ colspan)
 
         # The table seems bigger than the document... let's scale all
         # values.
-        while sizes.map { |i|
+        while sizes.sum { |i|
           if i.zero?
             document_width / 3 / sizes.length
           else
             i
           end
-        }.sum > document_width
+        } > document_width
 
           sizes = sizes.map { |i| i * 4 / 5 }
         end
