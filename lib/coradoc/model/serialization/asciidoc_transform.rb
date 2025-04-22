@@ -40,13 +40,15 @@ module Coradoc
           end
         end
 
+        NON_ATTRIBUTES_FIELD_TYPES = %i[content entry_type].freeze
+
         def model_to_data(model)
           entry_type = model.entry_type
           content = model.content
           mapping = context.mappings_for(:asciidoc)
 
           attributes = mapping.mappings.each_with_object({}) do |m, acc|
-            next if %i[entry_type content].include?(m.field_type)
+            next if NON_ATTRIBUTES_FIELD_TYPES.include?(m.field_type)
 
             attribute = attributes[m.to]
 

@@ -17,8 +17,13 @@ module Coradoc
           field_type: :attributes,
           transform: {}
         )
-          super(name, to: to, render_nil: render_nil, render_default: render_default,
-                      with: with, delegate: delegate, transform: transform)
+          super(name,
+                to: to,
+                render_nil: render_nil,
+                render_default: render_default,
+                with: with,
+                delegate: delegate,
+                transform: transform)
           @field_type = field_type
         end
 

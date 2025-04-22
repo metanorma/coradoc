@@ -24,10 +24,14 @@ module Coradoc
         _title = title.nil? ? "" : ".#{Coradoc::Generator.gen_adoc(title)}\n"
         _anchor = anchor.nil? ? "" : "#{anchor.to_adoc}\n"
         attrs = attributes.nil? ? "" : "#{attributes.to_adoc}\n"
+
         if tdsinglepara
-          "#{_title}#{_anchor}" << Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(content))
+          "#{_title}#{_anchor}" <<
+            Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(content))
         else
-          "\n\n#{_title}#{_anchor}#{attrs}" << Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(content)) << "\n\n"
+          "\n\n#{_title}#{_anchor}#{attrs}" <<
+            Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(content)) <<
+            "\n\n"
         end
       end
     end

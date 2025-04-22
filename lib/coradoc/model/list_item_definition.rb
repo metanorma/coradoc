@@ -18,7 +18,7 @@ module Coradoc
       end
 
       def to_asciidoc(delimiter)
-        _anchor = anchor.nil? ? "" : anchor.to_asciidoc.to_s
+        _anchor = anchor.nil? ? "" : anchor.to_asciidoc
         content = ""
         if terms.size == 1
           t = Coradoc::Generator.gen_adoc(terms)
