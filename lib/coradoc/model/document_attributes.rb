@@ -16,10 +16,10 @@ module Coradoc
       end
 
       def to_asciidoc
-        to_hash.map do |key, value|
+        "#{to_hash.map do |key, value|
           v = value.to_s.empty? ? "" : " #{value}"
           ":#{key}:#{v}\n"
-        end.join + "\n"
+        end.join}\n"
       end
     end
   end

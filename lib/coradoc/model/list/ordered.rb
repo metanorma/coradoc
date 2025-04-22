@@ -9,7 +9,6 @@ module Coradoc
 
           "." * [ol_count, 1].max
         end
-
       end
     end
   end

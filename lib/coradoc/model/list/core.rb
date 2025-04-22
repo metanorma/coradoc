@@ -6,7 +6,9 @@ module Coradoc
       class Core < Nestable
         attribute :id, :string
         attribute :prefix, :string
-        attribute :anchor, Inline::Anchor, default: -> { id.nil? ? nil : Inline::Anchor.new(id) }
+        attribute :anchor, Inline::Anchor, default: -> {
+          id.nil? ? nil : Inline::Anchor.new(id)
+        }
         attribute :items, ListItem, collection: true, initialize_empty: true
         attribute :ol_count, :integer, default: -> { 1 }
         attribute :attrs, AttributeList, default: -> { AttributeList.new }

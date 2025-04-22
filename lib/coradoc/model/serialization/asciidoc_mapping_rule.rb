@@ -3,7 +3,6 @@
 module Coradoc
   module Model
     module Serialization
-
       class AsciidocMappingRule < Lutaml::Model::MappingRule
         # Can be :content, or :attributes
         attr_reader :field_type

@@ -7,7 +7,9 @@ module Coradoc
       attribute :content, :string
       attribute :title, :string
       attribute :attributes, AttributeList, default: -> { AttributeList.new }
-      attribute :anchor, Inline::Anchor, default: -> { id.nil? ? nil : Inline::Anchor.new(id) }
+      attribute :anchor, Inline::Anchor, default: -> {
+        id.nil? ? nil : Inline::Anchor.new(id)
+      }
       attribute :tdsinglepara, :boolean, default: -> { false }
 
       asciidoc do

@@ -8,7 +8,9 @@ module Coradoc
       attribute :colrowattr, :string, default: -> { "" }
       attribute :alignattr, :string, default: -> { "" }
       attribute :style, :string, default: -> { "" }
-      attribute :anchor, Inline::Anchor, default: -> { id.nil? ? nil : Inline::Anchor.new(id) }
+      attribute :anchor, Inline::Anchor, default: -> {
+        id.nil? ? nil : Inline::Anchor.new(id)
+      }
 
       asciidoc do
         map_content to: :content
@@ -21,7 +23,7 @@ module Coradoc
       end
 
       def to_asciidoc
-        anchor = anchor.nil? ? "" : anchor.to_adoc.to_s
+        _anchor = anchor.nil? ? "" : anchor.to_asciidoc
         _content = simplify_block_content(content)
         _content = Coradoc::Generator.gen_adoc(_content)
         # Only try to postprocess elements that are text,
@@ -32,7 +34,6 @@ module Coradoc
 
         "#{colrowattr}#{alignattr}#{style}| #{_anchor}#{_content}"
       end
-
     end
   end
 end

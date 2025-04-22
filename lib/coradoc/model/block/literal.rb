@@ -9,7 +9,6 @@ module Coradoc
         def to_asciidoc
           "\n\n#{gen_anchor}#{gen_title}#{gen_attributes}#{gen_delimiter}\n" << gen_lines << "\n#{gen_delimiter}\n\n"
         end
-
       end
     end
   end

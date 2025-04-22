@@ -24,7 +24,6 @@ module Coradoc
           "#{number}, #{date}: #{remark}\n"
         end
       end
-
     end
   end
 end

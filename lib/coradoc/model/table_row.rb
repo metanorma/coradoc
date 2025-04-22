@@ -27,8 +27,11 @@ module Coradoc
 
         result = "#{content}\n"
         result << "\n" if asciidoc?
-        table_header_row? ?
-          result + underline_for : result
+        if table_header_row?
+          result + underline_for
+        else
+          result
+        end
       end
 
       # XXX: Why is it called #underline_for ?

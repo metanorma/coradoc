@@ -17,7 +17,6 @@ module Coradoc
         def to_asciidoc
           [key, delimiter, value].join
         end
-
       end
     end
   end

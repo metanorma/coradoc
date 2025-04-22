@@ -25,7 +25,6 @@ module Coradoc
           end
           "<<#{href}>>"
         end
-
       end
     end
   end
