@@ -4,7 +4,9 @@ module Coradoc
   module Model
     class ListItemDefinition < Base
       attribute :id, :string
-      attribute :anchor, Inline::Anchor, default: -> { id.nil? ? nil : Inline::Anchor.new(id) }
+      attribute :anchor, Inline::Anchor, default: -> {
+        id.nil? ? nil : Inline::Anchor.new(id)
+      }
       attribute :contents, :string
       attribute :terms, Coradoc::Model::Term, collection: true
 

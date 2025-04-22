@@ -10,7 +10,6 @@ require_relative "serialization/asciidoc_transform"
 module Coradoc
   module Model
     module Serialization
-
       # Register AsciiDoc format
       Lutaml::Model::FormatRegistry.register(
         :asciidoc,

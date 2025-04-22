@@ -2,7 +2,7 @@
 
 module Coradoc
   module Model
-    class glossaries < Base
+    class Glossaries < Base
       attribute :items, :string, collection: true
     end
   end

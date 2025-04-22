@@ -3,7 +3,6 @@
 module Coradoc
   module Model
     module Serialization
-
       # Define the DSL for defining mappings in Asciidoc format
       class AsciidocMapping < Lutaml::Model::Mapping
         attr_reader :mappings
@@ -33,7 +32,6 @@ module Coradoc
             name, to: to, **options
           )
         end
-
       end
     end
   end

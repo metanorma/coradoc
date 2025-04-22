@@ -14,7 +14,6 @@ module Coradoc
       def to_asciidoc
         Coradoc::Generator.gen_adoc(content) + line_break
       end
-
     end
   end
 end

@@ -7,7 +7,9 @@ module Coradoc
       attribute :rows, :string
       attribute :id, :string
       attribute :content, :string
-      attribute :anchor, Inline::Anchor, default: -> { id.nil? ? nil : Inline::Anchor.new(id) }
+      attribute :anchor, Inline::Anchor, default: -> {
+        id.nil? ? nil : Inline::Anchor.new(id)
+      }
       attribute :attrs, AttributeList
 
       asciidoc do
@@ -23,7 +25,7 @@ module Coradoc
         _title = Coradoc::Generator.gen_adoc(title)
         _title = _title.empty? ? "" : ".#{_title}\n"
         _content = rows.map(&:to_asciidoc).join
-        _"\n\n#{_anchor}#{attrs}#{_title}|===\n" << _content << "\n|===\n"
+        "\n\n#{_anchor}#{attrs}#{_title}|===\n" << _content << "\n|===\n"
       end
     end
   end

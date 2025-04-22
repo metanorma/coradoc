@@ -7,7 +7,9 @@ module Coradoc
         attribute :id, :string
         attribute :title, :string
         attribute :attributes, AttributeList, default: -> { AttributeList.new }
-        attribute :anchor, Inline::Anchor, default: -> { id.nil? ? nil : Inline::Anchor.new(id) }
+        attribute :anchor, Inline::Anchor, default: -> {
+          id.nil? ? nil : Inline::Anchor.new(id)
+        }
         attribute :lines, :string, collection: true, initialize_empty: true
         attribute :delimiter, :string
         attribute :delimiter_char, :string
@@ -41,8 +43,6 @@ module Coradoc
         def gen_lines
           Coradoc::Generator.gen_adoc(lines)
         end
-
-
       end
     end
   end

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-#
+
 module Coradoc
   module Model
     module Image

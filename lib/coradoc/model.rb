@@ -32,6 +32,7 @@ require_relative "model/comment_block"
 require_relative "model/comment_line"
 require_relative "model/include"
 require_relative "model/attribute"
+require_relative "model/glossaries"
 # TODO: validate? validate_named ?
 require_relative "model/text_element"
 require_relative "model/line_break"

@@ -8,7 +8,6 @@ module Coradoc
       def to_asciidoc
         line_break
       end
-
     end
   end
 end

@@ -5,7 +5,9 @@ module Coradoc
     class Bibliography < Base
       attribute :id, :string
       attribute :title, :string
-      attribute :anchor, Inline::Anchor, default: -> { id.nil? ? nil : Inline::Anchor.new(id) }
+      attribute :anchor, Inline::Anchor, default: -> {
+        id.nil? ? nil : Inline::Anchor.new(id)
+      }
       attribute :entries, BibliographyEntry, collection: true
 
       asciidoc do

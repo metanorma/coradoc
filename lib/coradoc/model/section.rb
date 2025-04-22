@@ -5,9 +5,12 @@ module Coradoc
     class Section < Base
       attribute :content, :string
       attribute :title, Coradoc::Model::Title
-      attribute :attrs, Coradoc::Model::NamedAttribute, collection: true, initialize_empty: true
-      attribute :contents, Coradoc::Model::Paragraph, collection: true, initialize_empty: true
-      attribute :sections, Coradoc::Model::Section, collection: true, initialize_empty: true
+      attribute :attrs, Coradoc::Model::NamedAttribute, collection: true,
+                                                        initialize_empty: true
+      attribute :contents, Coradoc::Model::Paragraph, collection: true,
+                                                      initialize_empty: true
+      attribute :sections, Coradoc::Model::Section, collection: true,
+                                                    initialize_empty: true
       attribute :anchor, Coradoc::Model::Inline::Anchor
 
       asciidoc do

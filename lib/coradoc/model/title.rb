@@ -7,9 +7,11 @@ module Coradoc
       attribute :content, :string
       # attribute :level, :string
       attribute :level_int, :integer
-      attribute :line_break, :string, default: -> {"\n"}
+      attribute :line_break, :string, default: -> { "\n" }
       attribute :style, :string
-      attribute :anchor, Inline::Anchor, default: -> { id.nil? ? nil : Inline::Anchor.new(id) }
+      attribute :anchor, Inline::Anchor, default: -> {
+        id.nil? ? nil : Inline::Anchor.new(id)
+      }
 
       asciidoc do
         map_content to: :content
@@ -40,7 +42,6 @@ module Coradoc
 
         "[#{_style}]\n" unless _style.empty?
       end
-
     end
   end
 end

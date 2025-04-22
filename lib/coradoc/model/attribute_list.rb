@@ -3,10 +3,13 @@
 module Coradoc
   module Model
     class AttributeList < Base
-      attribute :positional, AttributeListAttribute, collection: true, initialize_empty: true
+      attribute :positional, AttributeListAttribute, collection: true,
+                                                     initialize_empty: true
       attribute :named, NamedAttribute, collection: true, initialize_empty: true
-      attribute :rejected_positional, RejectedPositionalAttribute, collection: true, initialize_empty: true
-      attribute :rejected_named, NamedAttribute, collection: true, initialize_empty: true
+      attribute :rejected_positional, RejectedPositionalAttribute,
+                collection: true, initialize_empty: true
+      attribute :rejected_named, NamedAttribute, collection: true,
+                                                 initialize_empty: true
 
       asciidoc do
         map_attribute "positional", to: :positional
@@ -16,9 +19,9 @@ module Coradoc
       end
 
       # TODO: test & verify
-      def to_asciidoc(show_empty: false)
       # def to_asciidoc
-        return "[]" if [positional, named].all?(:empty?)
+      def to_asciidoc(show_empty: false)
+        return "[]" if [positional, named].all?(&:empty?)
 
         adoc = ""
         adoc << positional.map(&:to_asciidoc).join(",")
@@ -37,7 +40,6 @@ module Coradoc
       def empty?
         positional.empty? && named.empty?
       end
-
     end
   end
 end

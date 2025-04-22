@@ -22,7 +22,6 @@ module Coradoc
         end
         [name.to_s, "=", v].join
       end
-
     end
   end
 end

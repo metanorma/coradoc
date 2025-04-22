@@ -4,7 +4,9 @@ module Coradoc
   module Model
     class ListItem < Base
       attribute :id, :string
-      attribute :anchor, Inline::Anchor, default: -> { id.nil? ? nil : Inline::Anchor.new(id) }
+      attribute :anchor, Inline::Anchor, default: -> {
+        id.nil? ? nil : Inline::Anchor.new(id)
+      }
       attribute :content, :string
       attribute :marker, :string
       attribute :subitem, :string
@@ -27,7 +29,7 @@ module Coradoc
         map_attribute "subitem", to: :subitem
       end
 
-      def to_asciidoc(delimiter)
+      def to_asciidoc
         _anchor = anchor.nil? ? "" : anchor.to_asciidoc.to_s
         _content = content.dup.flatten.compact # ???
         # content = Array(@content).flatten.compact

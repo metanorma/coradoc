@@ -3,7 +3,6 @@
 module Coradoc
   module Model
     module Serialization
-
       class AsciidocTransform < Lutaml::Model::Transform
         def self.data_to_model(context, data, _format, _options = {})
           new(context).data_to_model(data)
