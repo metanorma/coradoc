@@ -13,7 +13,7 @@ module Coradoc
 
       def to_asciidoc
         if value.length == 1
-          v = value[0].gsub("\"", "\\\"")
+          v = value[0].gsub("\"", "\\\"").gsub("\\", "\\\\")
           if v.include?(",") || v.include?('"')
             v = "\"#{v}\""
           end
