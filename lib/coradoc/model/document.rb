@@ -14,7 +14,7 @@ module Coradoc
           Coradoc::Model::DocumentAttributes.new
         }
       attribute :header, Coradoc::Model::Header, default: -> {
-        Coradoc::Model::Header.new("")
+        Coradoc::Model::Header.new(title: "")
       }
       attribute :sections, Coradoc::Model::Section,
         collection: true,
@@ -31,6 +31,33 @@ module Coradoc
         Coradoc::Generator.gen_adoc(header) +
           Coradoc::Generator.gen_adoc(document_attributes) +
           Coradoc::Generator.gen_adoc(sections)
+      end
+
+      class << self
+        def from_ast(elements)
+          @sections = []
+          # require 'pry'
+          # binding.pry
+
+          elements.each do |element|
+            case element
+            when Coradoc::Model::DocumentAttributes
+              @document_attributes = element
+
+            when Coradoc::Model::Header
+              @header = element
+
+            when Coradoc::Model::Section
+              @sections << element
+            end
+          end
+
+          new(
+            document_attributes: @document_attributes,
+            header: @header,
+            sections: @sections,
+          )
+        end
       end
     end
   end

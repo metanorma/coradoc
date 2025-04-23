@@ -4,11 +4,13 @@ module Coradoc
   module Model
     module List
       class Core < Nestable
+        include Coradoc::Model::Anchorable
+
         attribute :id, :string
         attribute :prefix, :string
-        attribute :anchor, Inline::Anchor, default: -> {
-          id.nil? ? nil : Inline::Anchor.new(id)
-        }
+        # attribute :anchor, Inline::Anchor, default: -> {
+        #   id.nil? ? nil : Inline::Anchor.new(id)
+        # }
         attribute :items, ListItem, collection: true, initialize_empty: true
         attribute :ol_count, :integer, default: -> { 1 }
         attribute :attrs, AttributeList, default: -> { AttributeList.new }
@@ -25,8 +27,8 @@ module Coradoc
         end
 
         def to_asciidoc
-          _anchor = anchor.nil? ? "" : anchor.to_adoc.to_s
-          _attrs = attrs.to_adoc(false).to_s
+          _anchor = anchor.nil? ? "" : anchor.to_asciidoc.to_s
+          _attrs = attrs.to_asciidoc(false).to_s
           content = "\n"
           items.each do |item|
             c = Coradoc::Generator.gen_adoc(item)

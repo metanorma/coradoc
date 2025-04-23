@@ -16,6 +16,8 @@ require_relative "model/named_attribute"
 require_relative "model/rejected_positional_attribute"
 require_relative "model/attribute_list"
 require_relative "model/inline"
+require_relative "model/anchorable"
+
 require_relative "model/term"
 require_relative "model/attached"
 require_relative "model/admonition"

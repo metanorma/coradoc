@@ -3,10 +3,12 @@
 module Coradoc
   module Model
     class ListItem < Base
+      include Coradoc::Model::Anchorable
+
       attribute :id, :string
-      attribute :anchor, Inline::Anchor, default: -> {
-        id.nil? ? nil : Inline::Anchor.new(id)
-      }
+      # attribute :anchor, Inline::Anchor, default: -> {
+      #   id.nil? ? nil : Inline::Anchor.new(id)
+      # }
       attribute :content, :string
       attribute :marker, :string
       attribute :subitem, :string

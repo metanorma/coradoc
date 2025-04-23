@@ -31,7 +31,7 @@ module Coradoc
               if field_value
                 asciidoc_entry.public_send(
                   :"#{mapping.to}=",
-                  attribute.type.from_adoc(field_value),
+                  attribute.type.from_asciidoc(field_value),
                 )
               end
             end
@@ -53,9 +53,9 @@ module Coradoc
             attribute = attributes[m.to]
 
             acc[m.name] = if attribute.collection?
-                            model.send(m.to).map(&:to_adoc)
-                          elsif model.send(m.to).respond_to?(:to_adoc)
-                            model.send(m.to).to_adoc
+                            model.send(m.to).map(&:to_asciidoc)
+                          elsif model.send(m.to).respond_to?(:to_asciidoc)
+                            model.send(m.to).to_asciidoc
                           else
                             model.send(m.to)
                           end

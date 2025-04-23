@@ -22,7 +22,7 @@ module Coradoc
           )
         end
 
-        def to_adoc(*)
+        def to_asciidoc(*)
           result = []
           unless attributes.empty?
             result << "[#{attributes.map do |k, v|

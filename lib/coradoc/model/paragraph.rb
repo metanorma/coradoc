@@ -3,13 +3,12 @@
 module Coradoc
   module Model
     class Paragraph < Attached
+      include Coradoc::Model::Anchorable
+
       attribute :id, :string
       attribute :content, :string
       attribute :title, :string
-      attribute :attributes, AttributeList, default: -> { AttributeList.new }
-      attribute :anchor, Inline::Anchor, default: -> {
-        id.nil? ? nil : Inline::Anchor.new(id)
-      }
+      attribute :attrs, AttributeList, default: -> { AttributeList.new }
       attribute :tdsinglepara, :boolean, default: -> { false }
 
       asciidoc do
@@ -22,8 +21,8 @@ module Coradoc
 
       def to_asciidoc
         _title = title.nil? ? "" : ".#{Coradoc::Generator.gen_adoc(title)}\n"
-        _anchor = anchor.nil? ? "" : "#{anchor.to_adoc}\n"
-        attrs = attributes.nil? ? "" : "#{attributes.to_adoc}\n"
+        _anchor = anchor.nil? ? "" : "#{anchor.to_asciidoc}\n"
+        attrs = attributes.nil? ? "" : "#{attributes.to_asciidoc}\n"
 
         if tdsinglepara
           "#{_title}#{_anchor}" <<

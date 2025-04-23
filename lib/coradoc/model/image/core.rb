@@ -4,18 +4,31 @@ module Coradoc
   module Model
     module Image
       class Core < Coradoc::Model::Base
+        include Coradoc::Model::Anchorable
+
         attribute :id, :string
         attribute :title, :string
         attribute :src, :string
         attribute :attributes, Coradoc::Model::AttributeList, default: -> {
           Coradoc::Model::AttributeList.new
         }
-        attribute :anchor, Coradoc::Model::Inline::Anchor, default: -> {
-          id.nil? ? nil : Coradoc::Model::Inline::Anchor.new(id)
-        }
+        # attribute :anchor, Coradoc::Model::Inline::Anchor, default: -> {
+        #   id.nil? ? nil : Coradoc::Model::Inline::Anchor.new(id)
+        # }
         attribute :annotate_missing, :string
         attribute :line_break, :string, default: -> { "" }
         attribute :colons, :string
+
+        asciidoc do
+          map_attribute "id", to: :id
+          map_attribute "title", to: :title
+          map_attribute "src", to: :src
+          map_attribute "attributes", to: :attributes
+          map_attribute "anchor", to: :anchor
+          map_attribute "annotate_missing", to: :annotate_missing
+          map_attribute "line_break", to: :line_break
+          map_attribute "colons", to: :colons
+        end
 
         def to_asciidoc
           missing = if annotate_missing

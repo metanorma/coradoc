@@ -12,6 +12,7 @@ module Coradoc
         map_attribute "anchor_name", to: :anchor_name
         map_attribute "document_id", to: :document_id
         map_attribute "ref_text", to: :ref_text
+        map_attribute "line_break", to: :line_break
       end
 
       def to_asciidoc

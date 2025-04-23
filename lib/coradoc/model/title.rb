@@ -3,19 +3,24 @@
 module Coradoc
   module Model
     class Title < Base
+      include Coradoc::Model::Anchorable
+
       attribute :id, :string
       attribute :content, :string
       # attribute :level, :string
       attribute :level_int, :integer
       attribute :line_break, :string, default: -> { "\n" }
       attribute :style, :string
-      attribute :anchor, Inline::Anchor, default: -> {
-        id.nil? ? nil : Inline::Anchor.new(id)
-      }
+      # attribute :anchor, Inline::Anchor, default: -> {
+      #   id.nil? ? nil : Inline::Anchor.new(id)
+      # }
+
+      alias :text :content
 
       asciidoc do
         map_content to: :content
         map_attribute "id", to: :id
+        map_attribute "anchor", to: :anchor
       end
 
       def to_asciidoc

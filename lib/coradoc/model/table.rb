@@ -3,13 +3,15 @@
 module Coradoc
   module Model
     class Table < Base
+      include Coradoc::Model::Anchorable
+
+      attribute :id, :string
       attribute :title, :string
       attribute :rows, :string
-      attribute :id, :string
       attribute :content, :string
-      attribute :anchor, Inline::Anchor, default: -> {
-        id.nil? ? nil : Inline::Anchor.new(id)
-      }
+      # attribute :anchor, Inline::Anchor, default: -> {
+      #   id.nil? ? nil : Inline::Anchor.new(id)
+      # }
       attribute :attrs, AttributeList
 
       asciidoc do
@@ -17,6 +19,8 @@ module Coradoc
         map_attribute "title", to: :title
         map_attribute "rows", to: :rows
         map_attribute "id", to: :id
+        map_attribute "anchor", to: :anchor
+        map_attribute "attrs", to: :attrs
       end
 
       def to_asciidoc
