@@ -12,3 +12,9 @@ AllCops:
 
 Layout/HashAlignment:
   EnforcedHashRocketStyle: table
+
+Naming/BlockForwarding:
+  EnforcedStyle: explicit
+
+Metrics/MethodLength:
+  Max: 20

@@ -86,6 +86,7 @@ module Coradoc
           ulist_marker(nesting_level).present? >> item.as(:list_item)
         end
 
+        # TODO: delimiter string length is not limited by these:
         def dlist_delimiter
           (str("::") | str(":::") | str("::::") | str(";;")
           ).as(:delimiter)

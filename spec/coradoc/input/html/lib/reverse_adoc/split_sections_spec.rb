@@ -1,6 +1,6 @@
-require "spec_helper"
+# frozen_string_literal: true
 
-describe Coradoc::Input::Html do
+RSpec.describe Coradoc::Input::Html do
   let(:input)    { File.read("spec/coradoc/input/html/assets/sections.html") }
   let(:document) { Nokogiri::HTML(input) }
   let(:level)    { 1 }

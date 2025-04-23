@@ -27,7 +27,7 @@ module Coradoc
           title = ".#{@title}\n" unless @title.to_s.empty?
           attrs = @attributes_macro.to_adoc
           [missing, anchor, title, "image", @colons, @src, attrs,
-           @line_break].join("")
+           @line_break].join
         end
 
         extend AttributeList::Matchers
