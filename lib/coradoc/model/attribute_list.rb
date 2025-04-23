@@ -18,6 +18,14 @@ module Coradoc
         map_attribute "rejected_named", to: :rejected_named
       end
 
+      def add_positional(*attr)
+        @positional << AttributeListAttribute.new(value: attr)
+      end
+
+      def add_named(name, value)
+        @named << NamedAttribute.new(name:, value:)
+      end
+
       # TODO: test & verify
       # def to_asciidoc
       def to_asciidoc(show_empty: false)

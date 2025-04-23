@@ -4,12 +4,15 @@ module Coradoc
   module Model
     module Block
       class Core < Attached
+        include Coradoc::Model::Anchorable
+
         attribute :id, :string
         attribute :title, :string
         attribute :attributes, AttributeList, default: -> { AttributeList.new }
-        attribute :anchor, Inline::Anchor, default: -> {
-          id.nil? ? nil : Inline::Anchor.new(id)
-        }
+        # attribute :anchor, Inline::Anchor, default: -> (s) {
+        #   s.id.nil? ? nil : Inline::Anchor.new(s.id)
+        # }
+        attribute :anchor, method: :default_anchor
         attribute :lines, :string, collection: true, initialize_empty: true
         attribute :delimiter, :string
         attribute :delimiter_char, :string

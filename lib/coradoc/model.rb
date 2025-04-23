@@ -11,6 +11,8 @@ require_relative "model/serialization"
 
 require_relative "model/base"
 
+require_relative "model/anchorable"
+
 require_relative "model/attribute_list_attribute"
 require_relative "model/named_attribute"
 require_relative "model/rejected_positional_attribute"

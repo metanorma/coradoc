@@ -9,7 +9,7 @@ module Coradoc
       author: simple(:author),
       revision: simple(:revision),
     ) do
-      Element::Header.new(title, author: author, revision: revision)
+      Model::Header.new(title: title, author: author, revision: revision)
     end
 
     # Author
@@ -18,38 +18,44 @@ module Coradoc
       last_name: simple(:last_name),
       email: simple(:email),
     ) do
-      Element::Author.new(first_name, last_name, email)
+      Model::Author.new(
+        first_name: first_name,
+        last_name: last_name,
+        email: email,
+        middle_name: nil,
+      )
     end
 
     # Revision
     rule(number: simple(:number), date: simple(:date),
          remark: simple(:remark)) do
-      Element::Revision.new(number, date: date, remark: remark)
+      Model::Revision.new(number: number, date: date, remark: remark)
     end
 
     # Comments
     rule(comment_line: { comment_text: simple(:comment_text) }) do
-      Element::Comment::Line.new(comment_text)
+      Model::CommentLine.new(text: comment_text)
     end
 
     rule(comment_block: { comment_text: simple(:comment_text) }) do
-      Element::Comment::Block.new(comment_text)
+      Model::CommentBlock.new(text: comment_text)
     end
 
     rule(tag: subtree(:tag)) do
-      opts = {}
-      opts[:prefix] = tag[:prefix]
-      opts[:attribute_list] = tag[:attribute_list]
-      opts[:line_break] = tag[:line_break]
-      Element::Tag.new(tag[:name], opts)
+      Model::Tag.new(
+        name: tag[:name],
+        attrs: tag[:attribute_list],
+        line_break: tag[:line_break],
+        prefix: tag[:prefix],
+      )
     end
 
     # AttributeList
-    NamedAttribute = Struct.new(:key, :value)
+    # NamedAttribute = Struct.new(:key, :value)
 
     rule(named: { named_key: simple(:key),
                   named_value: simple(:value) }) do
-      NamedAttribute.new(key.to_s, value.to_s)
+      Model::NamedAttribute.new(key: key.to_s, value: [value.to_s])
     end
 
     rule(positional: simple(:positional)) do
@@ -57,11 +63,11 @@ module Coradoc
     end
 
     rule(attribute_array: nil) do
-      Element::AttributeList.new
+      Model::AttributeList.new
     end
 
     rule(attribute_array: sequence(:attributes)) do
-      attr_list = Element::AttributeList.new
+      attr_list = Model::AttributeList.new
       attributes.each do |a|
         if a.is_a?(String)
           attr_list.add_positional(a)
@@ -78,16 +84,17 @@ module Coradoc
            attribute_list: simple(:attribute_list),
            line_break: simple(:line_break),
          }) do
-      Element::Include.new(
-        path.to_s,
+           # TODO: spec did not catch this
+      Model::Include.new(
+        path: path.to_s,
         attributes: attribute_list,
         line_break: line_break,
       )
     end
 
-    # Text Element
+    # Text Model
     rule(text: simple(:text)) do
-      Element::TextElement.new(text.to_s)
+      Model::TextElement.new(content: text.to_s)
     end
 
     rule(text_string: subtree(:text_string)) do
@@ -95,27 +102,27 @@ module Coradoc
     end
 
     rule(text: simple(:text), line_break: simple(:line_break)) do
-      Element::TextElement.new(text.to_s, line_break: line_break)
+      Model::TextElement.new(content: text.to_s, line_break: line_break)
     end
 
     rule(text: sequence(:text), line_break: simple(:line_break)) do
-      Element::TextElement.new(text, line_break: line_break)
+      Model::TextElement.new(content: text, line_break: line_break)
     end
 
     rule(id: simple(:id), text: simple(:text)) do
-      Element::TextElement.new(text.to_s, id: id.to_s)
+      Model::TextElement.new(content: text.to_s, id: id.to_s)
     end
 
     rule(text: sequence(:text)) do
-      Element::TextElement.new(text)
+      Model::TextElement.new(content: text)
     end
 
     rule(
       text: simple(:text),
       line_break: simple(:line_break),
     ) do
-      Element::TextElement.new(
-        text.to_s,
+      Model::TextElement.new(
+        content: text.to_s,
         line_break: line_break,
       )
     end
@@ -125,8 +132,8 @@ module Coradoc
       text: simple(:text),
       line_break: simple(:line_break),
     ) do
-      Element::TextElement.new(
-        text.to_s,
+      Model::TextElement.new(
+        content: text.to_s,
         id: id.to_s,
         line_break: line_break,
       )
@@ -137,8 +144,8 @@ module Coradoc
       text: sequence(:text),
       line_break: simple(:line_break),
     ) do
-      Element::TextElement.new(
-        text,
+      Model::TextElement.new(
+        content: text,
         id: id.to_s,
         line_break: line_break,
       )
@@ -146,91 +153,94 @@ module Coradoc
 
     rule(text: sequence(:text),
          line_break: simple(:line_break)) do
-      Element::TextElement.new(
-        text,
+      Model::TextElement.new(
+        content: text,
         line_break: line_break,
       )
     end
 
     # Inlines
     rule(href: simple(:href)) do
-      Element::Inline::CrossReference.new(
-        href.to_s,
+      Model::Inline::CrossReference.new(
+        href: href.to_s,
       )
     end
 
     rule(href: simple(:href),
          name: simple(:name)) do
-      Element::Inline::CrossReference.new(
-        href.to_s,
-        name.to_s,
+      Model::Inline::CrossReference.new(
+        href: href.to_s,
+        args: [name.to_s],
       )
     end
 
     rule(bold_constrained: sequence(:text)) do
-      Element::Inline::Bold.new(text, unconstrained: false)
+      Model::Inline::Bold.new(content: text, unconstrained: false)
     end
 
     rule(bold_unconstrained: sequence(:text)) do
-      Element::Inline::Bold.new(text, unconstrained: true)
+      Model::Inline::Bold.new(content: text, unconstrained: true)
     end
 
     rule(span_constrained: subtree(:span_constrained)) do
-      Element::Inline::Span.new(span_constrained[:text],
-                                unconstrained: false,
-                                attributes: span_constrained[:attribute_list])
+      Model::Inline::Span.new(content: span_constrained[:text],
+                              unconstrained: false,
+                              attributes: span_constrained[:attribute_list])
     end
     rule(span_unconstrained: subtree(:span_unconstrained)) do
-      Element::Inline::Span.new(span_unconstrained[:text], unconstrained: true,
-                                                           attributes: span_unconstrained[:attribute_list])
+      Model::Inline::Span.new(
+        content: span_unconstrained[:text],
+        unconstrained: true,
+        attributes: span_unconstrained[:attribute_list],
+      )
     end
 
     rule(italic_constrained: sequence(:text)) do
-      Element::Inline::Italic.new(text, unconstrained: false)
+      Model::Inline::Italic.new(content: text, unconstrained: false)
     end
     rule(italic_unconstrained: sequence(:text)) do
-      Element::Inline::Italic.new(text, unconstrained: true)
+      Model::Inline::Italic.new(tcontent: ext, unconstrained: true)
     end
 
     rule(highlight_constrained: sequence(:text)) do
-      Element::Inline::Highlight.new(text, unconstrained: false)
+      Model::Inline::Highlight.new(content: text, unconstrained: false)
     end
     rule(highlight_unconstrained: sequence(:text)) do
-      Element::Inline::Highlight.new(text, unconstrained: true)
+      Model::Inline::Highlight.new(content: text, unconstrained: true)
     end
 
     rule(monospace_constrained: sequence(:text)) do
-      Element::Inline::Monospace.new(text, unconstrained: false)
+      Model::Inline::Monospace.new(content: text, unconstrained: false)
     end
     rule(monospace_unconstrained: sequence(:text)) do
-      Element::Inline::Monospace.new(text, unconstrained: true)
+      Model::Inline::Monospace.new(content: text, unconstrained: true)
     end
 
     rule(superscript: sequence(:content)) do
-      Element::Inline::Superscript.new(content)
+      Model::Inline::Superscript.new(content:)
     end
 
     rule(subscript: sequence(:content)) do
-      Element::Inline::Subscript.new(content)
+      Model::Inline::Subscript.new(content:)
     end
 
     # Paragraph
     rule(paragraph: subtree(:paragraph)) do
-      Element::Paragraph.new(
-        paragraph[:lines],
+      Model::Paragraph.new(
+        content: paragraph[:lines],
         id: paragraph[:id],
         attributes: paragraph[:attribute_list],
         title: paragraph[:title],
       )
     end
 
-    # Title Element
+    # Title Model
     rule(
       level: simple(:level),
       text: simple(:text),
       line_break: simple(:line_break),
     ) do
-      Element::Title.new(text, level.size - 1, line_break: line_break)
+      Model::Title.new(content: text, level_int: level.size - 1, line_break:)
     end
 
     rule(
@@ -239,7 +249,11 @@ module Coradoc
       text: simple(:text),
       line_break: simple(:line_break),
     ) do
-      Element::Title.new(text, level.size - 1, line_break: line_break, id: name)
+      Model::Title.new(
+        content: text,
+        level_int: level.size - 1,
+        line_break:, id: name,
+      )
     end
 
     # Section
@@ -250,15 +264,29 @@ module Coradoc
       contents = section[:contents] || []
       sections = section[:sections]
       opts = { id:, attribute_list:, contents:, sections: }
-      Element::Section.new(title, opts)
+      Model::Section.new(
+        title:,
+        id:,
+        contents:,
+        sections:,
+        attrs: attribute_list,
+      )
     end
 
     rule(example: sequence(:example)) do
-      Element::Core.new("", type: "example", lines: example)
+    # TODO: spec did not catch this
+      Model::Core.new("", type: "example", lines: example)
     end
 
     rule(bibliography_entry: subtree(:bib_entry)) do
-      Element::BibliographyEntry.new(bib_entry)
+    # TODO: spec did not catch this
+      anchor_name = bib_entry[:anchor_name]
+      document_id = bib_entry[:document_id]
+      ref_text = bib_entry[:ref_text]
+      line_break = bib_entry[:line_break]
+      Model::BibliographyEntry.new(
+        anchor_name:, document_id:, ref_text:, line_break:
+      )
     end
 
     rule(
@@ -266,7 +294,7 @@ module Coradoc
       title: simple(:title),
       entries: sequence(:entries),
     ) do
-      Element::Bibliography.new(
+      Model::Bibliography.new(
         id: id,
         title: title,
         entries: entries,
@@ -278,7 +306,7 @@ module Coradoc
       delimiter: simple(:delimiter),
       value: simple(:value),
     ) do
-      Element::Inline::CrossReferenceArg.new(key, delimiter, value)
+      Model::Inline::CrossReferenceArg.new(key:, delimiter:, value:)
     end
 
     rule(href_arg: simple(:href_arg)) do
@@ -287,24 +315,24 @@ module Coradoc
 
     rule(cross_reference: sequence(:xref)) do
       args = xref.size > 1 ? xref[1..] : []
-      Element::Inline::CrossReference.new(xref[0], args)
+      Model::Inline::CrossReference.new(href: xref[0], args:)
     end
 
     rule(attribute_reference: simple(:name)) do
-      Element::Inline::AttributeReference.new(name)
+      Model::Inline::AttributeReference.new(name:)
     end
 
     rule(term_type: simple(:term_type),
          term: simple(:term)) do
-      Coradoc::Element::Term.new(term, type: term_type, lang: :en)
+      Coradoc::Model::Term.new(term:, type: term_type, lang: :en)
     end
 
     rule(footnote: simple(:footnote)) do
-      Coradoc::Element::Inline::Footnote.new(footnote)
+      Coradoc::Model::Inline::Footnote.new(text: footnote)
     end
 
     rule(footnote: simple(:footnote), id: simple(:id)) do
-      Coradoc::Element::Inline::Footnote.new(footnote, id)
+      Coradoc::Model::Inline::Footnote.new(text: footnote, id:)
     end
 
     rule(block: subtree(:block)) do
@@ -323,74 +351,113 @@ module Coradoc
                delimiter_len: delimiter.size,
                lines: lines,
                ordering: ordering }
+      # TODO: spec did not catch these
       opts[:attributes] = attribute_list if attribute_list
+      delimiter_len = opts[:delimiter_len]
       if delimiter_c == "*"
         if attribute_list
           if attribute_list.positional == [] &&
               attribute_list.named.keys[0] == "reviewer"
-            Element::Block::ReviewerComment.new(opts)
-          elsif attribute_list.positional[0] == "sidebar" &&
-              attribute_list.named == {}
-            Element::Block::Side.new(opts)
+            Model::Block::ReviewerComment.new(
+              id:,
+              title:,
+              lines:,
+              delimiter_len:,
+            )
+          # XXX: redundant branch?
+          # elsif attribute_list.positional[0] == "sidebar" &&
+          #     attribute_list.named == {}
+          #   Model::Block::Side.new(
+          #     id:,
+          #     title:,
+          #     lines:,
+          #     delimiter_len:,
+          #   )
           else
-            Element::Block::Side.new(opts)
+            Model::Block::Side.new(
+              id:,
+              title:,
+              lines:,
+              delimiter_len:,
+            )
           end
         else
-          Element::Block::Side.new(opts)
+          Model::Block::Side.new(
+            id:,
+            title:,
+            lines:,
+            delimiter_len:,
+          )
         end
       elsif delimiter_c == "="
-        Element::Block::Example.new(title, opts)
+        Model::Block::Example.new(
+          id:, title:, lines:, delimiter_len:,
+        )
       elsif delimiter_c == "+"
-        Element::Block::Pass.new(opts)
+        Model::Block::Pass.new(
+          id:, title:, lines:, delimiter_len:,
+        )
       elsif delimiter_c == "-" && delimiter.size == 2
-        Element::Block::Open.new(title, opts)
+        Model::Block::Open.new(
+          id:, title:, lines:, delimiter_len:,
+        )
       elsif delimiter_c == "-" && delimiter.size >= 4
-        Element::Block::SourceCode.new(title, opts)
+        Model::Block::SourceCode.new(
+          id:, title:, lines:, delimiter_len:,
+        )
       elsif delimiter_c == "_"
-        Element::Block::Quote.new(title, opts)
+        Model::Block::Quote.new(
+          id:, title:, lines:, delimiter_len:,
+        )
       end
     end
 
     # Admonition
     rule(admonition_type: simple(:admonition_type),
          content: sequence(:content)) do
-      Element::Admonition.new(content, admonition_type.to_s)
+      Model::Admonition.new(content: content, type: admonition_type.to_s)
     end
 
     rule(block_image: subtree(:block_image)) do
       id = block_image[:id]
       title = block_image[:title]
       path = block_image[:path]
-      opts = {
-        attributes: block_image[:attribute_list_macro],
-        line_break: block_image[:line_break],
-      }
-      Element::Image::BlockImage.new(title, id, path, opts)
+      Model::Image::BlockImage.new(
+        title: title,
+        id: id,
+        src: path,
+        attributes: attributes,
+        line_break: line_break,
+      )
     end
 
     # Attribute
     rule(key: simple(:key), value: simple(:value)) do
-      Element::Attribute.new(key.to_s, value.to_s)
+      Model::Attribute.new(key: key.to_s, value: [value.to_s])
     end
 
     rule(key: simple(:key), value: simple(:value),
          line_break: simple(:line_break)) do
-      Element::Attribute.new(key.to_s, value.to_s, line_break: line_break.to_s)
+      Model::Attribute.new(
+        key: key.to_s,
+        value: [value.to_s],
+        line_break: line_break.to_s,
+      )
     end
 
     rule(line_break: simple(:line_break)) do
-      Element::LineBreak.new(line_break)
+      Model::LineBreak.new(line_break:)
     end
 
     rule(document_attributes: sequence(:document_attributes)) do
-      Element::DocumentAttributes.new(document_attributes)
+      Model::DocumentAttributes.new(data: document_attributes)
     end
 
     # Table
 
     rule(cols: sequence(:cols)) do
-      cells = cols.map { |c| Element::Table::Cell.new(content: c) }
-      Element::Table::Row.new(cells)
+      columns = cols.map { |content| Model::TableCell.new(content:) }
+      Model::TableRow.new(columns:)
     end
 
     rule(table: subtree(:table)) do
@@ -400,7 +467,7 @@ module Coradoc
         id: table[:id] || nil,
         attributes: table[:attribute_list] || nil,
       }
-      Element::Table.new(title, rows, opts)
+      Model::Table.new(title:, rows:, id: opts[:id], attrs: opts[:attributes])
     end
 
     rule(list_item: subtree(:list_item)) do
@@ -411,28 +478,28 @@ module Coradoc
       attached = list_item[:attached]
       nested = list_item[:nested]
       line_break = list_item[:line_break]
-      Element::ListItem.new(
-        text, id:, marker:, attached:, nested:, line_break:
+      Model::ListItem.new(
+        content: text, id:, marker:, attached:, nested:, line_break:
       )
     end
 
     # List
     rule(list: simple(:list)) { list }
     rule(unordered: sequence(:list_items)) do
-      Element::List::Unordered.new(list_items)
+      Model::List::Unordered.new(items: list_items)
     end
     rule(attribute_list: simple(:attribute_list),
          unordered: sequence(:list_items)) do
-      Element::List::Unordered.new(list_items, attrs: attribute_list)
+      Model::List::Unordered.new(items: list_items, attrs: attribute_list)
     end
 
     rule(ordered: sequence(:list_items)) do
-      Element::List::Ordered.new(list_items)
+      Model::List::Ordered.new(items: list_items)
     end
 
     rule(attribute_list: simple(:attribute_list),
          ordered: sequence(:list_items)) do
-      Element::List::Ordered.new(list_items, attrs: attribute_list)
+      Model::List::Ordered.new(items: list_items, attrs: attribute_list)
     end
 
     rule(dlist_term: simple(:t),
@@ -443,26 +510,28 @@ module Coradoc
 
     rule(definition_list_item: { terms: sequence(:terms),
                                  definition: simple(:contents) }) do
-      Element::ListItemDefinition.new(terms, contents)
+      Model::ListItemDefinition.new(terms:, contents:)
     end
 
     rule(definition_list: sequence(:list_items)) do
-      Element::List::Definition.new(list_items)
+      Model::List::Definition.new(items: list_items)
     end
 
     # Highlight
-    rule(highlight: simple(:text)) { Element::Highlight.new(text) }
+    # TODO: spec did not catch this
+    rule(highlight: simple(:text)) { Model::Highlight.new(content: text) }
 
     # Glossaries
+    # TODO: spec did not catch this
     rule(glossaries: sequence(:glossaries)) do
-      Element::Glossaries.new(glossaries)
+      Model::Glossaries.new(items: glossaries)
     end
 
     rule(header: simple(:header)) { header }
     rule(section: simple(:section)) { section }
 
     rule(document: sequence(:elements)) do
-      Document.from_ast(elements)
+      Model::Document.from_ast(elements)
     end
 
     # rule(unparsed: simple(:text)) do

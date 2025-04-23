@@ -3,19 +3,24 @@
 module Coradoc
   module Model
     class TableCell < Base
+      include Coradoc::Model::Anchorable
+
       attribute :id, :string
       attribute :content, :string, default: -> { "" }
       attribute :colrowattr, :string, default: -> { "" }
       attribute :alignattr, :string, default: -> { "" }
       attribute :style, :string, default: -> { "" }
-      attribute :anchor, Inline::Anchor, default: -> {
-        id.nil? ? nil : Inline::Anchor.new(id)
-      }
+      # attribute :anchor, Inline::Anchor, default: -> {
+      #   id.nil? ? nil : Inline::Anchor.new(id)
+      # }
 
       asciidoc do
         map_content to: :content
         map_attribute "id", to: :id
         map_attribute "anchor", to: :anchor
+        map_attribute "colrowattr", to: :colrowattr
+        map_attribute "alignattr", to: :alignattr
+        map_attribute "style", to: :style
       end
 
       def asciidoc?

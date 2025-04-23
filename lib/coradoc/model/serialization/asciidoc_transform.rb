@@ -31,7 +31,7 @@ module Coradoc
               if field_value
                 asciidoc_entry.public_send(
                   :"#{mapping.to}=",
-                  attribute.type.from_adoc(field_value),
+                  attribute.type.from_asciidoc(field_value),
                 )
               end
             end

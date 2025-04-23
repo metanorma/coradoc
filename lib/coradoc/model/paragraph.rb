@@ -3,13 +3,16 @@
 module Coradoc
   module Model
     class Paragraph < Attached
+      include Coradoc::Model::Anchorable
+
       attribute :id, :string
       attribute :content, :string
       attribute :title, :string
-      attribute :attributes, AttributeList, default: -> { AttributeList.new }
-      attribute :anchor, Inline::Anchor, default: -> {
-        id.nil? ? nil : Inline::Anchor.new(id)
-      }
+      attribute :attrs, AttributeList, default: -> { AttributeList.new }
+      # attribute :anchor, Inline::Anchor, default: ->(s) {
+      #   s.id.nil? ? nil : Inline::Anchor.new(s.id)
+      # }
+      attribute :anchor, method: :default_anchor
       attribute :tdsinglepara, :boolean, default: -> { false }
 
       asciidoc do

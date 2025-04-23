@@ -3,7 +3,7 @@
 module Coradoc
   module Model
     class DocumentAttributes < Base
-      attribute :data, :hash
+      attribute :data, Attribute, collection: true
 
       asciidoc do
         map_attribute "data", to: :data
