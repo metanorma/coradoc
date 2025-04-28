@@ -1,4 +1,4 @@
-require "spec_helper"
+# frozen_string_literal: true
 
 RSpec.describe Coradoc::Model::Serialization::AsciidocMapping do
   let(:mapping) { described_class.new }

@@ -1,4 +1,4 @@
-require "spec_helper"
+# frozen_string_literal: true
 
 RSpec.describe Coradoc::Model::Serialization::AsciidocAdapter do
   let(:sections) { [double("Section1", to_asciidoc: "Section 1"), double("Section2", to_asciidoc: "Section 2")] }

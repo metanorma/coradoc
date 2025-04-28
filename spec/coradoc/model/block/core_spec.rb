@@ -1,4 +1,4 @@
-require "spec_helper"
+# frozen_string_literal: true
 
 RSpec.describe Coradoc::Model::Block::Core do
   let(:attributes) { instance_double(Coradoc::Model::AttributeList) }

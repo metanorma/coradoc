@@ -1,4 +1,4 @@
-require "spec_helper"
+# frozen_string_literal: true
 
 RSpec.describe Coradoc::Model::Revision do
   let(:date) { Date.new(2024, 1, 1) }

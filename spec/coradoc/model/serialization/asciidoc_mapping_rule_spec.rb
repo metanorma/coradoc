@@ -1,4 +1,4 @@
-require "spec_helper"
+# frozen_string_literal: true
 
 RSpec.describe Coradoc::Model::Serialization::AsciidocMappingRule do
   describe ".initialize" do

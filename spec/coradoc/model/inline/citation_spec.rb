@@ -1,4 +1,4 @@
-require "spec_helper"
+# frozen_string_literal: true
 
 RSpec.describe Coradoc::Model::Inline::Citation do
   let(:cross_reference) { instance_double(Coradoc::Model::Inline::CrossReference) }

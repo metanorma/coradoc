@@ -1,4 +1,4 @@
-require "spec_helper"
+# frozen_string_literal: true
 
 RSpec.describe Coradoc::Model::Inline::Span do
   let(:attributes) { instance_double(Coradoc::Model::AttributeList) }

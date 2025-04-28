@@ -1,4 +1,4 @@
-require "spec_helper"
+# frozen_string_literal: true
 
 RSpec.describe Coradoc::Model::TableRow do
   let(:cell1) { instance_double(Coradoc::Model::TableCell, asciidoc?: false) }

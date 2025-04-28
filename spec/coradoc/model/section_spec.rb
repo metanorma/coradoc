@@ -1,4 +1,4 @@
-require "spec_helper"
+# frozen_string_literal: true
 
 RSpec.describe Coradoc::Model::Section do
   let(:title) { instance_double(Coradoc::Model::Title) }
