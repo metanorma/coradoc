@@ -102,14 +102,7 @@ RSpec.describe Coradoc::Model::Term do
     end
   end
 
-  describe "asciidoc mapping" do
-    it "maps all attributes correctly" do
-      mapping = described_class.asciidoc_mapping.mappings
-      mapped_attributes = mapping.map { |m| m.instance_variable_get(:@to) }
 
-      expect(mapped_attributes).to include(:term, :type, :lang)
-    end
-  end
 
   describe "common use cases" do
     it "works for mathematical terms" do

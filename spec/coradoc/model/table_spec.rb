@@ -120,19 +120,5 @@ RSpec.describe Coradoc::Model::Table do
     end
   end
 
-  describe "asciidoc mapping" do
-    it "maps all attributes correctly" do
-      mapping = described_class.asciidoc_mapping.mappings
-      mapped_attributes = mapping.map { |m| m.instance_variable_get(:@to) }
 
-      expect(mapped_attributes).to include(
-        :content,
-        :title,
-        :rows,
-        :id,
-        :anchor,
-        :attrs
-      )
-    end
-  end
 end

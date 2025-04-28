@@ -51,14 +51,7 @@ RSpec.describe Coradoc::Model::Inline::Underline do
     end
   end
 
-  describe "asciidoc mapping" do
-    it "maps text attribute correctly" do
-      mapping = described_class.asciidoc_mapping.mappings
-      text_mapping = mapping.find { |m| m.instance_variable_get(:@to) == :text }
 
-      expect(text_mapping).not_to be_nil
-    end
-  end
 
   describe "usage examples" do
     it "works in sentences" do

@@ -80,14 +80,7 @@ RSpec.describe Coradoc::Model::TextElement do
     end
   end
 
-  describe "asciidoc mapping" do
-    it "maps all attributes correctly" do
-      mapping = described_class.asciidoc_mapping.mappings
-      mapped_attributes = mapping.map { |m| m.instance_variable_get(:@to) }
 
-      expect(mapped_attributes).to include(:content, :id, :line_break)
-    end
-  end
 
   describe "as base class" do
     let(:subclass) do

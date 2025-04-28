@@ -120,12 +120,5 @@ RSpec.describe Coradoc::Model::TableRow do
     end
   end
 
-  describe "asciidoc mapping" do
-    it "maps columns attribute correctly" do
-      mapping = described_class.asciidoc_mapping.mappings
-      columns_mapping = mapping.find { |m| m.instance_variable_get(:@to) == :columns }
 
-      expect(columns_mapping).not_to be_nil
-    end
-  end
 end

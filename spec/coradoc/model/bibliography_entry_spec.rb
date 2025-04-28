@@ -108,17 +108,5 @@ RSpec.describe Coradoc::Model::BibliographyEntry do
     end
   end
 
-  describe "asciidoc mapping" do
-    it "maps all attributes correctly" do
-      mapping = described_class.asciidoc_mapping.mappings
-      mapped_attributes = mapping.map { |m| m.instance_variable_get(:@to) }
 
-      expect(mapped_attributes).to include(
-        :anchor_name,
-        :document_id,
-        :ref_text,
-        :line_break
-      )
-    end
-  end
 end

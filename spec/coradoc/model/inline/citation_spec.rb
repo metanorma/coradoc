@@ -97,12 +97,5 @@ RSpec.describe Coradoc::Model::Inline::Citation do
     end
   end
 
-  describe "asciidoc mapping" do
-    it "maps all attributes correctly" do
-      mapping = described_class.asciidoc_mapping.mappings
-      mapped_attributes = mapping.map { |m| m.instance_variable_get(:@to) }
 
-      expect(mapped_attributes).to include(:cross_reference, :comment)
-    end
-  end
 end

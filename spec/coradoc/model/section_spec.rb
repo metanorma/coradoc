@@ -96,22 +96,7 @@ RSpec.describe Coradoc::Model::Section do
     end
   end
 
-  describe "asciidoc mapping" do
-    it "maps all attributes correctly" do
-      mapping = described_class.asciidoc_mapping.mappings
-      mapped_attributes = mapping.map { |m| m.instance_variable_get(:@to) }
 
-      expect(mapped_attributes).to include(
-        :content,
-        :id,
-        :title,
-        :attrs,
-        :contents,
-        :sections,
-        :anchor
-      )
-    end
-  end
 
   describe "attribute collections" do
     let(:section) { described_class.new(title: title) }

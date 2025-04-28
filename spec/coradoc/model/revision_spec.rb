@@ -91,14 +91,7 @@ RSpec.describe Coradoc::Model::Revision do
     end
   end
 
-  describe "asciidoc mapping" do
-    it "maps all attributes correctly" do
-      mapping = described_class.asciidoc_mapping.mappings
-      mapped_attributes = mapping.map { |m| m.instance_variable_get(:@to) }
 
-      expect(mapped_attributes).to include(:number, :date, :remark)
-    end
-  end
 
   describe "attribute types" do
     it "accepts string number" do

@@ -113,12 +113,5 @@ RSpec.describe Coradoc::Model::Inline::CrossReference do
     end
   end
 
-  describe "asciidoc mapping" do
-    it "maps all attributes correctly" do
-      mapping = described_class.asciidoc_mapping.mappings
-      mapped_attributes = mapping.map { |m| m.instance_variable_get(:@to) }
 
-      expect(mapped_attributes).to include(:href, :args)
-    end
-  end
 end

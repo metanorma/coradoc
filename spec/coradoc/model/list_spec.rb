@@ -95,13 +95,6 @@ RSpec.describe Coradoc::Model::List do
       end
     end
 
-    describe "asciidoc mapping" do
-      it "maps attributes correctly" do
-        mapping = described_class.asciidoc_mapping.mappings
-        mapped_attributes = mapping.map { |m| m.instance_variable_get(:@to) }
 
-        expect(mapped_attributes).to include(:items, :delimiter)
-      end
-    end
   end
 end

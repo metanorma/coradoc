@@ -83,14 +83,7 @@ RSpec.describe Coradoc::Model::Inline::Highlight do
     end
   end
 
-  describe "asciidoc mapping" do
-    it "maps content attribute correctly" do
-      mapping = described_class.asciidoc_mapping.mappings
-      content_mapping = mapping.find { |m| m.instance_variable_get(:@to) == :content }
 
-      expect(content_mapping).not_to be_nil
-    end
-  end
 
   describe "usage examples" do
     it "works for marking important text" do

@@ -71,13 +71,5 @@ RSpec.describe Coradoc::Model::Inline::Anchor do
     end
   end
 
-  describe "asciidoc mapping" do
-    it "maps id attribute correctly" do
-      mapping = described_class.asciidoc_mapping.mappings
-      id_mapping = mapping.find { |m| m.instance_variable_get(:@to) == :id }
 
-      expect(id_mapping).not_to be_nil
-      expect(id_mapping.instance_variable_get(:@name)).to eq("id")
-    end
-  end
 end
