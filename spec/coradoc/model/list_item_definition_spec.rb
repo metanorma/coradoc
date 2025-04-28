@@ -17,14 +17,14 @@ RSpec.describe Coradoc::Model::ListItemDefinition do
 
     it "initializes with empty collections" do
       item = described_class.new
-      expect(item.terms).to eq([])
+      expect(item.terms).to be_nil
       expect(item.contents).to be_nil
     end
   end
 
   describe "#to_asciidoc" do
     before do
-      allow(Coradoc::Generator).to receive(:gen_adoc) { |content| content.is_a?(Array) ? content.first : content }
+      # allow(Coradoc::Generator).to receive(:gen_adoc) { |content| content.is_a?(Array) ? content.first : content }
     end
 
     context "with single term" do
@@ -36,7 +36,7 @@ RSpec.describe Coradoc::Model::ListItemDefinition do
           terms: [term]
         )
 
-        expect(item.to_asciidoc(":")).to eq("term: Definition\n")
+        expect(item.to_asciidoc(delimiter: ":")).to eq("term: Definition\n")
       end
 
       it "includes anchor when present" do
@@ -50,7 +50,7 @@ RSpec.describe Coradoc::Model::ListItemDefinition do
         )
         allow(item).to receive(:anchor).and_return(anchor)
 
-        expect(item.to_asciidoc(":")).to eq("[[def-1]]term: Definition\n")
+        expect(item.to_asciidoc(delimiter: ":")).to eq("[[def-1]]term: Definition\n")
       end
     end
 
@@ -65,7 +65,7 @@ RSpec.describe Coradoc::Model::ListItemDefinition do
         )
 
         expected_output = "term1:\nterm2:\nDefinition\n"
-        expect(item.to_asciidoc(":")).to eq(expected_output)
+        expect(item.to_asciidoc(delimiter: ":")).to eq(expected_output)
       end
     end
 
@@ -78,7 +78,7 @@ RSpec.describe Coradoc::Model::ListItemDefinition do
           terms: [term]
         )
 
-        expect(item.to_asciidoc("::")).to eq("term:: Definition\n")
+        expect(item.to_asciidoc(delimiter: "::")).to eq("term:: Definition\n")
       end
 
       it "uses triple colon delimiter" do
@@ -87,7 +87,7 @@ RSpec.describe Coradoc::Model::ListItemDefinition do
           terms: [term]
         )
 
-        expect(item.to_asciidoc(":::")).to eq("term::: Definition\n")
+        expect(item.to_asciidoc(delimiter: ":::")).to eq("term::: Definition\n")
       end
     end
 
@@ -95,7 +95,7 @@ RSpec.describe Coradoc::Model::ListItemDefinition do
       term = instance_double(Coradoc::Model::Term, to_asciidoc: "term")
       item = described_class.new(terms: [term])
 
-      expect(item.to_asciidoc(":")).to eq("term: \n")
+      expect(item.to_asciidoc(delimiter: ":")).to eq("term: \n")
     end
   end
 

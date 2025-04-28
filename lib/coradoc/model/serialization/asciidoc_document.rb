@@ -3,6 +3,9 @@
 module Coradoc
   module Model
     module Serialization
+
+      # This class is used to perform serialization and deserialization of
+      # Asciidoc documents.
       class AsciidocDocument
         attr_reader :sections
 
@@ -11,12 +14,9 @@ module Coradoc
         end
 
         def self.parse(asciidoc_data, _options = {})
-          parser = Coradoc::Parser::Base.new(asciidoc_data)
-          new(parser.parse[:document])
-        end
-
-        def to_asciidoc(*)
-          sections.map(&:to_asciidoc).join("\n\n")
+          # parser = Coradoc::Parser::Base.new(asciidoc_data)
+          parser = Coradoc::Parser::Base.new
+          new(parser.parse(asciidoc_data)[:document])
         end
 
         def [](key)

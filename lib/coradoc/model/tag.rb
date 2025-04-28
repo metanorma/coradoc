@@ -6,13 +6,14 @@ module Coradoc
       attribute :name, :string
       attribute :prefix, :string, default: "tag"
       attribute :attrs, AttributeList, default: -> { AttributeList.new }
-      attribute :line_break, :string, default: "\n"
+      attribute :line_break, :string, default: -> { "\n" }
 
-      # asciidoc do
-      #   map_attribute "attrs", to: :attrs
-      #   map_attribute "prefix", to: :prefix
-      #   map_attribute "line_break", to: :line_break
-      # end
+      asciidoc do
+        map_attribute "name", to: :name
+        map_attribute "prefix", to: :prefix
+        map_attribute "attrs", to: :attrs
+        map_attribute "line_break", to: :line_break
+      end
 
       def to_asciidoc
         attrs_str = attrs.to_asciidoc

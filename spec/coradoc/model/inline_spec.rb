@@ -108,12 +108,12 @@ RSpec.describe Coradoc::Model::Inline do
       it "handles nil content" do
         italic = described_class.new
         allow(Coradoc::Generator).to receive(:gen_adoc).with(nil).and_return("")
-        expect(italic.to_asciidoc).to eq("____")
+        expect(italic.to_asciidoc).to eq("")
       end
 
       it "handles empty content" do
         italic = described_class.new(content: "")
-        expect(italic.to_asciidoc).to eq("____")
+        expect(italic.to_asciidoc).to eq("")
       end
     end
   end

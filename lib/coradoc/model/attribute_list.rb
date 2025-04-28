@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "attribute_list/matchers"
+
 module Coradoc
   module Model
     class AttributeList < Base
@@ -19,31 +21,100 @@ module Coradoc
       end
 
       def add_positional(*attr)
-        @positional << AttributeListAttribute.new(value: attr)
-      end
-
-      def add_named(name, value)
-        @named << NamedAttribute.new(name:, value:)
-      end
-
-      # TODO: test & verify
-      # def to_asciidoc
-      def to_asciidoc(show_empty: false)
-        return "[]" if [positional, named].all?(&:empty?)
-
-        adoc = ""
-        adoc << positional.map(&:to_asciidoc).join(",")
-        adoc << "," if positional.any? && named.any?
-        adoc << named.map(&:to_asciidoc).join(",")
-
-        if !empty? || (empty? && show_empty)
-          "[#{adoc}]"
-        elsif empty? && !show_empty
-          adoc
+        attr.each do |a|
+          @positional << AttributeListAttribute.new(value: a)
         end
       end
 
-      private
+      def add_named(name, value)
+        @named << NamedAttribute.new(
+          name:,
+          value: value.is_a?(Array) ? value : [value],
+        )
+      end
+
+      def validate_named(validators: {})
+        named.each_with_index do |named_attribute, i|
+          name = named_attribute.name.to_sym
+          value = named_attribute.value
+
+          matcher = validators[name]
+
+          unless matcher && matcher === value
+            # Previous implementation would remove the value from the list
+            # named.delete(name)
+            rejected_named << named_attribute.dup
+            yield(name, value) if block_given?
+          end
+        end
+      end
+
+      def validate_positional(validators: [])
+        positional.each_with_index do |positional_attribute, i|
+          matcher = validators[i][1]
+          value = positional_attribute.value
+
+          if matcher
+            unless matcher === value
+              warn "#{value} does not match #{matcher}"
+              # Previous implementation would remove the value from the list
+              # positional[i] = nil
+              rejected_positional << RejectedPositionalAttribute.new(position: i, value:)
+              yield(i, value) if block_given?
+            end
+          end
+        end
+      end
+
+      # To be overridden.
+      def positional_validators
+        []
+      end
+
+      # To be overridden.
+      def named_validators
+        {}
+      end
+
+      def validate
+        errors = super
+
+        validate_positional(positional_validators) do |i, value|
+          errors << Lutaml::Model::Error.new(
+            "Positional attribute at position #{i} with value '#{value}' is not valid",
+          )
+        end
+
+        validate_named(named_validators) do |name, value|
+          errors << Lutaml::Model::Error.new(
+            "Named attribute #{name} with value '#{value}' is not valid",
+          )
+        end
+
+        errors
+      end
+
+      def to_asciidoc(show_empty: true)
+        valid_positional = positional.reject.with_index do |_p, i|
+          rejected_positional.any? { |r| r.position == i }
+        end
+
+        valid_named = named.reject do |n|
+          rejected_named.any? { |r| r.name == n.name }
+        end
+
+        adoc = [valid_positional, valid_named].flatten.map(&:to_asciidoc).join(",")
+
+        puts 'pp adoc'
+        pp adoc
+        if adoc.empty? && show_empty
+          "[]"
+        elsif adoc.empty?
+          ""
+        else
+          "[#{adoc}]"
+        end
+      end
 
       def empty?
         positional.empty? && named.empty?

@@ -7,9 +7,6 @@ module Coradoc
 
       attribute :id, :string
       attribute :title, :string
-      # attribute :anchor, Inline::Anchor, default: -> {
-      #   id.nil? ? nil : Inline::Anchor.new(id)
-      # }
       attribute :entries, BibliographyEntry, collection: true
 
       asciidoc do
@@ -23,7 +20,7 @@ module Coradoc
         adoc = "#{gen_anchor}\n"
         adoc << "[bibliography]"
         adoc << "== #{title}\n\n"
-        entries.each do |entry|
+        entries&.each do |entry|
           adoc << "#{entry.to_asciidoc}\n"
         end
         adoc

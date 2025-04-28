@@ -62,18 +62,18 @@ RSpec.describe Coradoc::Model::Inline::Bold do
 
     it "handles empty content" do
       bold = described_class.new(content: "")
-      expect(bold.to_asciidoc).to eq("****")
+      expect(bold.to_asciidoc).to eq("")
     end
 
     it "handles nil content" do
       bold = described_class.new
       allow(Coradoc::Generator).to receive(:gen_adoc).with(nil).and_return("")
-      expect(bold.to_asciidoc).to eq("****")
+      expect(bold.to_asciidoc).to eq("")
     end
 
     it "preserves special characters in content" do
       bold = described_class.new(content: "text with * and _ and #")
-      expect(bold.to_asciidoc).to eq("**text with * and _ and #**")
+      expect(bold.to_asciidoc).to eq("**text with \\* and _ and #**")
     end
   end
 

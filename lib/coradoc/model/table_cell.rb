@@ -10,9 +10,6 @@ module Coradoc
       attribute :colrowattr, :string, default: -> { "" }
       attribute :alignattr, :string, default: -> { "" }
       attribute :style, :string, default: -> { "" }
-      # attribute :anchor, Inline::Anchor, default: -> {
-      #   id.nil? ? nil : Inline::Anchor.new(id)
-      # }
 
       asciidoc do
         map_content to: :content

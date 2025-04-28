@@ -6,7 +6,7 @@ RSpec.describe Coradoc::Model::Inline::CrossReference do
       xref = described_class.new(href: "section-1")
 
       expect(xref.href).to eq("section-1")
-      expect(xref.args).to eq([])
+      expect(xref.args).to be_nil
     end
 
     it "accepts href and args" do
@@ -23,7 +23,7 @@ RSpec.describe Coradoc::Model::Inline::CrossReference do
       xref = described_class.new
 
       expect(xref.href).to be_nil
-      expect(xref.args).to eq([])
+      expect(xref.args).to be_nil
     end
   end
 

@@ -20,14 +20,16 @@ RSpec.describe Coradoc::Model::AttributeList do
 
       expect(list.positional.length).to eq(1)
       expect(list.positional.first).to be_a(Coradoc::Model::AttributeListAttribute)
-      expect(list.positional.first.value).to eq(["value1"])
+      expect(list.positional.first.value).to eq("value1")
     end
 
     it "adds multiple positional attributes" do
       list.add_positional("value1", "value2", "value3")
 
-      expect(list.positional.length).to eq(1)
-      expect(list.positional.first.value).to eq(["value1", "value2", "value3"])
+      expect(list.positional.length).to eq(3)
+      expect(list.positional.first.value).to eq("value1")
+      expect(list.positional[1].value).to eq("value2")
+      expect(list.positional[2].value).to eq("value3")
     end
   end
 
@@ -39,8 +41,9 @@ RSpec.describe Coradoc::Model::AttributeList do
 
       expect(list.named.length).to eq(1)
       expect(list.named.first).to be_a(Coradoc::Model::NamedAttribute)
-      expect(list.named.first.name).to eq(:format)
-      expect(list.named.first.value).to eq("pdf")
+      expect(list.named.first.name).to eq("format")
+      expect(list.named.first.name).to be_a String
+      expect(list.named.first.value).to eq(["pdf"])
     end
 
     it "allows multiple named attributes" do
@@ -48,21 +51,13 @@ RSpec.describe Coradoc::Model::AttributeList do
       list.add_named(:lang, "en")
 
       expect(list.named.length).to eq(2)
-      expect(list.named.map(&:name)).to eq([:format, :lang])
-      expect(list.named.map(&:value)).to eq(["pdf", "en"])
+      expect(list.named.map(&:name)).to eq(["format", "lang"])
+      expect(list.named.map(&:value)).to eq([["pdf"], ["en"]])
     end
   end
 
   describe "#to_asciidoc" do
     let(:list) { described_class.new }
-
-    before do
-      allow_any_instance_of(Coradoc::Model::AttributeListAttribute)
-        .to receive(:to_asciidoc) { |instance| instance.value.join(",") }
-
-      allow_any_instance_of(Coradoc::Model::NamedAttribute)
-        .to receive(:to_asciidoc) { |instance| "#{instance.name}=#{instance.value}" }
-    end
 
     it "returns empty brackets when empty and show_empty is true" do
       expect(list.to_asciidoc(show_empty: true)).to eq("[]")

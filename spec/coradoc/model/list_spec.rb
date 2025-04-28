@@ -2,20 +2,20 @@
 
 RSpec.describe Coradoc::Model::List do
   describe Coradoc::Model::List::Core do
-    # ... existing Core tests ...
+    # TODO: ... existing Core tests ...
   end
 
   describe Coradoc::Model::List::Ordered do
-    # ... existing Ordered tests ...
+    # TODO: ... existing Ordered tests ...
   end
 
   describe Coradoc::Model::List::Unordered do
-    # ... existing Unordered tests ...
+    # TODO: ... existing Unordered tests ...
   end
 
   describe Coradoc::Model::List::Definition do
-    let(:item1) { instance_double(Coradoc::Model::ListItem) }
-    let(:item2) { instance_double(Coradoc::Model::ListItem) }
+    let(:item1) { instance_double(Coradoc::Model::ListItemDefinition) }
+    let(:item2) { instance_double(Coradoc::Model::ListItemDefinition) }
 
     describe ".initialize" do
       it "initializes with default values" do
@@ -52,8 +52,8 @@ RSpec.describe Coradoc::Model::List do
 
     describe "#to_asciidoc" do
       before do
-        allow(item1).to receive(:to_asciidoc).with("::").and_return("Term 1:: Definition 1\n")
-        allow(item2).to receive(:to_asciidoc).with("::").and_return("Term 2:: Definition 2\n")
+        allow(item1).to receive(:to_asciidoc).with(delimiter: "::").and_return("Term 1:: Definition 1\n")
+        allow(item2).to receive(:to_asciidoc).with(delimiter: "::").and_return("Term 2:: Definition 2\n")
       end
 
       it "generates definition list with default delimiter" do
@@ -64,8 +64,8 @@ RSpec.describe Coradoc::Model::List do
       end
 
       it "generates definition list with custom delimiter" do
-        allow(item1).to receive(:to_asciidoc).with(":::").and_return("Term 1::: Definition 1\n")
-        allow(item2).to receive(:to_asciidoc).with(":::").and_return("Term 2::: Definition 2\n")
+        allow(item1).to receive(:to_asciidoc).with(delimiter: ":::").and_return("Term 1::: Definition 1\n")
+        allow(item2).to receive(:to_asciidoc).with(delimiter: ":::").and_return("Term 2::: Definition 2\n")
 
         list = described_class.new(
           items: [item1, item2],

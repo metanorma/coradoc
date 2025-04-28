@@ -64,10 +64,10 @@ RSpec.describe Coradoc::Model::Document do
   end
 
   describe ".from_ast" do
-    let(:document_attributes) { instance_double(Coradoc::Model::DocumentAttributes) }
-    let(:header) { instance_double(Coradoc::Model::Header) }
-    let(:section1) { instance_double(Coradoc::Model::Section) }
-    let(:section2) { instance_double(Coradoc::Model::Section) }
+    let(:document_attributes) { Coradoc::Model::DocumentAttributes.new }
+    let(:header) { Coradoc::Model::Header.new }
+    let(:section1) { Coradoc::Model::Section.new }
+    let(:section2) { Coradoc::Model::Section.new }
 
     let(:elements) { [document_attributes, header, section1, section2] }
 
@@ -82,7 +82,7 @@ RSpec.describe Coradoc::Model::Document do
     it "handles missing document attributes" do
       document = described_class.from_ast([header, section1])
 
-      expect(document.document_attributes).to be_nil
+      expect(document.document_attributes).to eq Coradoc::Model::DocumentAttributes.new
       expect(document.header).to eq(header)
       expect(document.sections).to eq([section1])
     end
@@ -91,7 +91,7 @@ RSpec.describe Coradoc::Model::Document do
       document = described_class.from_ast([document_attributes, section1])
 
       expect(document.document_attributes).to eq(document_attributes)
-      expect(document.header).to be_nil
+      expect(document.header).to eq Coradoc::Model::Header.new
       expect(document.sections).to eq([section1])
     end
 

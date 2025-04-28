@@ -50,12 +50,8 @@ RSpec.describe Coradoc::Model::Block::Core do
     end
 
     it "generates anchor when present" do
-      anchor = instance_double(Coradoc::Model::Inline::Anchor,
-        to_asciidoc: "[[block-1]]"
-      )
-
       block = described_class.new
-      allow(block).to receive(:anchor).and_return(anchor)
+      allow(block).to receive(:id).and_return("block-1")
 
       expect(block.gen_anchor).to eq("[[block-1]]\n")
     end
@@ -85,14 +81,14 @@ RSpec.describe Coradoc::Model::Block::Core do
 
   describe "#gen_attributes" do
     it "generates attributes when present" do
-      allow(attributes).to receive(:to_asciidoc).with(false).and_return("[source,ruby]")
+      allow(attributes).to receive(:to_asciidoc).with(show_empty: false).and_return("[source,ruby]")
 
       block = described_class.new(attributes: attributes)
       expect(block.gen_attributes).to eq("[source,ruby]\n")
     end
 
     it "returns empty string when attributes are empty" do
-      allow(attributes).to receive(:to_asciidoc).with(false).and_return("")
+      allow(attributes).to receive(:to_asciidoc).with(show_empty: false).and_return("")
 
       block = described_class.new(attributes: attributes)
       expect(block.gen_attributes).to eq("")
@@ -119,7 +115,7 @@ RSpec.describe Coradoc::Model::Block::Core do
 
   describe "#gen_lines" do
     before do
-      allow(Coradoc::Generator).to receive(:gen_adoc) { |content| content.join("\n") }
+      # allow(Coradoc::Generator).to receive(:gen_adoc) { |content| content.join("\n") }
     end
 
     it "processes lines through Generator" do
@@ -129,7 +125,7 @@ RSpec.describe Coradoc::Model::Block::Core do
 
     it "handles empty lines array" do
       block = described_class.new
-      expect(block.gen_lines).to eq([].join("\n"))
+      expect(block.gen_lines).to eq("")
     end
   end
 

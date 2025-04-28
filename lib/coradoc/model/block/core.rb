@@ -9,10 +9,6 @@ module Coradoc
         attribute :id, :string
         attribute :title, :string
         attribute :attributes, AttributeList, default: -> { AttributeList.new }
-        # attribute :anchor, Inline::Anchor, default: -> (s) {
-        #   s.id.nil? ? nil : Inline::Anchor.new(s.id)
-        # }
-        attribute :anchor, method: :default_anchor
         attribute :lines, :string, collection: true, initialize_empty: true
         attribute :delimiter, :string
         attribute :delimiter_char, :string
@@ -21,19 +17,16 @@ module Coradoc
         attribute :type_str, :string
 
         # TODO: and many methods from Coradoc::Element::Block::Core
-        def gen_anchor
-          anchor.nil? ? "" : "#{anchor.to_asciidoc}\n"
-        end
 
         def gen_title
           t = Coradoc::Generator.gen_adoc(title)
-          return "" if t.empty?
+          return "" if t.nil? || t.empty?
 
           ".#{t}\n"
         end
 
         def gen_attributes
-          attrs = attributes.to_asciidoc(false)
+          attrs = attributes.to_asciidoc(show_empty: false)
           return "#{attrs}\n" if !attrs.empty?
 
           ""
@@ -44,7 +37,9 @@ module Coradoc
         end
 
         def gen_lines
-          Coradoc::Generator.gen_adoc(lines)
+          lines.map do |line|
+            Coradoc::Generator.gen_adoc(line)
+          end.join("\n")
         end
       end
     end

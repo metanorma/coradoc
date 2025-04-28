@@ -64,7 +64,7 @@ RSpec.describe Coradoc::Model::Tag do
         attrs: attrs
       )
 
-      expect(tag.to_asciidoc).to eq('// tag::test-tag[role="important"]\n')
+      expect(tag.to_asciidoc).to eq("// tag::test-tag[role=\"important\"]\n")
     end
 
     it "uses custom prefix" do

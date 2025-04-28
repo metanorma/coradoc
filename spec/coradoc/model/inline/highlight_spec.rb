@@ -35,7 +35,7 @@ RSpec.describe Coradoc::Model::Inline::Highlight do
     context "with unconstrained false (default)" do
       it "uses single hash" do
         highlight = described_class.new(content: "highlighted text")
-        expect(highlight.to_asciidoc).to eq("#highlighted text")
+        expect(highlight.to_asciidoc).to eq("#highlighted text#")
       end
 
       it "processes content through Generator" do
@@ -51,29 +51,29 @@ RSpec.describe Coradoc::Model::Inline::Highlight do
           content: "highlighted text",
           unconstrained: true
         )
-        expect(highlight.to_asciidoc).to eq("##highlighted text")
+        expect(highlight.to_asciidoc).to eq("##highlighted text##")
       end
     end
 
     it "handles multiline content" do
       highlight = described_class.new(content: "line 1\nline 2")
-      expect(highlight.to_asciidoc).to eq("#line 1\nline 2")
+      expect(highlight.to_asciidoc).to eq("#line 1\nline 2#")
     end
 
     it "handles empty content" do
       highlight = described_class.new(content: "")
-      expect(highlight.to_asciidoc).to eq("#")
+      expect(highlight.to_asciidoc).to eq("")
     end
 
     it "handles nil content" do
       highlight = described_class.new
       allow(Coradoc::Generator).to receive(:gen_adoc).with(nil).and_return("")
-      expect(highlight.to_asciidoc).to eq("#")
+      expect(highlight.to_asciidoc).to eq("")
     end
 
     it "preserves special characters in content" do
-      highlight = described_class.new(content: "text with * and _ and #")
-      expect(highlight.to_asciidoc).to eq("#text with * and _ and #")
+      highlight = described_class.new(content: "text ` with * and _ and #")
+      expect(highlight.to_asciidoc).to eq("#text ` with * and _ and \\##")
     end
   end
 
@@ -96,12 +96,12 @@ RSpec.describe Coradoc::Model::Inline::Highlight do
         content: "very important note",
         unconstrained: true
       )
-      expect("A #{highlight.to_asciidoc}").to eq("A ##very important note")
+      expect("A #{highlight.to_asciidoc}").to eq("A ##very important note##")
     end
 
     it "works with punctuation" do
       highlight = described_class.new(content: "Note:")
-      expect("#{highlight.to_asciidoc} read this").to eq("#Note#: read this")
+      expect("#{highlight.to_asciidoc} read this").to eq("#Note:# read this")
     end
   end
 end

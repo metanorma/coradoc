@@ -12,22 +12,21 @@ RSpec.describe Coradoc::Model::Paragraph do
       expect(paragraph.id).to eq("para-1")
       expect(paragraph.content).to eq("Sample content")
       expect(paragraph.title).to eq("Sample Title")
-      expect(paragraph.attrs).to be_a(Coradoc::Model::AttributeList)
+      expect(paragraph.attributes).to be_a(Coradoc::Model::AttributeList)
       expect(paragraph.tdsinglepara).to be false
     end
 
     it "uses default values when not provided" do
       paragraph = described_class.new
 
-      expect(paragraph.attrs).to be_a(Coradoc::Model::AttributeList)
-      expect(paragraph.attrs).to be_empty
+      expect(paragraph.attributes).to be_a(Coradoc::Model::AttributeList)
+      expect(paragraph.attributes).to be_empty
       expect(paragraph.tdsinglepara).to be false
     end
   end
 
   describe "#to_asciidoc" do
     before do
-      allow(Coradoc::Generator).to receive(:gen_adoc) { |content| content }
       allow(Coradoc).to receive(:strip_unicode) { |content| content }
     end
 
@@ -43,15 +42,11 @@ RSpec.describe Coradoc::Model::Paragraph do
       end
 
       it "includes anchor when present" do
-        anchor = instance_double(Coradoc::Model::Inline::Anchor,
-          to_adoc: "[[para-1]]"
-        )
-
         paragraph = described_class.new(
           title: "Sample Title",
           content: "Sample content"
         )
-        allow(paragraph).to receive(:anchor).and_return(anchor)
+        allow(paragraph).to receive(:id).and_return("para-1")
 
         expected_output = "\n\n.Sample Title\n[[para-1]]\nSample content\n\n"
         expect(paragraph.to_asciidoc).to eq(expected_output)
@@ -59,7 +54,8 @@ RSpec.describe Coradoc::Model::Paragraph do
 
       it "includes attributes when present" do
         attributes = instance_double(Coradoc::Model::AttributeList,
-          to_adoc: "[.lead]"
+          to_asciidoc: "[.lead]",
+          empty?: false,
         )
 
         paragraph = described_class.new(
@@ -85,16 +81,12 @@ RSpec.describe Coradoc::Model::Paragraph do
       end
 
       it "includes anchor without extra newlines" do
-        anchor = instance_double(Coradoc::Model::Inline::Anchor,
-          to_adoc: "[[para-1]]"
-        )
-
         paragraph = described_class.new(
           title: "Sample Title",
           content: "Sample content",
           tdsinglepara: true
         )
-        allow(paragraph).to receive(:anchor).and_return(anchor)
+        allow(paragraph).to receive(:id).and_return("para-1")
 
         expected_output = ".Sample Title\n[[para-1]]\nSample content"
         expect(paragraph.to_asciidoc).to eq(expected_output)

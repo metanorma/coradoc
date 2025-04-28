@@ -23,8 +23,8 @@ module Coradoc
             link = "link:#{link}"
           end
 
-          name_empty = name.empty?
-          title_empty = title.empty?
+          name_empty = name.nil? || name.empty?
+          title_empty = title.nil? || title.empty?
           valid_empty_name_link = link.start_with?(%r{https?://})
 
           link << if name_empty && !title_empty

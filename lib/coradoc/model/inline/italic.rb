@@ -13,6 +13,12 @@ module Coradoc
 
         def to_asciidoc
           _content = Coradoc::Generator.gen_adoc(content)
+          _content = Coradoc::Generator.escape_characters(_content, escape_chars: %w[_])
+
+          if _content.empty?
+            return ""
+          end
+
           if unconstrained
             "__#{_content}__"
           else

@@ -9,13 +9,13 @@ RSpec.describe Coradoc::Model::Inline::Span do
         text: "span text",
         role: "custom",
         attributes: attributes,
-        unconstrainted: true
+        unconstrained: true
       )
 
       expect(span.text).to eq("span text")
       expect(span.role).to eq("custom")
       expect(span.attributes).to eq(attributes)
-      expect(span.unconstrainted).to be true
+      expect(span.unconstrained).to be true
     end
 
     it "uses default values" do
@@ -24,7 +24,7 @@ RSpec.describe Coradoc::Model::Inline::Span do
       expect(span.text).to be_nil
       expect(span.role).to be_nil
       expect(span.attributes).to be_nil
-      expect(span.unconstrainted).to be false
+      expect(span.unconstrained).to be false
     end
   end
 
@@ -38,7 +38,7 @@ RSpec.describe Coradoc::Model::Inline::Span do
         span = described_class.new(
           text: "span text",
           attributes: attributes,
-          unconstrainted: true
+          unconstrained: true
         )
 
         expect(span.to_asciidoc).to eq("[opts=optional]##span text##")
@@ -59,7 +59,7 @@ RSpec.describe Coradoc::Model::Inline::Span do
         span = described_class.new(
           text: "span text",
           role: "custom",
-          unconstrainted: true
+          unconstrained: true
         )
 
         expect(span.to_asciidoc).to eq("[.custom]##span text##")

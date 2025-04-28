@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 RSpec.describe Coradoc::Model::Serialization::AsciidocAdapter do
-  let(:sections) { [double("Section1", to_asciidoc: "Section 1"), double("Section2", to_asciidoc: "Section 2")] }
+  let(:sections) { [
+    double("Section1", to_asciidoc: "Section 1"),
+    double("Section2", to_asciidoc: "Section 2"),
+  ] }
   let(:adapter) { described_class.new(sections) }
 
   describe "inheritance" do
@@ -22,10 +25,12 @@ RSpec.describe Coradoc::Model::Serialization::AsciidocAdapter do
   describe ".parse" do
     let(:asciidoc_data) { "Some asciidoc content" }
     let(:parsed_data) { { document: sections } }
-    let(:parser) { instance_double(Coradoc::Parser::Base, parse: parsed_data) }
+    # let(:parser) { instance_double(Coradoc::Parser::Base, parse: parsed_data) }
+    # let(:parser) { Coradoc::Parser::Base.new(asciidoc_data) }
+    let(:parser) { Coradoc::Parser::Base.new }
 
     before do
-      allow(Coradoc::Parser::Base).to receive(:new).with(asciidoc_data).and_return(parser)
+      allow_any_instance_of(Coradoc::Parser::Base).to receive(:parse).with(asciidoc_data).and_return(parsed_data)
     end
 
     it "creates an adapter instance with parsed sections" do

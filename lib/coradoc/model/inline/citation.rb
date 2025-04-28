@@ -13,7 +13,7 @@ module Coradoc
         end
 
         def to_asciidoc
-          adoc = "[.source]\n"
+          adoc = "[.source]\n".dup
           adoc << cross_reference.to_asciidoc if cross_reference
           adoc << "\n" if cross_reference && !comment
           adoc << Coradoc::Generator.gen_adoc(comment) if comment

@@ -36,10 +36,10 @@ module Coradoc
             name.dup,
             to: to.dup,
             render_nil: render_nil.dup,
-            with: Utils.deep_dup(custom_methods),
+            with: Lutaml::Model::Utils.deep_dup(custom_methods),
             delegate: delegate,
             field_type: field_type,
-            transform: Utils.deep_dup(transform),
+            transform: Lutaml::Model::Utils.deep_dup(transform),
           )
         end
       end

@@ -29,7 +29,7 @@ module Coradoc
         _title = Coradoc::Generator.gen_adoc(title)
         _title = _title.nil? || _title.empty? ? "" : ".#{_title}\n"
         _content = rows.map(&:to_asciidoc).join
-        "\n\n#{_anchor}#{attrs}#{_title}|===\n" << _content << "\n|===\n"
+        "\n\n#{_anchor}#{_attrs}#{_title}|===\n" << _content << "\n|===\n"
       end
     end
   end

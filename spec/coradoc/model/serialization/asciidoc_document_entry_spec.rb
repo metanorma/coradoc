@@ -43,7 +43,7 @@ RSpec.describe Coradoc::Model::Serialization::AsciidocDocumentEntry do
     end
   end
 
-  describe "#to_adoc" do
+  describe "#to_asciidoc" do
     it "generates AsciiDoc output with attributes" do
       entry = described_class.new(
         entry_type: "section",
@@ -57,7 +57,7 @@ RSpec.describe Coradoc::Model::Serialization::AsciidocDocumentEntry do
       expected_output = '[id="section-1",role="important"]
 section::Section content'
 
-      expect(entry.to_adoc).to eq(expected_output)
+      expect(entry.to_asciidoc).to eq(expected_output)
     end
 
     it "generates AsciiDoc output without attributes" do
@@ -67,7 +67,7 @@ section::Section content'
         attributes: {}
       )
 
-      expect(entry.to_adoc).to eq("section::Section content")
+      expect(entry.to_asciidoc).to eq("section::Section content")
     end
 
     it "handles single attribute" do
@@ -77,7 +77,7 @@ section::Section content'
         attributes: { "id" => "section-1" }
       )
 
-      expect(entry.to_adoc).to eq('[id="section-1"]
+      expect(entry.to_asciidoc).to eq('[id="section-1"]
 section::Section content')
     end
 
@@ -88,7 +88,7 @@ section::Section content')
         attributes: { "data-test" => "value with spaces" }
       )
 
-      expect(entry.to_adoc).to eq('[data-test="value with spaces"]
+      expect(entry.to_asciidoc).to eq('[data-test="value with spaces"]
 section::Section content')
     end
   end

@@ -62,23 +62,23 @@ RSpec.describe Coradoc::Model::Inline::Monospace do
 
     it "handles empty content" do
       mono = described_class.new(content: "")
-      expect(mono.to_asciidoc).to eq("````")
+      expect(mono.to_asciidoc).to eq("")
     end
 
     it "handles nil content" do
       mono = described_class.new
       allow(Coradoc::Generator).to receive(:gen_adoc).with(nil).and_return("")
-      expect(mono.to_asciidoc).to eq("````")
+      expect(mono.to_asciidoc).to eq("")
     end
 
     it "preserves special characters in content" do
-      mono = described_class.new(content: "code with * and _ and #")
-      expect(mono.to_asciidoc).to eq("``code with * and _ and #``")
+      mono = described_class.new(content: "code ` with * and _ and #")
+      expect(mono.to_asciidoc).to eq("``code \\` with * and _ and #``")
     end
 
     it "handles code with embedded backticks" do
       mono = described_class.new(content: "code with `backticks`")
-      expect(mono.to_asciidoc).to eq("``code with `backticks```")
+      expect(mono.to_asciidoc).to eq("``code with \\`backticks```")
     end
   end
 

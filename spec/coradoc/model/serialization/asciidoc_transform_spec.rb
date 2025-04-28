@@ -1,9 +1,33 @@
 # frozen_string_literal: true
 
 RSpec.describe Coradoc::Model::Serialization::AsciidocTransform do
+  let(:model_class) do
+    double("ModelClass").tap do |klass|
+      allow(klass).to receive(:name).and_return("TestDocument")
+      allow(klass).to receive(:entry_type).and_return("document")
+      allow(klass).to receive(:content).and_return("content")
+      allow(klass).to receive(:title).and_return("Test Document")
+    end
+  end
+
+  let(:model) do
+    double("Model").tap do |model|
+      allow(model).to receive(:entry_type).and_return("document")
+      allow(model).to receive(:content).and_return("content")
+      allow(model).to receive(:title).and_return("Test Document")
+      allow(model).to receive(:class).and_return(model_class)
+    end
+  end
+
+  before do
+    allow(model_class).to receive(:new).and_return(model)
+  end
+
   let(:context) do
-    double("Context").tap do |context|
-      allow(context).to receive(:mappings_for).with(:asciidoc).and_return(mappings)
+    double("Context").tap do |ctx|
+      allow(ctx).to receive(:mappings_for).with(:asciidoc).and_return(mappings)
+      allow(ctx).to receive(:attributes).and_return({ ' TODO' => 'attributes' })
+      allow(ctx).to receive(:model).and_return(model_class)
     end
   end
 

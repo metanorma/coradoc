@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "video/attribute_list"
 module Coradoc
   module Model
     class Video < Base
@@ -8,10 +9,7 @@ module Coradoc
       attribute :id, :string
       attribute :title, :string
       attribute :src, :string, default: -> { "" }
-      # attribute :anchor, Inline::Anchor, default: -> {
-      #   id.nil? ? nil : Inline::Anchor.new(id)
-      # }
-      attribute :attributes, AttributeList, default: -> { AttributeList.new }
+      attribute :attributes, Video::AttributeList, default: -> { Video::AttributeList.new }
 
       asciidoc do
         map_attribute "id", to: :id
@@ -22,8 +20,8 @@ module Coradoc
       end
 
       def to_asciidoc
-        _anchor = anchor.nil? ? "" : "#{anchor.to_asciidoc}\n"
-        _title = ".#{title}\n" unless title.empty?
+        _anchor = gen_anchor
+        _title = ".#{title}\n" unless title.nil? || title.empty?
         _attrs = attributes.to_asciidoc
         [_anchor, _title, "video::", src, _attrs].join
       end

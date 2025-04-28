@@ -10,7 +10,7 @@ RSpec.describe Coradoc::Model::Bibliography do
 
       expect(bib.id).to eq("bib-1")
       expect(bib.title).to eq("References")
-      expect(bib.entries).to eq([])
+      expect(bib.entries).to be_nil
     end
 
     it "accepts bibliography entries" do
@@ -57,7 +57,7 @@ RSpec.describe Coradoc::Model::Bibliography do
         entries: entries
       )
       allow(bib).to receive(:anchor).and_return(anchor)
-      allow(bib).to receive(:gen_anchor).and_return("[[bibliography]]\n")
+      allow(bib).to receive(:gen_anchor).and_return("[[bibliography]]")
 
       expected_output = "[[bibliography]]\n[bibliography]== References\n\n* [[[ref1]]] First reference\n* [[[ref2]]] Second reference\n"
       expect(bib.to_asciidoc).to eq(expected_output)

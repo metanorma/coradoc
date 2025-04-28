@@ -31,13 +31,13 @@ RSpec.describe Coradoc::Model::Inline::Superscript do
 
     it "handles empty content" do
       sup = described_class.new(content: "")
-      expect(sup.to_asciidoc).to eq("^^")
+      expect(sup.to_asciidoc).to eq("")
     end
 
     it "handles nil content" do
       sup = described_class.new
       allow(Coradoc::Generator).to receive(:gen_adoc).with(nil).and_return("")
-      expect(sup.to_asciidoc).to eq("^^")
+      expect(sup.to_asciidoc).to eq("")
     end
 
     it "handles multiple characters" do
@@ -48,6 +48,11 @@ RSpec.describe Coradoc::Model::Inline::Superscript do
     it "handles special characters" do
       sup = described_class.new(content: "n+1")
       expect(sup.to_asciidoc).to eq("^n+1^")
+    end
+
+    it "handles superscript characters" do
+      sup = described_class.new(content: "x^ ^a^b^ ^y")
+      expect(sup.to_asciidoc).to eq("^x{pass:[^]} {pass:[^]}a{pass:[^]}b{pass:[^]} {pass:[^]}y^")
     end
 
     it "preserves whitespace" do

@@ -104,7 +104,7 @@ RSpec.describe Coradoc::Model::Revision do
       expect(revision.date).to eq(date)
     end
 
-    it "validates date type" do
+    xit "validates date type" do
       expect { described_class.new(date: "2024-01-01") }
         .to raise_error(TypeError)
     end

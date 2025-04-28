@@ -12,7 +12,7 @@ module Coradoc
         @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
       end
 
-      def to_adoc(delimiter)
+      def to_adoc(delimiter: nil)
         anchor = @anchor.nil? ? "" : @anchor.to_adoc.to_s
         content = ""
         if (@terms.is_a?(Array) && @terms.size == 1) || !@terms.is_a?(Array)

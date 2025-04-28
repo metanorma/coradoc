@@ -24,7 +24,7 @@ RSpec.describe Coradoc::Model::TableRow do
 
     it "initializes with empty columns" do
       row = described_class.new
-      expect(row.columns).to eq([])
+      expect(row.columns).to eq(nil)
       expect(row.header).to be false
     end
   end
@@ -61,7 +61,8 @@ RSpec.describe Coradoc::Model::TableRow do
 
   describe "#to_asciidoc" do
     before do
-      allow(Coradoc::Generator).to receive(:gen_adoc) { |col| col.to_asciidoc }
+      # allow_any_instance_of(Coradoc::Model::TableCell).to receive(:to_asciidoc)
+      # allow(Coradoc::Generator).to receive(:gen_adoc) { |col| col.to_asciidoc }
     end
 
     context "with regular cells" do

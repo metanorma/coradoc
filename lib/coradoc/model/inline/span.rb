@@ -7,7 +7,7 @@ module Coradoc
         attribute :text, :string
         attribute :role, :string
         attribute :attributes, AttributeList
-        attribute :unconstrainted, :boolean, default: -> { false }
+        attribute :unconstrained, :boolean, default: -> { false }
 
         def to_asciidoc
           if attributes

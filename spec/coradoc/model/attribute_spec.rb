@@ -5,11 +5,11 @@ RSpec.describe Coradoc::Model::Attribute do
     it "initializes with key and value" do
       attr = described_class.new(
         key: "format",
-        value: "pdf"
+        value: ["pdf"]
       )
 
       expect(attr.key).to eq("format")
-      expect(attr.value).to eq("pdf")
+      expect(attr.value).to eq(["pdf"])
     end
 
     it "accepts array values" do
@@ -54,7 +54,7 @@ RSpec.describe Coradoc::Model::Attribute do
 
     it "handles empty string" do
       result = instance.send(:build_values, "")
-      expect(result).to eq("")
+      expect(result).to be_nil
     end
   end
 

@@ -25,7 +25,7 @@ RSpec.describe Coradoc::Model::DocumentAttributes do
 
     it "initializes with empty data" do
       attributes = described_class.new
-      expect(attributes.data).to eq([])
+      expect(attributes.data).to be_nil
     end
   end
 

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "core/attribute_list"
+
 module Coradoc
   module Model
     module Image
@@ -9,12 +11,9 @@ module Coradoc
         attribute :id, :string
         attribute :title, :string
         attribute :src, :string
-        attribute :attributes, Coradoc::Model::AttributeList, default: -> {
-          Coradoc::Model::AttributeList.new
+        attribute :attributes, Coradoc::Model::Image::Core::AttributeList, default: -> {
+          Coradoc::Model::Image::Core::AttributeList.new
         }
-        # attribute :anchor, Coradoc::Model::Inline::Anchor, default: -> {
-        #   id.nil? ? nil : Coradoc::Model::Inline::Anchor.new(id)
-        # }
         attribute :annotate_missing, :string
         attribute :line_break, :string, default: -> { "" }
         attribute :colons, :string

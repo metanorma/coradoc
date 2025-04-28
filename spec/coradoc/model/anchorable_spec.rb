@@ -2,33 +2,20 @@
 
 RSpec.describe Coradoc::Model::Anchorable do
   let(:test_class) do
-    Class.new do
+    Class.new(Coradoc::Model::Base) do
       include Coradoc::Model::Anchorable
       attr_accessor :id, :anchor
-
-      def initialize(id: nil, anchor: nil)
-        @id = id
-        @anchor = anchor
-      end
     end
   end
 
   describe "#default_anchor" do
-    let(:instance) { test_class.new }
-
-    context "when anchor is set" do
-      it "returns the existing anchor" do
-        existing_anchor = instance_double(Coradoc::Model::Inline::Anchor)
-        instance = test_class.new(anchor: existing_anchor)
-
-        expect(instance.default_anchor).to eq(existing_anchor)
-      end
-    end
+    let(:instance) { test_class.new(**init_options) }
+    let(:init_options) { {} }
 
     context "when anchor is nil but id is present" do
-      it "creates a new anchor with the id" do
-        instance = test_class.new(id: "section-1")
+      let(:init_options) { { id: "section-1" } }
 
+      it "creates a new anchor with the id" do
         expect(instance.default_anchor).to be_a(Coradoc::Model::Inline::Anchor)
         expect(instance.default_anchor.id).to eq("section-1")
       end
@@ -52,7 +39,7 @@ RSpec.describe Coradoc::Model::Anchorable do
 
   describe "module inclusion" do
     let(:another_test_class) do
-      Class.new do
+      Class.new(Coradoc::Model::Base) do
         include Coradoc::Model::Anchorable
       end
     end

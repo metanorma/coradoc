@@ -17,6 +17,16 @@ module Coradoc
 
         content
       end
+
+      # Does a shallow attribute dump of the object,
+      # for use when instantiating a new object (e.g. of a subclass) from an
+      # existing one.
+      def to_h
+        self.class.attributes.keys.reduce({}) do |acc, attribute|
+          acc[attribute] = public_send(attribute)
+          acc
+        end
+      end
     end
   end
 end

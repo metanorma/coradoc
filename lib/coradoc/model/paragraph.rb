@@ -8,7 +8,7 @@ module Coradoc
       attribute :id, :string
       attribute :content, :string
       attribute :title, :string
-      attribute :attrs, AttributeList, default: -> { AttributeList.new }
+      attribute :attributes, AttributeList, default: -> { AttributeList.new }
       attribute :tdsinglepara, :boolean, default: -> { false }
 
       asciidoc do
@@ -21,9 +21,8 @@ module Coradoc
 
       def to_asciidoc
         _title = title.nil? ? "" : ".#{Coradoc::Generator.gen_adoc(title)}\n"
-        _anchor = anchor.nil? ? "" : "#{anchor.to_asciidoc}\n"
-        attrs = attributes.nil? ? "" : "#{attributes.to_asciidoc}\n"
-
+        _anchor = gen_anchor
+        attrs = attributes.nil? || attributes.empty? ? "" : "#{attributes.to_asciidoc}\n"
         if tdsinglepara
           "#{_title}#{_anchor}" <<
             Coradoc.strip_unicode(Coradoc::Generator.gen_adoc(content))

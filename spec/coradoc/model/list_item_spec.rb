@@ -3,16 +3,17 @@
 RSpec.describe Coradoc::Model::ListItem do
   describe ".initialize" do
     it "initializes with basic attributes" do
+      content = [Coradoc::Model::TextElement.new(content: "List item content")]
       item = described_class.new(
         id: "item-1",
-        content: "List item content",
+        content:,
         marker: "*",
         subitem: nil,
         line_break: "\n"
       )
 
       expect(item.id).to eq("item-1")
-      expect(item.content).to eq("List item content")
+      expect(item.content).to eq content
       expect(item.marker).to eq("*")
       expect(item.subitem).to be_nil
       expect(item.line_break).to eq("\n")
@@ -26,15 +27,11 @@ RSpec.describe Coradoc::Model::ListItem do
   end
 
   describe "#to_asciidoc" do
-    before do
-      allow(Coradoc::Generator).to receive(:gen_adoc) { |content| content.is_a?(Array) ? content.join("\n") : content }
-      allow(Coradoc).to receive(:strip_unicode) { |content, **_opts| content }
-    end
-
     context "with simple content" do
       it "generates basic list item" do
+        content = [Coradoc::Model::TextElement.new(content: "Simple item")]
         item = described_class.new(
-          content: "Simple item",
+          content:,
           line_break: "\n"
         )
 
@@ -42,15 +39,13 @@ RSpec.describe Coradoc::Model::ListItem do
       end
 
       it "includes anchor when present" do
-        anchor = instance_double(Coradoc::Model::Inline::Anchor,
-          to_asciidoc: "[[item-1]]"
-        )
+        content = [Coradoc::Model::TextElement.new(content: "Simple item")]
 
         item = described_class.new(
-          content: "Simple item",
+          content:,
           line_break: "\n"
         )
-        allow(item).to receive(:anchor).and_return(anchor)
+        allow(item).to receive(:id).and_return("item-1")
 
         expect(item.to_asciidoc).to eq(" [[item-1]]Simple item\n")
       end
@@ -58,10 +53,11 @@ RSpec.describe Coradoc::Model::ListItem do
 
     context "with attached content" do
       let(:paragraph) { instance_double(Coradoc::Model::Paragraph, to_asciidoc: "Additional paragraph") }
+      let(:text_element) { Coradoc::Model::TextElement.new(content: "Item with attachment") }
 
       it "includes attached content" do
         item = described_class.new(
-          content: "Item with attachment",
+          content: [text_element],
           line_break: "\n",
           attached: [paragraph]
         )
@@ -73,21 +69,22 @@ RSpec.describe Coradoc::Model::ListItem do
 
     context "with nested list" do
       let(:nested_list) { instance_double(Coradoc::Model::List::Nestable, to_asciidoc: "\n** Nested item") }
+      let(:text_element) { Coradoc::Model::TextElement.new(content: "Parent item") }
 
       it "includes nested content" do
         item = described_class.new(
-          content: "Parent item",
+          content: [text_element],
           line_break: "\n",
           nested: nested_list
         )
 
-        expected_output = " Parent item\n** Nested item"
+        expected_output = " Parent item\n\n** Nested item"
         expect(item.to_asciidoc).to eq(expected_output)
       end
     end
 
     context "with complex content" do
-      let(:text_element) { instance_double(Coradoc::Model::TextElement, is_a?: true, class: Coradoc::Model::TextElement) }
+      let(:text_element) { Coradoc::Model::TextElement.new }
 
       it "handles array content" do
         item = described_class.new(

@@ -31,13 +31,13 @@ RSpec.describe Coradoc::Model::Inline::Subscript do
 
     it "handles empty content" do
       sub = described_class.new(content: "")
-      expect(sub.to_asciidoc).to eq("~~")
+      expect(sub.to_asciidoc).to eq("")
     end
 
     it "handles nil content" do
       sub = described_class.new
       allow(Coradoc::Generator).to receive(:gen_adoc).with(nil).and_return("")
-      expect(sub.to_asciidoc).to eq("~~")
+      expect(sub.to_asciidoc).to eq("")
     end
 
     it "handles multiple characters" do
@@ -48,6 +48,11 @@ RSpec.describe Coradoc::Model::Inline::Subscript do
     it "handles special characters" do
       sub = described_class.new(content: "x+y")
       expect(sub.to_asciidoc).to eq("~x+y~")
+    end
+
+    it "handles subscript characters" do
+      sub = described_class.new(content: "x~ ~a~b~ ~y")
+      expect(sub.to_asciidoc).to eq("~x{pass:[~]} {pass:[~]}a{pass:[~]}b{pass:[~]} {pass:[~]}y~")
     end
 
     it "preserves whitespace" do

@@ -28,9 +28,15 @@ module Coradoc
       end
 
       def to_asciidoc
-        Coradoc::Generator.gen_adoc(header) +
-          Coradoc::Generator.gen_adoc(document_attributes) +
-          Coradoc::Generator.gen_adoc(sections)
+        [header, document_attributes, sections].compact.map do |element|
+          # element.to_asciidoc
+          Coradoc::Generator.gen_adoc(element)
+        # end.join("\n")
+        end.join
+
+        # Coradoc::Generator.gen_adoc(header) +
+        #   Coradoc::Generator.gen_adoc(document_attributes) +
+        #   Coradoc::Generator.gen_adoc(sections)
       end
 
       class << self
@@ -49,6 +55,9 @@ module Coradoc
 
             when Coradoc::Model::Section
               @sections << element
+            else
+              warn "Unknown element type: #{element.class}"
+              warn "Element: #{element.inspect}"
             end
           end
 

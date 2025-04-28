@@ -14,6 +14,20 @@ module Coradoc
         map_attribute "lang", to: :lang
       end
 
+      def validate
+        errors = super
+
+        if term.nil? || term.empty?
+          errors << Lutaml::Model::Error.new("Term cannot be nil or empty")
+        end
+
+        if type.nil? || type.empty?
+          errors << Lutaml::Model::Error.new("Type cannot be nil or empty")
+        end
+
+        errors
+      end
+
       def to_asciidoc
         return "#{type}:[#{term}]#{line_break}" if lang.to_s == "en"
 

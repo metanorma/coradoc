@@ -51,20 +51,30 @@ RSpec.describe Coradoc::Model::Title do
       expect(title.style_str).to be_nil
     end
 
-    it "formats basic style" do
-      title = described_class.new(style: "discrete")
-      expect(title.style_str).to eq("[discrete]\n")
+    context "with no level_int" do
+      it "returns nil" do
+        title = described_class.new(style: "discrete")
+        expect(title.style_str).to be_nil
+      end
     end
 
-    it "includes level when > 5" do
-      title = described_class.new(level_int: 6)
-      expect(title.style_str).to eq("[level=6]\n")
+    context "with level_int" do
+      it "formats basic style" do
+        title = described_class.new(level_int: 1, style: "discrete")
+        expect(title.style_str).to eq("[discrete]\n")
+      end
+
+      it "includes level when > 5" do
+        title = described_class.new(level_int: 6)
+        expect(title.style_str).to eq("[level=6]\n")
+      end
+
+      it "combines style and level" do
+        title = described_class.new(style: "discrete", level_int: 6)
+        expect(title.style_str).to eq("[discrete,level=6]\n")
+      end
     end
 
-    it "combines style and level" do
-      title = described_class.new(style: "discrete", level_int: 6)
-      expect(title.style_str).to eq("[discrete,level=6]\n")
-    end
   end
 
   describe "#to_asciidoc" do
@@ -83,15 +93,11 @@ RSpec.describe Coradoc::Model::Title do
     end
 
     it "includes anchor when present" do
-      anchor = instance_double(Coradoc::Model::Inline::Anchor,
-        to_adoc: "[[section-1]]"
-      )
-
       title = described_class.new(
         content: "Section Title",
         level_int: 1
       )
-      allow(title).to receive(:anchor).and_return(anchor)
+      allow(title).to receive(:id).and_return("section-1")
 
       expect(title.to_asciidoc).to eq("\n[[section-1]]\n== Section Title\n")
     end

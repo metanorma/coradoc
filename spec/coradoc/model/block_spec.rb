@@ -50,7 +50,7 @@ RSpec.describe Coradoc::Model::Block do
 
       it "generates quote block with attributes" do
         allow(attributes).to receive(:to_asciidoc)
-          .with(false)
+          .with(show_empty: false)
           .and_return('[source]')
 
         quote = described_class.new(
@@ -84,12 +84,8 @@ RSpec.describe Coradoc::Model::Block do
       end
 
       it "inherits Core's anchor functionality" do
-        anchor = instance_double(Coradoc::Model::Inline::Anchor,
-          to_asciidoc: "[[quote-1]]"
-        )
-
         quote = described_class.new(lines: lines)
-        allow(quote).to receive(:anchor).and_return(anchor)
+        allow(quote).to receive(:id).and_return("quote-1")
 
         expected_output = "\n\n[[quote-1]]\n____\nFirst line\nSecond line\n____\n\n"
         expect(quote.to_asciidoc).to eq(expected_output)

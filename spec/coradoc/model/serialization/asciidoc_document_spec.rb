@@ -21,7 +21,7 @@ RSpec.describe Coradoc::Model::Serialization::AsciidocDocument do
     let(:parser) { instance_double(Coradoc::Parser::Base, parse: parsed_data) }
 
     before do
-      allow(Coradoc::Parser::Base).to receive(:new).with(asciidoc_data).and_return(parser)
+      allow(Coradoc::Parser::Base).to receive(:new).and_return(parser)
     end
 
     it "parses asciidoc data into document sections" do

@@ -80,19 +80,35 @@ RSpec.describe Coradoc::Model::Term do
       end
     end
 
-    it "handles empty term" do
-      term = described_class.new(type: "stem")
-      expect(term.to_asciidoc).to eq("stem:[]")
+    context "with nil term" do
+      subject(:term) { described_class.new(type: "stem") }
+      its(:validate) { is_expected.to_not be_empty }
+      its(:to_asciidoc) { is_expected.to eq("stem:[]") }
     end
 
-    it "handles empty type" do
-      term = described_class.new(term: "example")
-      expect(term.to_asciidoc).to eq(":[example]")
+    context "handles nil type" do
+      subject(:term) { described_class.new(term: "example") }
+      its(:validate) { is_expected.to_not be_empty }
+      its(:to_asciidoc) { is_expected.to eq(":[example]") }
     end
 
-    it "handles nil values" do
-      term = described_class.new
-      expect(term.to_asciidoc).to eq(":[nil]")
+    context "with empty term" do
+      subject(:term) { described_class.new(term: "", type: "stem") }
+      its(:validate) { is_expected.to_not be_empty }
+      its(:to_asciidoc) { is_expected.to eq("stem:[]") }
+    end
+
+    context "with empty type" do
+      subject(:term) { described_class.new(type: "", term: "example") }
+      its(:validate) { is_expected.to_not be_empty }
+      its(:to_asciidoc) { is_expected.to eq(":[example]") }
+    end
+
+    context "with nil values" do
+      subject(:term) { described_class.new }
+      its(:validate) { is_expected.to_not be_empty }
+      its(:'validate.size') { is_expected.to eq 2 }
+      its(:to_asciidoc) { is_expected.to eq(":[]") }
     end
   end
 
@@ -101,8 +117,6 @@ RSpec.describe Coradoc::Model::Term do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 
   describe "common use cases" do
     it "works for mathematical terms" do

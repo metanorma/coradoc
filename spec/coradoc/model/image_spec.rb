@@ -41,7 +41,7 @@ RSpec.describe Coradoc::Model::Image::Core do
         line_break: "\n"
       )
 
-      expected_output = ".Test Image\nimage#{image.colons}test.png[]\n"
+      expected_output = "[[img-1]]\n.Test Image\nimage#{image.colons}test.png[]\n"
       expect(image.to_asciidoc).to eq(expected_output)
     end
 

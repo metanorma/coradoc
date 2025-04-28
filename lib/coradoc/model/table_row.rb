@@ -15,7 +15,7 @@ module Coradoc
       end
 
       def asciidoc?
-        columns.any?(&:asciidoc?)
+        columns&.any?(&:asciidoc?) || false
       end
 
       def to_asciidoc

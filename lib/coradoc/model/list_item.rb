@@ -6,10 +6,10 @@ module Coradoc
       include Coradoc::Model::Anchorable
 
       attribute :id, :string
-      # attribute :anchor, Inline::Anchor, default: -> {
-      #   id.nil? ? nil : Inline::Anchor.new(id)
-      # }
-      attribute :content, :string
+      attribute :content, Coradoc::Model::Base, polymorphic: [
+        Coradoc::Model::TextElement,
+        Coradoc::Model::Section,
+      ]
       attribute :marker, :string
       attribute :subitem, :string
       attribute :line_break, :string
@@ -18,7 +18,7 @@ module Coradoc
         Coradoc::Model::Admonition,
         Coradoc::Model::Paragraph,
         Coradoc::Model::Block::Core,
-      ]
+      ], collection: true, initialize_empty: true
 
       attribute :nested, Coradoc::Model::List::Nestable
 
@@ -34,9 +34,22 @@ module Coradoc
       STRIP_UNICODE_BEGIN_MARKERS = (HARDBREAK_MARKERS.dup + [false]).freeze
       STRIP_UNICODE_END_MARKERS = [:hardbreak, :end, false].freeze
 
+      def inline?(elem)
+        case elem
+        when Inline::HardLineBreak
+          :hardbreak
+        when ->(i) { i.class.name.to_s.include? "::Inline::" }
+          true
+        when String, TextElement, Image::InlineImage
+          true
+        else
+          false
+        end
+      end
+
       def to_asciidoc
-        _anchor = anchor.nil? ? "" : anchor.to_asciidoc.to_s
-        _content = content.dup.flatten.compact # ???
+        _anchor = gen_anchor(inline: true)
+        _content = Array(content).dup.flatten.compact # ???
         # content = Array(@content).flatten.compact
         out = ""
         prev_inline = :init
@@ -50,6 +63,7 @@ module Coradoc
         end
 
         _content.each_with_index do |subitem, idx|
+          puts "genning subitem #{idx} of #{subitem.class}"
           subcontent = Coradoc::Generator.gen_adoc(subitem)
 
           inline = inline?(subitem)
@@ -57,11 +71,12 @@ module Coradoc
 
           # Only try to postprocess elements that are text,
           # otherwise we could strip markup.
-          if subitem.is_a? Coradoc::Element::TextElement
-            if STRIP_UNICODE_BEGIN.include?(prev_inline)
+          if subitem.is_a? Coradoc::Model::TextElement
+            puts "subitem is a text!!!!"
+            if STRIP_UNICODE_BEGIN_MARKERS.include?(prev_inline)
               subcontent = Coradoc.strip_unicode(subcontent, only: :begin)
             end
-            if STRIP_UNICODE_END.include?(next_inline)
+            if STRIP_UNICODE_END_MARKERS.include?(next_inline)
               subcontent = Coradoc.strip_unicode(subcontent, only: :end)
             end
           end
@@ -97,11 +112,16 @@ module Coradoc
         out = "{empty}" if out.empty?
 
         # attach = Coradoc::Generator.gen_adoc(@attached)
-        attach = @attached.map do |elem|
+        attach = attached.map do |elem|
           "+\n#{Coradoc::Generator.gen_adoc(elem)}"
         end.join
-        nest = Coradoc::Generator.gen_adoc(@nested)
-        out = " #{anchor}#{out}#{@line_break}"
+        nest = Coradoc::Generator.gen_adoc(nested)
+        puts 'pp nested'
+        pp nested
+        puts 'pp nest'
+        pp nest
+        out = " #{_anchor}#{out}#{line_break}"
+        pp [out, attach, nest]
         out + attach + nest
       end
     end

@@ -10,7 +10,7 @@ RSpec.describe Coradoc::Model::Serialization::AsciidocMappingRule do
       expect(rule.render_nil).to be false
       expect(rule.render_default).to be false
       expect(rule.field_type).to eq(:attributes)
-      expect(rule.with).to eq({})
+      expect(rule.custom_methods).to eq({})
       expect(rule.delegate).to be_nil
       expect(rule.transform).to eq({})
     end
@@ -35,7 +35,7 @@ RSpec.describe Coradoc::Model::Serialization::AsciidocMappingRule do
       expect(rule.render_nil).to be true
       expect(rule.render_default).to be true
       expect(rule.field_type).to eq(:content)
-      expect(rule.with).to eq(with)
+      expect(rule.custom_methods).to eq(with)
       expect(rule.delegate).to eq(:delegated_method)
       expect(rule.transform).to eq(transform)
     end
@@ -68,21 +68,7 @@ RSpec.describe Coradoc::Model::Serialization::AsciidocMappingRule do
 
     it "creates a deep copy of the rule" do
       duped_rule = original_rule.deep_dup
-
-      expect(duped_rule).to be_a(described_class)
-      expect(duped_rule.name).to eq(original_rule.name)
-      expect(duped_rule.to).to eq(original_rule.to)
-      expect(duped_rule.render_nil).to eq(original_rule.render_nil)
-      expect(duped_rule.with).to eq(original_rule.with)
-      expect(duped_rule.delegate).to eq(original_rule.delegate)
-      expect(duped_rule.field_type).to eq(original_rule.field_type)
-      expect(duped_rule.transform).to eq(original_rule.transform)
-
-      # Verify it's a deep copy
-      expect(duped_rule.name).not_to be(original_rule.name)
-      expect(duped_rule.to).not_to be(original_rule.to)
-      expect(duped_rule.with).not_to be(original_rule.with)
-      expect(duped_rule.transform).not_to be(original_rule.transform)
+      expect(Coradoc.is_deep_dup?(duped_rule, original_rule)).to be true
     end
   end
 end

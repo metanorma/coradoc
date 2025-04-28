@@ -12,6 +12,7 @@ RSpec.describe Coradoc::Model::Video do
       expect(video.id).to eq("video-1")
       expect(video.title).to eq("Sample Video")
       expect(video.src).to eq("video.mp4")
+      expect(video.attributes).to be_empty
       expect(video.attributes).to be_a(Coradoc::Model::AttributeList)
     end
 
@@ -39,7 +40,7 @@ RSpec.describe Coradoc::Model::Video do
         attributes: attributes
       )
 
-      expected_output = ".Sample Video\nvideo::video.mp4[width=640]"
+      expected_output = "[[video-1]]\n.Sample Video\nvideo::video.mp4[width=640]"
       expect(video.to_asciidoc).to eq(expected_output)
     end
 

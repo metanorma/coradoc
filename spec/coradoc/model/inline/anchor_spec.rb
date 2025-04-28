@@ -8,17 +8,15 @@ RSpec.describe Coradoc::Model::Inline::Anchor do
     end
 
     it "raises error without id" do
-      expect { described_class.new }.to raise_error do |error|
-        expect(error).to be_a(Lutaml::Model::ValidationError)
-        expect(error.message).to include("ID cannot be nil or empty for Anchor")
-      end
+      result = described_class.new.validate
+      expect(result).to include an_instance_of(Lutaml::Model::Error)
+      expect(result).to include an_object_having_attributes(message: "ID cannot be nil or empty for Anchor")
     end
 
     it "raises error with empty id" do
-      expect { described_class.new(id: "") }.to raise_error do |error|
-        expect(error).to be_a(Lutaml::Model::ValidationError)
-        expect(error.message).to include("ID cannot be nil or empty for Anchor")
-      end
+      result = described_class.new(id: "").validate
+      expect(result).to include an_instance_of(Lutaml::Model::Error)
+      expect(result).to include an_object_having_attributes(message: "ID cannot be nil or empty for Anchor")
     end
   end
 
@@ -44,7 +42,7 @@ RSpec.describe Coradoc::Model::Inline::Anchor do
       allow(anchor).to receive(:id).and_return("valid-id")
 
       errors = anchor.send(:validate)
-      expect(errors).to be_empty
+      expect(errors).to be_nil
     end
   end
 
