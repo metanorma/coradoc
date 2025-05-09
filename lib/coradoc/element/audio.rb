@@ -17,7 +17,7 @@ module Coradoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         title = ".#{@title}\n" unless @title.empty?
         attrs = @attributes.empty? ? "\[\]" : @attributes.to_adoc
-        [anchor, title, "audio::", @src, attrs].join("")
+        [anchor, title, "audio::", @src, attrs].join
       end
 
       extend AttributeList::Matchers

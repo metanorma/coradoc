@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html do
-  subject { Coradoc::Input::Html.convert(input, split_sections: level) }
+  subject { described_class.convert(input, split_sections: level) }
 
   let(:input) { File.read("spec/coradoc/input/html/assets/sections.html") }
   let(:l1sections) do
@@ -31,14 +31,14 @@ describe Coradoc::Input::Html do
     it { is_expected.to be_a Hash }
 
     it "has a correct keys" do
-      subject.keys.should be == expected_sections
+      expect(subject.keys).to be == expected_sections
     end
 
     it "has a correct index" do
       section_content = l1sections.compact.map do |i|
         "include::#{i}[]\n\n"
       end.join
-      subject[nil].should be == "[[__brokendiv]]\nPreface\n#{section_content}"
+      expect(subject[nil]).to be == "[[__brokendiv]]\nPreface\n#{section_content}"
     end
   end
 
@@ -56,7 +56,7 @@ describe Coradoc::Input::Html do
     include_examples "can split and generate correct index"
 
     it "has a correct level2 index" do
-      subject["sections/section-02.adoc"].should be ==
+      expect(subject["sections/section-02.adoc"]).to be ==
         "== Section 2\n\nThis document describes something.\n\ninclude::../sections/section-02/section-01.adoc[]\n\ninclude::../sections/section-02/section-02.adoc[]\n\ninclude::../sections/section-02/section-03.adoc[]\n\n"
     end
   end

@@ -7,7 +7,7 @@ RSpec.describe Coradoc::Element::Revision do
       remark = "Version comment note"
       revision_date = "2023-02-23"
 
-      revision = Coradoc::Element::Revision.new(
+      revision = described_class.new(
         number, date: revision_date, remark: remark
       )
 

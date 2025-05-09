@@ -2,14 +2,16 @@ require "spec_helper"
 
 describe Coradoc::Input::Html do
   let(:document) { Nokogiri::HTML(input) }
-  let(:adoc) { Coradoc::Input::Html.convert(document) }
+  let(:adoc) { described_class.convert(document) }
 
   shared_examples "test" do |name, test, expected_result|
     context name do
       let(:input) { test }
       let(:subject) { adoc }
 
-      it("is fixed") { subject.chomp.chomp.should be == expected_result }
+      it "is fixed" do
+        expect(subject.chomp.chomp).to be == expected_result
+      end
     end
   end
 

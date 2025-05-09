@@ -6,8 +6,8 @@ RSpec.describe Coradoc::Element::AttributeList do
       positional = ["a", "b", "c"]
       named = { 'd': "e", 'f': "g" }
 
-      attribute_list = Coradoc::Element::AttributeList.new("a", "b", "c", 'd': "e",
-                                                                          'f': "g")
+      attribute_list = described_class.new("a", "b", "c", 'd': "e",
+                                                          'f': "g")
 
       expect(attribute_list.positional).to eq(positional)
       expect(attribute_list.named).to eq(named)
@@ -16,7 +16,7 @@ RSpec.describe Coradoc::Element::AttributeList do
     it "validates attributes" do
       V_POS = [[:alt, String], [:width, Integer], [:broken, String]].freeze
       V_NAM = { alt: String, width: Integer, broken: String }.freeze
-      attributes = Coradoc::Element::AttributeList.new
+      attributes = described_class.new
       attributes.add_positional("Alt text")
       attributes.add_positional(256)
       attributes.add_positional(400)

@@ -6,8 +6,8 @@ RSpec.describe Coradoc::Element::Admonition do
       type = "NOTE"
       text = "This is note type admonition"
 
-      admonition = Coradoc::Element::Admonition.new(text, type,
-                                                    line_break: "\n")
+      admonition = described_class.new(text, type,
+                                       line_break: "\n")
 
       expect(admonition.content).to eq(text)
       expect(admonition.line_break).to eq("\n")

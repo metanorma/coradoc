@@ -3,7 +3,7 @@ require "spec_helper"
 describe Coradoc::Input::Html::Converters do
   before { Coradoc::Input::Html.config.unknown_tags = :raise }
 
-  let(:converters) { Coradoc::Input::Html::Converters }
+  let(:converters) { described_class }
 
   describe ".register and .unregister" do
     it "adds a converter mapping to the list" do

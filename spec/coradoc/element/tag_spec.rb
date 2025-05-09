@@ -7,7 +7,7 @@ RSpec.describe Coradoc::Element::Tag do
       opts = { prefix: "tag",
                attribute_list: Coradoc::Element::AttributeList.new,
                line_break: "\n" }
-      tag = Coradoc::Element::Tag.new(name, opts)
+      tag = described_class.new(name, opts)
       expect(tag.name).to eq(name)
       expect(tag.prefix).to eq("tag")
       expect(tag.attrs.class).to eq(Coradoc::Element::AttributeList)

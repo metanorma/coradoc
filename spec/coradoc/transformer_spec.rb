@@ -5,7 +5,7 @@ RSpec.describe Coradoc::Transformer do
     it "transforms the abstract syntax tree to document" do
       file = Coradoc.root_path.join("spec", "fixtures", "sample-oscal.adoc")
       syntax_tree = Coradoc::Parser.parse(file)
-      doc = Coradoc::Transformer.transform(syntax_tree)
+      doc = described_class.transform(syntax_tree)
 
       expect(doc.header.class).to eq(Coradoc::Element::Header)
       expect(doc.document_attributes.class).to eq(Coradoc::Element::DocumentAttributes)

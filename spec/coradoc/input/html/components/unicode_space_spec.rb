@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html do
-  subject { Coradoc::Input::Html.convert(input) }
+  subject { described_class.convert(input) }
 
   let(:input) do
     File.read("spec/coradoc/input/html/assets/unicode_space.html")

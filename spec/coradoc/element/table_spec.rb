@@ -10,7 +10,7 @@ RSpec.describe Coradoc::Element::Table do
       ]
 
       row = Coradoc::Element::Table::Row.new(columns)
-      table = Coradoc::Element::Table.new(title, [row])
+      table = described_class.new(title, [row])
 
       expect(table.title).to eq(title)
       expect(table.rows.first).to eq(row)

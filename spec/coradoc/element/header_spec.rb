@@ -7,7 +7,7 @@ RSpec.describe Coradoc::Element::Header do
       revision = Coradoc::Element::Revision.new(1.0, date: "2023-01-01")
       author = Coradoc::Element::Author.new("John", "Doe", "john@example.com")
 
-      header = Coradoc::Element::Header.new(
+      header = described_class.new(
         title, author: author, revision: revision
       )
 

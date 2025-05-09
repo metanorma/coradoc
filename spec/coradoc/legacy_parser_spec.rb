@@ -6,7 +6,7 @@ RSpec.describe Coradoc::LegacyParser do
     it "parses the document using parselet" do
       sample_file = Coradoc.root_path.join("spec", "fixtures", "sample.adoc")
 
-      document = Coradoc::LegacyParser.parse(sample_file)[:document]
+      document = described_class.parse(sample_file)[:document]
 
       expect_document_to_match_header(document[0])
       expect_document_to_match_document_attributes(document[1])
