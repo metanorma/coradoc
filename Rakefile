@@ -15,3 +15,6 @@ desc "Open an irb session preloaded with this library"
 task :console do
   sh "irb -Ilib -rcoradoc -rcoradoc/reverse_adoc"
 end
+
+require 'bundler/audit/task'
+Bundler::Audit::Task.new
