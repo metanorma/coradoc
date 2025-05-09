@@ -4,13 +4,14 @@ source "https://rubygems.org"
 
 gemspec
 
-gem "codeclimate-test-reporter"
-gem "pry"
-gem "rake"
-gem "redcarpet"
-gem "rspec"
-gem "rubocop"
-gem "rubocop-performance"
-gem "simplecov"
+group :development do
+  gem "codeclimate-test-reporter"
+  gem "pry"
+  gem "rake"
+  gem "redcarpet"
+  gem "rspec"
+  gem "simplecov"
+end
+
 # gem "parallel_tests"
 # gem "stackprof"
