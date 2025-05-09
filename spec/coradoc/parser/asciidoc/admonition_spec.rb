@@ -11,6 +11,7 @@ RSpec.describe "Coradoc::Parser::Asciidoc::Admonition" do
                            line_break: "\n" }] }]
       expect(ast).to eq(exp)
     end
+
     it "parses multi line admonition" do
       parser = Asciidoc::AdmonitionTester
 

@@ -19,7 +19,7 @@ describe "exe/reverse_adoc" do
       end
 
       it "Does not raise error" do
-        expect { convert }.to_not raise_error
+        expect { convert }.not_to raise_error
       end
 
       it "exatracts images from source html" do

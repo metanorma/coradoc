@@ -2,7 +2,7 @@ require "spec_helper"
 
 RSpec.describe "Coradoc::Asciidoc::Section" do
   describe ".parse" do
-    it "it parses section tile and body" do
+    it "parses section tile and body" do
       section = <<~TEXT
         == Section title
         Section content
@@ -16,7 +16,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(paragraph[:lines][0][:text]).to eq("Section content")
     end
 
-    it "it parses section tile and body" do
+    it "parses section tile and body" do
       section = <<~TEXT
         == Section title
         [[inline_id]] Section content
@@ -30,7 +30,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(paragraph[:lines][0][:text]).to eq("Section content")
     end
 
-    it "it parses section id, title and body" do
+    it "parses section id, title and body" do
       section = <<~TEXT
         [[section_id]]
         == Section title
@@ -46,7 +46,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(paragraph[:lines][0][:text]).to eq("Section content")
     end
 
-    it "it parses section id, title and body" do
+    it "parses section id, title and body" do
       section = <<~TEXT
         [#section_id]
         == Section title
@@ -62,7 +62,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(paragraph[:lines][0][:text]).to eq("Section content")
     end
 
-    it "it parses legacy section id" do
+    it "parses legacy section id" do
       section = <<~TEXT
         [[section_id]]
         == Section title
@@ -80,7 +80,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(ast.first[:section][:sections].first[:section][:id]).to eq("section_id_5.1")
     end
 
-    it "it parses nested sub sections" do
+    it "parses nested sub sections" do
       section = <<~TEXT
         == Section title
 
@@ -134,7 +134,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(level_seven[:title][:text]).to eq("Level 7 clause heading")
     end
 
-    it "it parses section with inline id" do
+    it "parses section with inline id" do
       section = <<~TEXT
         [[section_id]]
         == Section title
@@ -161,7 +161,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(sub_sections[0][:section][:title][:text]).to eq("This is another section id")
     end
 
-    it "it parses section with inline id" do
+    it "parses section with inline id" do
       section = <<~TEXT
         [[section_id]]
         == Section title

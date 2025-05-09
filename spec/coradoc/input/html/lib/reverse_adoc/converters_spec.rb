@@ -2,6 +2,7 @@ require "spec_helper"
 
 describe Coradoc::Input::Html::Converters do
   before { Coradoc::Input::Html.config.unknown_tags = :raise }
+
   let(:converters) { Coradoc::Input::Html::Converters }
 
   describe ".register and .unregister" do

@@ -15,7 +15,7 @@ RSpec.configure do |config|
   SimpleCov.start "gem"
 
   # Input::HTML:
-  config.after(:each) do
+  config.after do
     Coradoc::Input::Html.instance_variable_set(:@config, nil)
   end
 end

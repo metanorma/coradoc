@@ -1,9 +1,10 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html do
-  let(:input) { File.read("spec/coradoc/input/html/assets/basic.html") }
   # let(:document) { Nokogiri::HTML(input) }
   subject { Coradoc::Input::Html.convert(input) }
+
+  let(:input) { File.read("spec/coradoc/input/html/assets/basic.html") }
 
   it { is_expected.to match /plain text ?\n/ }
   it { is_expected.to match /\n== h1\n/ }
@@ -20,23 +21,29 @@ describe Coradoc::Input::Html do
   it { is_expected.to match /_double em tags_/ }
   it { is_expected.to match /_double em tags in p tag_/ }
   it { is_expected.to match /a _em with leading and trailing_ whitespace/ }
+
   it {
     is_expected.to match /a _em with extra leading and trailing_ whitespace/
   }
 
   it { is_expected.to match /\*strong tag content\*/ }
   it { is_expected.to match /before and after empty strong tags/ }
+
   it {
     is_expected.to match /before and after strong tags containing whitespace/
   }
+
   it { is_expected.to match /\*double strong tags\*/ }
   it { is_expected.to match /\*double strong tags in p tag\*/ }
+
   it {
     is_expected.to match /before \*double strong tags containing whitespace\* after/
   }
+
   it {
     is_expected.to match /a \*strong with leading and trailing\* whitespace/
   }
+
   it {
     is_expected.to match /a \*strong with extra leading and trailing\* whitespace/
   }

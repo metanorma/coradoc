@@ -280,6 +280,7 @@ RSpec.describe "Coradoc::Parser::Asciidoc::Inline" do
 
       parser.parse("footnote:[some text *with bold*]")
     end
+
     it "parses cross-references" do
       parser = Asciidoc::InlineTextFormattingTester
 

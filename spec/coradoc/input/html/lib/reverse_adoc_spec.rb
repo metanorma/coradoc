@@ -72,10 +72,12 @@ describe Coradoc::Input::Html do
           WordToMarkdown::REVERSE_MARKDOWN_OPTIONS,
         )
       end
+
       let(:input) do
         WordToMarkdown.new("spec/coradoc/input/html/assets/external_images.docx",
                            Coradoc::Input::Html.config.sourcedir)
       end
+
       it_behaves_like "converting source with external images included",
                       ["001.gif", "002.gif"]
     end
@@ -83,18 +85,22 @@ describe Coradoc::Input::Html do
 
   context "when html file input" do
     subject(:convert) { Coradoc::Input::Html.convert(input) }
+
     let(:input) do
       File.read("spec/coradoc/input/html/assets/external_images.html")
     end
+
     it_behaves_like "converting source with external images included",
                     ["001.gif"]
   end
 
   context "when html file input with internal images" do
     subject(:convert) { Coradoc::Input::Html.convert(input) }
+
     let(:input) do
       File.read("spec/coradoc/input/html/assets/internal_images.html")
     end
+
     it_behaves_like "converting source with external images included",
                     ["001.png", "002.jpeg", "003.webp", "004.avif", "005.gif"]
   end

@@ -93,6 +93,7 @@ module Coradoc
 
     def build_oscal_prose(paragraph)
       return nil unless paragraph.respond_to?(:texts)
+
       paragraph.texts&.join(" ")
     end
   end
