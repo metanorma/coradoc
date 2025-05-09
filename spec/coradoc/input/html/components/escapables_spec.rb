@@ -1,9 +1,10 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html do
+  subject { Coradoc::Input::Html.convert(input) }
+
   let(:input)    { File.read("spec/coradoc/input/html/assets/escapables.html") }
   let(:document) { Nokogiri::HTML(input) }
-  subject { Coradoc::Input::Html.convert(input) }
 
   context "multiple asterisks" do
     it { is_expected.to include ' \*\*two asterisks\*\* ' }
@@ -25,6 +26,7 @@ describe Coradoc::Input::Html do
 
   context "underscores within words in code blocks" do
     let(:expected_output) { "....\nvar theoretical_max_infin = 1.0;\n....\n" }
+
     it { is_expected.to include expected_output }
   end
 end

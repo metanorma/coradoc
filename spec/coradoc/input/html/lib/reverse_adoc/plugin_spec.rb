@@ -1,14 +1,15 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html::Plugin do
+  subject { Coradoc::Input::Html.convert(input, plugins: plugins) }
+
   let(:input) do
     "<html><body><div><table><tr><td>hello</td></tr></table></div></body></html>"
   end
-  let(:document) { Nokogiri::HTML(input) }
-  subject { Coradoc::Input::Html.convert(input, plugins: plugins) }
   let(:plugins) { [plugin] }
+  let(:document) { Nokogiri::HTML(input) }
 
-  context "#preprocess_html_tree" do
+  describe "#preprocess_html_tree" do
     let(:plugin) do
       c = code
       described_class.new do
@@ -16,17 +17,17 @@ describe Coradoc::Input::Html::Plugin do
       end
     end
 
-    context "#html_tree_remove_by_css" do
+    describe "#html_tree_remove_by_css" do
       let(:code) do
         -> {
           html_tree_remove_by_css("table")
         }
       end
 
-      it { should_not include "hello" }
+      it { is_expected.not_to include "hello" }
     end
 
-    context "#html_tree_change_tag_name_by_css" do
+    describe "#html_tree_change_tag_name_by_css" do
       let(:code) do
         -> {
           html_tree_change_tag_name_by_css("table", "ul")
@@ -35,31 +36,31 @@ describe Coradoc::Input::Html::Plugin do
         }
       end
 
-      it { should include "* hello" }
+      it { is_expected.to include "* hello" }
     end
 
-    context "#html_tree_change_properties_by_css" do
+    describe "#html_tree_change_properties_by_css" do
       let(:code) do
         -> {
           html_tree_change_properties_by_css("td", valign: "bottom")
         }
       end
 
-      it { should include ".>|" }
+      it { is_expected.to include ".>|" }
     end
 
-    context "#html_tree_replace_with_children_by_css" do
+    describe "#html_tree_replace_with_children_by_css" do
       let(:code) do
         -> {
           html_tree_replace_with_children_by_css("table, tr, td")
         }
       end
 
-      it { should include "hello" }
-      it { should_not include "|===" }
+      it { is_expected.to include "hello" }
+      it { is_expected.not_to include "|===" }
     end
 
-    context "#html_tree_preview" do
+    describe "#html_tree_preview" do
       let(:code) do
         -> {
           html_tree_preview
@@ -89,7 +90,7 @@ describe Coradoc::Input::Html::Plugin do
       end
     end
 
-    context "#html_tree_add_hook_pre_by_css" do
+    describe "#html_tree_add_hook_pre_by_css" do
       let(:code) do
         -> {
           html_tree_add_hook_pre_by_css "div" do |node, _|
@@ -98,11 +99,11 @@ describe Coradoc::Input::Html::Plugin do
         }
       end
 
-      it { should_not include "hello" }
-      it { should include "olleh" }
+      it { is_expected.not_to include "hello" }
+      it { is_expected.to include "olleh" }
     end
 
-    context "#html_tree_process_to_adoc" do
+    describe "#html_tree_process_to_adoc" do
       let(:code) do
         -> {
           html_tree_add_hook_pre_by_css "div" do |node, _|
@@ -113,12 +114,12 @@ describe Coradoc::Input::Html::Plugin do
         }
       end
 
-      it { should_not include "hello" }
-      it { should include "olleh" }
-      it { should include "|===" }
+      it { is_expected.not_to include "hello" }
+      it { is_expected.to include "olleh" }
+      it { is_expected.to include "|===" }
     end
 
-    context "#html_tree_process_to_coradoc" do
+    describe "#html_tree_process_to_coradoc" do
       let(:code) do
         -> {
           html_tree_add_hook_pre_by_css "td" do |node, _|
@@ -130,12 +131,12 @@ describe Coradoc::Input::Html::Plugin do
         }
       end
 
-      it { should_not include "hello" }
-      it { should include "OLLEH" }
-      it { should include "|===" }
+      it { is_expected.not_to include "hello" }
+      it { is_expected.to include "OLLEH" }
+      it { is_expected.to include "|===" }
     end
 
-    context "#html_tree_add_hook_post_by_css" do
+    describe "#html_tree_add_hook_post_by_css" do
       let(:code) do
         -> {
           html_tree_add_hook_post_by_css "td" do |_, coradoc, _|
@@ -145,11 +146,11 @@ describe Coradoc::Input::Html::Plugin do
         }
       end
 
-      it { should include ".>|" }
+      it { is_expected.to include ".>|" }
     end
   end
 
-  context "#postprocess_coradoc_tree" do
+  describe "#postprocess_coradoc_tree" do
     let(:plugin) do
       c = code
       described_class.new do
@@ -169,11 +170,11 @@ describe Coradoc::Input::Html::Plugin do
         }
       end
 
-      it { should include ".>|" }
+      it { is_expected.to include ".>|" }
     end
   end
 
-  context "#postprocess_asciidoc_string" do
+  describe "#postprocess_asciidoc_string" do
     let(:plugin) do
       c = code
       described_class.new do
@@ -188,7 +189,7 @@ describe Coradoc::Input::Html::Plugin do
         }
       end
 
-      it { should include ".>|" }
+      it { is_expected.to include ".>|" }
     end
   end
 end

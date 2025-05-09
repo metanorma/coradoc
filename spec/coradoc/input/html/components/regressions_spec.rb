@@ -8,6 +8,7 @@ describe Coradoc::Input::Html do
     context name do
       let(:input) { test }
       let(:subject) { adoc }
+
       it("is fixed") { subject.chomp.chomp.should be == expected_result }
     end
   end

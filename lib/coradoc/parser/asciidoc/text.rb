@@ -111,7 +111,7 @@ module Coradoc
           (str("image::") >>
             file_path.as(:path) >>
             attribute_list >>
-          (line_ending)
+          line_ending
           ).as(:inline_image)
         end
 

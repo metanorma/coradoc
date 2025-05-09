@@ -1,7 +1,7 @@
 require "spec_helper"
 
 RSpec.describe "Coradoc::Parser::Asciidoc::List" do
-  describe "parsing problem not fixed yet: " do
+  describe "parsing problem not fixed yet:" do
     xit "problem with parsing attribute_list before block in between two lists latter of which has block attached to it" do
       content = <<~ADOC
         . Unordered list item 1

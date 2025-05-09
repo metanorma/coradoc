@@ -16,3 +16,6 @@ AllCops:
 
 Layout/HashAlignment:
   EnforcedHashRocketStyle: table
+
+RSpec/ImplicitSubject:
+  EnforcedStyle: require_implicit

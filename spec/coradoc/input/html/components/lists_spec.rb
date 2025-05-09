@@ -1,9 +1,10 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html do
+  subject { Coradoc::Input::Html.convert(input) }
+
   let(:input)    { File.read("spec/coradoc/input/html/assets/lists.html") }
   let(:document) { Nokogiri::HTML(input) }
-  subject { Coradoc::Input::Html.convert(input) }
 
   it { is_expected.to match /\n\* unordered list entry\n/ }
   it { is_expected.to match /\n\* unordered list entry 2\n/ }
@@ -29,6 +30,7 @@ describe Coradoc::Input::Html do
 
   context "list start, reversed" do
     it { is_expected.to match /\n\[start=3\]\n\. another ordered list entry\n/ }
+
     it {
       is_expected.to match /\n\[%reversed\]\n\. a reversed ordered list entry\n/
     }
@@ -50,9 +52,11 @@ describe Coradoc::Input::Html do
 
   context "lists containing links" do
     it { is_expected.to match /\n\* link:Basic_concepts\[1 Basic concepts\]\n/ }
+
     it {
       is_expected.to match /\n\* link:History_of_the_idea\[2 History of the idea\]\n/
     }
+
     it {
       is_expected.to match /\n\* link:Intelligence_explosion\[3 Intelligence explosion\]\n/
     }
