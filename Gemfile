@@ -4,11 +4,19 @@ source "https://rubygems.org"
 
 gemspec
 
-group :development do
-  gem "codeclimate-test-reporter"
-  gem "pry"
-  gem "rake"
+gem "rake"
+
+group :doc do
   gem "redcarpet"
+end
+
+group :development do
+  gem "pry"
+end
+
+group :test do
+  gem "bundler-audit"
+  gem "codeclimate-test-reporter"
   gem "rspec"
   gem "rspec-its"
   gem "simplecov"
