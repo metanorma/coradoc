@@ -6,6 +6,10 @@ inherit_from:
 
 # local repo-specific modifications
 # ...
+plugins:
+  - rubocop-packaging
+  - rubocop-performance
+  - rubocop-rspec
 
 AllCops:
   TargetRubyVersion: 3.1
