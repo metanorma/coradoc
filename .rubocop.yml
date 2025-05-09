@@ -9,6 +9,7 @@ inherit_from:
 plugins:
   - rubocop-packaging
   - rubocop-performance
+  - rubocop-rake
   - rubocop-rspec
 
 AllCops:
