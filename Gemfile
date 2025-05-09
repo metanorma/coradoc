@@ -26,6 +26,7 @@ group :rubocop do
   gem "rubocop", "~> 1.75.2", require: false
   gem "rubocop-packaging"
   gem "rubocop-performance"
+  gem "rubocop-rake"
   gem "rubocop-rspec"
 end
 
