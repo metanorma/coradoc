@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html::Converters::Aside do
-  let(:converter) { Coradoc::Input::Html::Converters::Aside.new }
+  let(:converter) { described_class.new }
 
   it "converts aside" do
     input = node_for("<aside><ul><li>foo</li></ul></aside>")

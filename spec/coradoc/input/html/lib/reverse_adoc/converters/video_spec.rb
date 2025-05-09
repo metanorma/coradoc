@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html::Converters::Video do
-  let(:converter) { Coradoc::Input::Html::Converters::Video.new }
+  let(:converter) { described_class.new }
 
   it "converts video with no attributes" do
     node = node_for("<video src='example.mp4'/>")

@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html::Converters::Pre do
-  let(:converter) { Coradoc::Input::Html::Converters::Pre.new }
+  let(:converter) { described_class.new }
 
   it "converts as literal" do
     node = node_for("<pre>puts foo</pre>")

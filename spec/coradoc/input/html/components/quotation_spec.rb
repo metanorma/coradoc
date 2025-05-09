@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html do
-  subject { Coradoc::Input::Html.convert(input) }
+  subject { described_class.convert(input) }
 
   let(:input)    { File.read("spec/coradoc/input/html/assets/quotation.html") }
   let(:document) { Nokogiri::HTML(input) }

@@ -274,13 +274,13 @@ colspan)
 
         # The table seems bigger than the document... let's scale all
         # values.
-        while sizes.map { |i|
+        while sizes.sum { |i|
           if i.zero?
             document_width / 3 / sizes.length
           else
             i
           end
-        }.sum > document_width
+        } > document_width
 
           sizes = sizes.map { |i| i * 4 / 5 }
         end

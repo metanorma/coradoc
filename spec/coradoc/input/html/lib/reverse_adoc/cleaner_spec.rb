@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html::Cleaner do
-  let(:cleaner) { Coradoc::Input::Html::Cleaner.new }
+  let(:cleaner) { described_class.new }
 
   describe "#scrub_whitespace" do
     it "makes consistent nonbreaking spaces" do

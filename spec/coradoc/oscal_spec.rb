@@ -9,7 +9,7 @@ RSpec.describe Coradoc::Oscal do
       )
 
       doc = Coradoc::Document.from_adoc(sample_file)
-      oscal = Coradoc::Oscal.to_oscal(doc)
+      oscal = described_class.to_oscal(doc)
 
       expect(oscal["metadata"]["oscal-version"]).to eq("1.0.0")
       expect(oscal["groups"].first["controls"].count).to eq(14)

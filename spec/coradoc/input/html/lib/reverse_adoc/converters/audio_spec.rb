@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html::Converters::Audio do
-  let(:converter) { Coradoc::Input::Html::Converters::Audio.new }
+  let(:converter) { described_class.new }
 
   it "converts audio with no attributes" do
     node = node_for("<audio src='example.mp3'/>")

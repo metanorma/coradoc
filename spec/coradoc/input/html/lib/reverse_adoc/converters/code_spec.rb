@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html::Converters::Code do
-  let(:converter) { Coradoc::Input::Html::Converters::Code.new }
+  let(:converter) { described_class.new }
 
   it "converts as backtick" do
     node = node_for("<code>puts foo</code>")

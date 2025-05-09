@@ -59,7 +59,7 @@ module Coradoc
             titles = processed.content.flatten
 
             # Don't bother if there's no title in there.
-            next elem unless titles.any? { |i| i.is_a? Element::Title }
+            next elem unless titles.any?(Element::Title)
 
             # Ordered is another iteration for our cleanup.
             next elem unless titles.all? do |i|

@@ -5,47 +5,47 @@ describe Coradoc::Input::Html do
   let(:document) { Nokogiri::HTML(input) }
 
   it "parses nokogiri documents" do
-    expect { Coradoc::Input::Html.convert(document) }.not_to raise_error
+    expect { described_class.convert(document) }.not_to raise_error
   end
 
   it "parses nokogiri elements" do
-    expect { Coradoc::Input::Html.convert(document.root) }.not_to raise_error
+    expect { described_class.convert(document.root) }.not_to raise_error
   end
 
   it "parses string input" do
-    expect { Coradoc::Input::Html.convert(input) }.not_to raise_error
+    expect { described_class.convert(input) }.not_to raise_error
   end
 
   it "behaves in a sane way when root element is nil" do
-    expect(Coradoc::Input::Html.convert(nil)).to eq ""
+    expect(described_class.convert(nil)).to eq ""
   end
 
   describe "#config" do
     it "stores a given configuration option" do
-      Coradoc::Input::Html.config.tag_border = true
-      expect(Coradoc::Input::Html.config.tag_border).to eq true
+      described_class.config.tag_border = true
+      expect(described_class.config.tag_border).to be true
     end
 
     it "can be used as a block configurator as well" do
-      Coradoc::Input::Html.config do |config|
+      described_class.config do |config|
         expect(config.tag_border).to eq " "
         config.tag_border = true
       end
-      expect(Coradoc::Input::Html.config.tag_border).to eq true
+      expect(described_class.config.tag_border).to be true
     end
   end
 
   shared_examples "converting source with external images included" do |result|
     let(:temp_dir) do
-      Pathname.new(Coradoc::Input::Html.config.destination).dirname
+      Pathname.new(described_class.config.destination).dirname
     end
     let(:images_folder) { File.join(temp_dir, "images") }
 
     before do
-      Coradoc::Input::Html.config.destination = File.join(Dir.mktmpdir,
-                                                          "output.html")
-      Coradoc::Input::Html.config.sourcedir = Dir.mktmpdir
-      Coradoc::Input::Html.config.external_images = true
+      described_class.config.destination = File.join(Dir.mktmpdir,
+                                                     "output.html")
+      described_class.config.sourcedir = Dir.mktmpdir
+      described_class.config.external_images = true
     end
 
     after do
@@ -67,15 +67,15 @@ describe Coradoc::Input::Html do
   unless Gem::Platform.local.os == "darwin" && !ENV["GITHUB_ACTION"].nil?
     context "when docx file input" do
       subject(:convert) do
-        Coradoc::Input::Html.convert(
-          Coradoc::Input::Html.cleaner.preprocess_word_html(input.document.html),
+        described_class.convert(
+          described_class.cleaner.preprocess_word_html(input.document.html),
           WordToMarkdown::REVERSE_MARKDOWN_OPTIONS,
         )
       end
 
       let(:input) do
         WordToMarkdown.new("spec/coradoc/input/html/assets/external_images.docx",
-                           Coradoc::Input::Html.config.sourcedir)
+                           described_class.config.sourcedir)
       end
 
       it_behaves_like "converting source with external images included",
@@ -84,7 +84,7 @@ describe Coradoc::Input::Html do
   end
 
   context "when html file input" do
-    subject(:convert) { Coradoc::Input::Html.convert(input) }
+    subject(:convert) { described_class.convert(input) }
 
     let(:input) do
       File.read("spec/coradoc/input/html/assets/external_images.html")
@@ -95,7 +95,7 @@ describe Coradoc::Input::Html do
   end
 
   context "when html file input with internal images" do
-    subject(:convert) { Coradoc::Input::Html.convert(input) }
+    subject(:convert) { described_class.convert(input) }
 
     let(:input) do
       File.read("spec/coradoc/input/html/assets/internal_images.html")
