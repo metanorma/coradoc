@@ -5,14 +5,15 @@ module Coradoc
 
       declare_children :id, :title, :contents, :sections
 
-      def initialize(title, options = {})
+      def initialize(title:, id: nil, attribute_list: "", contents: [],
+sections: [])
         @title = title
-        @id = options.fetch(:id, nil)
+        @id = id
         @id = nil if @id == ""
-        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-        @attrs = options.fetch(:attribute_list, "")
-        @contents = options.fetch(:contents, [])
-        @sections = options.fetch(:sections, [])
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
+        @attrs = attribute_list
+        @contents = contents
+        @sections = sections
       end
 
       def glossaries

@@ -8,12 +8,12 @@ module Coradoc
 
         declare_children :items, :anchor, :id
 
-        def initialize(items, options = {})
+        def initialize(items:, id: nil, ol_count: nil, attrs: AttributeList.new)
           @items = items
           @items = [@items] unless @items.is_a?(Array)
-          @id = options.fetch(:id, nil)
-          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-          @ol_count = options.fetch(:ol_count, nil)
+          @id = id
+          @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
+          @ol_count = ol_count
           if @ol_count.nil?
             m = @items.find do |i|
               i.is_a?(Coradoc::Element::ListItem) &&
@@ -22,7 +22,7 @@ module Coradoc
             @ol_count = m.size
           end
           @ol_count = 1 if @ol_count.nil?
-          @attrs = options.fetch(:attrs, AttributeList.new)
+          @attrs = attrs
         end
 
         def to_adoc

@@ -6,7 +6,7 @@ module Coradoc
 
         declare_children :href, :args
 
-        def initialize(href, args = nil)
+        def initialize(href:, args: nil)
           @href = href
           @args = args
           @args = nil if @args == ""
@@ -31,7 +31,7 @@ module Coradoc
       class CrossReferenceArg < Base
         attr_accessor :key, :delimiter, :value
 
-        def initialize(key, delimiter, value)
+        def initialize(key:, delimiter:, value:)
           @key = key
           @delimiter = delimiter
           @value = value

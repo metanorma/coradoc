@@ -2,14 +2,15 @@ module Coradoc
   module Element
     module Block
       class Listing < Core
-        def initialize(_title, options = {})
-          @id = options.fetch(:id, nil)
-          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-          @lang = options.fetch(:lang, "")
-          @attributes = options.fetch(:attributes, AttributeList.new)
-          @lines = options.fetch(:lines, [])
+        def initialize(id: nil, lang: "", attributes: AttributeList.new,
+lines: [], delimiter_len: 4)
+          @id = id
+          @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
+          @lang = lang
+          @attributes = attributes
+          @lines = lines
           @delimiter_char = "-"
-          @delimiter_len = options.fetch(:delimiter_len, 4)
+          @delimiter_len = delimiter_len
         end
 
         def to_adoc

@@ -2,8 +2,8 @@ module Coradoc
   module Element
     module List
       class Unordered < Core
-        def initialize(items, options = {})
-          super
+        def initialize(items:, id: nil, ol_count: nil, attrs: AttributeList.new)
+          super(items: items, id: id, ol_count: ol_count, attrs: attrs)
         end
 
         def prefix

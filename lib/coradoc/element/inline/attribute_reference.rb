@@ -6,7 +6,7 @@ module Coradoc
 
         declare_children :name
 
-        def initialize(name)
+        def initialize(name:)
           @name = name
         end
 

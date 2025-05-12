@@ -4,14 +4,15 @@ module Coradoc
   module Element
     module Block
       class Example < Core
-        def initialize(title, options = {})
+        def initialize(title:, id: nil, attributes: AttributeList.new,
+lines: [], delimiter_len: 4)
           @title = title
-          @id = options.fetch(:id, nil)
-          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-          @attributes = options.fetch(:attributes, AttributeList.new)
-          @lines = options.fetch(:lines, [])
+          @id = id
+          @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
+          @attributes = attributes
+          @lines = lines
           @delimiter_char = "="
-          @delimiter_len = options.fetch(:delimiter_len, 4)
+          @delimiter_len = delimiter_len
         end
 
         def to_adoc

@@ -6,10 +6,9 @@ module Coradoc
 
         declare_children :items
 
-        def initialize(items, options = {})
+        def initialize(items:, delimiter: "::")
           @items = items
-          @delimiter = options.fetch(:delimiter, "::")
-          # super(items, options)
+          @delimiter = delimiter
         end
 
         def prefix

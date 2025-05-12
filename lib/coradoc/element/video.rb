@@ -5,12 +5,12 @@ module Coradoc
 
       declare_children :id, :anchor, :attributes
 
-      def initialize(title, options = {})
+      def initialize(title:, id: nil, src: "", attributes: AttributeList.new)
         @title = title
-        @id = options.fetch(:id, nil)
-        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-        @src = options.fetch(:src, "")
-        @attributes = options.fetch(:attributes, AttributeList.new)
+        @id = id
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
+        @src = src
+        @attributes = attributes
         if @attributes.any?
           @attributes.validate_positional(VALIDATORS_POSITIONAL)
           @attributes.validate_named(VALIDATORS_NAMED)

@@ -5,11 +5,11 @@ module Coradoc
 
       declare_children :id, :terms, :contents
 
-      def initialize(terms, contents, options = {})
+      def initialize(terms:, contents:, id: nil)
         @terms = terms
         @contents = contents
-        @id = options.fetch(:id, nil)
-        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
+        @id = id
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
       end
 
       def to_adoc(delimiter: nil)

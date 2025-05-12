@@ -63,7 +63,7 @@ module Coradoc
     def initialize(options = {})
       @document_attributes = options.fetch(:document_attributes,
                                            Coradoc::Element::DocumentAttributes.new)
-      @header = options.fetch(:header, Coradoc::Element::Header.new(""))
+      @header = options.fetch(:header, Coradoc::Element::Header.new(title: ""))
       @sections = options.fetch(:sections, [])
       self
     end

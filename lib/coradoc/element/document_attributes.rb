@@ -5,9 +5,8 @@ module Coradoc
 
       declare_children :data
 
-      def initialize(data = {}, options = {})
+      def initialize(data: {})
         @data = data
-        @options = options
       end
 
       def to_hash

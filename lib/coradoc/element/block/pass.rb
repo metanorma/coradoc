@@ -2,14 +2,15 @@ module Coradoc
   module Element
     module Block
       class Pass < Core
-        def initialize(options = {})
-          @id = options.fetch(:id, nil)
-          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-          @title = options.fetch(:title, "")
-          @attributes = options.fetch(:attributes, AttributeList.new)
+        def initialize(id: nil, title: "", attributes: AttributeList.new,
+delimiter_len: 4, lines: [])
+          @id = id
+          @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
+          @title = title
+          @attributes = attributes
           @delimiter_char = "+"
-          @delimiter_len = options.fetch(:delimiter_len, 4)
-          @lines = options.fetch(:lines, [])
+          @delimiter_len = delimiter_len
+          @lines = lines
         end
 
         def to_adoc

@@ -8,15 +8,16 @@ module Coradoc
 
         declare_children :title, :lines, :attributes, :lang, :id
 
-        def initialize(title, options = {})
+        def initialize(title:, id: nil, type: nil,
+attributes: AttributeList.new, delimiter: "", lang: nil, lines: [])
           @title = title
-          @id = options.fetch(:id, nil)
-          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-          @type_str = options.fetch(:type, nil)
-          @attributes = options.fetch(:attributes, AttributeList.new)
-          @delimiter = options.fetch(:delimiter, "")
-          @lang = options.fetch(:lang, nil)
-          @lines = options.fetch(:lines, [])
+          @id = id
+          @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
+          @type_str = type
+          @attributes = attributes
+          @delimiter = delimiter
+          @lang = lang
+          @lines = lines
         end
 
         def type

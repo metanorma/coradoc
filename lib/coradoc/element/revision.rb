@@ -5,10 +5,10 @@ module Coradoc
 
       declare_children :number, :date, :remark
 
-      def initialize(number, options = {})
+      def initialize(number:, date: nil, remark: nil)
         @number = number
-        @date = options.fetch(:date, nil)
-        @remark = options.fetch(:remark, nil)
+        @date = date
+        @remark = remark
       end
 
       def to_adoc
