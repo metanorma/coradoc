@@ -5,12 +5,12 @@ RSpec.describe Coradoc::Element::Table do
     it "initilizes and exposes attributes" do
       title = "Table"
       columns = [
-        Coradoc::Element::TextElement.new("hi"),
-        Coradoc::Element::TextElement.new("how"),
+        Coradoc::Element::TextElement.new(content: "hi"),
+        Coradoc::Element::TextElement.new(content: "how"),
       ]
 
-      row = Coradoc::Element::Table::Row.new(columns)
-      table = described_class.new(title, [row])
+      row = Coradoc::Element::Table::Row.new(columns:)
+      table = described_class.new(title:, rows: [row])
 
       expect(table.title).to eq(title)
       expect(table.rows.first).to eq(row)

@@ -6,8 +6,8 @@ RSpec.describe Coradoc::Element::AttributeList do
       positional = ["a", "b", "c"]
       named = { d: "e", f: "g" }
 
-      attribute_list = described_class.new("a", "b", "c", d: "e",
-                                                          f: "g")
+      attribute_list = described_class.new(positional: ["a", "b", "c"],
+                                           named: { d: "e", f: "g" })
 
       expect(attribute_list.positional).to eq(positional)
       expect(attribute_list.named).to eq(named)
@@ -30,9 +30,12 @@ RSpec.describe Coradoc::Element::AttributeList do
     end
 
     it "supports one and many matchers" do
-      correct = described_class.new(x1: "abc", x2: "def", x3: ["ghi", "jkl"])
-      incorrect = described_class.new(x1: "Abc", x2: "Def", x3: 1)
-      incorrect2 = described_class.new(x1: "ddd", x2: "ddd", x3: ["ghi", "mno"])
+      correct = described_class.new(named: { x1: "abc", x2: "def",
+x3: ["ghi", "jkl"] })
+      incorrect = described_class.new(named: { x1: "Abc", x2: "Def",
+x3: 1 })
+      incorrect2 = described_class.new(named: { x1: "ddd", x2: "ddd",
+x3: ["ghi", "mno"] })
 
       extend Coradoc::Element::AttributeList::Matchers
       VALIDATOR = {

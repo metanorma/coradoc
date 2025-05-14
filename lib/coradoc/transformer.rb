@@ -9,7 +9,7 @@ module Coradoc
       author: simple(:author),
       revision: simple(:revision),
     ) do
-      Element::Header.new(title: title, author: author, revision: revision)
+      Element::Header.new(title:, author:, revision:)
     end
 
     # Author
@@ -19,9 +19,9 @@ module Coradoc
       email: simple(:email),
     ) do
       Element::Author.new(
-        first_name: first_name,
-        last_name: last_name,
-        email: email,
+        first_name:,
+        last_name:,
+        email:,
         middle_name: nil,
       )
     end
@@ -29,7 +29,7 @@ module Coradoc
     # Revision
     rule(number: simple(:number), date: simple(:date),
          remark: simple(:remark)) do
-      Element::Revision.new(number: number, date: date, remark: remark)
+      Element::Revision.new(number:, date:, remark:)
     end
 
     # Comments

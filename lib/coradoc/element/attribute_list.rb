@@ -5,9 +5,9 @@ module Coradoc
 
       declare_children :positional, :named
 
-      def initialize(*positional, **named)
-        @positional = positional || []
-        @named = named || {}
+      def initialize(positional: [], named: {})
+        @positional = positional
+        @named = named
         @rejected_positional = []
         @rejected_named = []
       end

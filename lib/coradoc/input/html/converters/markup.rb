@@ -20,7 +20,7 @@ module Coradoc
               u = (u_before && leading_whitespace.nil?) ||
                 (u_after && trailing_whitespace.nil?)
 
-              e = coradoc_class.new(content, unconstrained: u)
+              e = coradoc_class.new(content:, unconstrained: u)
               [leading_whitespace, e, trailing_whitespace]
             end
           end

@@ -4,7 +4,7 @@ RSpec.describe Coradoc::Element::Block do
   describe ".initialize" do
     it "initializes and exposes attributes" do
       title = "This is a block title"
-      block = Coradoc::Element::Block::Quote.new(title)
+      block = Coradoc::Element::Block::Quote.new(title:)
 
       expect(block.title).to eq(title)
       expect(block.lines).to be_empty
@@ -17,7 +17,7 @@ RSpec.describe Coradoc::Element::Block do
       title = "Block title"
       delimiter = "____"
 
-      block = Coradoc::Element::Block::Core.new(title, delimiter: delimiter)
+      block = Coradoc::Element::Block::Core.new(title:, delimiter:)
 
       expect(block.title).to eq(title)
       expect(block.type).to eq(:quote)

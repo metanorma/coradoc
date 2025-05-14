@@ -7,12 +7,11 @@ module Coradoc
             id = node["id"]
             content = treat_children_coradoc(node, state)
 
-            options = {}.tap do |hash|
-              hash[:id] = id if id
-              hash[:tdsinglepara] = true if state[:tdsinglepara]
-            end
-
-            Coradoc::Element::Paragraph.new(content, options)
+            Coradoc::Element::Paragraph.new(
+              content:,
+              id:,
+              tdsinglepara: state[:tdsinglepara]
+            )
           end
         end
 

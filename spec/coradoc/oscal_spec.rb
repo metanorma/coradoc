@@ -8,7 +8,7 @@ RSpec.describe Coradoc::Oscal do
         "spec", "fixtures", "sample-oscal.adoc"
       )
 
-      doc = Coradoc::Document.from_adoc(sample_file)
+      doc = Coradoc::Document.from_file(sample_file)
       oscal = described_class.to_oscal(doc)
 
       expect(oscal["metadata"]["oscal-version"]).to eq("1.0.0")

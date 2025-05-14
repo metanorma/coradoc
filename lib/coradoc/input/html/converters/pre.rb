@@ -10,17 +10,16 @@ module Coradoc
 
             unless lang
               return Coradoc::Element::Block::Literal.new(
-                nil,
+                title: nil,
                 lines: content,
-                id: id,
+                id:,
               )
             end
 
             Coradoc::Element::Block::SourceCode.new(
-              nil,
               lines: content,
-              lang: lang,
-              id: id,
+              lang:,
+              id:,
             )
           end
 

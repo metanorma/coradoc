@@ -2,8 +2,15 @@ module Coradoc
   module Element
     module Block
       class SourceCode < Core
-        def initialize(id: nil, lang: "", attributes: AttributeList.new,
-lines: [], delimiter_len: 4)
+        def initialize(
+          title: nil,
+          id: nil,
+          lang: "",
+          attributes: AttributeList.new,
+          lines: [],
+          delimiter_len: 4
+        )
+          @title = title
           @id = id
           @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
           @lang = lang
@@ -14,7 +21,7 @@ lines: [], delimiter_len: 4)
         end
 
         def to_adoc
-          "\n\n#{gen_anchor}[source,#{@lang}]\n#{gen_delimiter}\n" << gen_lines << "\n#{gen_delimiter}\n\n"
+          "\n\n#{gen_anchor}#{gen_title}[source,#{@lang}]\n#{gen_delimiter}\n" << gen_lines << "\n#{gen_delimiter}\n\n"
         end
       end
     end

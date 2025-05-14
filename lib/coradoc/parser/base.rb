@@ -29,9 +29,16 @@ module Coradoc
         ).repeat(1).as(:document)
       end
 
-      def self.parse(filename)
-        content = File.read(filename)
-        new.parse(content)
+      # @param [String] filename The filename of the Asciidoc file to parse
+      # @return [AST] The parsed AST object
+      def self.parse_file(filename)
+        parse(File.read(filename))
+      end
+
+      # @param [String] string The Asciidoc string to parse
+      # @return [AST] The parsed AST object
+      def self.parse(string)
+        new.parse(string)
       rescue Parslet::ParseFailed => e
         puts e.parse_failure_cause.ascii_tree
       end

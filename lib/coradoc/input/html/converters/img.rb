@@ -96,9 +96,9 @@ module Coradoc
             attributes.add_positional(height) if height
 
             if src
-              Coradoc::Element::Image::BlockImage.new(title, id, src,
-                                                      attributes: attributes,
-                                                      annotate_missing: @annotate_missing)
+              Coradoc::Element::Image::BlockImage.new(
+                title:, id:, src:, attributes: attributes,
+                annotate_missing: @annotate_missing)
             end
           end
         end

@@ -7,7 +7,9 @@ module Coradoc
             id = node["id"]
             title = extract_title(node)
             content = treat_children_coradoc(node, state)
-            Coradoc::Element::Block::Example.new(title, lines: content, id: id)
+            Coradoc::Element::Block::Example.new(
+              title:, lines: content, id:,
+            )
           end
 
           def extract_title(node)

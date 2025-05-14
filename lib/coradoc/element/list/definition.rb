@@ -18,7 +18,7 @@ module Coradoc
         def to_adoc
           content = "\n"
           @items.each do |item|
-            content << item.to_adoc(@delimiter)
+            content << item.to_adoc(delimiter: @delimiter)
           end
           content
         end

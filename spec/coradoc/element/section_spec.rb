@@ -4,10 +4,12 @@ RSpec.describe Coradoc::Element::Section do
   describe ".initialization" do
     it "initializes and exposes attributes" do
       id = "section_id"
-      text = Coradoc::Element::TextElement.new("Text", line_break: "\n")
-      title = Coradoc::Element::Title.new("Title", "==", line_break: "\n")
+      text = Coradoc::Element::TextElement.new(content: "Text",
+                                               line_break: "\n")
+      title = Coradoc::Element::Title.new(content: "Title", level: "==",
+                                          line_break: "\n")
 
-      section = described_class.new(title, id: id, contents: [text])
+      section = described_class.new(title:, id:, contents: [text])
 
       expect(section.id).to eq(id)
       expect(section.title).to eq(title)

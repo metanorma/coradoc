@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require_relative "serialization/errors"
-require_relative "serialization/asciidoc_document"
-require_relative "serialization/asciidoc_document_entry"
 require_relative "serialization/asciidoc_adapter"
 require_relative "serialization/asciidoc_mapping_rule"
 require_relative "serialization/asciidoc_mapping"

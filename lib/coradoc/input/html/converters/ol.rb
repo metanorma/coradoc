@@ -20,9 +20,9 @@ module Coradoc
 
             case get_list_type(node, state)
             when :ordered
-              Coradoc::Element::List::Ordered.new(items, options)
+              Coradoc::Element::List::Ordered.new(items:, id:, ol_count:, attrs:)
             when :unordered
-              Coradoc::Element::List::Unordered.new(items, options)
+              Coradoc::Element::List::Unordered.new(items:, id:, ol_count:, attrs:)
             end
           end
 

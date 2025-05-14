@@ -3,7 +3,7 @@
 module Coradoc
   module Model
     module Serialization
-      class AsciidocAdapter < AsciidocDocument
+      class AsciidocAdapter < Coradoc::Document
       end
     end
   end

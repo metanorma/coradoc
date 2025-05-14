@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Coradoc::Input::Html::Converters::Img do
-  let(:converter) { described_class.new }
+  let(:converter) { described_class.new(**{}) }
 
   it "converts image with no attributes" do
     node = node_for("<img src='example.jpg'/>")

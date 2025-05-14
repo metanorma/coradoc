@@ -8,7 +8,7 @@ module Coradoc::Input
           attributes = style(node)
           content = treat_children_coradoc(node, state)
           Coradoc::Element::Table.new(
-            title, content, { id: id, attributes: attributes }
+            title:, rows: content, id:, attributes:
           )
         end
 
