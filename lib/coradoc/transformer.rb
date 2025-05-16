@@ -434,8 +434,8 @@ module Coradoc
     end
 
     # Attribute
-    rule(key: simple(:key), value: simple(:value)) do
-      Element::Attribute.new(key: key.to_s, value: value.to_s)
+    rule(key: simple(:key), value: simple(:value), line_break: simple(:line_break)) do
+      Element::Attribute.new(key:, value:, line_break:)
     end
 
     rule(key: simple(:key), value: simple(:value),
@@ -451,8 +451,8 @@ module Coradoc
       Element::LineBreak.new(line_break:)
     end
 
-    rule(document_attributes: sequence(:document_attributes)) do
-      Element::DocumentAttributes.new(data: document_attributes)
+    rule(document_attributes: sequence(:document_attribute)) do
+      Element::DocumentAttributes.new(data: document_attribute)
     end
 
     # Table
@@ -534,7 +534,6 @@ module Coradoc
     rule(section: simple(:section)) { section }
 
     rule(document: sequence(:elements)) do
-      # Model::Document.from_ast(elements)
       Coradoc::Document.from_ast(elements)
     end
 
@@ -543,7 +542,9 @@ module Coradoc
     # end
 
     def self.transform(syntax_tree)
-      new.apply(syntax_tree)
+      result = new.apply(syntax_tree)
+      # pp syntax_tree.inspect[0..100]
+      result
     end
   end
 end

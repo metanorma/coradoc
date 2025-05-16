@@ -7,7 +7,7 @@ RSpec.describe Coradoc::Parser do
         "spec", "fixtures", "sample-oscal.adoc"
       )
 
-      document = described_class.parse(sample_file)
+      document = described_class.parse_file(sample_file)
       ast = document[:document]
 
       expect(ast[0][:header][:title]).to eq("Catalog for ISO27002:2022")

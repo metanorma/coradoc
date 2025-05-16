@@ -9,14 +9,9 @@ module Coradoc
         @data = data
       end
 
-      def to_hash
-        @data.to_h do |attribute|
-          [attribute.key, attribute.value]
-        end
-      end
-
       def to_adoc
-        to_hash.map do |key, value|
+        @data.map do |attribute|
+          key, value, line_break = attribute.key, attribute.value, attribute.line_break
           v = if value.to_s.empty?
                 ""
               elsif value.is_a? Array
@@ -24,8 +19,8 @@ module Coradoc
               else
                 " #{value}"
               end
-          ":#{key}:#{v}\n"
-        end.join + "\n"
+          ":#{key}:#{v}#{line_break}"
+        end.join
       end
     end
   end

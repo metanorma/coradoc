@@ -17,7 +17,7 @@ module Coradoc
 
         def document_attribute
           str(":") >> attribute_name.as(:key) >> str(":") >>
-            space? >> (attribute_value | str("")).as(:value) >> line_ending
+          space? >> (attribute_value | str("")).as(:value) >> line_ending.repeat.as(:line_break)
         end
       end
     end

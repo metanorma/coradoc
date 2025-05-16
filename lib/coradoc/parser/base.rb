@@ -40,7 +40,7 @@ module Coradoc
       def self.parse(string)
         new.parse(string)
       rescue Parslet::ParseFailed => e
-        puts e.parse_failure_cause.ascii_tree
+        warn e.parse_failure_cause.ascii_tree
       end
     end
   end

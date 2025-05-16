@@ -3,7 +3,7 @@ module Coradoc
     class Attribute < Base
       attr_accessor :key, :value
 
-      def initialize(key:, value:)
+      def initialize(key:, value:, line_break: "\n")
         @key = key.to_s
         @value = if extensions_value?(value.to_s)
                    build_values(value.to_s)
