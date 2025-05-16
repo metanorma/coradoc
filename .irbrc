@@ -4,7 +4,7 @@ require "coradoc"
  
 # This works with the update to Lutaml Model.
 def parse(str)
-  ast = Coradoc::Parser::Base.new.parse(str)
+  ast = Coradoc::Parser.parse(str)
   result = Coradoc::Transformer.transform(ast)
 
   {
