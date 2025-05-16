@@ -33,3 +33,7 @@ end
 
 # gem "parallel_tests"
 # gem "stackprof"
+
+# For Ruby 3.5
+gem "logger"
+gem "reline"
