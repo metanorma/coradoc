@@ -20,7 +20,7 @@ module Coradoc
                 " #{value}"
               end
           ":#{key}:#{v}#{line_break}"
-        end.join
+        end.join + "\n"
       end
     end
   end

@@ -3,24 +3,28 @@
 RSpec.describe Coradoc::Model::Serialization::AsciidocAdapter do
   let(:sections) do
     [
-      double("Section1", to_asciidoc: "Section 1"),
-      double("Section2", to_asciidoc: "Section 2"),
+      Coradoc::Element::Section.new(
+        title: "Section 1",
+      ),
+      Coradoc::Element::Section.new(
+        title: "Section 2",
+      ),
     ]
   end
-  let(:adapter) { described_class.new(sections) }
+  let(:adapter) { described_class.from_ast(sections) }
 
   describe "inheritance" do
     it "inherits from AsciidocDocument" do
-      expect(described_class.superclass).to eq(Coradoc::Model::Serialization::AsciidocDocument)
+      expect(described_class.superclass).to eq(Coradoc::Document)
     end
   end
 
   describe "document functionality" do
     it "maintains AsciidocDocument behavior" do
       expect(adapter.sections).to eq(sections)
-      expect(adapter.to_asciidoc).to eq("Section 1\n\nSection 2")
+      expect(adapter.to_adoc).to eq("\nSection 1\n\nSection 2\n")
       expect(adapter[0]).to eq(sections[0])
-      expect(adapter.to_h).to eq(sections)
+      expect(adapter.to_h).to eq({sections:, header: nil, document_attributes: nil})
     end
   end
 

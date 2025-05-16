@@ -5,6 +5,7 @@ RSpec.describe Coradoc::Model::DocumentAttributes do
     instance_double(Coradoc::Model::Attribute,
       key: "lang",
       value: "en",
+      line_break: "\n",
       to_s: "en"
     )
   end
@@ -13,6 +14,7 @@ RSpec.describe Coradoc::Model::DocumentAttributes do
     instance_double(Coradoc::Model::Attribute,
       key: "author",
       value: "John Doe",
+      line_break: "\n",
       to_s: "John Doe"
     )
   end
@@ -29,42 +31,16 @@ RSpec.describe Coradoc::Model::DocumentAttributes do
     end
   end
 
-  describe "#to_hash" do
-    let(:doc_attributes) { described_class.new(data: [attribute1, attribute2]) }
-
-    it "converts attributes to hash" do
-      allow(attribute1).to receive(:key) { "lang" }
-      allow(attribute1).to receive(:value) { "en" }
-      allow(attribute2).to receive(:key) { "author" }
-      allow(attribute2).to receive(:value) { "John Doe" }
-
-      result = doc_attributes.to_hash
-      expect(result).to eq({
-        "lang" => "en",
-        "author" => "John Doe"
-      })
-    end
-
+  describe "#to_asciidoc" do
     it "removes single quotes from values" do
       allow(attribute1).to receive(:key) { "quote" }
       allow(attribute1).to receive(:value) { "'text'" }
 
       attributes = described_class.new(data: [attribute1])
-      result = attributes.to_hash
-      expect(result).to eq({ "quote" => "text" })
+      result = attributes.to_asciidoc
+      expect(result).to eq(":quote: text\n\n")
     end
 
-    it "converts keys and values to strings" do
-      allow(attribute1).to receive(:key) { :lang }
-      allow(attribute1).to receive(:value) { :en }
-
-      attributes = described_class.new(data: [attribute1])
-      result = attributes.to_hash
-      expect(result).to eq({ "lang" => "en" })
-    end
-  end
-
-  describe "#to_asciidoc" do
     it "generates asciidoc for multiple attributes" do
       doc_attributes = described_class.new(data: [attribute1, attribute2])
 
@@ -76,6 +52,7 @@ RSpec.describe Coradoc::Model::DocumentAttributes do
       empty_attribute = instance_double(Coradoc::Model::Attribute,
         key: "empty",
         value: "",
+        line_break: "\n",
         to_s: ""
       )
 
@@ -88,14 +65,14 @@ RSpec.describe Coradoc::Model::DocumentAttributes do
     it "handles no attributes" do
       doc_attributes = described_class.new
 
-      expected_output = "\n"
-      expect(doc_attributes.to_asciidoc).to eq(expected_output)
+      expect(doc_attributes.to_asciidoc).to be_empty
     end
 
     it "formats each attribute correctly" do
       single_attribute = instance_double(Coradoc::Model::Attribute,
         key: "test",
         value: "value",
+        line_break: "\n",
         to_s: "value"
       )
 

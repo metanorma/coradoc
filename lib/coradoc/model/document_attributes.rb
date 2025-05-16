@@ -9,17 +9,19 @@ module Coradoc
         map_attribute "data", to: :data
       end
 
-      def to_hash
-        data.to_h do |attribute|
-          [attribute.key.to_s, attribute.value.to_s.delete("'")]
-        end
-      end
-
       def to_asciidoc
-        "#{to_hash.map do |key, value|
+        if data.nil?
+          return ''
+        end
+
+        data.map do |attribute|
+          key = attribute.key.to_s
+          value = attribute.value.to_s.delete("'")
+          line_break = attribute.line_break
+
           v = value.to_s.empty? ? '' : " #{value}"
-          ":#{key}:#{v}\n"
-        end.join}\n"
+          ":#{key}:#{v}#{line_break}"
+        end.join + "\n"
       end
     end
   end
