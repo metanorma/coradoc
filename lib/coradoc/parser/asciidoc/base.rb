@@ -54,25 +54,50 @@ module Coradoc
           send(dispatch_method)
         end
 
-        add_dispatch = true
-        with_params = true
+        def self.config(key)
+          # XXX: Where do these come from? Are these meant to be configurable?
+          c = {
+            add_dispatch: true,
+            with_params: true,
+          }
 
-        parser_methods = (Coradoc::Parser::Asciidoc.constants - [:Base]).map do |const|
-          Coradoc::Parser::Asciidoc.const_get(const).instance_methods
-        end.flatten.uniq
+          if c.keys.include?(key)
+            c[key]
+          else
+            raise ArgumentError, "Unknown config key: #{key}. Available keys: #{c.keys.join(", ")}"
+          end
+        end
 
-        parser_methods.each do |rule_name|
+        parser_methods = (Coradoc::Parser::Asciidoc.constants - [:Base]).reduce({}) do |acc, const|
+          rule_names = Coradoc::Parser::Asciidoc.const_get(const).instance_methods
+          rule_names.each do |rule_name|
+            acc[rule_name] ||= []
+            acc[rule_name] << const
+          end
+          acc
+        end
+
+        # Warn about duplicated parser methods:
+        parser_methods.each do |rule_name, defn_sites|
+          count = defn_sites.length
+          if count > 1
+            defn_site_constants = defn_sites.map { |const| Coradoc::Parser::Asciidoc.const_get(const) }
+            Logger.warn "Parser method '#{rule_name}' is defined #{count} times in #{defn_site_constants.join(", ")}"
+          end
+        end
+
+        parser_methods.keys.each do |rule_name|
           params = Coradoc::Parser::Asciidoc::Base.instance_method(rule_name).parameters
-          if add_dispatch && params == []
-            alias_name = "alias_nondispatch_#{rule_name}".to_sym
+          if config(:add_dispatch) && params == []
+            alias_name = :"alias_nondispatch_#{rule_name}"
             Coradoc::Parser::Asciidoc::Base.class_exec do
               alias_method alias_name, rule_name
               rule(rule_name) do
                 send(alias_name)
               end
             end
-          elsif add_dispatch && with_params
-            alias_name = "alias_dispatch_#{rule_name}".to_sym
+          elsif config(:add_dispatch) && config(:with_params)
+            alias_name = :"alias_dispatch_#{rule_name}"
             Coradoc::Parser::Asciidoc::Base.class_exec do
               alias_method alias_name, rule_name
               define_method(rule_name) do |*args, **kwargs|
