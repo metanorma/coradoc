@@ -56,8 +56,7 @@ describe Coradoc::Input::Html do
     it_behaves_like "can split and generate correct index"
 
     it "has a correct level2 index" do
-      expect(subject["sections/section-02.adoc"]).to eq
-      "== Section 2\n\nThis document describes something.\n\ninclude::../sections/section-02/section-01.adoc[]\n\ninclude::../sections/section-02/section-02.adoc[]\n\ninclude::../sections/section-02/section-03.adoc[]\n\n"
+      expect(subject["sections/section-02.adoc"]).to eq "== Section 2\n\nThis document describes something.\n\ninclude::../sections/section-02/section-01.adoc[]\n\ninclude::../sections/section-02/section-02.adoc[]\n\ninclude::../sections/section-02/section-03.adoc[]\n\n"
     end
   end
 end
