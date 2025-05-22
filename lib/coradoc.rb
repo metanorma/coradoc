@@ -3,6 +3,7 @@
 require "pathname"
 
 require "parslet"
+require_relative "coradoc/logger"
 require_relative "coradoc/version"
 require_relative "coradoc/util"
 require_relative "coradoc/parser"
