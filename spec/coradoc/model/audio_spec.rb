@@ -35,7 +35,7 @@ RSpec.describe Coradoc::Model::Audio do
         src: src
       )
 
-      expected_output = ".Sample Audio\naudio::audio.mp3[]"
+      expected_output = ".Sample Audio\naudio::audio.mp3[]\n"
       expect(audio.to_asciidoc).to eq(expected_output)
     end
 
@@ -50,7 +50,7 @@ RSpec.describe Coradoc::Model::Audio do
         attributes:,
       )
 
-      expected_output = ".Sample Audio\naudio::audio.mp3[start=30,end=60]"
+      expected_output = ".Sample Audio\naudio::audio.mp3[start=30,end=60]\n"
       expect(audio.to_asciidoc).to eq(expected_output)
     end
 
@@ -61,23 +61,23 @@ RSpec.describe Coradoc::Model::Audio do
       )
       allow(audio).to receive(:id).and_return("audio-1")
 
-      expected_output = "[[audio-1]]\n.Sample Audio\naudio::audio.mp3[]"
+      expected_output = "[[audio-1]]\n.Sample Audio\naudio::audio.mp3[]\n"
       expect(audio.to_asciidoc).to eq(expected_output)
     end
 
     it "handles missing title" do
       audio = described_class.new(src: src)
-      expect(audio.to_asciidoc).to eq("audio::audio.mp3[]")
+      expect(audio.to_asciidoc).to eq("audio::audio.mp3[]\n")
     end
 
     it "handles empty src" do
       audio = described_class.new(title: title)
-      expect(audio.to_asciidoc).to eq(".Sample Audio\naudio::[]")
+      expect(audio.to_asciidoc).to eq(".Sample Audio\naudio::[]\n")
     end
 
     it "combines all elements" do
       attributes = instance_double(Coradoc::Model::AttributeList,
-                                   to_asciidoc: "[start=30,end=60]",
+                                   to_asciidoc: "[start=30,end=60]\n",
                                    empty?: false
                                   )
 
@@ -88,7 +88,7 @@ RSpec.describe Coradoc::Model::Audio do
       )
       allow(audio).to receive(:id).and_return("audio-1")
 
-      expected_output = "[[audio-1]]\n.Sample Audio\naudio::audio.mp3[start=30,end=60]"
+      expected_output = "[[audio-1]]\n.Sample Audio\naudio::audio.mp3[start=30,end=60]\n\n"
       expect(audio.to_asciidoc).to eq(expected_output)
     end
   end
