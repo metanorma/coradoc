@@ -118,7 +118,7 @@ module Coradoc
                   section_array = []
                   level = title.level_int
                   section = Element::Section.new(
-                    title, contents: content_array, sections: section_array
+                    title:, contents: content_array, sections: section_array
                   )
                   # Some documents may not be consistent and eg. follow H4 after
                   # H2. Let's ensure that proceeding sections will land in a

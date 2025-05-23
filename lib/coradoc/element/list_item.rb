@@ -5,15 +5,16 @@ module Coradoc
 
       declare_children :content, :id, :anchor
 
-      def initialize(content, options = {})
-        @marker = options.fetch(:marker, nil)
-        @id = options.fetch(:id, nil)
-        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
+      def initialize(content:, marker: nil, id: nil, attached: [], nested: nil,
+line_break: "\n")
+        @marker = marker
+        @id = id
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
         @content = content
         # @content = [@content] unless @content.class == Array
-        @attached = options.fetch(:attached, [])
-        @nested = options.fetch(:nested, nil)
-        @line_break = options.fetch(:line_break, "\n")
+        @attached = attached
+        @nested = nested
+        @line_break = line_break
       end
 
       def inline?(elem)

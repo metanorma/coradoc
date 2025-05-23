@@ -6,10 +6,9 @@ module Coradoc
 
         declare_children :items
 
-        def initialize(items, options = {})
+        def initialize(items:, delimiter: "::")
           @items = items
-          @delimiter = options.fetch(:delimiter, "::")
-          # super(items, options)
+          @delimiter = delimiter
         end
 
         def prefix
@@ -19,7 +18,7 @@ module Coradoc
         def to_adoc
           content = "\n"
           @items.each do |item|
-            content << item.to_adoc(@delimiter)
+            content << item.to_adoc(delimiter: @delimiter)
           end
           content
         end

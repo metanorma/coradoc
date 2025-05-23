@@ -6,10 +6,15 @@ module Coradoc
           def to_coradoc(node, state = {})
             items = process_dl(node, state)
             items2 = items.map do |item|
-              Coradoc::Element::ListItemDefinition.new(item[:name],
-                                                       item[:value])
+              Coradoc::Element::ListItemDefinition.new(
+                terms: item[:name],
+                contents: item[:value],
+              )
             end
-            Coradoc::Element::List::Definition.new(items2, delimiter: "::")
+            Coradoc::Element::List::Definition.new(
+              items: items2,
+              delimiter: "::",
+            )
           end
 
           def process_dl(node, state = {})

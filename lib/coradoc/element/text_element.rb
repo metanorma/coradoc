@@ -5,11 +5,11 @@ module Coradoc
 
       declare_children :content
 
-      def initialize(content, options = {})
+      def initialize(content:, id: nil, line_break: "", html_cleanup: false)
         @content = content # .to_s
-        @id = options.fetch(:id, nil)
-        @line_break = options.fetch(:line_break, "")
-        @html_cleanup = options.fetch(:html_cleanup, false)
+        @id = id
+        @line_break = line_break
+        @html_cleanup = html_cleanup
         if @html_cleanup
           @content = treat_text_to_adoc(@content)
         end
@@ -77,7 +77,7 @@ module Coradoc
     class LineBreak < Base
       attr_reader :line_break
 
-      def initialize(line_break)
+      def initialize(line_break:)
         @line_break = line_break
       end
 

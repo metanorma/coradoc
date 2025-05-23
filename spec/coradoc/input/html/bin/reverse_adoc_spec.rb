@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "spec_helper"
-
 describe "exe/reverse_adoc" do
   subject(:convert) do
     ShellUtils.execute!("./exe/reverse_adoc -e -o test1 #{input_file_path}")

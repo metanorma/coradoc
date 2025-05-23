@@ -5,7 +5,7 @@ module Coradoc
 
       def initialize(options = {})
         @id = options.fetch(:id, nil)
-        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
         @title = options.fetch(:title, nil)
         @entries = options.fetch(:entries, nil)
       end

@@ -42,6 +42,8 @@ module Coradoc
 
         def block_content(n_deep = 3)
           c = block_image |
+            audio |
+            video |
             list |
             text_line |
             empty_line.as(:line_break)

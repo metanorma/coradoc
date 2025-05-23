@@ -4,7 +4,7 @@ require "spec_helper"
 # rubocop:disable all
 
 describe Coradoc::Input::Html::Converters::Table do
-  let(:converter) { Coradoc::Input::Html::Converters::Table.new }
+  let(:converter) { Coradoc::Input::Html::Converters::Table.new(**{}) }
 
   let(:c) { '<td colspan="1" rowspan="1"></td>' }
   let(:e) { '<td x-added="x-added"></td>' } # Added cell

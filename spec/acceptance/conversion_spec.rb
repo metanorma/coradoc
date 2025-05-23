@@ -21,7 +21,7 @@ RSpec.describe "Conversion" do
 
       let(:input) { StringIO.new("<video src='example.mp4' />") }
 
-      it { is_expected.to eq "video::example.mp4[]" }
+      it { is_expected.to eq "video::example.mp4[]\n" }
     end
   end
 end

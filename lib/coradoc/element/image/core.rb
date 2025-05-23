@@ -6,19 +6,25 @@ module Coradoc
 
         declare_children :id, :src, :title, :attributes
 
-        def initialize(title, id, src, options = {})
+        def initialize(
+          src:,
+          title: nil,
+          id: nil,
+          attributes: nil,
+          annotate_missing: nil,
+          line_break: ""
+        )
           @title = title
           @id = id
-          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
+          @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
           @src = src
-          @attributes = options.fetch(:attributes, AttributeList.new)
-          @annotate_missing = options.fetch(:annotate_missing, nil)
-          @title ||= options.fetch(:title, nil)
+          @attributes = attributes.nil? ? AttributeList.new : attributes
+          @annotate_missing = annotate_missing
           if @attributes.any?
             @attributes.validate_positional(VALIDATORS_POSITIONAL)
             @attributes.validate_named(VALIDATORS_NAMED)
           end
-          @line_break = options.fetch(:line_break, "")
+          @line_break = line_break
         end
 
         def to_adoc

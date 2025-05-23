@@ -17,11 +17,11 @@ module Coradoc
 
             return "" if /^_Toc\d+$|^_GoBack$/.match?(id)
 
-            return Coradoc::Element::Inline::Anchor.new(id) if id
+            return Coradoc::Element::Inline::Anchor.new(id:) if id
 
             if href.to_s.start_with?("#")
               href = href.sub(/^#/, "").gsub(/\s/, "").gsub(/__+/, "_")
-              return Coradoc::Element::Inline::CrossReference.new(href, name)
+              return Coradoc::Element::Inline::CrossReference.new(href:, args: name)
             end
 
             return name if href.to_s.empty?

@@ -6,7 +6,7 @@ module Coradoc
           def to_coradoc(node, state = {})
             content = treat_children_coradoc(node, state)
             header = table_header_row?(node)
-            Coradoc::Element::Table::Row.new(content, header)
+            Coradoc::Element::Table::Row.new(columns: content, header:)
           end
 
           def table_header_row?(node)
