@@ -11,19 +11,12 @@ module Coradoc
           name,
           to:,
           render_nil: false,
-          render_default: false,
-          with: {},
-          delegate: nil,
-          field_type: :attributes,
-          transform: {}
+          field_type: :attributes
         )
           super(name,
-                to: to,
-                render_nil: render_nil,
-                render_default: render_default,
-                with: with,
-                delegate: delegate,
-                transform: transform)
+                to:,
+                render_nil:
+                )
           @field_type = field_type
         end
 
@@ -36,10 +29,7 @@ module Coradoc
             name.dup,
             to: to.dup,
             render_nil: render_nil.dup,
-            with: Lutaml::Model::Utils.deep_dup(custom_methods),
-            delegate: delegate,
-            field_type: field_type,
-            transform: Lutaml::Model::Utils.deep_dup(transform),
+            field_type:,
           )
         end
       end
