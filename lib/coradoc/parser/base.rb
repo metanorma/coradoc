@@ -13,6 +13,8 @@ module Coradoc
           admonition_line |
           bib_entry |
           block_image |
+          audio |
+          video |
           tag |
           comment_block |
           comment_line |

@@ -6,6 +6,8 @@ module Coradoc
           (
             bib_entry |
             block_image |
+            audio |
+            video |
             tag |
             comment_block |
             comment_line |

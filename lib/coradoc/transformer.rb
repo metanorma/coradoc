@@ -92,6 +92,34 @@ module Coradoc
       )
     end
 
+    # Audio
+    rule(audio: {
+           path: simple(:path),
+           attribute_list: simple(:attribute_list),
+           line_break: simple(:line_break),
+         }) do
+      # TODO: spec did not catch this
+      Element::Audio.new(
+        src: path.to_s,
+        attributes: attribute_list,
+        line_break: line_break,
+      )
+    end
+
+    # Video
+    rule(video: {
+           path: simple(:path),
+           attribute_list: simple(:attribute_list),
+           line_break: simple(:line_break),
+         }) do
+      # TODO: spec did not catch this
+      Element::Video.new(
+        src: path.to_s,
+        attributes: attribute_list,
+        line_break: line_break,
+      )
+    end
+
     # Text Model
     rule(text: simple(:text)) do
       Element::TextElement.new(content: text.to_s)

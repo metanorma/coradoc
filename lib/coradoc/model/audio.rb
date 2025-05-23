@@ -9,6 +9,7 @@ module Coradoc
       attribute :title, :string
       attribute :src, :string, default: -> { "" }
       attribute :attributes, AttributeList, default: -> { AttributeList.new }
+      attribute :line_break, :string, default: -> { "\n" }
 
       asciidoc do
         map_attribute "id", to: :id
@@ -22,7 +23,7 @@ module Coradoc
         _anchor = gen_anchor
         _title = ".#{title}\n" unless title.nil? || title.empty?
         _attrs = attributes.empty? ? "[]" : attributes.to_asciidoc
-        [_anchor, _title, "audio::", src, _attrs].join
+        [_anchor, _title, "audio::", src, _attrs].join + line_break
       end
     end
   end

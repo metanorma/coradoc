@@ -10,6 +10,7 @@ module Coradoc
       attribute :title, :string
       attribute :src, :string, default: -> { "" }
       attribute :attributes, Video::AttributeList, default: -> { Video::AttributeList.new }
+      attribute :line_break, :string, default: -> { "\n" }
 
       asciidoc do
         map_attribute "id", to: :id
@@ -23,7 +24,7 @@ module Coradoc
         _anchor = gen_anchor
         _title = ".#{title}\n" unless title.nil? || title.empty?
         _attrs = attributes.to_asciidoc
-        [_anchor, _title, "video::", src, _attrs].join
+        [_anchor, _title, "video::", src, _attrs].join + line_break
       end
     end
   end

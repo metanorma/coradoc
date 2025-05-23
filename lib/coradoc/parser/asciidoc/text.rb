@@ -107,6 +107,7 @@ module Coradoc
           ).as(:include)
         end
 
+        # This is a blocky element.  It has to be at the start of a line.
         def block_image
           (element_id.maybe >>
             block_title.maybe >>
@@ -116,6 +117,30 @@ module Coradoc
             attribute_list(:attribute_list_macro) >>
             newline.as(:line_break)
           ).as(:block_image)
+        end
+
+        # This is a blocky element.  It has to be at the start of a line.
+        def audio
+          (element_id.maybe >>
+            block_title.maybe >>
+            (attribute_list >> newline).maybe >>
+            match("^a") >> str("udio::") >>
+            file_path.as(:path) >>
+            attribute_list >>
+            newline.as(:line_break)
+          ).as(:audio)
+        end
+
+        # This is a blocky element.  It has to be at the start of a line.
+        def video
+          (element_id.maybe >>
+            block_title.maybe >>
+            (attribute_list >> newline).maybe >>
+            match("^v") >> str("ideo::") >>
+            file_path.as(:path) >>
+            attribute_list >>
+            newline.as(:line_break)
+          ).as(:video)
         end
 
         def comment_line

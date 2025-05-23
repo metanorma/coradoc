@@ -40,7 +40,7 @@ RSpec.describe Coradoc::Model::Video do
         attributes: attributes
       )
 
-      expected_output = "[[video-1]]\n.Sample Video\nvideo::video.mp4[width=640]"
+      expected_output = "[[video-1]]\n.Sample Video\nvideo::video.mp4[width=640]\n"
       expect(video.to_asciidoc).to eq(expected_output)
     end
 
@@ -50,7 +50,7 @@ RSpec.describe Coradoc::Model::Video do
         attributes: attributes
       )
 
-      expected_output = "video::video.mp4[width=640]"
+      expected_output = "video::video.mp4[width=640]\n"
       expect(video.to_asciidoc).to eq(expected_output)
     end
 
@@ -68,7 +68,7 @@ RSpec.describe Coradoc::Model::Video do
 
       allow(video).to receive(:anchor).and_return(anchor)
 
-      expected_output = "[[video-anchor]]\n.Sample Video\nvideo::video.mp4[width=640]"
+      expected_output = "[[video-anchor]]\n.Sample Video\nvideo::video.mp4[width=640]\n"
       expect(video.to_asciidoc).to eq(expected_output)
     end
 
@@ -78,7 +78,7 @@ RSpec.describe Coradoc::Model::Video do
         src: "video.mp4"
       )
 
-      expected_output = ".Sample Video\nvideo::video.mp4[]"
+      expected_output = ".Sample Video\nvideo::video.mp4[]\n"
       expect(video.to_asciidoc).to eq(expected_output)
     end
   end

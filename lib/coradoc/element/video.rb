@@ -5,11 +5,12 @@ module Coradoc
 
       declare_children :id, :anchor, :attributes
 
-      def initialize(title:, id: nil, src: "", attributes: AttributeList.new)
+      def initialize(id: nil, title: "", src: "", attributes: AttributeList.new, line_break: "\n")
         @title = title
         @id = id
         @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
         @src = src
+        @line_break = line_break
         @attributes = attributes
         if @attributes.any?
           @attributes.validate_positional(VALIDATORS_POSITIONAL)
@@ -21,7 +22,7 @@ module Coradoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         title = ".#{@title}\n" unless @title.empty?
         attrs = @attributes.to_adoc
-        [anchor, title, "video::", @src, attrs].join
+        [anchor, title, "video::", @src, attrs].join + @line_break
       end
 
       extend AttributeList::Matchers
