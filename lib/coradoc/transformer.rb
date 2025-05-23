@@ -51,8 +51,6 @@ module Coradoc
     end
 
     # AttributeList
-    # NamedAttribute = Struct.new(:key, :value)
-
     rule(named: { named_key: simple(:key),
                   named_value: simple(:value) }) do
       Element::Attribute.new(key: key.to_s, value: value.to_s)
@@ -71,8 +69,8 @@ module Coradoc
       attributes.each do |a|
         if a.is_a?(String)
           attr_list.add_positional(a)
-        elsif a.is_a?(NamedAttribute)
-          attr_list.add_named(a[:key], a[:value])
+        elsif a.is_a?(Element::Attribute)
+          attr_list.add_named(a.key, a.value)
         end
       end
       attr_list
@@ -199,6 +197,14 @@ module Coradoc
       Element::Inline::CrossReference.new(
         href: href.to_s,
         args: [name.to_s],
+      )
+    end
+
+    rule(inline_image: subtree(:inline_image)) do
+      Element::Image::InlineImage.new(
+        title: inline_image[:text],
+        src: inline_image[:path],
+        attributes: inline_image[:attribute_list],
       )
     end
 

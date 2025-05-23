@@ -142,7 +142,7 @@ module Coradoc
             str("http").present? |
             str("https").present? |
             str("link:").present? |
-            str("image:").present? |
+            str("image").present? |
             term_type.present? |
             str("footnote").present?
         end

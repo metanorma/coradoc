@@ -6,13 +6,19 @@ module Coradoc
 
         declare_children :id, :src, :title, :attributes
 
-        def initialize(src:, title: nil, id: nil,
-attributes: AttributeList.new, annotate_missing: nil, line_break: "")
+        def initialize(
+          src:,
+          title: nil,
+          id: nil,
+          attributes: nil,
+          annotate_missing: nil,
+          line_break: ""
+        )
           @title = title
           @id = id
           @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
           @src = src
-          @attributes = attributes
+          @attributes = attributes.nil? ? AttributeList.new : attributes
           @annotate_missing = annotate_missing
           if @attributes.any?
             @attributes.validate_positional(VALIDATORS_POSITIONAL)
