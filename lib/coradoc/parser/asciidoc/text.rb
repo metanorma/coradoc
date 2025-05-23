@@ -107,14 +107,6 @@ module Coradoc
           ).as(:include)
         end
 
-        def inline_image
-          (str("image::") >>
-            file_path.as(:path) >>
-            attribute_list >>
-          line_ending
-          ).as(:inline_image)
-        end
-
         def block_image
           (element_id.maybe >>
             block_title.maybe >>
