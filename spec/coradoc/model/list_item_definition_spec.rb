@@ -7,7 +7,7 @@ RSpec.describe Coradoc::Model::ListItemDefinition do
       item = described_class.new(
         id: "def-1",
         contents: "Definition content",
-        terms: [term]
+        terms: [term],
       )
 
       expect(item.id).to eq("def-1")
@@ -23,31 +23,22 @@ RSpec.describe Coradoc::Model::ListItemDefinition do
   end
 
   describe "#to_asciidoc" do
-    before do
-      # allow(Coradoc::Generator).to receive(:gen_adoc) { |content| content.is_a?(Array) ? content.first : content }
-    end
-
     context "with single term" do
       let(:term) { instance_double(Coradoc::Model::Term, to_asciidoc: "term") }
 
       it "generates definition with single term" do
-        item = described_class.new(
-          contents: "Definition",
-          terms: [term]
-        )
+        item = described_class.new(contents: "Definition", terms: [term])
 
         expect(item.to_asciidoc(delimiter: ":")).to eq("term: Definition\n")
       end
 
       it "includes anchor when present" do
-        anchor = instance_double(Coradoc::Model::Inline::Anchor,
-          to_asciidoc: "[[def-1]]"
+        anchor = instance_double(
+          Coradoc::Model::Inline::Anchor,
+          to_asciidoc: "[[def-1]]",
         )
 
-        item = described_class.new(
-          contents: "Definition",
-          terms: [term]
-        )
+        item = described_class.new(contents: "Definition", terms: [term])
         allow(item).to receive(:anchor).and_return(anchor)
 
         expect(item.to_asciidoc(delimiter: ":")).to eq("[[def-1]]term: Definition\n")
@@ -55,13 +46,17 @@ RSpec.describe Coradoc::Model::ListItemDefinition do
     end
 
     context "with multiple terms" do
-      let(:term1) { instance_double(Coradoc::Model::Term, to_asciidoc: "term1") }
-      let(:term2) { instance_double(Coradoc::Model::Term, to_asciidoc: "term2") }
+      let(:term1) {
+        instance_double(Coradoc::Model::Term, to_asciidoc: "term1")
+      }
+      let(:term2) {
+        instance_double(Coradoc::Model::Term, to_asciidoc: "term2")
+      }
 
       it "generates definition with multiple terms" do
         item = described_class.new(
           contents: "Definition",
-          terms: [term1, term2]
+          terms: [term1, term2],
         )
 
         expected_output = "term1:\nterm2:\nDefinition\n"
@@ -73,19 +68,13 @@ RSpec.describe Coradoc::Model::ListItemDefinition do
       let(:term) { instance_double(Coradoc::Model::Term, to_asciidoc: "term") }
 
       it "uses double colon delimiter" do
-        item = described_class.new(
-          contents: "Definition",
-          terms: [term]
-        )
+        item = described_class.new(contents: "Definition", terms: [term])
 
         expect(item.to_asciidoc(delimiter: "::")).to eq("term:: Definition\n")
       end
 
       it "uses triple colon delimiter" do
-        item = described_class.new(
-          contents: "Definition",
-          terms: [term]
-        )
+        item = described_class.new(contents: "Definition", terms: [term])
 
         expect(item.to_asciidoc(delimiter: ":::")).to eq("term::: Definition\n")
       end
@@ -108,6 +97,4 @@ RSpec.describe Coradoc::Model::ListItemDefinition do
       expect(described_class.included_modules).to include(Coradoc::Model::Anchorable)
     end
   end
-
-
 end

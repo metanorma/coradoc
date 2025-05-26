@@ -17,7 +17,11 @@ module Coradoc
         return "" if anchor.nil? || id.nil? || id.empty?
 
         anchor_str = anchor.to_asciidoc
-        anchor_str.empty? ? "" : "#{anchor_str}#{inline ? '' : "\n"}"
+        if anchor_str.empty?
+          ""
+        else
+          "#{anchor_str}#{inline ? '' : "\n"}"
+        end
       end
     end
   end

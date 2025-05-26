@@ -9,7 +9,11 @@ module Coradoc
       attribute :id, :string
       attribute :title, :string
       attribute :src, :string, default: -> { "" }
-      attribute :attributes, Video::AttributeList, default: -> { Video::AttributeList.new }
+      attribute :attributes,
+                Video::AttributeList,
+                default: -> {
+                  Video::AttributeList.new
+                }
       attribute :line_break, :string, default: -> { "\n" }
 
       asciidoc do

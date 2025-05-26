@@ -6,7 +6,7 @@ RSpec.describe Coradoc::Model::TextElement do
       element = described_class.new(
         id: "text-1",
         content: "Sample text",
-        line_break: "\n"
+        line_break: "\n",
       )
 
       expect(element.id).to eq("text-1")
@@ -44,7 +44,7 @@ RSpec.describe Coradoc::Model::TextElement do
     it "includes line break when specified" do
       element = described_class.new(
         content: "Sample text",
-        line_break: "\n"
+        line_break: "\n",
       )
       expect(element.to_asciidoc).to eq("Sample text\n")
     end
@@ -63,7 +63,7 @@ RSpec.describe Coradoc::Model::TextElement do
     it "handles multiline content" do
       element = described_class.new(
         content: "Line 1\nLine 2",
-        line_break: "\n"
+        line_break: "\n",
       )
       expect(element.to_asciidoc).to eq("Line 1\nLine 2\n")
     end
@@ -79,8 +79,6 @@ RSpec.describe Coradoc::Model::TextElement do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 
   describe "as base class" do
     let(:subclass) do
@@ -107,7 +105,7 @@ RSpec.describe Coradoc::Model::TextElement do
     it "works for simple paragraphs" do
       element = described_class.new(
         content: "A simple paragraph.",
-        line_break: "\n\n"
+        line_break: "\n\n",
       )
       expect(element.to_asciidoc).to eq("A simple paragraph.\n\n")
     end
@@ -115,7 +113,7 @@ RSpec.describe Coradoc::Model::TextElement do
     it "works for formatted text" do
       element = described_class.new(
         content: "*bold* and _italic_",
-        line_break: "\n"
+        line_break: "\n",
       )
       expect(element.to_asciidoc).to eq("*bold* and _italic_\n")
     end

@@ -7,9 +7,7 @@ module Coradoc::Input
           title = extract_title(node)
           attributes = style(node)
           content = treat_children_coradoc(node, state)
-          Coradoc::Element::Table.new(
-            title:, rows: content, id:, attributes:
-          )
+          Coradoc::Element::Table.new(title:, rows: content, id:, attributes:)
         end
 
         def extract_title(node)
@@ -129,8 +127,12 @@ module Coradoc::Input
               colspan = cell["colspan"]&.to_i || 1
               rowspan = cell["rowspan"]&.to_i || 1
 
-              column_id += 1 until fits_in_cell_matrix.(i, column_id, rowspan,
-                                                        colspan)
+              column_id += 1 until fits_in_cell_matrix.(
+                i,
+column_id,
+rowspan,
+                                                        colspan,
+              )
 
               rowspan.times do |j|
                 # Let's increase the table for particularly bad documents
@@ -301,7 +303,8 @@ module Coradoc::Input
 
           # Scale to integers
           lcm = sizes.map(&:denominator).inject(1) { |i, j| i.lcm(j) }
-          sizes = sizes.map { |i| i * lcm }.map(&:to_i)
+          sizes = sizes.map { |i| i * lcm }
+            .map(&:to_i)
 
           # Scale down by gcd
           gcd = sizes.inject(sizes.first) { |i, j| i.gcd(j) }

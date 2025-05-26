@@ -7,7 +7,7 @@ RSpec.describe Coradoc::Model::Author do
         first_name: "John",
         middle_name: "William",
         last_name: "Doe",
-        email: "john.doe@example.com"
+        email: "john.doe@example.com",
       )
 
       expect(author.first_name).to eq("John")
@@ -17,10 +17,7 @@ RSpec.describe Coradoc::Model::Author do
     end
 
     it "accepts partial details" do
-      author = described_class.new(
-        first_name: "John",
-        last_name: "Doe"
-      )
+      author = described_class.new(first_name: "John", last_name: "Doe")
 
       expect(author.first_name).to eq("John")
       expect(author.last_name).to eq("Doe")
@@ -44,7 +41,7 @@ RSpec.describe Coradoc::Model::Author do
         first_name: "John",
         middle_name: "William",
         last_name: "Doe",
-        email: "john.doe@example.com"
+        email: "john.doe@example.com",
       )
 
       expect(author.to_asciidoc).to eq("John William Doe <john.doe@example.com>\n")
@@ -54,7 +51,7 @@ RSpec.describe Coradoc::Model::Author do
       author = described_class.new(
         first_name: "John",
         last_name: "Doe",
-        email: "john.doe@example.com"
+        email: "john.doe@example.com",
       )
 
       expect(author.to_asciidoc).to eq("John Doe <john.doe@example.com>\n")
@@ -64,26 +61,20 @@ RSpec.describe Coradoc::Model::Author do
       author = described_class.new(
         first_name: "John",
         middle_name: "William",
-        last_name: "Doe"
+        last_name: "Doe",
       )
 
       expect(author.to_asciidoc).to eq("John William Doe")
     end
 
     it "formats first and last name only" do
-      author = described_class.new(
-        first_name: "John",
-        last_name: "Doe"
-      )
+      author = described_class.new(first_name: "John", last_name: "Doe")
 
       expect(author.to_asciidoc).to eq("John Doe")
     end
 
     it "handles missing first name" do
-      author = described_class.new(
-        last_name: "Doe",
-        email: "doe@example.com"
-      )
+      author = described_class.new(last_name: "Doe", email: "doe@example.com")
 
       expect(author.to_asciidoc).to eq("Doe <doe@example.com>\n")
     end
@@ -91,16 +82,14 @@ RSpec.describe Coradoc::Model::Author do
     it "handles missing last name" do
       author = described_class.new(
         first_name: "John",
-        email: "john@example.com"
+        email: "john@example.com",
       )
 
       expect(author.to_asciidoc).to eq("John <john@example.com>\n")
     end
 
     it "handles email only" do
-      author = described_class.new(
-        email: "anonymous@example.com"
-      )
+      author = described_class.new(email: "anonymous@example.com")
 
       expect(author.to_asciidoc).to eq(" <anonymous@example.com>\n")
     end

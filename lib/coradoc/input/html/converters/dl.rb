@@ -5,12 +5,12 @@ module Coradoc
         class Dl < Base
           def to_coradoc(node, state = {})
             items = process_dl(node, state)
-            items2 = items.map do |item|
+            items2 = items.map { |item|
               Coradoc::Element::ListItemDefinition.new(
                 terms: item[:name],
                 contents: item[:value],
               )
-            end
+            }
             Coradoc::Element::List::Definition.new(
               items: items2,
               delimiter: "::",
@@ -28,13 +28,23 @@ module Coradoc
               if child.name == "div"
                 grandchild = child.at_xpath("*[1]")
                 while !grandchild.nil?
-                  groups, current, seen_dd = process_dt_or_dd(groups, current,
-                                                              seen_dd, grandchild, state)
+                  groups, current, seen_dd = process_dt_or_dd(
+                    groups,
+                    current,
+                    seen_dd,
+                    grandchild,
+                    state,
+                  )
                   grandchild = grandchild.at_xpath("following-sibling::*[1]")
                 end
               elsif ["dt", "dd"].include?(child.name)
-                groups, current, seen_dd = process_dt_or_dd(groups, current,
-                                                            seen_dd, child, state)
+                groups, current, seen_dd = process_dt_or_dd(
+                  groups,
+                  current,
+                  seen_dd,
+                  child,
+                  state,
+                )
               end
               child = child.at_xpath("following-sibling::*[1]")
               if current[:name].any? && current[:value].any?

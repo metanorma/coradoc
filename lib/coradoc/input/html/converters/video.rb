@@ -10,9 +10,7 @@ module Coradoc
             attributes = Coradoc::Element::AttributeList.new
             options = options(node)
             attributes.add_named("options", options) if options.any?
-            Coradoc::Element::Video.new(
-              title:, id:, src:, attributes:,
-            )
+            Coradoc::Element::Video.new(title:, id:, src:, attributes:)
           end
 
           def options(node)

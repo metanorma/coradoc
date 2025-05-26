@@ -6,7 +6,7 @@ RSpec.describe Coradoc::Model::Paragraph do
       paragraph = described_class.new(
         id: "para-1",
         content: "Sample content",
-        title: "Sample Title"
+        title: "Sample Title",
       )
 
       expect(paragraph.id).to eq("para-1")
@@ -34,7 +34,7 @@ RSpec.describe Coradoc::Model::Paragraph do
       it "generates complete paragraph" do
         paragraph = described_class.new(
           title: "Sample Title",
-          content: "Sample content"
+          content: "Sample content",
         )
 
         expected_output = "\n\n.Sample Title\nSample content\n\n"
@@ -44,7 +44,7 @@ RSpec.describe Coradoc::Model::Paragraph do
       it "includes anchor when present" do
         paragraph = described_class.new(
           title: "Sample Title",
-          content: "Sample content"
+          content: "Sample content",
         )
         allow(paragraph).to receive(:id).and_return("para-1")
 
@@ -53,14 +53,15 @@ RSpec.describe Coradoc::Model::Paragraph do
       end
 
       it "includes attributes when present" do
-        attributes = instance_double(Coradoc::Model::AttributeList,
+        attributes = instance_double(
+          Coradoc::Model::AttributeList,
           to_asciidoc: "[.lead]",
           empty?: false,
         )
 
         paragraph = described_class.new(
           content: "Sample content",
-          attributes: attributes
+          attributes: attributes,
         )
 
         expected_output = "\n\n[.lead]\nSample content\n\n"
@@ -73,7 +74,7 @@ RSpec.describe Coradoc::Model::Paragraph do
         paragraph = described_class.new(
           title: "Sample Title",
           content: "Sample content",
-          tdsinglepara: true
+          tdsinglepara: true,
         )
 
         expected_output = ".Sample Title\nSample content"
@@ -84,7 +85,7 @@ RSpec.describe Coradoc::Model::Paragraph do
         paragraph = described_class.new(
           title: "Sample Title",
           content: "Sample content",
-          tdsinglepara: true
+          tdsinglepara: true,
         )
         allow(paragraph).to receive(:id).and_return("para-1")
 
@@ -119,6 +120,4 @@ RSpec.describe Coradoc::Model::Paragraph do
       expect(described_class.included_modules).to include(Coradoc::Model::Anchorable)
     end
   end
-
-
 end

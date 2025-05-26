@@ -7,9 +7,7 @@ RSpec.describe Coradoc::Element::Revision do
       remark = "Version comment note"
       revision_date = "2023-02-23"
 
-      revision = described_class.new(number:,
-                                     date: revision_date,
-                                     remark:)
+      revision = described_class.new(number:, date: revision_date, remark:)
 
       expect(revision.number).to eq(number)
       expect(revision.remark).to eq(remark)

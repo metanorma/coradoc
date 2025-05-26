@@ -6,7 +6,7 @@ RSpec.describe Coradoc::Model::Audio do
       audio = described_class.new(
         id: "audio-1",
         title: "Sample Audio",
-        src: "audio.mp3"
+        src: "audio.mp3",
       )
 
       expect(audio.id).to eq("audio-1")
@@ -30,35 +30,26 @@ RSpec.describe Coradoc::Model::Audio do
     let(:src) { "audio.mp3" }
 
     it "generates basic audio markup" do
-      audio = described_class.new(
-        title: title,
-        src: src
-      )
+      audio = described_class.new(title: title, src: src)
 
       expected_output = ".Sample Audio\naudio::audio.mp3[]\n"
       expect(audio.to_asciidoc).to eq(expected_output)
     end
 
     it "includes attributes when present" do
-      attributes = instance_double(Coradoc::Model::AttributeList,
-                                   to_asciidoc: "[start=30,end=60]",
-                                   empty?: false
-                                  )
-      audio = described_class.new(
-        title: title,
-        src: src,
-        attributes:,
+      attributes = instance_double(
+        Coradoc::Model::AttributeList,
+        to_asciidoc: "[start=30,end=60]",
+        empty?: false,
       )
+      audio = described_class.new(title: title, src: src, attributes:)
 
       expected_output = ".Sample Audio\naudio::audio.mp3[start=30,end=60]\n"
       expect(audio.to_asciidoc).to eq(expected_output)
     end
 
     it "includes anchor when present" do
-      audio = described_class.new(
-        title: title,
-        src: src
-      )
+      audio = described_class.new(title: title, src: src)
       allow(audio).to receive(:id).and_return("audio-1")
 
       expected_output = "[[audio-1]]\n.Sample Audio\naudio::audio.mp3[]\n"
@@ -76,16 +67,13 @@ RSpec.describe Coradoc::Model::Audio do
     end
 
     it "combines all elements" do
-      attributes = instance_double(Coradoc::Model::AttributeList,
-                                   to_asciidoc: "[start=30,end=60]\n",
-                                   empty?: false
-                                  )
-
-      audio = described_class.new(
-        title: title,
-        src: src,
-        attributes:,
+      attributes = instance_double(
+        Coradoc::Model::AttributeList,
+        to_asciidoc: "[start=30,end=60]\n",
+        empty?: false,
       )
+
+      audio = described_class.new(title: title, src: src, attributes:)
       allow(audio).to receive(:id).and_return("audio-1")
 
       expected_output = "[[audio-1]]\n.Sample Audio\naudio::audio.mp3[start=30,end=60]\n\n"

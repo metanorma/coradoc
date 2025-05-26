@@ -7,7 +7,8 @@ module Coradoc
             return treat_empty(node, state) if node.text.strip.empty?
 
             Coradoc::Element::TextElement.new(
-              content: node.text, html_cleanup: true)
+              content: node.text, html_cleanup: true,
+            )
           end
 
           private

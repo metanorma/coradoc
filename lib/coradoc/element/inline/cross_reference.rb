@@ -15,9 +15,9 @@ module Coradoc
 
         def to_adoc
           if @args
-            args = @args.map do |a|
+            args = @args.map { |a|
               Coradoc::Generator.gen_adoc(a)
-            end.join(",")
+            }.join(",")
             if args.empty?
               return "<<#{@href}>>"
             else

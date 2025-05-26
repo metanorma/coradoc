@@ -16,9 +16,7 @@ module Coradoc
       end
 
       def to_asciidoc
-        adoc = [first_name, middle_name, last_name]
-          .compact
-          .join(" ")
+        adoc = [first_name, middle_name, last_name].compact.join(" ")
         adoc << " <#{email}>\n" if email
         adoc
       end

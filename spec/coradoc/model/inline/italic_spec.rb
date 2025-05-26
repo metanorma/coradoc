@@ -12,7 +12,7 @@ RSpec.describe Coradoc::Model::Inline::Italic do
     it "accepts unconstrained parameter" do
       italic = described_class.new(
         content: "italic text",
-        unconstrained: false
+        unconstrained: false,
       )
 
       expect(italic.content).to eq("italic text")
@@ -49,7 +49,7 @@ RSpec.describe Coradoc::Model::Inline::Italic do
       it "uses single asterisk" do
         italic = described_class.new(
           content: "italic text",
-          unconstrained: false
+          unconstrained: false,
         )
         expect(italic.to_asciidoc).to eq("_italic text_")
       end
@@ -82,6 +82,4 @@ RSpec.describe Coradoc::Model::Inline::Italic do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 end

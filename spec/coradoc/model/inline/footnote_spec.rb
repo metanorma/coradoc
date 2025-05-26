@@ -3,10 +3,7 @@
 RSpec.describe Coradoc::Model::Inline::Footnote do
   describe ".initialize" do
     it "initializes with text and id" do
-      footnote = described_class.new(
-        text: "See reference",
-        id: "ref1"
-      )
+      footnote = described_class.new(text: "See reference", id: "ref1")
 
       expect(footnote.text).to eq("See reference")
       expect(footnote.id).to eq("ref1")
@@ -30,19 +27,13 @@ RSpec.describe Coradoc::Model::Inline::Footnote do
   describe "#to_asciidoc" do
     context "with id" do
       it "generates footnote with id" do
-        footnote = described_class.new(
-          text: "See reference",
-          id: "ref1"
-        )
+        footnote = described_class.new(text: "See reference", id: "ref1")
 
         expect(footnote.to_asciidoc).to eq("footnote:ref1[See reference]")
       end
 
       it "handles empty text" do
-        footnote = described_class.new(
-          text: "",
-          id: "ref1"
-        )
+        footnote = described_class.new(text: "", id: "ref1")
 
         expect(footnote.to_asciidoc).to eq("footnote:ref1[]")
       end
@@ -71,10 +62,7 @@ RSpec.describe Coradoc::Model::Inline::Footnote do
     end
 
     it "preserves special characters in id" do
-      footnote = described_class.new(
-        text: "See reference",
-        id: "ref-1_2"
-      )
+      footnote = described_class.new(text: "See reference", id: "ref-1_2")
       expect(footnote.to_asciidoc).to eq("footnote:ref-1_2[See reference]")
     end
   end
@@ -85,8 +73,6 @@ RSpec.describe Coradoc::Model::Inline::Footnote do
     end
   end
 
-
-
   describe "usage examples" do
     it "works in sentences" do
       footnote = described_class.new(text: "See reference")
@@ -94,10 +80,7 @@ RSpec.describe Coradoc::Model::Inline::Footnote do
     end
 
     it "allows referencing same footnote multiple times" do
-      footnote = described_class.new(
-        text: "See reference",
-        id: "ref1"
-      )
+      footnote = described_class.new(text: "See reference", id: "ref1")
       first_use = "First use#{footnote.to_asciidoc}"
       second_use = "Second use#{footnote.to_asciidoc}"
 

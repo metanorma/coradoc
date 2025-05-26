@@ -51,8 +51,6 @@ RSpec.describe Coradoc::Model::Inline::Underline do
     end
   end
 
-
-
   describe "usage examples" do
     it "works in sentences" do
       underline = described_class.new(text: "important")

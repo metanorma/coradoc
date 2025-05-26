@@ -13,7 +13,7 @@ module Coradoc
 
       def to_asciidoc
         _value = value.to_s.strip.delete("'")
-        v = _value.empty? ? '' : " #{_value}"
+        v = _value.empty? ? "" : " #{_value}"
         ":#{key}:#{v}#{line_break}"
       end
 

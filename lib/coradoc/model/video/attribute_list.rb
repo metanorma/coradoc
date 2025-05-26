@@ -4,7 +4,6 @@ module Coradoc
   module Model
     class Video < Base
       class AttributeList < Coradoc::Model::AttributeList
-
         extend AttributeList::Matchers
         def positional_validators
           [
@@ -26,8 +25,14 @@ module Coradoc
             lang: /[a-z]{2,3}(?:-[A-Z]{2})?/,
             list: String,
             playlist: String,
-            options: many("autoplay", "loop", "modest",
-                          "nocontrols", "nofullscreen", "muted"),
+            options: many(
+              "autoplay",
+              "loop",
+              "modest",
+              "nocontrols",
+              "nofullscreen",
+              "muted",
+            ),
           }
         end
       end

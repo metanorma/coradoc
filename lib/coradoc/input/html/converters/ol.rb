@@ -9,8 +9,10 @@ module Coradoc
             id = node["id"]
             ol_count = state.fetch(:ol_count, 0) + 1
             attrs = ol_attrs(node)
-            items = treat_children_coradoc(node,
-                                           state.merge(ol_count: ol_count))
+            items = treat_children_coradoc(
+              node,
+              state.merge(ol_count: ol_count),
+            )
 
             options = {}.tap do |hash|
               hash[:id] = id
@@ -20,9 +22,19 @@ module Coradoc
 
             case get_list_type(node, state)
             when :ordered
-              Coradoc::Element::List::Ordered.new(items:, id:, ol_count:, attrs:)
+              Coradoc::Element::List::Ordered.new(
+                items:,
+                id:,
+                ol_count:,
+                attrs:,
+              )
             when :unordered
-              Coradoc::Element::List::Unordered.new(items:, id:, ol_count:, attrs:)
+              Coradoc::Element::List::Unordered.new(
+                items:,
+                id:,
+                ol_count:,
+                attrs:,
+              )
             end
           end
 

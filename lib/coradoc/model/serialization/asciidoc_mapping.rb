@@ -28,9 +28,7 @@ module Coradoc
         private
 
         def add_mapping(name, to, **options)
-          @mappings << AsciidocMappingRule.new(
-            name, to: to, **options
-          )
+          @mappings << AsciidocMappingRule.new(name, to: to, **options)
         end
       end
     end

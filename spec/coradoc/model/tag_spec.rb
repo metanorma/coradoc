@@ -20,10 +20,7 @@ RSpec.describe Coradoc::Model::Tag do
     end
 
     it "accepts custom prefix" do
-      tag = described_class.new(
-        name: "test-tag",
-        prefix: "custom"
-      )
+      tag = described_class.new(name: "test-tag", prefix: "custom")
 
       expect(tag.name).to eq("test-tag")
       expect(tag.prefix).to eq("custom")
@@ -31,10 +28,7 @@ RSpec.describe Coradoc::Model::Tag do
 
     it "accepts custom attributes" do
       attrs = Coradoc::Model::AttributeList.new
-      tag = described_class.new(
-        name: "test-tag",
-        attrs: attrs
-      )
+      tag = described_class.new(name: "test-tag", attrs: attrs)
 
       expect(tag.attrs).to eq(attrs)
     end
@@ -42,7 +36,7 @@ RSpec.describe Coradoc::Model::Tag do
     it "accepts custom line break" do
       tag = described_class.new(
         name: "test-tag",
-        line_break: "\n\n"
+        line_break: "\n\n",
       )
 
       expect(tag.line_break).to eq("\n\n")
@@ -59,19 +53,13 @@ RSpec.describe Coradoc::Model::Tag do
       attrs = instance_double(Coradoc::Model::AttributeList)
       allow(attrs).to receive(:to_asciidoc).and_return('[role="important"]')
 
-      tag = described_class.new(
-        name: "test-tag",
-        attrs: attrs
-      )
+      tag = described_class.new(name: "test-tag", attrs: attrs)
 
       expect(tag.to_asciidoc).to eq("// tag::test-tag[role=\"important\"]\n")
     end
 
     it "uses custom prefix" do
-      tag = described_class.new(
-        name: "test-tag",
-        prefix: "custom"
-      )
+      tag = described_class.new(name: "test-tag", prefix: "custom")
 
       expect(tag.to_asciidoc).to eq("// custom::test-tag[]\n")
     end
@@ -79,7 +67,7 @@ RSpec.describe Coradoc::Model::Tag do
     it "uses custom line break" do
       tag = described_class.new(
         name: "test-tag",
-        line_break: "\n\n"
+        line_break: "\n\n",
       )
 
       expect(tag.to_asciidoc).to eq("// tag::test-tag[]\n\n")

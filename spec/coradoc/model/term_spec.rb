@@ -7,7 +7,7 @@ RSpec.describe Coradoc::Model::Term do
         term: "example",
         type: "stem",
         lang: "fr",
-        line_break: "\n"
+        line_break: "\n",
       )
 
       expect(term.term).to eq("example")
@@ -38,10 +38,7 @@ RSpec.describe Coradoc::Model::Term do
   describe "#to_asciidoc" do
     context "with English language (default)" do
       it "formats term with type-first syntax" do
-        term = described_class.new(
-          term: "example",
-          type: "stem"
-        )
+        term = described_class.new(term: "example", type: "stem")
 
         expect(term.to_asciidoc).to eq("stem:[example]")
       end
@@ -50,7 +47,7 @@ RSpec.describe Coradoc::Model::Term do
         term = described_class.new(
           term: "example",
           type: "stem",
-          line_break: "\n"
+          line_break: "\n",
         )
 
         expect(term.to_asciidoc).to eq("stem:[example]\n")
@@ -59,11 +56,7 @@ RSpec.describe Coradoc::Model::Term do
 
     context "with non-English language" do
       it "formats term with hash notation" do
-        term = described_class.new(
-          term: "exemple",
-          type: "stem",
-          lang: "fr"
-        )
+        term = described_class.new(term: "exemple", type: "stem", lang: "fr")
 
         expect(term.to_asciidoc).to eq("[stem]#exemple#")
       end
@@ -73,7 +66,7 @@ RSpec.describe Coradoc::Model::Term do
           term: "exemple",
           type: "stem",
           lang: "fr",
-          line_break: "\n"
+          line_break: "\n",
         )
 
         expect(term.to_asciidoc).to eq("[stem]#exemple#\n")
@@ -82,32 +75,55 @@ RSpec.describe Coradoc::Model::Term do
 
     context "with nil term" do
       subject(:term) { described_class.new(type: "stem") }
-      its(:validate) { is_expected.to_not be_empty }
+
+      its(:validate) do
+        is_expected.not_to be_empty
+      end
+
       its(:to_asciidoc) { is_expected.to eq("stem:[]") }
     end
 
     context "handles nil type" do
       subject(:term) { described_class.new(term: "example") }
-      its(:validate) { is_expected.to_not be_empty }
+
+      its(:validate) do
+        is_expected.not_to be_empty
+      end
+
       its(:to_asciidoc) { is_expected.to eq(":[example]") }
     end
 
     context "with empty term" do
       subject(:term) { described_class.new(term: "", type: "stem") }
-      its(:validate) { is_expected.to_not be_empty }
+
+      its(:validate) do
+        is_expected.not_to be_empty
+      end
+
       its(:to_asciidoc) { is_expected.to eq("stem:[]") }
     end
 
     context "with empty type" do
       subject(:term) { described_class.new(type: "", term: "example") }
-      its(:validate) { is_expected.to_not be_empty }
+
+      its(:validate) do
+        is_expected.not_to be_empty
+      end
+
       its(:to_asciidoc) { is_expected.to eq(":[example]") }
     end
 
     context "with nil values" do
       subject(:term) { described_class.new }
-      its(:validate) { is_expected.to_not be_empty }
-      its(:'validate.size') { is_expected.to eq 2 }
+
+      its(:validate) do
+        is_expected.not_to be_empty
+      end
+
+      its(:'validate.size') do
+        is_expected.to eq 2
+      end
+
       its(:to_asciidoc) { is_expected.to eq(":[]") }
     end
   end
@@ -120,18 +136,12 @@ RSpec.describe Coradoc::Model::Term do
 
   describe "common use cases" do
     it "works for mathematical terms" do
-      term = described_class.new(
-        term: "x^2",
-        type: "stem"
-      )
+      term = described_class.new(term: "x^2", type: "stem")
       expect(term.to_asciidoc).to eq("stem:[x^2]")
     end
 
     it "works for chemical formulas" do
-      term = described_class.new(
-        term: "H2O",
-        type: "chem"
-      )
+      term = described_class.new(term: "H2O", type: "chem")
       expect(term.to_asciidoc).to eq("chem:[H2O]")
     end
 
@@ -139,7 +149,7 @@ RSpec.describe Coradoc::Model::Term do
       term = described_class.new(
         term: "raison d'être",
         type: "foreign",
-        lang: "fr"
+        lang: "fr",
       )
       expect(term.to_asciidoc).to eq("[foreign]#raison d'être#")
     end

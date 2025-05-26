@@ -10,10 +10,7 @@ RSpec.describe Coradoc::Model::Inline::Monospace do
     end
 
     it "accepts unconstrained parameter" do
-      mono = described_class.new(
-        content: "code sample",
-        unconstrained: false
-      )
+      mono = described_class.new(content: "code sample", unconstrained: false)
 
       expect(mono.content).to eq("code sample")
       expect(mono.unconstrained).to be false
@@ -49,7 +46,7 @@ RSpec.describe Coradoc::Model::Inline::Monospace do
       it "uses single backticks" do
         mono = described_class.new(
           content: "code sample",
-          unconstrained: false
+          unconstrained: false,
         )
         expect(mono.to_asciidoc).to eq("`code sample`")
       end
@@ -87,6 +84,4 @@ RSpec.describe Coradoc::Model::Inline::Monospace do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 end

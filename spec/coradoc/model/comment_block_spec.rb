@@ -17,7 +17,7 @@ RSpec.describe Coradoc::Model::CommentBlock do
     it "accepts custom line break" do
       comment = described_class.new(
         text: "Sample comment",
-        line_break: "\n\n"
+        line_break: "\n\n",
       )
       expect(comment.line_break).to eq("\n\n")
     end
@@ -61,7 +61,7 @@ RSpec.describe Coradoc::Model::CommentBlock do
     it "respects custom line break" do
       comment = described_class.new(
         text: "Sample comment",
-        line_break: "\n\n"
+        line_break: "\n\n",
       )
 
       expected_output = "////\nSample comment\n////\n\n"
@@ -74,6 +74,4 @@ RSpec.describe Coradoc::Model::CommentBlock do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 end

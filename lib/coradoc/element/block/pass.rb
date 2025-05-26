@@ -2,8 +2,13 @@ module Coradoc
   module Element
     module Block
       class Pass < Core
-        def initialize(id: nil, title: "", attributes: AttributeList.new,
-delimiter_len: 4, lines: [])
+        def initialize(
+          id: nil,
+          title: "",
+          attributes: AttributeList.new,
+          delimiter_len: 4,
+          lines: []
+        )
           @id = id
           @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
           @title = title

@@ -67,8 +67,6 @@ RSpec.describe Coradoc::Model::Inline::Superscript do
     end
   end
 
-
-
   describe "usage examples" do
     it "works for exponents" do
       sup = described_class.new(content: "2")

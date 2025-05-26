@@ -5,13 +5,19 @@ require_relative "attribute_list/matchers"
 module Coradoc
   module Model
     class AttributeList < Base
-      attribute :positional, AttributeListAttribute, collection: true,
-                                                     initialize_empty: true
+      attribute :positional,
+                AttributeListAttribute,
+                collection: true,
+                initialize_empty: true
       attribute :named, NamedAttribute, collection: true, initialize_empty: true
-      attribute :rejected_positional, RejectedPositionalAttribute,
-                collection: true, initialize_empty: true
-      attribute :rejected_named, NamedAttribute, collection: true,
-                                                 initialize_empty: true
+      attribute :rejected_positional,
+                RejectedPositionalAttribute,
+                collection: true,
+                initialize_empty: true
+      attribute :rejected_named,
+                NamedAttribute,
+                collection: true,
+                initialize_empty: true
 
       asciidoc do
         map_attribute "positional", to: :positional
@@ -34,7 +40,7 @@ module Coradoc
       end
 
       def validate_named(validators: {})
-        named.each_with_index do |named_attribute, i|
+        named.each_with_index do |named_attribute, _i|
           name = named_attribute.name.to_sym
           value = named_attribute.value
 
@@ -54,14 +60,14 @@ module Coradoc
           matcher = validators[i][1]
           value = positional_attribute.value
 
-          if matcher
-            unless matcher === value
-              warn "#{value} does not match #{matcher}"
-              # Previous implementation would remove the value from the list
-              # positional[i] = nil
-              rejected_positional << RejectedPositionalAttribute.new(position: i, value:)
-              yield(i, value) if block_given?
-            end
+          if matcher && !(matcher === value)
+            warn "#{value} does not match #{matcher}"
+            # Previous implementation would remove the value from the list
+            # positional[i] = nil
+            rejected_positional << RejectedPositionalAttribute.new(
+              position: i, value:,
+            )
+            yield(i, value) if block_given?
           end
         end
       end
@@ -95,17 +101,18 @@ module Coradoc
       end
 
       def to_asciidoc(show_empty: true)
-        valid_positional = positional.reject.with_index do |_p, i|
+        valid_positional = positional.reject.with_index { |_p, i|
           rejected_positional.any? { |r| r.position == i }
-        end
+        }
 
-        valid_named = named.reject do |n|
+        valid_named = named.reject { |n|
           rejected_named.any? { |r| r.name == n.name }
-        end
+        }
 
-        adoc = [valid_positional, valid_named].flatten.map(&:to_asciidoc).join(",")
+        adoc = [valid_positional,
+                valid_named].flatten.map(&:to_asciidoc).join(",")
 
-        puts 'pp adoc'
+        puts "pp adoc"
         pp adoc
         if adoc.empty? && show_empty
           "[]"

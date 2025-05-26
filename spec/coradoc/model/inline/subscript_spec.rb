@@ -67,8 +67,6 @@ RSpec.describe Coradoc::Model::Inline::Subscript do
     end
   end
 
-
-
   describe "usage examples" do
     it "works for chemical formulas" do
       sub = described_class.new(content: "2")

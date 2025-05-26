@@ -3,7 +3,8 @@
 RSpec.describe Coradoc::Model::Inline::HardLineBreak do
   describe ".initialize" do
     it "can be instantiated" do
-      expect { described_class.new }.not_to raise_error
+      expect { described_class.new }
+        .not_to raise_error
     end
   end
 

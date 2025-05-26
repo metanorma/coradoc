@@ -8,7 +8,7 @@ RSpec.describe Coradoc::Model::Revision do
       revision = described_class.new(
         number: "1.0",
         date: date,
-        remark: "Initial release"
+        remark: "Initial release",
       )
 
       expect(revision.number).to eq("1.0")
@@ -43,10 +43,7 @@ RSpec.describe Coradoc::Model::Revision do
 
     context "with number and date" do
       it "generates version with date format" do
-        revision = described_class.new(
-          number: "1.0",
-          date: date
-        )
+        revision = described_class.new(number: "1.0", date: date)
 
         expect(revision.to_asciidoc).to eq("1.0, 2024-01-01\n")
       end
@@ -56,7 +53,7 @@ RSpec.describe Coradoc::Model::Revision do
       it "generates version with remark format" do
         revision = described_class.new(
           number: "1.0",
-          remark: "Initial release"
+          remark: "Initial release",
         )
 
         expect(revision.to_asciidoc).to eq("1.0: Initial release\n")
@@ -68,7 +65,7 @@ RSpec.describe Coradoc::Model::Revision do
         revision = described_class.new(
           number: "1.0",
           date: date,
-          remark: "Initial release"
+          remark: "Initial release",
         )
 
         expect(revision.to_asciidoc).to eq("1.0, 2024-01-01: Initial release\n")
@@ -76,10 +73,7 @@ RSpec.describe Coradoc::Model::Revision do
     end
 
     it "handles nil number" do
-      revision = described_class.new(
-        date: date,
-        remark: "Initial release"
-      )
+      revision = described_class.new(date: date, remark: "Initial release")
 
       expect(revision.to_asciidoc).to eq(", 2024-01-01: Initial release\n")
     end
@@ -90,8 +84,6 @@ RSpec.describe Coradoc::Model::Revision do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 
   describe "attribute types" do
     it "accepts string number" do

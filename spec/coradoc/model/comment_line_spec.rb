@@ -17,7 +17,7 @@ RSpec.describe Coradoc::Model::CommentLine do
     it "accepts custom line break" do
       comment = described_class.new(
         text: "Sample comment",
-        line_break: "\n\n"
+        line_break: "\n\n",
       )
       expect(comment.line_break).to eq("\n\n")
     end
@@ -37,7 +37,7 @@ RSpec.describe Coradoc::Model::CommentLine do
 
     it "handles long comments" do
       comment = described_class.new(
-        text: "This is a longer comment that spans multiple words"
+        text: "This is a longer comment that spans multiple words",
       )
 
       expect(comment.to_asciidoc)
@@ -59,7 +59,7 @@ RSpec.describe Coradoc::Model::CommentLine do
     it "respects custom line break" do
       comment = described_class.new(
         text: "Sample comment",
-        line_break: "\n\n"
+        line_break: "\n\n",
       )
 
       expect(comment.to_asciidoc).to eq("// Sample comment\n\n")
@@ -77,6 +77,4 @@ RSpec.describe Coradoc::Model::CommentLine do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 end

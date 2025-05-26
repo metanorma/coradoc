@@ -9,7 +9,7 @@ RSpec.describe Coradoc::Model::Header do
       header = described_class.new(
         title: "Document Title",
         author: author,
-        revision: revision
+        revision: revision,
       )
 
       expect(header.title).to eq("Document Title")
@@ -45,7 +45,7 @@ RSpec.describe Coradoc::Model::Header do
         header = described_class.new(
           title: "Document Title",
           author: author,
-          revision: revision
+          revision: revision,
         )
 
         expected_output = "= Document Title\nJohn Doe <john@example.com>\nv1.0, 2024-01-01\n"
@@ -62,10 +62,7 @@ RSpec.describe Coradoc::Model::Header do
       it "generates header with title and author" do
         allow(author).to receive(:to_asciidoc).and_return("John Doe <john@example.com>\n")
 
-        header = described_class.new(
-          title: "Document Title",
-          author: author
-        )
+        header = described_class.new(title: "Document Title", author: author)
 
         expect(header.to_asciidoc).to eq("= Document Title\nJohn Doe <john@example.com>\n")
       end
@@ -75,7 +72,7 @@ RSpec.describe Coradoc::Model::Header do
 
         header = described_class.new(
           title: "Document Title",
-          revision: revision
+          revision: revision,
         )
 
         expect(header.to_asciidoc).to eq("= Document Title\nv1.0, 2024-01-01\n")
@@ -99,20 +96,22 @@ RSpec.describe Coradoc::Model::Header do
     end
   end
 
-
-
   xdescribe "attribute types" do
     it "validates author type" do
       a = described_class.new(title: "Title", author: "Invalid Author")
       pp a
       a.validate
 
-      expect { described_class.new(title: "Title", author: "Invalid Author").validate }
+      expect {
+        described_class.new(title: "Title", author: "Invalid Author").validate
+      }
         .to raise_error(TypeError)
     end
 
     it "validates revision type" do
-      expect { described_class.new(title: "Title", revision: "Invalid Revision") }
+      expect {
+        described_class.new(title: "Title", revision: "Invalid Revision")
+      }
         .to raise_error(TypeError)
     end
   end

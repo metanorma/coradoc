@@ -123,13 +123,11 @@ RSpec.describe "Coradoc::Parser::Asciidoc::Inline" do
       expect(ast).to eq(obj)
 
       ast = parser.parse("line with *bold*")
-      obj = [{ text: "line with " },
-             { bold_constrained: [{ text: "bold" }] }]
+      obj = [{ text: "line with " }, { bold_constrained: [{ text: "bold" }] }]
       expect(ast).to eq(obj)
 
       ast = parser.parse("line with**bold**")
-      obj = [{ text: "line with" },
-             { bold_unconstrained: [{ text: "bold" }] }]
+      obj = [{ text: "line with" }, { bold_unconstrained: [{ text: "bold" }] }]
       expect(ast).to eq(obj)
 
       ast = parser.parse("line with _italic_")
@@ -158,8 +156,7 @@ RSpec.describe "Coradoc::Parser::Asciidoc::Inline" do
       expect(ast).to eq(obj)
 
       ast = parser.parse("text before ~subscript~")
-      obj = [{ text: "text before " },
-             { subscript: [{ text: "subscript" }] }]
+      obj = [{ text: "text before " }, { subscript: [{ text: "subscript" }] }]
       expect(ast).to eq(obj)
 
       ast = parser.parse("line with *bold* #highlight#")
@@ -288,20 +285,26 @@ RSpec.describe "Coradoc::Parser::Asciidoc::Inline" do
       expect(ast).to eq([{ cross_reference: [{ href_arg: "xref_anchor" }] }])
 
       ast = parser.parse("<<xref_anchor,display text>>")
-      expect(ast).to eq([{ cross_reference: [{ href_arg: "xref_anchor" },
-                                             { text: "display text" }] }])
+      expect(ast).to eq(
+        [{ cross_reference: [{ href_arg: "xref_anchor" },
+                             { text: "display text" }] }],
+      )
 
       ast = parser.parse("<<xref_anchor,section=1>>")
-      expect(ast).to eq([{ cross_reference: [{ href_arg: "xref_anchor" },
-                                             { key: "section",
-delimiter: "=", value: "1" }] }])
+      expect(ast).to eq(
+        [{ cross_reference: [{ href_arg: "xref_anchor" },
+                             { key: "section",
+        delimiter: "=", value: "1" }] }],
+      )
     end
   end
 end
 
 module Asciidoc
   class InlineTextFormattingTester < Coradoc::Parser::Asciidoc::Base
-    rule(:document) { (text_any | any.as(:unparsed)).repeat(1) }
+    rule(:document) do
+      (text_any | any.as(:unparsed)).repeat(1)
+    end
     root :document
 
     def self.parse(text)

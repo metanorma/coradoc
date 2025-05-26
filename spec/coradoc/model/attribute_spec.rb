@@ -3,10 +3,7 @@
 RSpec.describe Coradoc::Model::Attribute do
   describe ".initialize" do
     it "initializes with key and value" do
-      attr = described_class.new(
-        key: "format",
-        value: ["pdf"]
-      )
+      attr = described_class.new(key: "format", value: ["pdf"])
 
       expect(attr.key).to eq("format")
       expect(attr.value).to eq(["pdf"])
@@ -15,7 +12,7 @@ RSpec.describe Coradoc::Model::Attribute do
     it "accepts array values" do
       attr = described_class.new(
         key: "formats",
-        value: ["pdf", "html", "docx"]
+        value: ["pdf", "html", "docx"],
       )
 
       expect(attr.key).to eq("formats")

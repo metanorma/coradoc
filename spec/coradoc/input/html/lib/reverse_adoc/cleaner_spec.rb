@@ -86,7 +86,9 @@ describe Coradoc::Input::Html::Cleaner do
 
   describe "#clean_tag_borders" do
     context "with default_border is set to space" do
-      before { Coradoc::Input::Html.config.tag_border = " " }
+      before do
+        Coradoc::Input::Html.config.tag_border = " "
+      end
 
       # it 'removes not needed whitespaces from strong tags' do
       #   input = "foo ** foobar ** bar"
@@ -132,7 +134,9 @@ describe Coradoc::Input::Html::Cleaner do
     end
 
     context "with default_border set to no space" do
-      before { Coradoc::Input::Html.config.tag_border = "" }
+      before do
+        Coradoc::Input::Html.config.tag_border = ""
+      end
 
       # it 'removes not needed whitespaces from strong tags' do
       #   input = "foo ** foobar ** bar"

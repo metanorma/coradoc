@@ -14,7 +14,7 @@ RSpec.describe Coradoc::Model::Block::Core do
         delimiter_char: "-",
         delimiter_len: 4,
         lang: "ruby",
-        type_str: "source"
+        type_str: "source",
       )
 
       expect(block.id).to eq("block-1")
@@ -97,27 +97,17 @@ RSpec.describe Coradoc::Model::Block::Core do
 
   describe "#gen_delimiter" do
     it "generates delimiter with specified character and length" do
-      block = described_class.new(
-        delimiter_char: "-",
-        delimiter_len: 4
-      )
+      block = described_class.new(delimiter_char: "-", delimiter_len: 4)
       expect(block.gen_delimiter).to eq("----")
     end
 
     it "handles different characters and lengths" do
-      block = described_class.new(
-        delimiter_char: "=",
-        delimiter_len: 6
-      )
+      block = described_class.new(delimiter_char: "=", delimiter_len: 6)
       expect(block.gen_delimiter).to eq("======")
     end
   end
 
   describe "#gen_lines" do
-    before do
-      # allow(Coradoc::Generator).to receive(:gen_adoc) { |content| content.join("\n") }
-    end
-
     it "processes lines through Generator" do
       block = described_class.new(lines: ["Line 1", "Line 2"])
       expect(block.gen_lines).to eq("Line 1\nLine 2")

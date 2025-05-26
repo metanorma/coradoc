@@ -20,13 +20,13 @@ module Coradoc
         _anchor = anchor.nil? ? "" : anchor.to_asciidoc
         content = "".dup
         if terms.size == 1
-          puts 'pp t'
+          puts "pp t"
           t = Coradoc::Generator.gen_adoc(terms)
           pp t
           content << "#{_anchor}#{t}#{delimiter} "
         else
           # XXX: having multiple terms makes anchor vanish?
-          puts 'multiple terms'
+          puts "multiple terms"
           terms.map do |term|
             t = Coradoc::Generator.gen_adoc(term)
             content << "#{t}#{delimiter}\n"

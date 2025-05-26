@@ -3,12 +3,8 @@
 RSpec.describe Coradoc::Model::Serialization::AsciidocAdapter do
   let(:sections) do
     [
-      Coradoc::Element::Section.new(
-        title: "Section 1",
-      ),
-      Coradoc::Element::Section.new(
-        title: "Section 2",
-      ),
+      Coradoc::Element::Section.new(title: "Section 1"),
+      Coradoc::Element::Section.new(title: "Section 2"),
     ]
   end
   let(:adapter) { described_class.from_ast(sections) }
@@ -24,7 +20,10 @@ RSpec.describe Coradoc::Model::Serialization::AsciidocAdapter do
       expect(adapter.sections).to eq(sections)
       expect(adapter.to_adoc).to eq("\nSection 1\n\nSection 2\n")
       expect(adapter[0]).to eq(sections[0])
-      expect(adapter.to_h).to eq({sections:, header: nil, document_attributes: nil})
+      expect(adapter.to_h).to eq(
+        { sections:, header: nil,
+        document_attributes: nil },
+      )
     end
   end
 

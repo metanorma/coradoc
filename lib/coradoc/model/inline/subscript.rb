@@ -12,8 +12,11 @@ module Coradoc
 
         def to_asciidoc
           _content = Coradoc::Generator.gen_adoc(content)
-           # TODO: verify if this is the correct way to handle escape characters in subscript
-          _content = Coradoc::Generator.escape_characters(_content, pass_through: %w[~])
+          # TODO: verify if this is the correct way to handle escape characters in subscript
+          _content = Coradoc::Generator.escape_characters(
+            _content,
+            pass_through: %w[~],
+          )
 
           if _content.empty?
             return ""

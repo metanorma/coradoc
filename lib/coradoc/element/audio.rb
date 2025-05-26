@@ -5,7 +5,13 @@ module Coradoc
 
       declare_children :id, :title, :anchor, :attributes
 
-      def initialize(id: nil, title: "", src: "", attributes: AttributeList.new, line_break: "\n")
+      def initialize(
+        id: nil,
+        title: "",
+        src: "",
+        attributes: AttributeList.new,
+        line_break: "\n"
+      )
         @title = title
         @id = id
         @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)

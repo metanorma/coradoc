@@ -12,7 +12,7 @@ RSpec.describe Coradoc::Model::Inline::Highlight do
     it "accepts unconstrained parameter" do
       highlight = described_class.new(
         content: "highlighted text",
-        unconstrained: true
+        unconstrained: true,
       )
 
       expect(highlight.content).to eq("highlighted text")
@@ -49,7 +49,7 @@ RSpec.describe Coradoc::Model::Inline::Highlight do
       it "uses double hash" do
         highlight = described_class.new(
           content: "highlighted text",
-          unconstrained: true
+          unconstrained: true,
         )
         expect(highlight.to_asciidoc).to eq("##highlighted text##")
       end
@@ -83,8 +83,6 @@ RSpec.describe Coradoc::Model::Inline::Highlight do
     end
   end
 
-
-
   describe "usage examples" do
     it "works for marking important text" do
       highlight = described_class.new(content: "important")
@@ -94,7 +92,7 @@ RSpec.describe Coradoc::Model::Inline::Highlight do
     it "works for marking entire phrases" do
       highlight = described_class.new(
         content: "very important note",
-        unconstrained: true
+        unconstrained: true,
       )
       expect("A #{highlight.to_asciidoc}").to eq("A ##very important note##")
     end

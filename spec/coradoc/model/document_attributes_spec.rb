@@ -2,20 +2,22 @@
 
 RSpec.describe Coradoc::Model::DocumentAttributes do
   let(:attribute1) do
-    instance_double(Coradoc::Model::Attribute,
+    instance_double(
+      Coradoc::Model::Attribute,
       key: "lang",
       value: "en",
       line_break: "\n",
-      to_s: "en"
+      to_s: "en",
     )
   end
 
   let(:attribute2) do
-    instance_double(Coradoc::Model::Attribute,
+    instance_double(
+      Coradoc::Model::Attribute,
       key: "author",
       value: "John Doe",
       line_break: "\n",
-      to_s: "John Doe"
+      to_s: "John Doe",
     )
   end
 
@@ -33,8 +35,8 @@ RSpec.describe Coradoc::Model::DocumentAttributes do
 
   describe "#to_asciidoc" do
     it "removes single quotes from values" do
-      allow(attribute1).to receive(:key) { "quote" }
-      allow(attribute1).to receive(:value) { "'text'" }
+      allow(attribute1).to receive(:key).and_return("quote")
+      allow(attribute1).to receive(:value).and_return("'text'")
 
       attributes = described_class.new(data: [attribute1])
       result = attributes.to_asciidoc
@@ -49,11 +51,12 @@ RSpec.describe Coradoc::Model::DocumentAttributes do
     end
 
     it "handles empty values" do
-      empty_attribute = instance_double(Coradoc::Model::Attribute,
+      empty_attribute = instance_double(
+        Coradoc::Model::Attribute,
         key: "empty",
         value: "",
         line_break: "\n",
-        to_s: ""
+        to_s: "",
       )
 
       doc_attributes = described_class.new(data: [empty_attribute])
@@ -69,11 +72,12 @@ RSpec.describe Coradoc::Model::DocumentAttributes do
     end
 
     it "formats each attribute correctly" do
-      single_attribute = instance_double(Coradoc::Model::Attribute,
+      single_attribute = instance_double(
+        Coradoc::Model::Attribute,
         key: "test",
         value: "value",
         line_break: "\n",
-        to_s: "value"
+        to_s: "value",
       )
 
       doc_attributes = described_class.new(data: [single_attribute])

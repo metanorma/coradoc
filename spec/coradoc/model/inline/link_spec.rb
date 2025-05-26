@@ -6,7 +6,7 @@ RSpec.describe Coradoc::Model::Inline::Link do
       link = described_class.new(
         path: "https://example.com",
         title: "Example Site",
-        name: "Example"
+        name: "Example",
       )
 
       expect(link.path).to eq("https://example.com")
@@ -16,10 +16,7 @@ RSpec.describe Coradoc::Model::Inline::Link do
     end
 
     it "accepts right_constrain parameter" do
-      link = described_class.new(
-        path: "document.pdf",
-        right_constrain: true
-      )
+      link = described_class.new(path: "document.pdf", right_constrain: true)
 
       expect(link.right_constrain).to be true
     end
@@ -39,7 +36,7 @@ RSpec.describe Coradoc::Model::Inline::Link do
       it "generates link with name" do
         link = described_class.new(
           path: "https://example.com",
-          name: "Example"
+          name: "Example",
         )
 
         expect(link.to_asciidoc).to eq("https://example.com[Example]")
@@ -48,16 +45,14 @@ RSpec.describe Coradoc::Model::Inline::Link do
       it "generates link with title" do
         link = described_class.new(
           path: "https://example.com",
-          title: "Example Site"
+          title: "Example Site",
         )
 
         expect(link.to_asciidoc).to eq("https://example.com[Example Site]")
       end
 
       it "generates bare URL when no name or title" do
-        link = described_class.new(
-          path: "https://example.com"
-        )
+        link = described_class.new(path: "https://example.com")
 
         expect(link.to_asciidoc).to eq("https://example.com")
       end
@@ -65,7 +60,7 @@ RSpec.describe Coradoc::Model::Inline::Link do
       it "forces brackets with right_constrain" do
         link = described_class.new(
           path: "https://example.com",
-          right_constrain: true
+          right_constrain: true,
         )
 
         expect(link.to_asciidoc).to eq("https://example.com[]")
@@ -74,18 +69,13 @@ RSpec.describe Coradoc::Model::Inline::Link do
 
     context "with non-URL paths" do
       it "prefixes with link:" do
-        link = described_class.new(
-          path: "document.pdf",
-          name: "Document"
-        )
+        link = described_class.new(path: "document.pdf", name: "Document")
 
         expect(link.to_asciidoc).to eq("link:document.pdf[Document]")
       end
 
       it "adds empty brackets when no name or title" do
-        link = described_class.new(
-          path: "document.pdf"
-        )
+        link = described_class.new(path: "document.pdf")
 
         expect(link.to_asciidoc).to eq("link:document.pdf[]")
       end
@@ -95,18 +85,14 @@ RSpec.describe Coradoc::Model::Inline::Link do
       link = described_class.new(
         path: "https://example.com",
         name: "Example",
-        title: "Example Site"
+        title: "Example Site",
       )
 
       expect(link.to_asciidoc).to eq("https://example.com[Example]")
     end
 
     it "handles empty name and title" do
-      link = described_class.new(
-        path: "document.pdf",
-        name: "",
-        title: ""
-      )
+      link = described_class.new(path: "document.pdf", name: "", title: "")
 
       expect(link.to_asciidoc).to eq("link:document.pdf[]")
     end
@@ -114,7 +100,7 @@ RSpec.describe Coradoc::Model::Inline::Link do
     it "preserves query parameters in URLs" do
       link = described_class.new(
         path: "https://example.com/search?q=test&page=1",
-        name: "Search"
+        name: "Search",
       )
 
       expect(link.to_asciidoc).to eq("https://example.com/search?q=test&page=1[Search]")
@@ -126,6 +112,4 @@ RSpec.describe Coradoc::Model::Inline::Link do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 end

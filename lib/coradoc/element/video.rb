@@ -5,7 +5,13 @@ module Coradoc
 
       declare_children :id, :anchor, :attributes
 
-      def initialize(id: nil, title: "", src: "", attributes: AttributeList.new, line_break: "\n")
+      def initialize(
+        id: nil,
+        title: "",
+        src: "",
+        attributes: AttributeList.new,
+        line_break: "\n"
+      )
         @title = title
         @id = id
         @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
@@ -43,8 +49,14 @@ module Coradoc
         lang: /[a-z]{2,3}(?:-[A-Z]{2})?/,
         list: String,
         playlist: String,
-        options: many("autoplay", "loop", "modest",
-                      "nocontrols", "nofullscreen", "muted"),
+        options: many(
+          "autoplay",
+          "loop",
+          "modest",
+          "nocontrols",
+          "nofullscreen",
+          "muted",
+        ),
       }.freeze
     end
   end

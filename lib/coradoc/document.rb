@@ -39,7 +39,7 @@ module Coradoc
       # @param [String] string The Asciidoc string to parse
       # @param [Hash] options Options for parsing
       # @return [Coradoc::Document] The parsed Coradoc::Document object
-      def parse(string, options = {})
+      def parse(string, _options = {})
         # Parse the Asciidoc string into an AST
         ast = Coradoc::Parser.parse(string)
 
@@ -74,8 +74,10 @@ module Coradoc
     attr_accessor :header, :document_attributes, :sections
 
     def initialize(options = {})
-      @document_attributes = options.fetch(:document_attributes,
-                                           Coradoc::Element::DocumentAttributes.new)
+      @document_attributes = options.fetch(
+        :document_attributes,
+        Coradoc::Element::DocumentAttributes.new,
+      )
       @header = options.fetch(:header, Coradoc::Element::Header.new(title: ""))
       @sections = options.fetch(:sections, [])
       self

@@ -10,15 +10,19 @@ module Coradoc
   module Model
     class Document < Base
       attribute :document_attributes,
-        Coradoc::Model::DocumentAttributes, default: -> {
-          Coradoc::Model::DocumentAttributes.new
-        }
-      attribute :header, Coradoc::Model::Header, default: -> {
-        Coradoc::Model::Header.new(title: "")
-      }
-      attribute :sections, Coradoc::Model::Section,
-        collection: true,
-        initialize_empty: true
+                Coradoc::Model::DocumentAttributes,
+                default: -> {
+                  Coradoc::Model::DocumentAttributes.new
+                }
+      attribute :header,
+                Coradoc::Model::Header,
+                default: -> {
+                  Coradoc::Model::Header.new(title: "")
+                }
+      attribute :sections,
+                Coradoc::Model::Section,
+                collection: true,
+                initialize_empty: true
 
       asciidoc do
         map_content to: :content
@@ -28,11 +32,11 @@ module Coradoc
       end
 
       def to_asciidoc
-        [header, document_attributes, sections].compact.map do |element|
+        [header, document_attributes, sections].compact.map { |element|
           # element.to_asciidoc
           Coradoc::Generator.gen_adoc(element)
-        # end.join("\n")
-        end.join
+          # end.join("\n")
+        }.join
 
         # Coradoc::Generator.gen_adoc(header) +
         #   Coradoc::Generator.gen_adoc(document_attributes) +

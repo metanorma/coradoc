@@ -10,7 +10,7 @@ module Coradoc
             Coradoc::Element::Paragraph.new(
               content:,
               id:,
-              tdsinglepara: state[:tdsinglepara]
+              tdsinglepara: state[:tdsinglepara],
             )
           end
         end

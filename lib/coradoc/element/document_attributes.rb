@@ -10,8 +10,10 @@ module Coradoc
       end
 
       def to_adoc
-        @data.map do |attribute|
-          key, value, line_break = attribute.key, attribute.value, attribute.line_break
+        @data.map { |attribute|
+          key = attribute.key
+          value = attribute.value
+          line_break = attribute.line_break
           v = if value.to_s.empty?
                 ""
               elsif value.is_a? Array
@@ -20,7 +22,7 @@ module Coradoc
                 " #{value}"
               end
           ":#{key}:#{v}#{line_break}"
-        end.join + "\n"
+        }.join + "\n"
       end
     end
   end

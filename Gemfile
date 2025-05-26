@@ -37,4 +37,3 @@ end
 # For Ruby 3.5
 gem "logger"
 gem "reline"
-

@@ -5,8 +5,14 @@ module Coradoc
 
       declare_children :content, :id, :anchor
 
-      def initialize(content:, marker: nil, id: nil, attached: [], nested: nil,
-line_break: "\n")
+      def initialize(
+        content:,
+        marker: nil,
+        id: nil,
+        attached: [],
+        nested: nil,
+        line_break: "\n"
+      )
         @marker = marker
         @id = id
         @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
@@ -87,9 +93,9 @@ line_break: "\n")
         out += "{empty}" if prev_inline == :hardbreak
         out = "{empty}" if out.empty?
 
-        attach = @attached.map do |elem|
+        attach = @attached.map { |elem|
           "+\n#{Coradoc::Generator.gen_adoc(elem)}"
-        end.join
+        }.join
         nest = Coradoc::Generator.gen_adoc(@nested)
         out = " #{anchor}#{out}#{@line_break}"
         out + attach + nest

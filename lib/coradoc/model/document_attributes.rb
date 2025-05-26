@@ -11,17 +11,17 @@ module Coradoc
 
       def to_asciidoc
         if data.nil?
-          return ''
+          return ""
         end
 
-        data.map do |attribute|
+        data.map { |attribute|
           key = attribute.key.to_s
           value = attribute.value.to_s.delete("'")
           line_break = attribute.line_break
 
-          v = value.to_s.empty? ? '' : " #{value}"
+          v = value.to_s.empty? ? "" : " #{value}"
           ":#{key}:#{v}#{line_break}"
-        end.join + "\n"
+        }.join + "\n"
       end
     end
   end

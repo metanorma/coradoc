@@ -20,7 +20,7 @@ RSpec.describe Coradoc::Model::Serialization do
       error = described_class::ParseError.new(
         "Invalid syntax",
         input: "== Bad Header",
-        line_number: 42
+        line_number: 42,
       )
 
       expect(error.message).to eq("Invalid syntax")
@@ -46,7 +46,7 @@ RSpec.describe Coradoc::Model::Serialization do
       error = described_class::MappingError.new(
         "Invalid mapping",
         field_name: "title",
-        value: 123
+        value: 123,
       )
 
       expect(error.message).to eq("Invalid mapping")
@@ -70,7 +70,7 @@ RSpec.describe Coradoc::Model::Serialization do
     it "initializes with all attributes" do
       error = described_class::ValidationError.new(
         "Required field missing",
-        field_name: "title"
+        field_name: "title",
       )
 
       expect(error.message).to eq("Required field missing")
@@ -94,7 +94,7 @@ RSpec.describe Coradoc::Model::Serialization do
       object = double("Document")
       error = described_class::SerializationError.new(
         "Invalid document state",
-        object: object
+        object: object,
       )
 
       expect(error.message).to eq("Invalid document state")
@@ -113,7 +113,7 @@ RSpec.describe Coradoc::Model::Serialization do
         described_class::ParseError,
         described_class::MappingError,
         described_class::ValidationError,
-        described_class::SerializationError
+        described_class::SerializationError,
       ]
     end
 
@@ -125,7 +125,8 @@ RSpec.describe Coradoc::Model::Serialization do
 
     it "allows catching all errors as AsciidocError" do
       specific_errors.each do |error_class|
-        expect { raise error_class, "Test error" }.to raise_error(base_error)
+        expect { raise error_class, "Test error" }
+          .to raise_error(base_error)
       end
     end
   end

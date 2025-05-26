@@ -42,7 +42,9 @@ end
 
 module Asciidoc
   class BlockTester < Coradoc::Parser::Asciidoc::Base
-    rule(:document) { (block | any.as(:unparsed)).repeat(1) }
+    rule(:document) do
+      (block | any.as(:unparsed)).repeat(1)
+    end
     root :document
 
     def self.parse(text)

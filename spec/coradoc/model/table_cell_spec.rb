@@ -8,7 +8,7 @@ RSpec.describe Coradoc::Model::TableCell do
         content: "Cell content",
         colrowattr: "2.3+",
         alignattr: "^",
-        style: "a"
+        style: "a",
       )
 
       expect(cell.id).to eq("cell-1")
@@ -50,7 +50,9 @@ RSpec.describe Coradoc::Model::TableCell do
     before do
       allow(Coradoc::Generator).to receive(:gen_adoc) { |content| content }
       allow(Coradoc).to receive(:strip_unicode) { |content| content }
-      allow(Coradoc).to receive(:a_single?) { |content, type| content.is_a?(String) }
+      allow(Coradoc).to receive(:a_single?) { |content, _type|
+        content.is_a?(String)
+      }
     end
 
     it "generates basic cell" do
@@ -59,32 +61,24 @@ RSpec.describe Coradoc::Model::TableCell do
     end
 
     it "includes column/row attributes" do
-      cell = described_class.new(
-        content: "Cell content",
-        colrowattr: "2.3+"
-      )
+      cell = described_class.new(content: "Cell content", colrowattr: "2.3+")
       expect(cell.to_asciidoc).to eq("2.3+| Cell content")
     end
 
     it "includes alignment attributes" do
-      cell = described_class.new(
-        content: "Cell content",
-        alignattr: "^"
-      )
+      cell = described_class.new(content: "Cell content", alignattr: "^")
       expect(cell.to_asciidoc).to eq("^| Cell content")
     end
 
     it "includes style" do
-      cell = described_class.new(
-        content: "Cell content",
-        style: "a"
-      )
+      cell = described_class.new(content: "Cell content", style: "a")
       expect(cell.to_asciidoc).to eq("a| Cell content")
     end
 
     it "includes anchor when present" do
-      anchor = instance_double(Coradoc::Model::Inline::Anchor,
-        to_asciidoc: "[[cell-1]]"
+      anchor = instance_double(
+        Coradoc::Model::Inline::Anchor,
+        to_asciidoc: "[[cell-1]]",
       )
 
       cell = described_class.new(content: "Cell content")
@@ -94,15 +88,16 @@ RSpec.describe Coradoc::Model::TableCell do
     end
 
     it "combines all attributes" do
-      anchor = instance_double(Coradoc::Model::Inline::Anchor,
-        to_asciidoc: "[[cell-1]]"
+      anchor = instance_double(
+        Coradoc::Model::Inline::Anchor,
+        to_asciidoc: "[[cell-1]]",
       )
 
       cell = described_class.new(
         content: "Cell content",
         colrowattr: "2.3+",
         alignattr: "^",
-        style: "a"
+        style: "a",
       )
       allow(cell).to receive(:anchor).and_return(anchor)
 
@@ -127,6 +122,4 @@ RSpec.describe Coradoc::Model::TableCell do
       expect(described_class.included_modules).to include(Coradoc::Model::Anchorable)
     end
   end
-
-
 end

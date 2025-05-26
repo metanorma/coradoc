@@ -14,7 +14,7 @@ RSpec.describe Coradoc::Model::Image::Core do
         title: title,
         src: src,
         attributes: attributes,
-        line_break: line_break
+        line_break: line_break,
       )
 
       expect(image.id).to eq(id)
@@ -38,7 +38,7 @@ RSpec.describe Coradoc::Model::Image::Core do
         id: "img-1",
         title: "Test Image",
         src: "test.png",
-        line_break: "\n"
+        line_break: "\n",
       )
 
       expected_output = "[[img-1]]\n.Test Image\nimage#{image.colons}test.png[]\n"
@@ -49,7 +49,7 @@ RSpec.describe Coradoc::Model::Image::Core do
       image = described_class.new(
         src: "test.png",
         annotate_missing: "missing.jpg",
-        line_break: "\n"
+        line_break: "\n",
       )
 
       expected_output = "// FIXME: Missing image: missing.jpg\nimage#{image.colons}test.png[]\n"
@@ -60,7 +60,7 @@ RSpec.describe Coradoc::Model::Image::Core do
       image = described_class.new(
         src: "test.png",
         title: "",
-        line_break: "\n"
+        line_break: "\n",
       )
 
       expected_output = "image#{image.colons}test.png[]\n"

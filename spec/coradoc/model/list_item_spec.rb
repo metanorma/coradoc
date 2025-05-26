@@ -9,7 +9,7 @@ RSpec.describe Coradoc::Model::ListItem do
         content:,
         marker: "*",
         subitem: nil,
-        line_break: "\n"
+        line_break: "\n",
       )
 
       expect(item.id).to eq("item-1")
@@ -32,7 +32,7 @@ RSpec.describe Coradoc::Model::ListItem do
         content = [Coradoc::Model::TextElement.new(content: "Simple item")]
         item = described_class.new(
           content:,
-          line_break: "\n"
+          line_break: "\n",
         )
 
         expect(item.to_asciidoc).to eq(" Simple item\n")
@@ -43,7 +43,7 @@ RSpec.describe Coradoc::Model::ListItem do
 
         item = described_class.new(
           content:,
-          line_break: "\n"
+          line_break: "\n",
         )
         allow(item).to receive(:id).and_return("item-1")
 
@@ -52,14 +52,21 @@ RSpec.describe Coradoc::Model::ListItem do
     end
 
     context "with attached content" do
-      let(:paragraph) { instance_double(Coradoc::Model::Paragraph, to_asciidoc: "Additional paragraph") }
-      let(:text_element) { Coradoc::Model::TextElement.new(content: "Item with attachment") }
+      let(:paragraph) {
+        instance_double(
+          Coradoc::Model::Paragraph,
+          to_asciidoc: "Additional paragraph",
+        )
+      }
+      let(:text_element) {
+        Coradoc::Model::TextElement.new(content: "Item with attachment")
+      }
 
       it "includes attached content" do
         item = described_class.new(
           content: [text_element],
           line_break: "\n",
-          attached: [paragraph]
+          attached: [paragraph],
         )
 
         expected_output = " Item with attachment\n+\nAdditional paragraph"
@@ -68,14 +75,21 @@ RSpec.describe Coradoc::Model::ListItem do
     end
 
     context "with nested list" do
-      let(:nested_list) { instance_double(Coradoc::Model::List::Nestable, to_asciidoc: "\n** Nested item") }
-      let(:text_element) { Coradoc::Model::TextElement.new(content: "Parent item") }
+      let(:nested_list) {
+        instance_double(
+          Coradoc::Model::List::Nestable,
+          to_asciidoc: "\n** Nested item",
+        )
+      }
+      let(:text_element) {
+        Coradoc::Model::TextElement.new(content: "Parent item")
+      }
 
       it "includes nested content" do
         item = described_class.new(
           content: [text_element],
           line_break: "\n",
-          nested: nested_list
+          nested: nested_list,
         )
 
         expected_output = " Parent item\n\n** Nested item"
@@ -89,7 +103,7 @@ RSpec.describe Coradoc::Model::ListItem do
       it "handles array content" do
         item = described_class.new(
           content: [text_element],
-          line_break: "\n"
+          line_break: "\n",
         )
 
         allow(text_element).to receive(:to_asciidoc).and_return("Complex content")
@@ -115,15 +129,21 @@ RSpec.describe Coradoc::Model::ListItem do
 
   describe "constants" do
     it "defines HARDBREAK_MARKERS" do
-      expect(described_class::HARDBREAK_MARKERS).to eq([:hardbreak, :init])
+      expect(described_class::HARDBREAK_MARKERS).to eq(%i[hardbreak init])
     end
 
     it "defines STRIP_UNICODE_BEGIN_MARKERS" do
-      expect(described_class::STRIP_UNICODE_BEGIN_MARKERS).to eq([:hardbreak, :init, false])
+      expect(described_class::STRIP_UNICODE_BEGIN_MARKERS).to eq(
+        [:hardbreak,
+         :init, false],
+      )
     end
 
     it "defines STRIP_UNICODE_END_MARKERS" do
-      expect(described_class::STRIP_UNICODE_END_MARKERS).to eq([:hardbreak, :end, false])
+      expect(described_class::STRIP_UNICODE_END_MARKERS).to eq(
+        [:hardbreak,
+         :end, false],
+      )
     end
   end
 end

@@ -56,33 +56,33 @@ module Coradoc
 
         def self.config(key)
           # XXX: Where do these come from? Are these meant to be configurable?
-          c = {
-            add_dispatch: true,
-            with_params: true,
-          }
+          c = { add_dispatch: true, with_params: true }
 
           if c.keys.include?(key)
             c[key]
           else
-            raise ArgumentError, "Unknown config key: #{key}. Available keys: #{c.keys.join(", ")}"
+            raise ArgumentError,
+                  "Unknown config key: #{key}. Available keys: #{c.keys.join(', ')}"
           end
         end
 
-        parser_methods = (Coradoc::Parser::Asciidoc.constants - [:Base]).reduce({}) do |acc, const|
+        parser_methods = (Coradoc::Parser::Asciidoc.constants - [:Base]).reduce({}) { |acc, const|
           rule_names = Coradoc::Parser::Asciidoc.const_get(const).instance_methods
           rule_names.each do |rule_name|
             acc[rule_name] ||= []
             acc[rule_name] << const
           end
           acc
-        end
+        }
 
         # Warn about duplicated parser methods:
         parser_methods.each do |rule_name, defn_sites|
           count = defn_sites.length
           if count > 1
-            defn_site_constants = defn_sites.map { |const| Coradoc::Parser::Asciidoc.const_get(const) }
-            Logger.warn "Parser method '#{rule_name}' is defined #{count} times in #{defn_site_constants.join(", ")}"
+            defn_site_constants = defn_sites.map { |const|
+              Coradoc::Parser::Asciidoc.const_get(const)
+            }
+            Logger.warn "Parser method '#{rule_name}' is defined #{count} times in #{defn_site_constants.join(', ')}"
           end
         end
 

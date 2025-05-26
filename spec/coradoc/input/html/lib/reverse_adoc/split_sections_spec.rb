@@ -35,9 +35,9 @@ describe Coradoc::Input::Html do
     end
 
     it "has a correct index" do
-      section_content = l1sections.compact.map do |i|
+      section_content = l1sections.compact.map { |i|
         "include::#{i}[]\n\n"
-      end.join
+      }.join
       expect(subject[nil]).to eq "[[__brokendiv]]\nPreface\n#{section_content}"
     end
   end

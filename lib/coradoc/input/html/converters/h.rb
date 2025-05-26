@@ -18,13 +18,15 @@ module Coradoc
           end
 
           def treat_children_no_anchors(node, state)
-            node.children.reject { |a| a.name == "a" }.map do |child|
+            node.children.reject { |a| a.name == "a" }
+              .map do |child|
               treat_coradoc(child, state)
             end
           end
 
           def treat_children_anchors(node, state)
-            node.children.select { |a| a.name == "a" }.map do |child|
+            node.children.select { |a| a.name == "a" }
+              .map do |child|
               treat_coradoc(child, state)
             end
           end

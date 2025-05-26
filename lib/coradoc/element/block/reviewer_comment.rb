@@ -2,8 +2,12 @@ module Coradoc
   module Element
     module Block
       class ReviewerComment < Core
-        def initialize(title: "", attributes: AttributeList.new,
-delimiter_len: 4, lines: [])
+        def initialize(
+          title: "",
+          attributes: AttributeList.new,
+          delimiter_len: 4,
+          lines: []
+        )
           @title = title
           @attributes = attributes
           @delimiter_char = "*"

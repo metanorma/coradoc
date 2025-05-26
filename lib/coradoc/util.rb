@@ -19,9 +19,9 @@ module Coradoc
       # First, check that the keys are all identical.
       # Then, check that the values are identical.
       left.is_a?(Hash) && left.keys == right.keys &&
-      [left, right].map(&:values).zip.all? do |(a, b)|
-        is_deep_dup?(a, b)
-      end
+        [left, right].map(&:values).zip.all? do |(a, b)|
+          is_deep_dup?(a, b)
+        end
     when Array
       # Check that the values are all identical.
       left.is_a?(Array) && left.length == right.length &&
@@ -31,7 +31,7 @@ module Coradoc
     else
       # Check that both values are identical.
       # warn "same same, but different!"
-      left == right && left.is_a?(Symbol) || !left.equal?(right)
+      (left == right && left.is_a?(Symbol)) || !left.equal?(right)
     end
   end
 end

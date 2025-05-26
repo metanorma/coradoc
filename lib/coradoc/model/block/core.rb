@@ -37,9 +37,9 @@ module Coradoc
         end
 
         def gen_lines
-          lines.map do |line|
+          lines.map { |line|
             Coradoc::Generator.gen_adoc(line)
-          end.join("\n")
+          }.join("\n")
         end
       end
     end

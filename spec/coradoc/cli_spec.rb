@@ -40,9 +40,9 @@ RSpec.describe Coradoc::CLI do
       it "warns the user about the missing input file" do
         allow(Coradoc::Converter).to receive(:call).and_raise(Coradoc::Converter::NoInputPathError.new("Input file missing"))
 
-        expect do
+        expect {
           cli.invoke(:convert, [], output_format: output_format)
-        end.to output(/You must provide INPUT file as a file for this optionset./).to_stderr
+        }.to output(/You must provide INPUT file as a file for this optionset./).to_stderr
       end
     end
 
@@ -50,10 +50,9 @@ RSpec.describe Coradoc::CLI do
       it "warns the user about the missing output file" do
         allow(Coradoc::Converter).to receive(:call).and_raise(Coradoc::Converter::NoOutputPathError.new("Output file missing"))
 
-        expect do
-          cli.invoke(:convert,
-                     [input_file], output_format: output_format)
-        end.to output(/You must provide OUTPUT file as a file for this optionset./).to_stderr
+        expect {
+          cli.invoke(:convert, [input_file], output_format: output_format)
+        }.to output(/You must provide OUTPUT file as a file for this optionset./).to_stderr
       end
     end
 
@@ -61,10 +60,14 @@ RSpec.describe Coradoc::CLI do
       it "warns the user about the missing processor" do
         allow(Coradoc::Converter).to receive(:call).and_raise(Coradoc::Converter::NoProcessorError.new("No processor found"))
 
-        expect do
-          cli.invoke(:convert, [input_file],
-                     output: output_file, output_format: :asdf)
-        end.to output(/No processor found for given input\/output./).to_stderr
+        expect {
+          cli.invoke(
+            :convert,
+            [input_file],
+            output: output_file,
+            output_format: :asdf,
+          )
+        }.to output(/No processor found for given input\/output./).to_stderr
       end
     end
 
@@ -73,9 +76,12 @@ RSpec.describe Coradoc::CLI do
         expect(Kernel).to receive(:require).with("some_file")
         expect(Kernel).to receive(:require).with("another_file")
 
-        cli.invoke(:convert, [input_file],
-                   require: ["some_file", "another_file"],
-                   output_format: output_format)
+        cli.invoke(
+          :convert,
+          [input_file],
+          require: ["some_file", "another_file"],
+          output_format: output_format,
+        )
       end
     end
 
@@ -96,16 +102,20 @@ RSpec.describe Coradoc::CLI do
           output_processor: output_format,
         )
 
-        cli.invoke(:convert, [input_file], {
-                     output: output_file,
-                     input_format: input_format,
-                     output_format: output_format,
-                     external_images: true,
-                     unknown_tags: "drop",
-                     mathml2asciimath: true,
-                     track_time: true,
-                     split_sections: 2,
-                   })
+        cli.invoke(
+          :convert,
+          [input_file],
+          {
+            output: output_file,
+            input_format: input_format,
+            output_format: output_format,
+            external_images: true,
+            unknown_tags: "drop",
+            mathml2asciimath: true,
+            track_time: true,
+            split_sections: 2,
+          },
+        )
       end
     end
   end

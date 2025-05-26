@@ -9,7 +9,8 @@ RSpec.describe Coradoc::Model::Attached do
 
   describe "instance creation" do
     it "can be instantiated" do
-      expect { described_class.new }.not_to raise_error
+      expect { described_class.new }
+        .not_to raise_error
     end
 
     it "accepts attributes from Base" do

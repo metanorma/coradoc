@@ -4,8 +4,12 @@ module Coradoc
   module Model
     module List
       class Definition < Base
-        attribute :items, Coradoc::Model::Base, polymorphic: [ListItem,
-        Coradoc::Model::ListItemDefinition], collection: true, initialize_empty: true
+        attribute :items,
+                  Coradoc::Model::Base,
+                  polymorphic: [ListItem,
+                                Coradoc::Model::ListItemDefinition],
+                  collection: true,
+                  initialize_empty: true
         attribute :delimiter, :string, default: -> { "::" }
 
         asciidoc do

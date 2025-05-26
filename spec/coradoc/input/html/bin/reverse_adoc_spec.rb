@@ -17,16 +17,17 @@ describe "exe/reverse_adoc" do
       end
 
       it "Does not raise error" do
-        expect { convert }.not_to raise_error
+        expect { convert }
+          .not_to raise_error
       end
 
       it "exatracts images from source html" do
         expect { convert }
-          .to(change do
+          .to(change {
             Dir["#{images_folder}/*gif"]
               .map { |entry| File.basename(entry) }
               .sort
-          end.from([]).to(["001.gif"]))
+          }.from([]).to(["001.gif"]))
       end
     end
   end

@@ -13,10 +13,7 @@ RSpec.describe Coradoc::Model::TableRow do
     end
 
     it "initializes as header row" do
-      row = described_class.new(
-        columns: [cell1, cell2],
-        header: true
-      )
+      row = described_class.new(columns: [cell1, cell2], header: true)
 
       expect(row.columns).to eq([cell1, cell2])
       expect(row.header).to be true
@@ -60,11 +57,6 @@ RSpec.describe Coradoc::Model::TableRow do
   end
 
   describe "#to_asciidoc" do
-    before do
-      # allow_any_instance_of(Coradoc::Model::TableCell).to receive(:to_asciidoc)
-      # allow(Coradoc::Generator).to receive(:gen_adoc) { |col| col.to_asciidoc }
-    end
-
     context "with regular cells" do
       before do
         allow(cell1).to receive(:to_asciidoc).and_return("| Cell 1")
@@ -77,16 +69,15 @@ RSpec.describe Coradoc::Model::TableRow do
       end
 
       it "generates header row" do
-        row = described_class.new(
-          columns: [cell1, cell2],
-          header: true
-        )
+        row = described_class.new(columns: [cell1, cell2], header: true)
         expect(row.to_asciidoc).to eq("| Cell 1 | Cell 2\n\n")
       end
     end
 
     context "with asciidoc cells" do
-      let(:asciidoc_cell) { instance_double(Coradoc::Model::TableCell, asciidoc?: true) }
+      let(:asciidoc_cell) {
+        instance_double(Coradoc::Model::TableCell, asciidoc?: true)
+      }
 
       before do
         allow(asciidoc_cell).to receive(:to_asciidoc).and_return("a| Complex *content*")
@@ -120,6 +111,4 @@ RSpec.describe Coradoc::Model::TableRow do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 end

@@ -7,9 +7,11 @@ module Coradoc
     module Image
       class BlockImage < Coradoc::Model::Image::Core
         attribute :colons, :string, default: -> { "::" }
-        attribute :attributes, Coradoc::Model::Image::BlockImage::AttributeList, default: -> {
-          Coradoc::Model::Image::BlockImage::AttributeList.new
-        }
+        attribute :attributes,
+                  Coradoc::Model::Image::BlockImage::AttributeList,
+                  default: -> {
+                    Coradoc::Model::Image::BlockImage::AttributeList.new
+                  }
       end
     end
   end

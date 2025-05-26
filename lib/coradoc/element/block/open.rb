@@ -2,8 +2,14 @@ module Coradoc
   module Element
     module Block
       class Open < Core
-        def initialize(title:, id: nil, lang: "",
-attributes: AttributeList.new, lines: [], delimiter_len: 2)
+        def initialize(
+          title:,
+          id: nil,
+          lang: "",
+          attributes: AttributeList.new,
+          lines: [],
+          delimiter_len: 2
+        )
           @title = title
           @id = id
           @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)

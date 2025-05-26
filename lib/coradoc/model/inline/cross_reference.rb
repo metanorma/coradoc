@@ -14,9 +14,9 @@ module Coradoc
 
         def to_asciidoc
           if args&.length&.> 0
-            _args = args.reject(&:empty?).map do |a|
+            _args = args.reject(&:empty?).map { |a|
               Coradoc::Generator.gen_adoc(a)
-            end.join(",")
+            }.join(",")
 
             if _args.empty?
               return "<<#{href}>>"

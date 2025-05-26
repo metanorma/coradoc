@@ -16,10 +16,12 @@ module Coradoc
         "AttributeList: " +
           [
             @positional.map(&:inspect).join(", "),
-            @named.map { |k, v| "#{k}: #{v.inspect}" }.join(", "),
+            @named.map { |k, v| "#{k}: #{v.inspect}" }
+              .join(", "),
             (@rejected_positional.empty? or "rejected: #{@rejected_positional.inspect}"),
             (@rejected_positional.empty? or "rejected: #{@rejected_named.inspect}"),
-          ].reject { |i| i == true || i.empty? }.join(", ")
+          ].reject { |i| i == true || i.empty? }
+            .join(", ")
       end
 
       def add_positional(*attr)

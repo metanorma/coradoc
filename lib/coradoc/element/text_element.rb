@@ -67,9 +67,9 @@ module Coradoc
         subs = { "*" => '\*', "_" => '\_' }
         string
           .gsub(/((?<=\s)[\*_]+)|[\*_]+(?=\s)/) do |n|
-          n.chars.map do |char|
+          n.chars.map { |char|
             subs[char]
-          end.join
+          }.join
         end
       end
     end

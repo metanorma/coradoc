@@ -10,10 +10,7 @@ RSpec.describe Coradoc::Model::Inline::Bold do
     end
 
     it "accepts unconstrained parameter" do
-      bold = described_class.new(
-        content: "bold text",
-        unconstrained: false
-      )
+      bold = described_class.new(content: "bold text", unconstrained: false)
 
       expect(bold.content).to eq("bold text")
       expect(bold.unconstrained).to be false
@@ -47,10 +44,7 @@ RSpec.describe Coradoc::Model::Inline::Bold do
 
     context "with unconstrained false" do
       it "uses single asterisk" do
-        bold = described_class.new(
-          content: "bold text",
-          unconstrained: false
-        )
+        bold = described_class.new(content: "bold text", unconstrained: false)
         expect(bold.to_asciidoc).to eq("*bold text*")
       end
     end
@@ -82,6 +76,4 @@ RSpec.describe Coradoc::Model::Inline::Bold do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 end

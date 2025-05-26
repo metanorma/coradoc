@@ -11,11 +11,13 @@ RSpec.describe Coradoc::Element::List do
     end
 
     it "handles list continuations" do
-      items2 = Coradoc::Element::ListItem.new(content: [
-                                                Coradoc::Element::Paragraph.new(content: "Item 2a"),
-                                                Coradoc::Element::Paragraph.new(content: "Item 2b"),
-                                                Coradoc::Element::Paragraph.new(content: "Item 2c"),
-                                              ])
+      items2 = Coradoc::Element::ListItem.new(
+        content: [
+          Coradoc::Element::Paragraph.new(content: "Item 2a"),
+          Coradoc::Element::Paragraph.new(content: "Item 2b"),
+          Coradoc::Element::Paragraph.new(content: "Item 2c"),
+        ],
+      )
       item1 = Coradoc::Element::ListItem.new(content: "Item 1")
       items = [item1, items2]
 
@@ -35,8 +37,10 @@ RSpec.describe Coradoc::Element::List do
     end
 
     it "handles definition list" do
-      item = Coradoc::Element::ListItemDefinition.new(terms: "Coffee",
-                                                      contents: "Black hot drink")
+      item = Coradoc::Element::ListItemDefinition.new(
+        terms: "Coffee",
+        contents: "Black hot drink",
+      )
       items = [item]
 
       list = Coradoc::Element::List::Definition.new(items:)

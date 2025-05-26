@@ -1,6 +1,5 @@
 module Coradoc
   class Generator
-
     # Escape asciidoc inline block delimiter
     # characters.
     #
@@ -18,20 +17,17 @@ module Coradoc
       regex_chars = Regexp.escape(escape_chars.join)
       if !regex_chars.empty?
         result.gsub!(
-          %r{((?<=\s)[#{regex_chars}]+)|([#{regex_chars}]+(?=\s))}
+          %r{((?<=\s)[#{regex_chars}]+)|([#{regex_chars}]+(?=\s))},
         ) do |match|
-          match.chars.map do |c|
+          match.chars.map { |c|
             "\\#{c}"
-          end.join
+          }.join
         end
       end
 
       regex_pass = Regexp.escape(pass_through.join)
       if !regex_pass.empty?
-        result.gsub!(
-          %r{([#{regex_pass}]+)},
-          "{pass:[\\1]}"
-        )
+        result.gsub!(%r{([#{regex_pass}]+)}, "{pass:[\\1]}")
       end
 
       result
@@ -41,9 +37,9 @@ module Coradoc
       # puts "wtf pz"
       if content.is_a?(Array)
         # puts 'is array'
-        content.map do |elem|
+        content.map { |elem|
           Coradoc::Generator.gen_adoc(elem)
-        end.join
+        }.join
       elsif content.respond_to? :to_asciidoc
         # puts 'respond to to_asciidoc'
         # pp content

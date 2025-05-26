@@ -12,7 +12,7 @@ RSpec.describe Coradoc::Model::Inline::CrossReference do
     it "accepts href and args" do
       xref = described_class.new(
         href: "section-1",
-        args: ["Section 1", "Introduction"]
+        args: ["Section 1", "Introduction"],
       )
 
       expect(xref.href).to eq("section-1")
@@ -46,10 +46,7 @@ RSpec.describe Coradoc::Model::Inline::CrossReference do
 
     context "with href and args" do
       it "generates cross reference with single argument" do
-        xref = described_class.new(
-          href: "section-1",
-          args: ["Section 1"]
-        )
+        xref = described_class.new(href: "section-1", args: ["Section 1"])
 
         expect(xref.to_asciidoc).to eq("<<section-1,Section 1>>")
       end
@@ -57,7 +54,7 @@ RSpec.describe Coradoc::Model::Inline::CrossReference do
       it "generates cross reference with multiple arguments" do
         xref = described_class.new(
           href: "section-1",
-          args: ["Section 1", "Introduction"]
+          args: ["Section 1", "Introduction"],
         )
 
         expect(xref.to_asciidoc).to eq("<<section-1,Section 1,Introduction>>")
@@ -65,10 +62,7 @@ RSpec.describe Coradoc::Model::Inline::CrossReference do
 
       it "processes args through Generator" do
         args = ["Section 1", "Introduction"]
-        xref = described_class.new(
-          href: "section-1",
-          args: args
-        )
+        xref = described_class.new(href: "section-1", args: args)
 
         args.each do |arg|
           expect(Coradoc::Generator).to receive(:gen_adoc).with(arg)
@@ -78,19 +72,13 @@ RSpec.describe Coradoc::Model::Inline::CrossReference do
       end
 
       it "handles empty args array" do
-        xref = described_class.new(
-          href: "section-1",
-          args: []
-        )
+        xref = described_class.new(href: "section-1", args: [])
 
         expect(xref.to_asciidoc).to eq("<<section-1>>")
       end
 
       it "handles args with empty strings" do
-        xref = described_class.new(
-          href: "section-1",
-          args: ["", ""]
-        )
+        xref = described_class.new(href: "section-1", args: ["", ""])
 
         expect(xref.to_asciidoc).to eq("<<section-1>>")
       end
@@ -112,6 +100,4 @@ RSpec.describe Coradoc::Model::Inline::CrossReference do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 end

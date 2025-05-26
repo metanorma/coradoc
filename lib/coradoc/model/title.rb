@@ -33,6 +33,7 @@ module Coradoc
 
       def level_str
         return if level_int.nil?
+
         if level_int <= 5
           "=" * (level_int + 1)
         else
@@ -42,6 +43,7 @@ module Coradoc
 
       def style_str
         return if level_int.nil?
+
         _style = [style]
         _style << "level=#{level_int}" if level_int > 5
         _style = _style.compact.join(",")

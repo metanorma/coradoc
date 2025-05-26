@@ -3,10 +3,7 @@
 RSpec.describe Coradoc::Model::Admonition do
   describe ".initialize" do
     it "initializes with basic attributes" do
-      admonition = described_class.new(
-        content: "Watch out!",
-        type: :warning
-      )
+      admonition = described_class.new(content: "Watch out!", type: :warning)
 
       expect(admonition.content).to eq("Watch out!")
       expect(admonition.type).to eq("warning")
@@ -18,7 +15,7 @@ RSpec.describe Coradoc::Model::Admonition do
       admonition = described_class.new(
         content: "Watch out!",
         type: :warning,
-        line_break: "\n"
+        line_break: "\n",
       )
 
       expect(admonition.line_break).to eq("\n")
@@ -39,10 +36,7 @@ RSpec.describe Coradoc::Model::Admonition do
     end
 
     it "generates basic admonition" do
-      admonition = described_class.new(
-        content: "Watch out!",
-        type: :warning
-      )
+      admonition = described_class.new(content: "Watch out!", type: :warning)
 
       expect(admonition.to_asciidoc).to eq("WARNING: Watch out!")
     end
@@ -51,7 +45,7 @@ RSpec.describe Coradoc::Model::Admonition do
       admonition = described_class.new(
         content: "Watch out!",
         type: :warning,
-        line_break: "\n"
+        line_break: "\n",
       )
 
       expect(admonition.to_asciidoc).to eq("WARNING: Watch out!\n")
@@ -60,7 +54,7 @@ RSpec.describe Coradoc::Model::Admonition do
     it "converts type to uppercase" do
       admonition = described_class.new(
         content: "Important info",
-        type: :important
+        type: :important,
       )
 
       expect(admonition.to_asciidoc).to eq("IMPORTANT: Important info")
@@ -68,20 +62,14 @@ RSpec.describe Coradoc::Model::Admonition do
 
     it "handles multiline content" do
       content = "First line\nSecond line"
-      admonition = described_class.new(
-        content: content,
-        type: :note
-      )
+      admonition = described_class.new(content: content, type: :note)
 
       expect(admonition.to_asciidoc).to eq("NOTE: First line\nSecond line")
     end
 
     it "processes content through Generator.gen_adoc" do
       content = "Formatted content"
-      admonition = described_class.new(
-        content: content,
-        type: :tip
-      )
+      admonition = described_class.new(content: content, type: :tip)
 
       expect(Coradoc::Generator).to receive(:gen_adoc).with(content)
       admonition.to_asciidoc
@@ -103,8 +91,6 @@ RSpec.describe Coradoc::Model::Admonition do
       expect(described_class.superclass).to eq(Coradoc::Model::Attached)
     end
   end
-
-
 
   describe "common admonition types" do
     let(:content) { "Test content" }

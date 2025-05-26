@@ -13,10 +13,7 @@ module Coradoc
           render_nil: false,
           field_type: :attributes
         )
-          super(name,
-                to:,
-                render_nil:
-                )
+          super(name, to:, render_nil:)
           @field_type = field_type
         end
 

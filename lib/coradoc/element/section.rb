@@ -5,8 +5,13 @@ module Coradoc
 
       declare_children :id, :title, :contents, :sections
 
-      def initialize(title:, id: nil, attribute_list: "", contents: [],
-sections: [])
+      def initialize(
+        title:,
+        id: nil,
+        attribute_list: "",
+        contents: [],
+        sections: []
+      )
         @title = title
         @id = id
         @id = nil if @id == ""

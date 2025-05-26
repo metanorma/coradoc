@@ -145,9 +145,7 @@ module Coradoc
 
         def comment_line
           tag.absent? >>
-            (str("//") >> str("/").absent? >>
-              space? >>
-              text.as(:comment_text)
+            (str("//") >> str("/").absent? >> space? >> text.as(:comment_text)
             ).as(:comment_line)
         end
 

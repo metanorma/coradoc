@@ -10,7 +10,7 @@ RSpec.describe Coradoc::Model::Section do
       section = described_class.new(
         id: "section-1",
         content: "Section content",
-        title: title
+        title: title,
       )
 
       expect(section.id).to eq("section-1")
@@ -36,7 +36,7 @@ RSpec.describe Coradoc::Model::Section do
         title: title,
         attrs: [named_attr],
         contents: [paragraph],
-        sections: [subsection]
+        sections: [subsection],
       )
 
       expect(section.attrs).to eq([named_attr])
@@ -53,7 +53,7 @@ RSpec.describe Coradoc::Model::Section do
       section = described_class.new(
         id: "main",
         title: title,
-        sections: [subsection1, subsection2]
+        sections: [subsection1, subsection2],
       )
 
       expect(section.sections.map(&:id)).to eq(["sub1", "sub2"])
@@ -63,7 +63,7 @@ RSpec.describe Coradoc::Model::Section do
       section = described_class.new(
         title: title,
         contents: [paragraph],
-        sections: [subsection]
+        sections: [subsection],
       )
 
       expect(section.contents).to eq([paragraph])
@@ -95,8 +95,6 @@ RSpec.describe Coradoc::Model::Section do
         .to raise_error(TypeError)
     end
   end
-
-
 
   describe "attribute collections" do
     let(:section) { described_class.new(title: title) }

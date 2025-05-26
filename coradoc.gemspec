@@ -16,11 +16,11 @@ Gem::Specification.new do |spec|
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/metanorma/coradoc"
 
-  spec.files = Dir.chdir(__dir__) do
+  spec.files = Dir.chdir(__dir__) {
     `git ls-files -z`.split("\x0").reject do |f|
       (f == __FILE__) || f.match(%r{\A(?:(?:bin|test|spec|features)/|\.(?:git|travis|circleci)|appveyor)})
     end
-  end
+  }
 
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }

@@ -42,9 +42,9 @@ module Coradoc
 
         def to_adoc
           delim = asciidoc? ? "\n" : " "
-          content = @columns.map do |col|
+          content = @columns.map { |col|
             Coradoc::Generator.gen_adoc(col)
-          end.join(delim)
+          }.join(delim)
           result  = "#{content}\n"
           result << "\n" if asciidoc?
           table_header_row? ? result + underline_for : result
@@ -60,8 +60,13 @@ module Coradoc
 
         declare_children :content, :anchor, :id
 
-        def initialize(id: nil, colrowattr: "", alignattr: "", style: "",
-content: "")
+        def initialize(
+          id: nil,
+          colrowattr: "",
+          alignattr: "",
+          style: "",
+          content: ""
+        )
           super()
           @id = id
           @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)

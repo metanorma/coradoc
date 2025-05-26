@@ -31,7 +31,9 @@ RSpec.describe "Coradoc::Asciidoc::Header" do
 
   module Asciidoc
     class HeaderTester < Coradoc::Parser::Asciidoc::Base
-      rule(:document) { (header | any.as(:unparsed)).repeat(1) }
+      rule(:document) do
+        (header | any.as(:unparsed)).repeat(1)
+      end
       root :document
 
       def self.parse(text)

@@ -16,13 +16,13 @@ RSpec.describe Coradoc::Model::Document do
       header = Coradoc::Model::Header.new(title: "Test Document")
       sections = [
         instance_double(Coradoc::Model::Section),
-        instance_double(Coradoc::Model::Section)
+        instance_double(Coradoc::Model::Section),
       ]
 
       document = described_class.new(
         document_attributes: document_attributes,
         header: header,
-        sections: sections
+        sections: sections,
       )
 
       expect(document.document_attributes).to eq(document_attributes)
@@ -32,14 +32,16 @@ RSpec.describe Coradoc::Model::Document do
   end
 
   describe "#to_asciidoc" do
-    let(:document_attributes) { instance_double(Coradoc::Model::DocumentAttributes) }
+    let(:document_attributes) {
+      instance_double(Coradoc::Model::DocumentAttributes)
+    }
     let(:header) { instance_double(Coradoc::Model::Header) }
     let(:sections) { [instance_double(Coradoc::Model::Section)] }
     let(:document) do
       described_class.new(
         document_attributes: document_attributes,
         header: header,
-        sections: sections
+        sections: sections,
       )
     end
 
@@ -105,7 +107,10 @@ RSpec.describe Coradoc::Model::Document do
 
     it "ignores unknown elements" do
       unknown_element = double("UnknownElement")
-      document = described_class.from_ast([document_attributes, unknown_element, header, section1])
+      document = described_class.from_ast(
+        [document_attributes,
+         unknown_element, header, section1],
+      )
 
       expect(document.document_attributes).to eq(document_attributes)
       expect(document.header).to eq(header)

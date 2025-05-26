@@ -22,7 +22,7 @@ RSpec.describe Coradoc::Model::Block do
         quote = described_class.new(
           title: title,
           lines: lines,
-          attributes: attributes
+          attributes: attributes,
         )
 
         expect(quote.title).to eq(title)
@@ -35,14 +35,13 @@ RSpec.describe Coradoc::Model::Block do
 
     describe "#to_asciidoc" do
       before do
-        allow(Coradoc::Generator).to receive(:gen_adoc) { |content| content.is_a?(Array) ? content.join("\n") : content }
+        allow(Coradoc::Generator).to receive(:gen_adoc) { |content|
+          content.is_a?(Array) ? content.join("\n") : content
+        }
       end
 
       it "generates complete quote block" do
-        quote = described_class.new(
-          title: title,
-          lines: lines
-        )
+        quote = described_class.new(title: title, lines: lines)
 
         expected_output = "\n\n.Sample Quote\n____\nFirst line\nSecond line\n____\n\n"
         expect(quote.to_asciidoc).to eq(expected_output)
@@ -51,12 +50,12 @@ RSpec.describe Coradoc::Model::Block do
       it "generates quote block with attributes" do
         allow(attributes).to receive(:to_asciidoc)
           .with(show_empty: false)
-          .and_return('[source]')
+          .and_return("[source]")
 
         quote = described_class.new(
           title: title,
           lines: lines,
-          attributes: attributes
+          attributes: attributes,
         )
 
         expected_output = "\n\n.Sample Quote\n[source]\n____\nFirst line\nSecond line\n____\n\n"

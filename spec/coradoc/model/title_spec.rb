@@ -8,7 +8,7 @@ RSpec.describe Coradoc::Model::Title do
         content: "Section Title",
         level_int: 2,
         style: "discrete",
-        line_break: "\n\n"
+        line_break: "\n\n",
       )
 
       expect(title.id).to eq("section-1")
@@ -74,7 +74,6 @@ RSpec.describe Coradoc::Model::Title do
         expect(title.style_str).to eq("[discrete,level=6]\n")
       end
     end
-
   end
 
   describe "#to_asciidoc" do
@@ -84,19 +83,13 @@ RSpec.describe Coradoc::Model::Title do
     end
 
     it "generates basic title" do
-      title = described_class.new(
-        content: "Section Title",
-        level_int: 1
-      )
+      title = described_class.new(content: "Section Title", level_int: 1)
 
       expect(title.to_asciidoc).to eq("\n== Section Title\n")
     end
 
     it "includes anchor when present" do
-      title = described_class.new(
-        content: "Section Title",
-        level_int: 1
-      )
+      title = described_class.new(content: "Section Title", level_int: 1)
       allow(title).to receive(:id).and_return("section-1")
 
       expect(title.to_asciidoc).to eq("\n[[section-1]]\n== Section Title\n")
@@ -106,26 +99,20 @@ RSpec.describe Coradoc::Model::Title do
       title = described_class.new(
         content: "Section Title",
         level_int: 1,
-        style: "discrete"
+        style: "discrete",
       )
 
       expect(title.to_asciidoc).to eq("\n[discrete]\n== Section Title\n")
     end
 
     it "handles deep nesting levels" do
-      title = described_class.new(
-        content: "Deep Section",
-        level_int: 6
-      )
+      title = described_class.new(content: "Deep Section", level_int: 6)
 
       expect(title.to_asciidoc).to eq("\n[level=6]\n====== Deep Section\n")
     end
 
     it "processes content through unicode stripping" do
-      title = described_class.new(
-        content: "Section Title",
-        level_int: 1
-      )
+      title = described_class.new(content: "Section Title", level_int: 1)
 
       expect(Coradoc).to receive(:strip_unicode).with("Section Title")
       title.to_asciidoc

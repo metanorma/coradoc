@@ -26,12 +26,12 @@ module Coradoc
           new(context).model_to_data(model, options)
         end
 
-        def data_to_model(data, options = {})
+        def data_to_model(data, _options = {})
           # TODO:
           puts data
         end
 
-        def model_to_data(model, options = {})
+        def model_to_data(model, _options = {})
           # TODO:
           puts model
         end
@@ -39,9 +39,8 @@ module Coradoc
         protected
 
         def mappings
-          @mappings ||=context.mappings_for(:asciidoc).mappings
+          @mappings ||= context.mappings_for(:asciidoc).mappings
         end
-
       end
     end
   end

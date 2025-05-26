@@ -183,8 +183,7 @@ module Coradoc
         end
 
         def text_any
-          (text_formatted |
-                  text_unformatted.as(:text)
+          (text_formatted | text_unformatted.as(:text)
           ).repeat(2) |
             text_formatted.repeat(1, 1) |
             text_unformatted

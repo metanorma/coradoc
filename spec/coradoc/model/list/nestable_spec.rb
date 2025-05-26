@@ -26,7 +26,8 @@ RSpec.describe Coradoc::Model::List::Nestable do
 
   describe "instance creation" do
     it "can be instantiated" do
-      expect { described_class.new }.not_to raise_error
+      expect { described_class.new }
+        .not_to raise_error
     end
 
     it "accepts attributes from Base" do
@@ -39,13 +40,15 @@ RSpec.describe Coradoc::Model::List::Nestable do
     it "serves as intermediate class between Base and Core" do
       hierarchy = [
         Coradoc::Model::List::Core.superclass,
-        Coradoc::Model::List::Nestable.superclass
+        Coradoc::Model::List::Nestable.superclass,
       ]
 
-      expect(hierarchy).to eq([
-        Coradoc::Model::List::Nestable,
-        Coradoc::Model::Base
-      ])
+      expect(hierarchy).to eq(
+        [
+          Coradoc::Model::List::Nestable,
+          Coradoc::Model::Base,
+        ],
+      )
     end
   end
 end

@@ -3,8 +3,12 @@ module Coradoc
     class BibliographyEntry < Base
       attr_accessor :anchor_name, :document_id, :ref_text, :line_break
 
-      def initialize(anchor_name: nil, document_id: nil, ref_text: nil,
-line_break: "")
+      def initialize(
+        anchor_name: nil,
+        document_id: nil,
+        ref_text: nil,
+        line_break: ""
+      )
         @anchor_name = anchor_name
         @document_id = document_id
         @ref_text = ref_text

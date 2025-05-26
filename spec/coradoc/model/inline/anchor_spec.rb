@@ -22,7 +22,7 @@ RSpec.describe Coradoc::Model::Inline::Anchor do
 
   describe "#validate" do
     it "returns errors when id is nil" do
-      anchor = described_class.allocate  # Create instance without initialization
+      anchor = described_class.allocate # Create instance without initialization
       allow(anchor).to receive(:id).and_return(nil)
 
       errors = anchor.send(:validate)
@@ -68,6 +68,4 @@ RSpec.describe Coradoc::Model::Inline::Anchor do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 end

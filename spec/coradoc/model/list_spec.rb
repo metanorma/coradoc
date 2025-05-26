@@ -67,10 +67,7 @@ RSpec.describe Coradoc::Model::List do
         allow(item1).to receive(:to_asciidoc).with(delimiter: ":::").and_return("Term 1::: Definition 1\n")
         allow(item2).to receive(:to_asciidoc).with(delimiter: ":::").and_return("Term 2::: Definition 2\n")
 
-        list = described_class.new(
-          items: [item1, item2],
-          delimiter: ":::"
-        )
+        list = described_class.new(items: [item1, item2], delimiter: ":::")
 
         expected_output = "\nTerm 1::: Definition 1\nTerm 2::: Definition 2\n"
         expect(list.to_asciidoc).to eq(expected_output)
@@ -94,7 +91,5 @@ RSpec.describe Coradoc::Model::List do
         expect(described_class.superclass).to eq(Coradoc::Model::Base)
       end
     end
-
-
   end
 end

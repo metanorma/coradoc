@@ -88,6 +88,4 @@ RSpec.describe Coradoc::Model::Inline::Quotation do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 end

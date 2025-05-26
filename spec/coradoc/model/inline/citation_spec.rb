@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
 RSpec.describe Coradoc::Model::Inline::Citation do
-  let(:cross_reference) { instance_double(Coradoc::Model::Inline::CrossReference) }
+  let(:cross_reference) {
+    instance_double(Coradoc::Model::Inline::CrossReference)
+  }
 
   describe ".initialize" do
     it "initializes with cross reference and comment" do
       citation = described_class.new(
         cross_reference: cross_reference,
-        comment: "See section 1.2"
+        comment: "See section 1.2",
       )
 
       expect(citation.cross_reference).to eq(cross_reference)
@@ -68,7 +70,7 @@ RSpec.describe Coradoc::Model::Inline::Citation do
 
         citation = described_class.new(
           cross_reference: cross_reference,
-          comment: "See section 1.2"
+          comment: "See section 1.2",
         )
 
         expected_output = "[.source]\n<<section-1>>See section 1.2"
@@ -83,7 +85,7 @@ RSpec.describe Coradoc::Model::Inline::Citation do
 
     it "handles multiline comments" do
       citation = described_class.new(
-        comment: "First line\nSecond line"
+        comment: "First line\nSecond line",
       )
 
       expected_output = "[.source]\nFirst line\nSecond line"
@@ -96,6 +98,4 @@ RSpec.describe Coradoc::Model::Inline::Citation do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 end

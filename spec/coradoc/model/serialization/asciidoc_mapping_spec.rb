@@ -46,7 +46,7 @@ RSpec.describe Coradoc::Model::Serialization::AsciidocMapping do
 
       expect(mapping.mappings.length).to eq(3)
       expect(mapping.mappings.map(&:name)).to eq(["title", "author", "date"])
-      expect(mapping.mappings.map(&:to)).to eq([:title, :author, :date])
+      expect(mapping.mappings.map(&:to)).to eq(%i[title author date])
     end
   end
 
@@ -58,7 +58,7 @@ RSpec.describe Coradoc::Model::Serialization::AsciidocMapping do
 
       expect(mapping.mappings.length).to eq(3)
       expect(mapping.mappings.map(&:field_type))
-        .to eq([:content, :attributes, :attributes])
+        .to eq(%i[content attributes attributes])
     end
   end
 end

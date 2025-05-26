@@ -6,7 +6,7 @@ RSpec.describe Coradoc::Model::Video do
       video = described_class.new(
         id: "video-1",
         title: "Sample Video",
-        src: "video.mp4"
+        src: "video.mp4",
       )
 
       expect(video.id).to eq("video-1")
@@ -37,7 +37,7 @@ RSpec.describe Coradoc::Model::Video do
         id: "video-1",
         title: "Sample Video",
         src: "video.mp4",
-        attributes: attributes
+        attributes: attributes,
       )
 
       expected_output = "[[video-1]]\n.Sample Video\nvideo::video.mp4[width=640]\n"
@@ -45,25 +45,23 @@ RSpec.describe Coradoc::Model::Video do
     end
 
     it "handles empty title" do
-      video = described_class.new(
-        src: "video.mp4",
-        attributes: attributes
-      )
+      video = described_class.new(src: "video.mp4", attributes: attributes)
 
       expected_output = "video::video.mp4[width=640]\n"
       expect(video.to_asciidoc).to eq(expected_output)
     end
 
     it "includes anchor when provided" do
-      anchor = instance_double(Coradoc::Model::Inline::Anchor,
-        to_asciidoc: "[[video-anchor]]"
+      anchor = instance_double(
+        Coradoc::Model::Inline::Anchor,
+        to_asciidoc: "[[video-anchor]]",
       )
 
       video = described_class.new(
         id: "video-1",
         title: "Sample Video",
         src: "video.mp4",
-        attributes: attributes
+        attributes: attributes,
       )
 
       allow(video).to receive(:anchor).and_return(anchor)
@@ -73,10 +71,7 @@ RSpec.describe Coradoc::Model::Video do
     end
 
     it "handles no attributes" do
-      video = described_class.new(
-        title: "Sample Video",
-        src: "video.mp4"
-      )
+      video = described_class.new(title: "Sample Video", src: "video.mp4")
 
       expected_output = ".Sample Video\nvideo::video.mp4[]\n"
       expect(video.to_asciidoc).to eq(expected_output)

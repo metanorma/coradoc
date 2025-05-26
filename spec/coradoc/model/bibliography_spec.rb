@@ -3,10 +3,7 @@
 RSpec.describe Coradoc::Model::Bibliography do
   describe ".initialize" do
     it "initializes with basic attributes" do
-      bib = described_class.new(
-        id: "bib-1",
-        title: "References"
-      )
+      bib = described_class.new(id: "bib-1", title: "References")
 
       expect(bib.id).to eq("bib-1")
       expect(bib.title).to eq("References")
@@ -16,13 +13,10 @@ RSpec.describe Coradoc::Model::Bibliography do
     it "accepts bibliography entries" do
       entries = [
         instance_double(Coradoc::Model::BibliographyEntry),
-        instance_double(Coradoc::Model::BibliographyEntry)
+        instance_double(Coradoc::Model::BibliographyEntry),
       ]
 
-      bib = described_class.new(
-        title: "References",
-        entries: entries
-      )
+      bib = described_class.new(title: "References", entries: entries)
 
       expect(bib.entries).to eq(entries)
     end
@@ -32,30 +26,31 @@ RSpec.describe Coradoc::Model::Bibliography do
     let(:title) { "References" }
     let(:entries) do
       [
-        instance_double(Coradoc::Model::BibliographyEntry, to_asciidoc: "* [[[ref1]]] First reference"),
-        instance_double(Coradoc::Model::BibliographyEntry, to_asciidoc: "* [[[ref2]]] Second reference")
+        instance_double(
+          Coradoc::Model::BibliographyEntry,
+          to_asciidoc: "* [[[ref1]]] First reference",
+        ),
+        instance_double(
+          Coradoc::Model::BibliographyEntry,
+          to_asciidoc: "* [[[ref2]]] Second reference",
+        ),
       ]
     end
 
     it "generates complete bibliography" do
-      bib = described_class.new(
-        title: title,
-        entries: entries
-      )
+      bib = described_class.new(title: title, entries: entries)
 
       expected_output = "\n[bibliography]== References\n\n* [[[ref1]]] First reference\n* [[[ref2]]] Second reference\n"
       expect(bib.to_asciidoc).to eq(expected_output)
     end
 
     it "includes anchor when present" do
-      anchor = instance_double(Coradoc::Model::Inline::Anchor,
-        to_asciidoc: "[[bibliography]]"
+      anchor = instance_double(
+        Coradoc::Model::Inline::Anchor,
+        to_asciidoc: "[[bibliography]]",
       )
 
-      bib = described_class.new(
-        title: title,
-        entries: entries
-      )
+      bib = described_class.new(title: title, entries: entries)
       allow(bib).to receive(:anchor).and_return(anchor)
       allow(bib).to receive(:gen_anchor).and_return("[[bibliography]]")
 
@@ -80,6 +75,4 @@ RSpec.describe Coradoc::Model::Bibliography do
       expect(described_class.included_modules).to include(Coradoc::Model::Anchorable)
     end
   end
-
-
 end

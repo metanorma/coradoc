@@ -3,7 +3,12 @@ module Coradoc
     class Tag < Base
       attr_accessor :name, :prefix, :attrs, :line_break
 
-      def initialize(name:, prefix: "tag", attrs: AttributeList.new, line_break: "\n")
+      def initialize(
+        name:,
+        prefix: "tag",
+        attrs: AttributeList.new,
+        line_break: "\n"
+      )
         @name = name
         @prefix = prefix
         @attrs = attrs

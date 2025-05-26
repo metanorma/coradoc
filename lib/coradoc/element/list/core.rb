@@ -15,10 +15,10 @@ module Coradoc
           @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
           @ol_count = ol_count
           if @ol_count.nil?
-            m = @items.find do |i|
+            m = @items.find { |i|
               i.is_a?(Coradoc::Element::ListItem) &&
                 !i.marker.nil?
-            end&.marker.to_s
+            }&.marker.to_s
             @ol_count = m.size
           end
           @ol_count = 1 if @ol_count.nil?

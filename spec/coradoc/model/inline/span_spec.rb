@@ -9,7 +9,7 @@ RSpec.describe Coradoc::Model::Inline::Span do
         text: "span text",
         role: "custom",
         attributes: attributes,
-        unconstrained: true
+        unconstrained: true,
       )
 
       expect(span.text).to eq("span text")
@@ -38,17 +38,14 @@ RSpec.describe Coradoc::Model::Inline::Span do
         span = described_class.new(
           text: "span text",
           attributes: attributes,
-          unconstrained: true
+          unconstrained: true,
         )
 
         expect(span.to_asciidoc).to eq("[opts=optional]##span text##")
       end
 
       it "generates span with attributes (constrained)" do
-        span = described_class.new(
-          text: "span text",
-          attributes: attributes
-        )
+        span = described_class.new(text: "span text", attributes: attributes)
 
         expect(span.to_asciidoc).to eq("[opts=optional]#span text#")
       end
@@ -59,17 +56,14 @@ RSpec.describe Coradoc::Model::Inline::Span do
         span = described_class.new(
           text: "span text",
           role: "custom",
-          unconstrained: true
+          unconstrained: true,
         )
 
         expect(span.to_asciidoc).to eq("[.custom]##span text##")
       end
 
       it "generates span with role (constrained)" do
-        span = described_class.new(
-          text: "span text",
-          role: "custom"
-        )
+        span = described_class.new(text: "span text", role: "custom")
 
         expect(span.to_asciidoc).to eq("[.custom]#span text#")
       end
@@ -93,7 +87,7 @@ RSpec.describe Coradoc::Model::Inline::Span do
       span = described_class.new(
         text: "span text",
         attributes: attributes,
-        role: "custom"
+        role: "custom",
       )
 
       expect(span.to_asciidoc).to eq("[opts=optional]#span text#")
@@ -108,10 +102,7 @@ RSpec.describe Coradoc::Model::Inline::Span do
 
   describe "usage examples" do
     it "works for custom roles" do
-      span = described_class.new(
-        text: "special",
-        role: "highlight"
-      )
+      span = described_class.new(text: "special", role: "highlight")
       expect("This is #{span.to_asciidoc}").to eq("This is [.highlight]#special#")
     end
 
@@ -120,7 +111,7 @@ RSpec.describe Coradoc::Model::Inline::Span do
 
       span = described_class.new(
         text: "important note",
-        attributes: attributes
+        attributes: attributes,
       )
       expect(span.to_asciidoc).to eq('[id="note1"]#important note#')
     end

@@ -11,9 +11,11 @@ module Coradoc
         attribute :id, :string
         attribute :title, :string
         attribute :src, :string
-        attribute :attributes, Coradoc::Model::Image::Core::AttributeList, default: -> {
-          Coradoc::Model::Image::Core::AttributeList.new
-        }
+        attribute :attributes,
+                  Coradoc::Model::Image::Core::AttributeList,
+                  default: -> {
+                    Coradoc::Model::Image::Core::AttributeList.new
+                  }
         attribute :annotate_missing, :string
         attribute :line_break, :string, default: -> { "" }
         attribute :colons, :string

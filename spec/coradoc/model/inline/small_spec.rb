@@ -51,8 +51,6 @@ RSpec.describe Coradoc::Model::Inline::Small do
     end
   end
 
-
-
   describe "usage examples" do
     it "works in sentences" do
       small = described_class.new(text: "side note")

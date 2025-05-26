@@ -2,8 +2,12 @@ module Coradoc
   module Element
     module Block
       class Quote < Core
-        def initialize(title:, attributes: AttributeList.new, lines: [],
-delimiter_len: 4)
+        def initialize(
+          title:,
+          attributes: AttributeList.new,
+          lines: [],
+          delimiter_len: 4
+        )
           @title = title
           @attributes = attributes
           @lines = lines

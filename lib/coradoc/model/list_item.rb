@@ -6,19 +6,25 @@ module Coradoc
       include Coradoc::Model::Anchorable
 
       attribute :id, :string
-      attribute :content, Coradoc::Model::Base, polymorphic: [
-        Coradoc::Model::TextElement,
-        Coradoc::Model::Section,
-      ]
+      attribute :content,
+                Coradoc::Model::Base,
+                polymorphic: [
+                  Coradoc::Model::TextElement,
+                  Coradoc::Model::Section,
+                ]
       attribute :marker, :string
       attribute :subitem, :string
       attribute :line_break, :string
 
-      attribute :attached, Coradoc::Model::Attached, polymorphic: [
-        Coradoc::Model::Admonition,
-        Coradoc::Model::Paragraph,
-        Coradoc::Model::Block::Core,
-      ], collection: true, initialize_empty: true
+      attribute :attached,
+                Coradoc::Model::Attached,
+                polymorphic: [
+                  Coradoc::Model::Admonition,
+                  Coradoc::Model::Paragraph,
+                  Coradoc::Model::Block::Core,
+                ],
+                collection: true,
+                initialize_empty: true
 
       attribute :nested, Coradoc::Model::List::Nestable
 
@@ -112,13 +118,13 @@ module Coradoc
         out = "{empty}" if out.empty?
 
         # attach = Coradoc::Generator.gen_adoc(@attached)
-        attach = attached.map do |elem|
+        attach = attached.map { |elem|
           "+\n#{Coradoc::Generator.gen_adoc(elem)}"
-        end.join
+        }.join
         nest = Coradoc::Generator.gen_adoc(nested)
-        puts 'pp nested'
+        puts "pp nested"
         pp nested
-        puts 'pp nest'
+        puts "pp nest"
         pp nest
         out = " #{_anchor}#{out}#{line_break}"
         pp [out, attach, nest]

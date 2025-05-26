@@ -7,7 +7,7 @@ RSpec.describe Coradoc::Model::BibliographyEntry do
         anchor_name: "ref1",
         document_id: "doc1",
         ref_text: "Reference text",
-        line_break: "\n"
+        line_break: "\n",
       )
 
       expect(entry.anchor_name).to eq("ref1")
@@ -28,7 +28,7 @@ RSpec.describe Coradoc::Model::BibliographyEntry do
     it "accepts partial attributes" do
       entry = described_class.new(
         anchor_name: "ref1",
-        ref_text: "Reference text"
+        ref_text: "Reference text",
       )
 
       expect(entry.anchor_name).to eq("ref1")
@@ -48,7 +48,7 @@ RSpec.describe Coradoc::Model::BibliographyEntry do
         anchor_name: "ref1",
         document_id: "doc1",
         ref_text: "Reference text",
-        line_break: "\n"
+        line_break: "\n",
       )
 
       expect(entry.to_asciidoc).to eq("* [[[ref1,doc1]]]Reference text\n")
@@ -58,7 +58,7 @@ RSpec.describe Coradoc::Model::BibliographyEntry do
       entry = described_class.new(
         anchor_name: "ref1",
         ref_text: "Reference text",
-        line_break: "\n"
+        line_break: "\n",
       )
 
       expect(entry.to_asciidoc).to eq("* [[[ref1]]]Reference text\n")
@@ -68,16 +68,14 @@ RSpec.describe Coradoc::Model::BibliographyEntry do
       entry = described_class.new(
         anchor_name: "ref1",
         document_id: "doc1",
-        line_break: "\n"
+        line_break: "\n",
       )
 
       expect(entry.to_asciidoc).to eq("* [[[ref1,doc1]]]\n")
     end
 
     it "generates minimal entry" do
-      entry = described_class.new(
-        anchor_name: "ref1"
-      )
+      entry = described_class.new(anchor_name: "ref1")
 
       expect(entry.to_asciidoc).to eq("* [[[ref1]]]")
     end
@@ -85,7 +83,7 @@ RSpec.describe Coradoc::Model::BibliographyEntry do
     it "processes ref_text through Generator.gen_adoc" do
       entry = described_class.new(
         anchor_name: "ref1",
-        ref_text: "Reference text"
+        ref_text: "Reference text",
       )
 
       expect(Coradoc::Generator).to receive(:gen_adoc).with("Reference text")
@@ -93,9 +91,7 @@ RSpec.describe Coradoc::Model::BibliographyEntry do
     end
 
     it "handles nil ref_text" do
-      entry = described_class.new(
-        anchor_name: "ref1"
-      )
+      entry = described_class.new(anchor_name: "ref1")
 
       expect(Coradoc::Generator).not_to receive(:gen_adoc)
       entry.to_asciidoc
@@ -107,6 +103,4 @@ RSpec.describe Coradoc::Model::BibliographyEntry do
       expect(described_class.superclass).to eq(Coradoc::Model::Base)
     end
   end
-
-
 end

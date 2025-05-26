@@ -3,11 +3,7 @@
 RSpec.describe Coradoc::Model::Inline::CrossReferenceArg do
   describe ".initialize" do
     it "initializes with all attributes" do
-      arg = described_class.new(
-        key: "page",
-        delimiter: ":",
-        value: "5"
-      )
+      arg = described_class.new(key: "page", delimiter: ":", value: "5")
 
       expect(arg.key).to eq("page")
       expect(arg.delimiter).to eq(":")
@@ -34,11 +30,7 @@ RSpec.describe Coradoc::Model::Inline::CrossReferenceArg do
   describe "#to_asciidoc" do
     context "with all attributes" do
       it "joins all components" do
-        arg = described_class.new(
-          key: "page",
-          delimiter: ":",
-          value: "5"
-        )
+        arg = described_class.new(key: "page", delimiter: ":", value: "5")
 
         expect(arg.to_asciidoc).to eq("page:5")
       end
@@ -47,7 +39,7 @@ RSpec.describe Coradoc::Model::Inline::CrossReferenceArg do
         arg = described_class.new(
           key: "text",
           delimiter: ":",
-          value: "Section 1.2"
+          value: "Section 1.2",
         )
 
         expect(arg.to_asciidoc).to eq("text:Section 1.2")
@@ -56,19 +48,13 @@ RSpec.describe Coradoc::Model::Inline::CrossReferenceArg do
 
     context "with partial attributes" do
       it "handles missing delimiter" do
-        arg = described_class.new(
-          key: "page",
-          value: "5"
-        )
+        arg = described_class.new(key: "page", value: "5")
 
         expect(arg.to_asciidoc).to eq("page5")
       end
 
       it "handles missing value" do
-        arg = described_class.new(
-          key: "page",
-          delimiter: ":"
-        )
+        arg = described_class.new(key: "page", delimiter: ":")
 
         expect(arg.to_asciidoc).to eq("page:")
       end
@@ -88,7 +74,7 @@ RSpec.describe Coradoc::Model::Inline::CrossReferenceArg do
       arg = described_class.new(
         key: "ref",
         delimiter: ":",
-        value: "section-1.2_3"
+        value: "section-1.2_3",
       )
 
       expect(arg.to_asciidoc).to eq("ref:section-1.2_3")
@@ -101,15 +87,9 @@ RSpec.describe Coradoc::Model::Inline::CrossReferenceArg do
     end
   end
 
-
-
   describe "usage examples" do
     it "works for page references" do
-      arg = described_class.new(
-        key: "page",
-        delimiter: ":",
-        value: "5"
-      )
+      arg = described_class.new(key: "page", delimiter: ":", value: "5")
       expect(arg.to_asciidoc).to eq("page:5")
     end
 
@@ -117,7 +97,7 @@ RSpec.describe Coradoc::Model::Inline::CrossReferenceArg do
       arg = described_class.new(
         key: "text",
         delimiter: ":",
-        value: "Section Title"
+        value: "Section Title",
       )
       expect(arg.to_asciidoc).to eq("text:Section Title")
     end

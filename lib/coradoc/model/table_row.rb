@@ -21,9 +21,9 @@ module Coradoc
       def to_asciidoc
         delim = asciidoc? ? "\n" : " "
 
-        content = columns.map do |col|
+        content = columns.map { |col|
           Coradoc::Generator.gen_adoc(col)
-        end.join(delim)
+        }.join(delim)
 
         result = "#{content}\n"
         result << "\n" if asciidoc?
