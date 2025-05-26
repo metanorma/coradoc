@@ -40,7 +40,7 @@ RSpec.describe Coradoc::Model::Serialization::AsciidocAdapter do
 
     it "creates an adapter instance with parsed sections" do
       result = described_class.parse(asciidoc_data)
-      expect(result).to be_a(described_class)
+      expect(result).to be_a(Coradoc::Document)
       expect(result.sections).to eq(sections)
     end
   end
