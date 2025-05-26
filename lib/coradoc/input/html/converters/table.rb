@@ -63,7 +63,7 @@ module Coradoc::Input
             # Header first rows can't span multiple riws - drop header if they do.
             header = node.at_xpath(".//tr")
             unless header.xpath("./td | ./th").all? do |i|
-  [nil, "1", ""].include? i["rowspan"]
+              [nil, "1", ""].include? i["rowspan"]
             end
               attrs.add_named("options", ["noheader"])
             end
@@ -129,9 +129,9 @@ module Coradoc::Input
 
               column_id += 1 until fits_in_cell_matrix.(
                 i,
-column_id,
-rowspan,
-                                                        colspan,
+                column_id,
+                rowspan,
+                colspan,
               )
 
               rowspan.times do |j|
@@ -211,11 +211,11 @@ rowspan,
 
           # For column size computation, we must have an integral cell_matrix.
           # Let's verify that all columns and rows are populated.
-          cell_matrix_correct = cell_matrix.length.times.all? do |y|
+          cell_matrix_correct = cell_matrix.length.times.all? { |y|
             cell_matrix[y].length.times.all? do |x|
               cell_matrix[y][x]
             end
-          end
+          }
 
           unless cell_matrix_correct
             # It may be a special case that we need to add virtual cells at the
@@ -256,10 +256,10 @@ rowspan,
 
           column_sizes += [nil] * (cpr.first - column_sizes.length)
 
-          sizes = column_sizes.map do |col|
+          sizes = column_sizes.map { |col|
             col = [] if col.nil?
 
-            max = col.map do |i|
+            max = col.map { |i|
               if i.nil?
                 0r
               elsif i.end_with?("%")
@@ -267,14 +267,14 @@ rowspan,
               else
                 i.to_r
               end
-            end.max
+            }.max
 
             if max.nil? || max.negative?
               0r
             else
               max
             end
-          end
+          }
 
           # The table seems bigger than the document... let's scale all
           # values.
@@ -293,13 +293,13 @@ rowspan,
           unset = sizes.count(&:zero?)
 
           # Fill in zeros with remainder space
-          sizes = sizes.map do |i|
+          sizes = sizes.map { |i|
             if i.zero?
               rest / unset
             else
               i
             end
-          end
+          }
 
           # Scale to integers
           lcm = sizes.map(&:denominator).inject(1) { |i, j| i.lcm(j) }

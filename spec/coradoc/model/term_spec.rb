@@ -120,7 +120,7 @@ RSpec.describe Coradoc::Model::Term do
         is_expected.not_to be_empty
       end
 
-      its(:'validate.size') do
+      its(:"validate.size") do
         is_expected.to eq 2
       end
 
