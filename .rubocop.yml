@@ -88,3 +88,6 @@ Layout/BlockAlignment:
 
 Layout/SingleLineBlockChain:
   Enabled: true
+
+Gemspec/RequireMFA:
+  AutoCorrect: false
