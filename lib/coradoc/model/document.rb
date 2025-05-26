@@ -57,8 +57,12 @@ module Coradoc
             when Coradoc::Model::Header
               @header = element
 
-            when Coradoc::Model::Section
+            # when Coradoc::Model::Section
+            #   @sections << element
+
+            when Coradoc::Model::Base
               @sections << element
+
             else
               warn "Unknown element type: #{element.class}"
               warn "Element: #{element.inspect}"
