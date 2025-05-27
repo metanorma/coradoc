@@ -5,19 +5,15 @@ module Coradoc
 
       declare_children :data
 
-      def initialize(data = {}, options = {})
+      def initialize(data: {})
         @data = data
-        @options = options
-      end
-
-      def to_hash
-        @data.to_h do |attribute|
-          [attribute.key, attribute.value]
-        end
       end
 
       def to_adoc
-        to_hash.map do |key, value|
+        @data.map { |attribute|
+          key = attribute.key
+          value = attribute.value
+          line_break = attribute.line_break
           v = if value.to_s.empty?
                 ""
               elsif value.is_a? Array
@@ -25,8 +21,8 @@ module Coradoc
               else
                 " #{value}"
               end
-          ":#{key}:#{v}\n"
-        end.join + "\n"
+          ":#{key}:#{v}#{line_break}"
+        }.join + "\n"
       end
     end
   end

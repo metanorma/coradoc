@@ -5,11 +5,11 @@ module Coradoc
 
       declare_children :term, :options
 
-      def initialize(term, options = {})
+      def initialize(term:, type: nil, lang: :en, line_break: "")
         @term = term
-        @type = options.fetch(:type, nil)
-        @lang = options.fetch(:lang, :en)
-        @line_break = options.fetch(:line_break, "")
+        @type = type
+        @lang = lang
+        @line_break = line_break
       end
 
       def to_adoc

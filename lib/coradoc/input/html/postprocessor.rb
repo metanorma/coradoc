@@ -30,7 +30,7 @@ module Coradoc
         # Element::Title
         # Element::Title (any number of titles)
         def extract_titles_from_lists
-          @tree = Element::Base.visit(@tree) do |elem, dir|
+          @tree = Element::Base.visit(@tree) { |elem, dir|
             next elem unless dir == :pre
             next elem unless elem.is_a?(Element::List::Ordered)
             next elem if elem.items.length != 1
@@ -68,12 +68,12 @@ module Coradoc
 
             # We are done now.
             titles + anchors
-          end
+          }
         end
 
         # Collapse DIVs that only have a title, or nest another DIV.
         def collapse_meaningless_sections
-          @tree = Element::Base.visit(@tree) do |elem, _dir|
+          @tree = Element::Base.visit(@tree) { |elem, _dir|
             if elem.is_a?(Element::Section) && elem.safe_to_collapse?
               children_classes = Array(elem.contents).map(&:class)
               count = children_classes.length
@@ -89,13 +89,13 @@ module Coradoc
               end
             end
             elem
-          end
+          }
         end
 
         # tree should now be more cleaned up, so we can progress with
         # creating meaningful sections
         def generate_meaningful_sections
-          @tree = Element::Base.visit(@tree) do |elem, dir|
+          @tree = Element::Base.visit(@tree) { |elem, dir|
             # We are searching for an array, that has a title. This
             # will be a candidate for our section array.
             if dir == :post &&
@@ -118,7 +118,7 @@ module Coradoc
                   section_array = []
                   level = title.level_int
                   section = Element::Section.new(
-                    title, contents: content_array, sections: section_array
+                    title:, contents: content_array, sections: section_array,
                   )
                   # Some documents may not be consistent and eg. follow H4 after
                   # H2. Let's ensure that proceeding sections will land in a
@@ -134,7 +134,7 @@ module Coradoc
               next new_array
             end
             elem
-          end
+          }
         end
 
         def split_sections
@@ -167,7 +167,7 @@ module Coradoc
             style
           end
 
-          @tree = Element::Base.visit(@tree) do |elem, dir|
+          @tree = Element::Base.visit(@tree) { |elem, dir|
             title = elem.title if elem.is_a?(Element::Section)
 
             if title && title.level_int <= max_level
@@ -183,9 +183,9 @@ module Coradoc
                 # In the POST pass, we replace the sections with their
                 # include tag.
                 section_file = "sections/"
-                section_file += parent_sections[1..title.level_int].map do |parent|
+                section_file += parent_sections[1..title.level_int].map { |parent|
                   determine_style.(parent) + determine_section_id.(parent)
-                end.join("/")
+                }.join("/")
                 section_file += ".adoc"
 
                 sections[section_file] = elem
@@ -195,7 +195,7 @@ module Coradoc
             else
               elem
             end
-          end
+          }
 
           sections[nil] = @tree
           @tree = sections

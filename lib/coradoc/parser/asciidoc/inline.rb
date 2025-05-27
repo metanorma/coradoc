@@ -117,7 +117,7 @@ module Coradoc
         def inline_image
           (str("image:").present? >> str("image:") >>
             match("[A-Za-z0-9_.\\-:/&?=+,%#~;]+").repeat(1).as(:path) >>
-            (str("[") >> match("[^\\]]").repeat(1).as(:text) >> str("]")).maybe
+            (str("[") >> match("[^\\]]").repeat.as(:text) >> str("]")).maybe
           ).as(:inline_image)
         end
 
@@ -142,7 +142,7 @@ module Coradoc
             str("http").present? |
             str("https").present? |
             str("link:").present? |
-            str("image:").present? |
+            str("image").present? |
             term_type.present? |
             str("footnote").present?
         end
@@ -183,8 +183,7 @@ module Coradoc
         end
 
         def text_any
-          (text_formatted |
-                  text_unformatted.as(:text)
+          (text_formatted | text_unformatted.as(:text)
           ).repeat(2) |
             text_formatted.repeat(1, 1) |
             text_unformatted

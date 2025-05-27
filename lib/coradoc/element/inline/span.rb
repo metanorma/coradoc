@@ -6,11 +6,11 @@ module Coradoc
 
         declare_children :text, :attributes
 
-        def initialize(text, options = {})
+        def initialize(text:, role: nil, attributes: nil, unconstrained: false)
           @text = text
-          @role = options.fetch(:role, nil)
-          @attributes = options.fetch(:attributes, nil)
-          @unconstrained = options.fetch(:unconstrained, false)
+          @role = role
+          @attributes = attributes
+          @unconstrained = unconstrained
         end
 
         def to_adoc

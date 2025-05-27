@@ -5,10 +5,10 @@ module Coradoc
 
       declare_children :title
 
-      def initialize(title, options = {})
+      def initialize(title:, author: nil, revision: nil)
         @title = title
-        @author = options.fetch(:author, nil)
-        @revision = options.fetch(:revision, nil)
+        @author = author
+        @revision = revision
       end
 
       def to_adoc

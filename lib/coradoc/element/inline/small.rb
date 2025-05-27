@@ -6,7 +6,7 @@ module Coradoc
 
         declare_children :text
 
-        def initialize(text, _options = {})
+        def initialize(text:)
           @text = text
         end
 

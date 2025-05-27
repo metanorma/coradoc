@@ -29,8 +29,10 @@ module Coradoc
             images_dir = dest_dir.join("images")
             FileUtils.mkdir_p(images_dir)
 
-            ext, image_src_path, tempfile = determine_image_src_path(src,
-                                                                     imgdata)
+            ext, image_src_path, tempfile = determine_image_src_path(
+              src,
+              imgdata,
+            )
             image_dest_path = images_dir + "#{image_number}.#{ext}"
 
             # puts "image_dest_path: #{image_dest_path.to_s}"
@@ -96,9 +98,13 @@ module Coradoc
             attributes.add_positional(height) if height
 
             if src
-              Coradoc::Element::Image::BlockImage.new(title, id, src,
-                                                      attributes: attributes,
-                                                      annotate_missing: @annotate_missing)
+              Coradoc::Element::Image::BlockImage.new(
+                title:,
+                id:,
+                src:,
+                attributes: attributes,
+                annotate_missing: @annotate_missing,
+              )
             end
           end
         end

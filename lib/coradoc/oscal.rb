@@ -65,9 +65,9 @@ module Coradoc
 
     def build_oscal_sub_parts(contents)
       if contents.length > 1
-        parts = contents.select do |content|
+        parts = contents.select { |content|
           content if content.is_a?(Coradoc::Element::Paragraph)
-        end
+        }
 
         parts.map do |part|
           Hash.new.tap do |hash|
@@ -81,14 +81,14 @@ module Coradoc
     def build_oscal_props(attributes)
       return [] unless attributes.respond_to?(:map)
 
-      attributes.map do |attribute|
+      attributes.map { |attribute|
         next unless attribute.respond_to?(:key) && attribute.respond_to?(:value)
 
         Hash.new.tap do |hash|
           hash["name"] = attribute.key.to_s.downcase
           hash["value"] = attribute.value.to_s
         end
-      end.compact
+      }.compact
     end
 
     def build_oscal_prose(paragraph)

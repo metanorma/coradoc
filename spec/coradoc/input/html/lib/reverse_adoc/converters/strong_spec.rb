@@ -15,8 +15,12 @@ describe Coradoc::Input::Html::Converters::Strong do
 
   it "returns just the content if the strong tag is nested in another strong" do
     input = node_for("<strong><strong>foo</strong></strong>")
-    expect(converter.convert(input.children.first,
-                             already_strong: true)).to eq "foo"
+    expect(
+      converter.convert(
+        input.children.first,
+        already_strong: true,
+      ),
+    ).to eq "foo"
   end
 
   it "moves border whitespaces outside of the delimiters tag" do

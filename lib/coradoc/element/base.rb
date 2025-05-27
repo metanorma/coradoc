@@ -56,7 +56,8 @@ module Coradoc
         element = if element.respond_to? :visit
                     element.visit(&block)
                   elsif element.is_a? Array
-                    element.map { |child| visit(child, &block) }.flatten.compact
+                    element.map { |child| visit(child, &block) }
+                      .flatten.compact
                   elsif element.is_a? Hash
                     result = {}
                     element.each do |k, v|

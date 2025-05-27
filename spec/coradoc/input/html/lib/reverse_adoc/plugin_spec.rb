@@ -161,12 +161,12 @@ describe Coradoc::Input::Html::Plugin do
     context "visitor pattern" do
       let(:code) do
         -> {
-          self.coradoc_tree = Coradoc::Element::Base.visit(coradoc_tree) do |elem, _dir|
+          self.coradoc_tree = Coradoc::Element::Base.visit(coradoc_tree) { |elem, _dir|
             if elem.is_a? Coradoc::Element::Table::Cell
               elem.alignattr = ".>"
             end
             elem
-          end
+          }
         }
       end
 

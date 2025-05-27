@@ -33,12 +33,16 @@ module Coradoc
             html_tree_change_tag_name_by_css(".sitemdata", "h4")
             html_tree_change_tag_name_by_css('td[bgcolor="#D0CECE"]', "th")
             html_tree_change_tag_name_by_css('td[bgcolor="#d0cece"]', "th")
-            html_tree_change_tag_name_by_css(".framedata, .frame_container_box",
-                                             "aside")
+            html_tree_change_tag_name_by_css(
+              ".framedata, .frame_container_box",
+              "aside",
+            )
             html_tree_change_tag_name_by_css(".frame2data", "pre")
             # Assumption that all code snippets in those documents are XML...
-            html_tree_change_properties_by_css(".frame2data",
-                                               class: "brush:xml;")
+            html_tree_change_properties_by_css(
+              ".frame2data",
+              class: "brush:xml;",
+            )
 
             # Remove some CSS ids that are not important to us
             html_tree_change_properties_by_css("#__nuxt", id: nil)
@@ -67,13 +71,17 @@ module Coradoc
             end
 
             # Add hooks for H1, H2, H3, H4
-            html_tree_add_hook_post_by_css("h1, h2, h3",
-                                           &method(:handle_headers))
+            html_tree_add_hook_post_by_css(
+              "h1, h2, h3",
+              &method(:handle_headers)
+            )
             html_tree_add_hook_post_by_css("h4", &method(:handle_headers_h4))
 
             # Table cells aligned to center
-            html_tree_change_properties_by_css(".tableTopCenter",
-                                               align: "center")
+            html_tree_change_properties_by_css(
+              ".tableTopCenter",
+              align: "center",
+            )
 
             # Handle non-semantic lists and indentation
             html_tree_add_hook_pre_by_css ".text2data" do |node,|
@@ -155,8 +163,10 @@ module Coradoc
             end
 
             # Remove numbers
-            coradoc.content.first.content.sub!(/\A(#{IM}\.)*#{IM}[[:space:]]/o,
-                                               "")
+            coradoc.content.first.content.sub!(
+              /\A(#{IM}\.)*#{IM}[[:space:]]/o,
+              "",
+            )
 
             coradoc
           end

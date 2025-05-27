@@ -218,7 +218,9 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
 
   module Asciidoc
     class SectionTester < Coradoc::Parser::Asciidoc::Base
-      rule(:document) { (section | any.as(:unparsed)).repeat(1) }
+      rule(:document) do
+        (section | any.as(:unparsed)).repeat(1)
+      end
       root :document
 
       def self.parse(text)

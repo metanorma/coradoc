@@ -10,7 +10,7 @@ module Coradoc
 
             return content if Coradoc::Generator.gen_adoc(content).strip.empty?
 
-            e = Coradoc::Element::Inline::Subscript.new(content)
+            e = Coradoc::Element::Inline::Subscript.new(content:)
             [leading_whitespace, e, trailing_whitespace]
           end
         end

@@ -5,15 +5,18 @@ describe Coradoc::Input::Html do
   let(:document) { Nokogiri::HTML(input) }
 
   it "parses nokogiri documents" do
-    expect { described_class.convert(document) }.not_to raise_error
+    expect { described_class.convert(document) }
+      .not_to raise_error
   end
 
   it "parses nokogiri elements" do
-    expect { described_class.convert(document.root) }.not_to raise_error
+    expect { described_class.convert(document.root) }
+      .not_to raise_error
   end
 
   it "parses string input" do
-    expect { described_class.convert(input) }.not_to raise_error
+    expect { described_class.convert(input) }
+      .not_to raise_error
   end
 
   it "behaves in a sane way when root element is nil" do
@@ -42,8 +45,10 @@ describe Coradoc::Input::Html do
     let(:images_folder) { File.join(temp_dir, "images") }
 
     before do
-      described_class.config.destination = File.join(Dir.mktmpdir,
-                                                     "output.html")
+      described_class.config.destination = File.join(
+        Dir.mktmpdir,
+        "output.html",
+      )
       described_class.config.sourcedir = Dir.mktmpdir
       described_class.config.external_images = true
     end
@@ -54,11 +59,11 @@ describe Coradoc::Input::Html do
 
     it "Creates local files from external URI" do
       expect { convert }
-        .to(change do
+        .to(change {
           Dir["#{images_folder}/*"]
             .map { |entry| File.basename(entry) }
             .sort
-        end.from([]).to(result))
+        }.from([]).to(result))
     end
   end
 
@@ -74,8 +79,10 @@ describe Coradoc::Input::Html do
       end
 
       let(:input) do
-        WordToMarkdown.new("spec/coradoc/input/html/assets/external_images.docx",
-                           described_class.config.sourcedir)
+        WordToMarkdown.new(
+          "spec/coradoc/input/html/assets/external_images.docx",
+          described_class.config.sourcedir,
+        )
       end
 
       it_behaves_like "converting source with external images included",

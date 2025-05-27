@@ -6,7 +6,7 @@ module Coradoc
 
         declare_children :content
 
-        def initialize(content, unconstrained: true)
+        def initialize(content:, unconstrained: true)
           @content = content
           @unconstrained = unconstrained
         end

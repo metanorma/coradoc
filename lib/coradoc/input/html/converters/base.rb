@@ -12,9 +12,9 @@ module Coradoc
 
           # Note: treat_children won't run plugin hooks
           def treat_children(node, state)
-            node.children.map do |child|
+            node.children.map { |child|
               treat(child, state)
-            end.join
+            }.join
           end
 
           def treat(node, state)
@@ -22,9 +22,9 @@ module Coradoc
           end
 
           def treat_children_coradoc(node, state)
-            node.children.map do |child|
+            node.children.map { |child|
               treat_coradoc(child, state)
-            end.flatten.reject { |x| x.to_s.empty? }
+            }.flatten.reject { |x| x.to_s.empty? }
           end
 
           def treat_coradoc(node, state)

@@ -12,16 +12,22 @@ RSpec.describe "Coradoc::Parser::Asciidoc::AttributeList" do
       ast = parser.parse("[a,b]")
       expect(ast).to eq([{ positional: "a" }, { positional: "b" }])
       ast = parser.parse("[a,b,c]")
-      expect(ast).to eq([{ positional: "a" }, { positional: "b" },
-                         { positional: "c" }])
+      expect(ast).to eq(
+        [{ positional: "a" }, { positional: "b" },
+         { positional: "c" }],
+      )
       ast = parser.parse("[a=b]")
       expect(ast).to eq([{ named: { named_key: "a", named_value: "b" } }])
       ast = parser.parse("[a,b=c]")
-      expect(ast).to eq([{ positional: "a" },
-                         { named: { named_key: "b", named_value: "c" } }])
+      expect(ast).to eq(
+        [{ positional: "a" },
+         { named: { named_key: "b", named_value: "c" } }],
+      )
       ast = parser.parse("[a,b,c=d]")
-      expect(ast).to eq([{ positional: "a" }, { positional: "b" },
-                         { named: { named_key: "c", named_value: "d" } }])
+      expect(ast).to eq(
+        [{ positional: "a" }, { positional: "b" },
+         { named: { named_key: "c", named_value: "d" } }],
+      )
       ast = parser.parse("[a,b=c,d=e]")
       obj = [{ positional: "a" },
              { named: { named_key: "b", named_value: "c" } },
@@ -36,13 +42,11 @@ RSpec.describe "Coradoc::Parser::Asciidoc::AttributeList" do
       expect(ast).to eq(obj)
 
       ast = parser.parse("[a='single quoted']")
-      obj = [{ named: { named_key: "a",
-                        named_value: "'single quoted'" } }]
+      obj = [{ named: { named_key: "a", named_value: "'single quoted'" } }]
       expect(ast).to eq(obj)
 
       ast = parser.parse('[a="double quoted"]')
-      obj = [{ named: { named_key: "a",
-                        named_value: '"double quoted"' } }]
+      obj = [{ named: { named_key: "a", named_value: '"double quoted"' } }]
       expect(ast).to eq(obj)
     end
   end
@@ -50,7 +54,9 @@ end
 
 module Asciidoc
   class AttributeListTester < Coradoc::Parser::Asciidoc::Base
-    rule(:document) { (attribute_list | any.as(:unparsed)).repeat(1) }
+    rule(:document) do
+      (attribute_list | any.as(:unparsed)).repeat(1)
+    end
     root :document
 
     def self.parse(text)

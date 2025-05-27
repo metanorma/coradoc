@@ -18,15 +18,14 @@ module Coradoc
 
             style = "a" if adoccell
             content = treat_children_coradoc(node, state)
-            options = {}.tap do |hash|
-              hash[:id] = id
-              hash[:colrowattr] = colrowattr
-              hash[:alignattr] = alignattr
-              hash[:style] = style
-              hash[:content] = content
-            end
 
-            Coradoc::Element::Table::Cell.new(options)
+            Coradoc::Element::Table::Cell.new(
+              id:,
+              colrowattr:,
+              alignattr:,
+              style:,
+              content:,
+            )
           end
 
           def cellstyle(_node)

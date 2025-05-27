@@ -14,17 +14,19 @@ module Coradoc
             level = node.name[/\d/].to_i
             content = treat_children_no_anchors(node, state)
 
-            Coradoc::Element::Title.new(content, level, id: id)
+            Coradoc::Element::Title.new(content:, level:, id:)
           end
 
           def treat_children_no_anchors(node, state)
-            node.children.reject { |a| a.name == "a" }.map do |child|
+            node.children.reject { |a| a.name == "a" }
+              .map do |child|
               treat_coradoc(child, state)
             end
           end
 
           def treat_children_anchors(node, state)
-            node.children.select { |a| a.name == "a" }.map do |child|
+            node.children.select { |a| a.name == "a" }
+              .map do |child|
               treat_coradoc(child, state)
             end
           end

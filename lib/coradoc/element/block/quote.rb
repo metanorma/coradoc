@@ -2,12 +2,17 @@ module Coradoc
   module Element
     module Block
       class Quote < Core
-        def initialize(title, options = {})
+        def initialize(
+          title:,
+          attributes: AttributeList.new,
+          lines: [],
+          delimiter_len: 4
+        )
           @title = title
-          @attributes = options.fetch(:attributes, AttributeList.new)
-          @lines = options.fetch(:lines, [])
+          @attributes = attributes
+          @lines = lines
           @delimiter_char = "_"
-          @delimiter_len = options.fetch(:delimiter_len, 4)
+          @delimiter_len = delimiter_len
         end
 
         def to_adoc

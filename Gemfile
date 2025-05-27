@@ -37,3 +37,7 @@ end
 # For Ruby 3.5
 gem "logger"
 gem "reline"
+
+# Local development gemfile
+local_gemfile = File.expand_path("Gemfile.local", __dir__)
+load local_gemfile if File.exist?(local_gemfile)

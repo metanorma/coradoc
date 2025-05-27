@@ -8,40 +8,50 @@ describe Coradoc::Input::Html do
   let(:result)   { described_class.convert(input) }
 
   context "with unknown_tags = :pass_through" do
-    before { described_class.config.unknown_tags = :pass_through }
+    before do
+      described_class.config.unknown_tags = :pass_through
+    end
 
     it { expect(result).to include "<bar>Foo with bar</bar>" }
   end
 
   context "with unknown_tags = :raise" do
-    before { described_class.config.unknown_tags = :raise }
+    before do
+      described_class.config.unknown_tags = :raise
+    end
 
     it {
-      expect do
+      expect {
         result
-      end.to raise_error(Coradoc::Input::Html::UnknownTagError)
+      }.to raise_error(Coradoc::Input::Html::UnknownTagError)
     }
   end
 
   context "with unknown_tags = :drop" do
-    before { described_class.config.unknown_tags = :drop }
+    before do
+      described_class.config.unknown_tags = :drop
+    end
 
     it { expect(result).to eq "" }
   end
 
   context "with unknown_tags = :bypass" do
-    before { described_class.config.unknown_tags = :bypass }
+    before do
+      described_class.config.unknown_tags = :bypass
+    end
 
     it { expect(result).to eq "Foo with bar\n\n" }
   end
 
   context "with unknown_tags = :something_wrong" do
-    before { described_class.config.unknown_tags = :something_wrong }
+    before do
+      described_class.config.unknown_tags = :something_wrong
+    end
 
     it {
-      expect do
+      expect {
         result
-      end.to raise_error(Coradoc::Input::Html::InvalidConfigurationError)
+      }.to raise_error(Coradoc::Input::Html::InvalidConfigurationError)
     }
   end
 end

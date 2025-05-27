@@ -32,8 +32,11 @@ OptionParser.new do |opts|
     input_options[:external_images] = true
   end
 
-  opts.on("-u", "--unknown_tags [pass_through, drop, bypass, raise]",
-          "Unknown tag handling (default: pass_through)") do |v|
+  opts.on(
+    "-u",
+    "--unknown_tags [pass_through, drop, bypass, raise]",
+    "Unknown tag handling (default: pass_through)",
+  ) do |v|
     input_options[:unknown_tags] = v
   end
 

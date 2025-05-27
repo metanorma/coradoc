@@ -42,6 +42,8 @@ module Coradoc
 
         def block_content(n_deep = 3)
           c = block_image |
+            audio |
+            video |
             list |
             text_line |
             empty_line.as(:line_break)
@@ -51,11 +53,7 @@ module Coradoc
 
         def block_delimiter
           line_start? >>
-            ((str("*") |
-              str("=") |
-              str("_") |
-              str("+") |
-              str("-")).repeat(4) |
+            ((str("*") | str("=") | str("_") | str("+") | str("-")).repeat(4) |
               str("-").repeat(2, 2)) >>
             newline
         end
@@ -72,9 +70,9 @@ module Coradoc
 
         def block_style(n_deep = 3, delimiter = "*", repeater = 4, type = nil)
           current_delimiter = str(delimiter).repeat(repeater).capture(:delimit)
-          closing_delimiter = dynamic do |_s, c|
+          closing_delimiter = dynamic { |_s, c|
             str(c.captures[:delimit].to_s.strip)
-          end
+          }
 
           element_attributes >>
             (line_start? >> attribute_list >> newline).maybe >>

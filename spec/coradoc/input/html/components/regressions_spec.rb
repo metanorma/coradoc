@@ -22,22 +22,28 @@ describe Coradoc::Input::Html do
 
   # https://github.com/metanorma/reverse_adoc/issues/93
   t "issue with disappearing spaces inside i elements",
-    "test<i> </i>test<i>test</i>", "test test__test__"
+    "test<i> </i>test<i>test</i>",
+    "test test__test__"
 
   t "issue with disappearing spaces inside em elements",
-    "test<em> </em>test<em>test</em>", "test test__test__"
+    "test<em> </em>test<em>test</em>",
+    "test test__test__"
 
   t "issue with disappearing spaces inside b elements",
-    "test<b> </b>test<b>test</b>", "test test**test**"
+    "test<b> </b>test<b>test</b>",
+    "test test**test**"
 
   t "issue with disappearing spaces inside strong elements",
-    "test<strong> </strong>test<strong>test</strong>", "test test**test**"
+    "test<strong> </strong>test<strong>test</strong>",
+    "test test**test**"
 
   t "issue with disappearing spaces inside code elements",
-    "test<code> </code>test<code>test</code>", "test test``test``"
+    "test<code> </code>test<code>test</code>",
+    "test test``test``"
 
   t "issue with disappearing spaces inside mark elements",
-    "test<mark> </mark>test<mark>test</mark>", "test test##test##"
+    "test<mark> </mark>test<mark>test</mark>",
+    "test test##test##"
 
   # https://github.com/metanorma/coradoc/issues/43
   t "<code>standalone</code> monospace", "`standalone` monospace"

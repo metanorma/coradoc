@@ -50,9 +50,9 @@ module Coradoc
           end
           result = +""
           string.each_line do |line|
-            result << preserve_border_whitespaces(line) do
+            result << preserve_border_whitespaces(line) {
               line.strip.gsub(/[ \t]{2,}/, " ")
-            end
+            }
           end
           result
         end
@@ -74,12 +74,14 @@ module Coradoc
           #   end
           # end
 
-          result = string.gsub(/\s?~{2,}.*?~{2,}\s?/) do |match|
-            preserve_border_whitespaces(match,
-                                        default_border: Coradoc::Input::Html.config.tag_border) do
+          result = string.gsub(/\s?~{2,}.*?~{2,}\s?/) { |match|
+            preserve_border_whitespaces(
+              match,
+              default_border: Coradoc::Input::Html.config.tag_border,
+            ) do
               match.strip.sub("~~ ", "~~").sub(" ~~", "~~")
             end
-          end
+          }
 
           result.gsub(/\s?\[.*?\]\s?/) do |match|
             preserve_border_whitespaces(match) do
@@ -110,8 +112,10 @@ module Coradoc
         def clean_headings(string)
           string.gsub!(%r{<h([1-9])[^>]*></h\1>}, " ")
           # I don't know why Libre Office is inserting them, but they need to go
-          string.gsub!(%r{<h([1-9])[^>]* style="vertical-align: super;[^>]*>(.+?)</h\1>},
-                       "<sup>\\2</sup>")
+          string.gsub!(
+            %r{<h([1-9])[^>]* style="vertical-align: super;[^>]*>(.+?)</h\1>},
+            "<sup>\\2</sup>",
+          )
           # I absolutely don't know why Libre Office is rendering superscripts as h1
           string
         end

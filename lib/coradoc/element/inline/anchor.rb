@@ -6,7 +6,7 @@ module Coradoc
 
         declare_children :id
 
-        def initialize(id)
+        def initialize(id:)
           @id = id
         end
 

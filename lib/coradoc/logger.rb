@@ -2,7 +2,6 @@
 
 module Coradoc
   class Logger
-
     BADGE = "Coradoc"
 
     COLORS = {
@@ -41,7 +40,8 @@ module Coradoc
       if COLORS.keys.include?(type)
         COLORS[type]
       else
-        raise ArgumentError, "Unknown log type: #{type}. Available types: #{COLORS.keys.join(", ")}"
+        raise ArgumentError,
+              "Unknown log type: #{type}. Available types: #{COLORS.keys.join(', ')}"
       end
     end
 
@@ -61,4 +61,3 @@ module Coradoc
     end
   end
 end
-

@@ -5,9 +5,9 @@ module Coradoc
 
       declare_children :positional, :named
 
-      def initialize(*positional, **named)
-        @positional = positional || []
-        @named = named || {}
+      def initialize(positional: [], named: {})
+        @positional = positional
+        @named = named
         @rejected_positional = []
         @rejected_named = []
       end
@@ -16,10 +16,12 @@ module Coradoc
         "AttributeList: " +
           [
             @positional.map(&:inspect).join(", "),
-            @named.map { |k, v| "#{k}: #{v.inspect}" }.join(", "),
+            @named.map { |k, v| "#{k}: #{v.inspect}" }
+              .join(", "),
             (@rejected_positional.empty? or "rejected: #{@rejected_positional.inspect}"),
             (@rejected_positional.empty? or "rejected: #{@rejected_named.inspect}"),
-          ].reject { |i| i == true || i.empty? }.join(", ")
+          ].reject { |i| i == true || i.empty? }
+            .join(", ")
       end
 
       def add_positional(*attr)

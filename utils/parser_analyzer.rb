@@ -31,7 +31,8 @@ class_files.each do |cf|
   $all_defs[cf] = $defs
 end
 
-relevant_names = $all_defs.map { |_fn, defs| defs.map { |d| d[1] } }.flatten
+relevant_names = $all_defs.map { |_fn, defs| defs.map { |d| d[1] } }
+  .flatten
 
 require "graphviz"
 

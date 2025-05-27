@@ -5,12 +5,12 @@ module Coradoc
 
       declare_children :title, :rows, :id
 
-      def initialize(title, rows, options = {})
+      def initialize(title:, rows:, id: nil, attributes: nil)
         @rows = rows
         @title = title
-        @id = options.fetch(:id, nil)
-        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-        @attrs = options.fetch(:attributes, nil)
+        @id = id
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
+        @attrs = attributes
       end
 
       def to_adoc
@@ -27,7 +27,7 @@ module Coradoc
 
         declare_children :columns
 
-        def initialize(columns, header = false)
+        def initialize(columns:, header: false)
           @columns = columns
           @header = header
         end
@@ -42,9 +42,9 @@ module Coradoc
 
         def to_adoc
           delim = asciidoc? ? "\n" : " "
-          content = @columns.map do |col|
+          content = @columns.map { |col|
             Coradoc::Generator.gen_adoc(col)
-          end.join(delim)
+          }.join(delim)
           result  = "#{content}\n"
           result << "\n" if asciidoc?
           table_header_row? ? result + underline_for : result
@@ -60,14 +60,20 @@ module Coradoc
 
         declare_children :content, :anchor, :id
 
-        def initialize(options = {})
+        def initialize(
+          id: nil,
+          colrowattr: "",
+          alignattr: "",
+          style: "",
+          content: ""
+        )
           super()
-          @id = options.fetch(:id, nil)
-          @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-          @colrowattr = options.fetch(:colrowattr, "")
-          @alignattr = options.fetch(:alignattr, "")
-          @style = options.fetch(:style, "")
-          @content = options.fetch(:content, "")
+          @id = id
+          @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
+          @colrowattr = colrowattr
+          @alignattr = alignattr
+          @style = style
+          @content = content
         end
 
         def asciidoc?

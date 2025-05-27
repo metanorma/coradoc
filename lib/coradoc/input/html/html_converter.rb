@@ -68,8 +68,10 @@ module Coradoc
             end
 
             coradoc = track_time "Converting input document tree to Coradoc tree" do
-              Converters.process_coradoc(root,
-                                         plugin_instances: plugin_instances)
+              Converters.process_coradoc(
+                root,
+                plugin_instances: plugin_instances,
+              )
             end
 
             coradoc = track_time "Post-process Coradoc tree" do
@@ -148,8 +150,7 @@ module Coradoc
         @track_time_indentation = 0
         def self.track_time(task)
           if Input::Html.config.track_time
-            warn ("  " * @track_time_indentation) +
-              "* #{task} is starting..."
+            warn ("  " * @track_time_indentation) + "* #{task} is starting..."
             @track_time_indentation += 1
             t0 = Time.now
             ret = yield

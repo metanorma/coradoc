@@ -4,9 +4,9 @@ module Coradoc
       class Block < Base
         attr_accessor :text
 
-        def initialize(text, options = {})
+        def initialize(text:, line_break: "\n")
           @text = text
-          @line_break = options.fetch(:line_break, "\n")
+          @line_break = line_break
         end
 
         def to_adoc
