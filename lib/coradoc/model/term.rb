@@ -9,6 +9,7 @@ module Coradoc
       attribute :line_break, :string, default: -> { "" }
 
       asciidoc do
+        map_model to: Coradoc::Element::Term
         map_attribute "term", to: :term
         map_attribute "type", to: :type
         map_attribute "lang", to: :lang

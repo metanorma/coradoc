@@ -12,6 +12,7 @@ module Coradoc
         attribute :right_constrain, :boolean, default: -> { false }
 
         asciidoc do
+          map_model to: Coradoc::Element::Inline::Link
           map_attribute "path", to: :path
           map_attribute "title", to: :title
           map_attribute "name", to: :name

@@ -29,6 +29,7 @@ module Coradoc
       attribute :nested, Coradoc::Model::List::Nestable
 
       asciidoc do
+        map_model to: Coradoc::Element::ListItem
         map_content to: :content
         map_attribute "id", to: :id
         map_attribute "anchor", to: :anchor

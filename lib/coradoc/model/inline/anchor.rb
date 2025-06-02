@@ -7,6 +7,7 @@ module Coradoc
         attribute :id, :string
 
         asciidoc do
+          map_model to: Coradoc::Element::Inline::Anchor
           map_attribute "id", to: :id
         end
 

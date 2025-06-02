@@ -21,6 +21,7 @@ module Coradoc
         attribute :colons, :string
 
         asciidoc do
+          map_model to: Coradoc::Element::Image::Core
           map_attribute "id", to: :id
           map_attribute "title", to: :title
           map_attribute "src", to: :src

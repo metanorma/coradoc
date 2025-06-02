@@ -10,6 +10,7 @@ module Coradoc
       attribute :terms, Coradoc::Model::Term, collection: true
 
       asciidoc do
+        map_model to: Coradoc::Element::ListItemDefinition
         map_attribute "id", to: :id
         map_attribute "anchor", to: :anchor
         map_attribute "contents", to: :contents

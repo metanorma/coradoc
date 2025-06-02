@@ -12,6 +12,10 @@ module Coradoc
           @mappings = []
         end
 
+        def map_model(to:)
+          add_mapping("__element", to, field_type: :parsed_element)
+        end
+
         def map_content(to:)
           add_mapping("__content", to, field_type: :content)
         end

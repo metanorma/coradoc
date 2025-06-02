@@ -6,12 +6,22 @@ module Coradoc
       include Coradoc::Model::Anchorable
 
       attribute :id, :string
-      attribute :content, :string
+      # TODO: polymorphic with :string and TextElement?
+      attribute :content,
+                Lutaml::Model::Serializable,
+                collection: true,
+                initialize_empty: true,
+                polymorphic: [
+                  # :string,
+                  Lutaml::Model::Type::String,
+                  Coradoc::Model::TextElement,
+                ]
       attribute :title, :string
       attribute :attributes, AttributeList, default: -> { AttributeList.new }
       attribute :tdsinglepara, :boolean, default: -> { false }
 
       asciidoc do
+        map_model to: Coradoc::Element::Paragraph
         map_content to: :content
         map_attribute "id", to: :id
         map_attribute "title", to: :title

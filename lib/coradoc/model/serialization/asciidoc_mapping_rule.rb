@@ -4,7 +4,7 @@ module Coradoc
   module Model
     module Serialization
       class AsciidocMappingRule < Lutaml::Model::MappingRule
-        # Can be :content, or :attributes
+        # Can be :parsed_element, :content, or :attributes
         attr_reader :field_type
 
         def initialize(
@@ -15,6 +15,10 @@ module Coradoc
         )
           super(name, to:, render_nil:)
           @field_type = field_type
+        end
+
+        def model_map?
+          field_type == :parsed_element
         end
 
         def content?

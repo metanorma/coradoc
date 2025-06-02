@@ -1,7 +1,7 @@
 module Coradoc
   module Element
     class Paragraph < Base
-      attr_accessor :content, :anchor, :tdsinglepara
+      attr_accessor :content, :anchor, :tdsinglepara, :title, :id, :attributes
 
       declare_children :content, :anchor
 

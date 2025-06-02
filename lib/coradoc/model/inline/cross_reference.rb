@@ -8,6 +8,7 @@ module Coradoc
         attribute :args, :string, collection: true
 
         asciidoc do
+          map_model to: Coradoc::Element::Inline::CrossReference
           map_attribute "href", to: :href
           map_attribute "args", to: :args
         end

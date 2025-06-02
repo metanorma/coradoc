@@ -8,6 +8,7 @@ module Coradoc
       attribute :revision, Coradoc::Model::Revision
 
       asciidoc do
+        map_model to: Coradoc::Element::Header
         map_attribute "title", to: :title
         map_attribute "author", to: :author
         map_attribute "revision", to: :revision

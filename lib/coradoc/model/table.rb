@@ -15,6 +15,7 @@ module Coradoc
       attribute :attrs, AttributeList
 
       asciidoc do
+        map_model to: Coradoc::Element::Table
         map_content to: :content
         map_attribute "title", to: :title
         map_attribute "rows", to: :rows

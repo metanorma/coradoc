@@ -8,6 +8,7 @@ module Coradoc
       attribute :remark, :string
 
       asciidoc do
+        map_model to: Coradoc::Element::Revision
         map_attribute "number", to: :number
         map_attribute "date", to: :date
         map_attribute "remark", to: :remark

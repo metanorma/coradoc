@@ -8,6 +8,7 @@ module Coradoc
       attribute :line_break, :string, default: -> { "\n" }
 
       asciidoc do
+        map_model to: Coradoc::Element::Include
         map_attribute "path", to: :path
         map_attribute "attributes", to: :attributes
       end

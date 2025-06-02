@@ -8,6 +8,7 @@ module Coradoc
         attribute :unconstrained, :boolean, default: -> { false }
 
         asciidoc do
+          map_model to: Coradoc::Element::Inline::Highlight
           map_content to: :content
         end
 

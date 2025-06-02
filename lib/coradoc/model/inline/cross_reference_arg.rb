@@ -9,6 +9,7 @@ module Coradoc
         attribute :value, :string
 
         asciidoc do
+          map_model to: Coradoc::Element::Inline::CrossReferenceArg
           map_attribute "key", to: :key
           map_attribute "delimiter", to: :delimiter
           map_attribute "value", to: :value

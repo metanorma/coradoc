@@ -7,6 +7,7 @@ module Coradoc
         attribute :content, :string
 
         asciidoc do
+          map_model to: Coradoc::Element::Inline::Quotation
           map_content to: :content
         end
 

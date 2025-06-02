@@ -7,6 +7,7 @@ module Coradoc
       attribute :line_break, :string, default: -> { "\n" }
 
       asciidoc do
+        map_model to: Coradoc::Element::Comment::Block
         map_attribute "text", to: :text
       end
 

@@ -15,6 +15,7 @@ module Coradoc
       alias :text :content
 
       asciidoc do
+        map_model to: Coradoc::Element::Title
         map_content to: :content
         map_attribute "id", to: :id
         map_attribute "level", to: :level_int

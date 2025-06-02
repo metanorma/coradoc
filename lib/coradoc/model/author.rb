@@ -9,6 +9,7 @@ module Coradoc
       attribute :middle_name, :string
 
       asciidoc do
+        map_model to: Coradoc::Element::Author
         map_attribute "first_name", to: :first_name
         map_attribute "last_name", to: :last_name
         map_attribute "email", to: :email

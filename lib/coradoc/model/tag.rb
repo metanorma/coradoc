@@ -9,6 +9,7 @@ module Coradoc
       attribute :line_break, :string, default: -> { "\n" }
 
       asciidoc do
+        map_model to: Coradoc::Element::Tag
         map_attribute "name", to: :name
         map_attribute "prefix", to: :prefix
         map_attribute "attrs", to: :attrs

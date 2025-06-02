@@ -10,6 +10,7 @@ module Coradoc
       attribute :entries, BibliographyEntry, collection: true
 
       asciidoc do
+        map_model to: Coradoc::Element::Bibliography
         map_attribute "id", to: :id
         map_attribute "title", to: :title
         map_attribute "entries", to: :entries

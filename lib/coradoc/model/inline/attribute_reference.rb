@@ -6,6 +6,11 @@ module Coradoc
       class AttributeReference < Base
         attribute :name, :string
 
+        asciidoc do
+          map_model to: Coradoc::Element::Inline::AttributeReference
+          map_attribute "name", to: :name
+        end
+
         def to_asciidoc
           "{#{name}}"
         end

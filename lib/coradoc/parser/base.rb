@@ -10,21 +10,22 @@ module Coradoc
       root :document
       rule(:document) do
         (
-          admonition_line |
-          bib_entry |
-          block_image |
-          audio |
-          video |
-          tag |
-          comment_block |
-          comment_line |
-          block |
+          # admonition_line |
+          # audio |
+          # bib_entry |
+          # block |
+          # block_image |
+          # comment_block |
+          # comment_line |
+          # include_directive |
+          # list |
+          # paragraph |
+          # table.as(:table) |
+          # tag |
+          # video |
+          contents |
           section |
-          include_directive |
           document_attributes |
-          list |
-          table.as(:table) |
-          paragraph |
           header.as(:header) |
           empty_line.as(:line_break) |
           any.as(:unparsed)

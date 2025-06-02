@@ -7,6 +7,7 @@ module Coradoc
         attribute :text, :string
 
         asciidoc do
+          map_model to: Coradoc::Element::Inline::Small
           map_attribute "text", to: :text
         end
 

@@ -19,13 +19,29 @@ module Coradoc
                 default: -> {
                   Coradoc::Model::Header.new(title: "")
                 }
+
       attribute :sections,
-                Coradoc::Model::Section,
+                Coradoc::Model::Base,
                 collection: true,
-                initialize_empty: true
+                initialize_empty: true,
+                polymorphic: [
+                  Coradoc::Model::Admonition,
+                  Coradoc::Model::Audio,
+                  Coradoc::Model::BibliographyEntry,
+                  Coradoc::Model::Block::Core,
+                  Coradoc::Model::Image::BlockImage,
+                  Coradoc::Model::CommentBlock,
+                  Coradoc::Model::CommentLine,
+                  Coradoc::Model::Include,
+                  Coradoc::Model::List::Core,
+                  Coradoc::Model::Paragraph,
+                  Coradoc::Model::Table,
+                  Coradoc::Model::Tag,
+                  Coradoc::Model::Video,
+                ]
 
       asciidoc do
-        map_content to: :content
+        map_model to: Coradoc::Document
         map_attribute :document_attributes, to: :document_attributes
         map_attribute :header, to: :header
         map_attribute :sections, to: :sections

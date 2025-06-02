@@ -20,6 +20,7 @@ module Coradoc
                 initialize_empty: true
 
       asciidoc do
+        map_model to: Coradoc::Element::AttributeList
         map_attribute "positional", to: :positional
         map_attribute "named", to: :named
         map_attribute "rejected_positional", to: :rejected_positional

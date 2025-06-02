@@ -6,6 +6,7 @@ module Coradoc
       attribute :data, Attribute, collection: true
 
       asciidoc do
+        map_model to: Coradoc::Element::DocumentAttributes
         map_attribute "data", to: :data
       end
 

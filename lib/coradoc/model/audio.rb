@@ -12,6 +12,7 @@ module Coradoc
       attribute :line_break, :string, default: -> { "\n" }
 
       asciidoc do
+        map_model to: Coradoc::Element::Audio
         map_attribute "id", to: :id
         map_attribute "title", to: :title
         map_attribute "src", to: :src

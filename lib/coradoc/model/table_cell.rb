@@ -12,6 +12,7 @@ module Coradoc
       attribute :style, :string, default: -> { "" }
 
       asciidoc do
+        map_model to: Coradoc::Element::Table::Cell
         map_content to: :content
         map_attribute "id", to: :id
         map_attribute "anchor", to: :anchor

@@ -8,6 +8,7 @@ module Coradoc
       attribute :line_break, :string, default: -> { "" }
 
       asciidoc do
+        map_model to: Coradoc::Element::Admonition
         map_content to: :content
         map_attribute "type", to: :type
       end

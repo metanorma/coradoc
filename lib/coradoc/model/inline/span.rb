@@ -9,6 +9,13 @@ module Coradoc
         attribute :attributes, AttributeList
         attribute :unconstrained, :boolean, default: -> { false }
 
+        asciidoc do
+          map_model to: Coradoc::Element::Inline::Span
+          map_attribute "text", to: :text
+          map_attribute "role", to: :role
+          map_attribute "attributes", to: :attributes
+        end
+
         def to_asciidoc
           if attributes
             attr_string = attributes.to_asciidoc

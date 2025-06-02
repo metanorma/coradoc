@@ -8,6 +8,7 @@ module Coradoc
         attribute :id, :string
 
         asciidoc do
+          map_model to: Coradoc::Element::Inline::Footnote
           map_attribute "id", to: :id
           map_attribute "text", to: :text
         end

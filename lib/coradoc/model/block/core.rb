@@ -18,6 +18,19 @@ module Coradoc
 
         # TODO: and many methods from Coradoc::Element::Block::Core
 
+        asciidoc do
+          map_model to: Coradoc::Element::Block::Core
+          map_attribute "id", to: :id
+          map_attribute "title", to: :title
+          map_attribute "attributes", to: :attributes
+          map_attribute "lines", to: :lines
+          map_attribute "delimiter", to: :delimiter
+          map_attribute "delimiter_char", to: :delimiter_char
+          map_attribute "delimiter_len", to: :delimiter_len
+          map_attribute "lang", to: :lang
+          map_attribute "type_str", to: :type_str
+        end
+
         def gen_title
           t = Coradoc::Generator.gen_adoc(title)
           return "" if t.nil? || t.empty?

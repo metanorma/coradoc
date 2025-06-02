@@ -7,6 +7,7 @@ module Coradoc
       attribute :header, :boolean, default: -> { false }
 
       asciidoc do
+        map_model to: Coradoc::Element::Table::Row
         map_attribute "columns", to: :columns
       end
 

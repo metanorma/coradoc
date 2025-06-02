@@ -23,6 +23,7 @@ module Coradoc
       # attribute :anchor, Coradoc::Model::Inline::Anchor
 
       asciidoc do
+        map_model to: Coradoc::Element::Section
         map_content to: :content
         map_attribute "id", to: :id
         map_attribute "title", to: :title

@@ -7,6 +7,7 @@ module Coradoc
       attribute :value, :string, collection: true, initialize_empty: true
 
       asciidoc do
+        # map_model to:  # Not needed.  Should be all handled by AttributeList.
         map_attribute "name", to: :name
         map_attribute "value", to: :value
       end

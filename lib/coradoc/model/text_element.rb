@@ -9,6 +9,7 @@ module Coradoc
       attribute :html_cleanup, :boolean, default: -> { false }
 
       asciidoc do
+        map_model to: Coradoc::Element::TextElement
         map_content to: :content
         map_attribute "id", to: :id
         map_attribute "line_break", to: :line_break

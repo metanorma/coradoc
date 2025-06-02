@@ -9,6 +9,7 @@ module Coradoc
       attribute :line_break, :string, default: -> { "" }
 
       asciidoc do
+        map_model to: Coradoc::Element::BibliographyEntry
         map_attribute "anchor_name", to: :anchor_name
         map_attribute "document_id", to: :document_id
         map_attribute "ref_text", to: :ref_text
