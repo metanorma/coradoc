@@ -2,7 +2,7 @@ module Coradoc
   module Element
     module List
       class Unordered < Core
-        def initialize(items, options = {})
+        def initialize(items:, id: nil, ol_count: nil, attrs: AttributeList.new)
           super
         end
 

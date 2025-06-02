@@ -6,7 +6,7 @@ module Coradoc
 
         declare_children :href, :args
 
-        def initialize(href, args = nil)
+        def initialize(href:, args: nil)
           @href = href
           @args = args
           @args = nil if @args == ""
@@ -15,9 +15,9 @@ module Coradoc
 
         def to_adoc
           if @args
-            args = @args.map do |a|
+            args = @args.map { |a|
               Coradoc::Generator.gen_adoc(a)
-            end.join(",")
+            }.join(",")
             if args.empty?
               return "<<#{@href}>>"
             else
@@ -31,7 +31,7 @@ module Coradoc
       class CrossReferenceArg < Base
         attr_accessor :key, :delimiter, :value
 
-        def initialize(key, delimiter, value)
+        def initialize(key:, delimiter:, value:)
           @key = key
           @delimiter = delimiter
           @value = value

@@ -1,17 +1,23 @@
 module Coradoc
   module Element
     class Paragraph < Base
-      attr_accessor :content, :anchor, :tdsinglepara
+      attr_accessor :content, :anchor, :tdsinglepara, :title, :id, :attributes
 
       declare_children :content, :anchor
 
-      def initialize(content, options = {})
+      def initialize(
+        content:,
+        id: nil,
+        title: nil,
+        attributes: nil,
+        tdsinglepara: nil
+      )
         @content = content
-        @id = options.fetch(:id, nil)
-        @anchor = Inline::Anchor.new(@id) if @id
-        @title = options.fetch(:title, nil)
-        @attributes = options.fetch(:attributes, nil)
-        @tdsinglepara = options.fetch(:tdsinglepara, nil)
+        @id = id
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
+        @title = title
+        @attributes = attributes
+        @tdsinglepara = tdsinglepara
       end
 
       def id

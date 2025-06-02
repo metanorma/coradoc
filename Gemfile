@@ -37,3 +37,15 @@ end
 # For Ruby 3.5
 gem "logger"
 gem "reline"
+
+# Local development gemfile
+begin
+  local_gemfile = File.expand_path("Gemfile.local", __dir__)
+  if File.exist?(local_gemfile)
+    warn "Gemfile: Loading local Gemfile at: #{local_gemfile}"
+    eval_gemfile(local_gemfile)
+  end
+rescue StandardError => e
+  warn "Error loading local Gemfile: #{e.message}"
+end
+

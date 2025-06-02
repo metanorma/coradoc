@@ -1,4 +1,4 @@
-require "spec_helper"
+# frozen_string_literal: true
 
 describe Coradoc::Input::Html::Converters::Pre do
   let(:converter) { described_class.new }

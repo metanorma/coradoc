@@ -6,7 +6,7 @@ module Coradoc
 
         declare_children :content
 
-        def initialize(content)
+        def initialize(content:)
           @content = content
         end
 

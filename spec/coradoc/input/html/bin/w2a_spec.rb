@@ -22,15 +22,17 @@ describe "exe/w2a" do
       end
 
       it "Does not raise error" do
-        expect { convert }.not_to raise_error
+        expect { convert }
+          .not_to raise_error
       end
 
       it "extracts images from source html" do
         expect { convert }
-          .to(change do
+          .to(change {
                 !Dir["#{images_folder}/*gif"]
-                  .map { |entry| File.basename(entry) }.empty?
-              end.from(false).to(true))
+                  .map { |entry| File.basename(entry) }
+.empty?
+              }.from(false).to(true))
       end
     end
   end

@@ -8,11 +8,11 @@ module Coradoc
 
         declare_children :path, :title, :name
 
-        def initialize(options = {})
-          @path = options.fetch(:path, nil)
-          @title = options.fetch(:title, nil)
-          @name = options.fetch(:name, nil)
-          @right_constrain = options.fetch(:right_constrain, false)
+        def initialize(path: nil, title: nil, name: nil, right_constrain: false)
+          @path = path
+          @title = title
+          @name = name
+          @right_constrain = right_constrain
         end
 
         def to_adoc

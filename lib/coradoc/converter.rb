@@ -8,10 +8,7 @@ module Coradoc
       @input = input || $stdin
       @output = output || $stdout
 
-      @config = {
-        input_options: {},
-        output_options: {},
-      }.merge(config)
+      @config = { input_options: {}, output_options: {} }.merge(config)
 
       yield if block_given?
     end

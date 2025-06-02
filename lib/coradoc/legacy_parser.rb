@@ -6,20 +6,44 @@ module Coradoc
     root :document
 
     # Basic Elements
-    rule(:space) { match('\s') }
-    rule(:space?) { spaces.maybe }
-    rule(:spaces) { space.repeat(1) }
-    rule(:empty_line) { match("^\n") }
+    rule(:space) do
+      match('\s')
+    end
+    rule(:space?) do
+      spaces.maybe
+    end
+    rule(:spaces) do
+      space.repeat(1)
+    end
+    rule(:empty_line) do
+      match("^\n")
+    end
 
-    rule(:endline) { newline | any.absent? }
-    rule(:newline) { match["\r\n"].repeat(1) }
-    rule(:line_ending) { match("[\n]") }
+    rule(:endline) do
+      newline | any.absent?
+    end
+    rule(:newline) do
+      match["\r\n"].repeat(1)
+    end
+    rule(:line_ending) do
+      match("[\n]")
+    end
 
-    rule(:inline_element) { text }
-    rule(:text) { match("[^\n]").repeat(1) }
-    rule(:digits) { match("[0-9]").repeat(1) }
-    rule(:word) { match("[a-zA-Z0-9_-]").repeat(1) }
-    rule(:special_character) { match("^[*_:=-]") | str("[#") }
+    rule(:inline_element) do
+      text
+    end
+    rule(:text) do
+      match("[^\n]").repeat(1)
+    end
+    rule(:digits) do
+      match("[0-9]").repeat(1)
+    end
+    rule(:word) do
+      match("[a-zA-Z0-9_-]").repeat(1)
+    end
+    rule(:special_character) do
+      match("^[*_:=-]") | str("[#")
+    end
 
     rule(:text_line) do
       special_character.absent? >>
@@ -28,8 +52,12 @@ module Coradoc
     end
 
     # Common Helpers
-    rule(:words) { word >> (space? >> word).repeat }
-    rule(:email) { word >> str("@") >> word >> str(".") >> word }
+    rule(:words) do
+      word >> (space? >> word).repeat
+    end
+    rule(:email) do
+      word >> str("@") >> word >> str(".") >> word
+    end
 
     # Document
     rule(:document) do
@@ -69,9 +97,7 @@ module Coradoc
     # Section
     rule(:section) do
       heading.as(:title) >>
-        (list.as(:list) |
-         blocks.as(:blocks) |
-         paragraphs.as(:paragraphs)).maybe
+        (list.as(:list) | blocks.as(:blocks) | paragraphs.as(:paragraphs)).maybe
     end
 
     # Heading
@@ -81,7 +107,9 @@ module Coradoc
         space? >> text.as(:text) >> endline.as(:break)
     end
 
-    rule(:anchor_name) { str("[#") >> keyword.as(:name) >> str("]") }
+    rule(:anchor_name) do
+      str("[#") >> keyword.as(:name) >> str("]")
+    end
 
     # List
     rule(:list) do
@@ -89,29 +117,52 @@ module Coradoc
         definition_list.as(:definition) | ordered_list.as(:ordered)
     end
 
-    rule(:ordered_list) { olist_item.repeat(1) }
-    rule(:unordered_list) { ulist_item.repeat(1) }
-    rule(:definition_list) { dlist_item.repeat(1) }
+    rule(:ordered_list) do
+      olist_item.repeat(1)
+    end
+    rule(:unordered_list) do
+      ulist_item.repeat(1)
+    end
+    rule(:definition_list) do
+      dlist_item.repeat(1)
+    end
 
-    rule(:olist_item) { match(".") >> space >> text_line }
-    rule(:ulist_item) { match("\\*") >> space >> text_line }
+    rule(:olist_item) do
+      match(".") >> space >> text_line
+    end
+    rule(:ulist_item) do
+      match("\\*") >> space >> text_line
+    end
     rule(:dlist_item) do
       str("term") >> space >> digits >> str("::") >> space >> text_line
     end
 
     # Block
-    rule(:block) { simple_block | open_block }
-    rule(:attribute_name) { keyword }
-    rule(:attribute_value) { text | str("") }
-    rule(:keyword) { match("[a-zA-Z0-9_-]").repeat(1) }
-    rule(:blocks) { block.repeat(1) >> (newline >> block.repeat(1)).maybe }
+    rule(:block) do
+      simple_block | open_block
+    end
+    rule(:attribute_name) do
+      keyword
+    end
+    rule(:attribute_value) do
+      text | str("")
+    end
+    rule(:keyword) do
+      match("[a-zA-Z0-9_-]").repeat(1)
+    end
+    rule(:blocks) do
+      block.repeat(1) >> (newline >> block.repeat(1)).maybe
+    end
 
-    rule(:block_title) { str(".") >> text.as(:title) >> line_ending }
-    rule(:block_type) { str("[") >> keyword.as(:type) >> str("]") >> newline }
+    rule(:block_title) do
+      str(".") >> text.as(:title) >> line_ending
+    end
+    rule(:block_type) do
+      str("[") >> keyword.as(:type) >> str("]") >> newline
+    end
 
     rule(:block_attribute) do
-      str("[") >> keyword.as(:key) >>
-        str("=") >> keyword.as(:value) >> str("]")
+      str("[") >> keyword.as(:key) >> str("=") >> keyword.as(:value) >> str("]")
     end
 
     rule(:simple_block) do
@@ -168,7 +219,9 @@ module Coradoc
       paragraph >> (line_ending.repeat(1) >> paragraph).repeat.maybe
     end
 
-    rule(:paragraph) { admonitions.repeat(1) | text_line.repeat(1) }
+    rule(:paragraph) do
+      admonitions.repeat(1) | text_line.repeat(1)
+    end
 
     # Admonition
     rule(:admonition_type) do
@@ -181,8 +234,12 @@ module Coradoc
        str("IMPORTANT")).as(:type)
     end
 
-    rule(:admonitions) { admonition.as(:admonition).repeat(1) }
-    rule(:admonition) { inline_admonition | block_admonition }
+    rule(:admonitions) do
+      admonition.as(:admonition).repeat(1)
+    end
+    rule(:admonition) do
+      inline_admonition | block_admonition
+    end
 
     rule(:inline_admonition) do
       admonition_type >> str(":") >> space? >> text_line >> newline

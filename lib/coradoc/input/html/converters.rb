@@ -20,7 +20,10 @@ module Coradoc
         # Note: process won't run plugin hooks
         def self.process(node, state)
           node = node.to_a if node.is_a? Nokogiri::XML::NodeSet
-          return node.map { |i| process(i, state) }.join if node.is_a? Array
+          if node.is_a? Array
+            return node.map { |i| process(i, state) }
+                .join
+          end
 
           lookup(node.name).convert(node, state)
         end

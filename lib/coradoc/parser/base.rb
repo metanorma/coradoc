@@ -10,30 +10,40 @@ module Coradoc
       root :document
       rule(:document) do
         (
-          admonition_line |
-          bib_entry |
-          block_image |
-          tag |
-          comment_block |
-          comment_line |
-          block |
+          # admonition_line |
+          # audio |
+          # bib_entry |
+          # block |
+          # block_image |
+          # comment_block |
+          # comment_line |
+          # include_directive |
+          # list |
+          # paragraph |
+          # table.as(:table) |
+          # tag |
+          # video |
+          contents |
           section |
-          include_directive |
           document_attributes |
-          list |
-          table.as(:table) |
-          paragraph |
           header.as(:header) |
           empty_line.as(:line_break) |
           any.as(:unparsed)
         ).repeat(1).as(:document)
       end
 
-      def self.parse(filename)
-        content = File.read(filename)
-        new.parse(content)
+      # @param [String] filename The filename of the Asciidoc file to parse
+      # @return [AST] The parsed AST object
+      def self.parse_file(filename)
+        parse(File.read(filename))
+      end
+
+      # @param [String] string The Asciidoc string to parse
+      # @return [AST] The parsed AST object
+      def self.parse(string)
+        new.parse(string)
       rescue Parslet::ParseFailed => e
-        puts e.parse_failure_cause.ascii_tree
+        warn e.parse_failure_cause.ascii_tree
       end
     end
   end

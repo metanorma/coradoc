@@ -28,7 +28,9 @@ end
 
 module Asciidoc
   class AdmonitionTester < Coradoc::Parser::Asciidoc::Base
-    rule(:document) { (admonition_line | any.as(:unparsed)).repeat(1) }
+    rule(:document) do
+      (admonition_line | any.as(:unparsed)).repeat(1)
+    end
     root :document
 
     def self.parse(text)

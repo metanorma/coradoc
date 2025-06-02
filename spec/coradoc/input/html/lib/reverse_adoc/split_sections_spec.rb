@@ -1,9 +1,11 @@
-require "spec_helper"
+# frozen_string_literal: true
 
 describe Coradoc::Input::Html do
   subject { described_class.convert(input, split_sections: level) }
 
-  let(:input) { File.read("spec/coradoc/input/html/assets/sections.html") }
+  let(:input)    { File.read("spec/coradoc/input/html/assets/sections.html") }
+  let(:document) { Nokogiri::HTML(input) }
+  let(:level)    { 1 }
   let(:l1sections) do
     %w[sections/section-01.adoc
        sections/section-02.adoc
@@ -18,8 +20,6 @@ describe Coradoc::Input::Html do
        sections/section-03/section-01.adoc
        sections/section-03.adoc] + [nil]
   end
-  let(:document) { Nokogiri::HTML(input) }
-  let(:level)    { 1 }
 
   context "splitting in level nil" do
     let(:level) { nil }
@@ -35,9 +35,9 @@ describe Coradoc::Input::Html do
     end
 
     it "has a correct index" do
-      section_content = l1sections.compact.map do |i|
+      section_content = l1sections.compact.map { |i|
         "include::#{i}[]\n\n"
-      end.join
+      }.join
       expect(subject[nil]).to eq "[[__brokendiv]]\nPreface\n#{section_content}"
     end
   end

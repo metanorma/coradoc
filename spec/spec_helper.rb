@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "rspec/its"
 require "simplecov"
 require "coradoc"
 
@@ -26,7 +27,9 @@ require "coradoc/input/html/html_converter"
 require "word-to-markdown"
 
 Dir[File.join("spec", "**", "support", "**", "*.rb")]
-  .each { |f| require File.join(".", f) }
+  .each do |f|
+  require File.join(".", f)
+end
 
 def node_for(html)
   Nokogiri::HTML.parse(html).root.child.child

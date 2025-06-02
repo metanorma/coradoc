@@ -18,8 +18,7 @@ module Coradoc
 
         def cross_reference
           (str("<<") >> xref_anchor >>
-          ((str(",") >> xref_arg).repeat(1) |
-            (str(",") >> xref_str).repeat(1)
+          ((str(",") >> xref_arg).repeat(1) | (str(",") >> xref_str).repeat(1)
           ).maybe >>
             str(">>")
           ).as(:cross_reference)

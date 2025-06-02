@@ -4,21 +4,23 @@ module Coradoc
       module Section
         def contents
           (
+            # glossaries.as(:glossaries) |
+            # highlight.as(:highlight) |
+            admonition_line |
+            audio |
             bib_entry |
+            block |
             block_image |
-            tag |
             comment_block |
             comment_line |
             include_directive |
-            admonition_line |
-            block |
-            table.as(:table) |
-            # highlight.as(:highlight) |
-            # glossaries.as(:glossaries) |
-            paragraph |
             list |
+            paragraph |
+            table.as(:table) |
+            tag |
+            video |
             empty_line.as(:line_break)
-          ).repeat(1)
+          )
         end
 
         def section_block(level = 2)
@@ -28,7 +30,7 @@ module Coradoc
             element_id.maybe >>
             (attribute_list >> newline).maybe >>
             section_title(level).as(:title) >>
-            contents.as(:contents).maybe
+            contents.repeat(1).as(:contents).maybe
         end
 
         def section_prefix

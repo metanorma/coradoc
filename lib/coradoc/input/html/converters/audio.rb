@@ -10,8 +10,7 @@ module Coradoc
             attributes = Coradoc::Element::AttributeList.new
             options = options(node)
             attributes.add_named("options", options) if options.any?
-            Coradoc::Element::Audio.new(title, id: id, src: src,
-                                               attributes: attributes)
+            Coradoc::Element::Audio.new(title:, id:, src:, attributes:)
           end
 
           def options(node)

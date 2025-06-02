@@ -5,14 +5,14 @@ module Coradoc
 
       declare_children :id, :content
 
-      def initialize(content, level, options = {})
+      def initialize(content:, level:, id: nil, line_break: "", style: nil)
         @level_int = level
         # @level_int = level.length - 1 if level.is_a?(String)
         @content = content
-        @id = options.fetch(:id, nil)
-        @anchor = @id.nil? ? nil : Inline::Anchor.new(@id)
-        @line_break = options.fetch(:line_break, "")
-        @style = options.fetch(:style, nil)
+        @id = id
+        @anchor = @id.nil? ? nil : Inline::Anchor.new(id: @id)
+        @line_break = line_break
+        @style = style
       end
 
       def level

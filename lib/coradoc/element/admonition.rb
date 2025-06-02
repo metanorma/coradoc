@@ -3,10 +3,10 @@ module Coradoc
     class Admonition < Base
       attr_accessor :type, :content, :line_break
 
-      def initialize(content, type, options = {})
+      def initialize(content:, type:, line_break: "")
         @content = content
         @type = type.downcase.to_sym
-        @line_break = options.fetch(:line_break, "")
+        @line_break = line_break
       end
 
       def to_adoc

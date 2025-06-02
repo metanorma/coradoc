@@ -11,15 +11,11 @@ module Coradoc
         end
 
         def named_value_single_quote
-          str("'") >>
-            match("[^']").repeat(1) >>
-            str("'")
+          str("'") >> match("[^']").repeat(1) >> str("'")
         end
 
         def named_value_double_quote
-          str('"') >>
-            match('[^"]').repeat(1) >>
-            str('"')
+          str('"') >> match('[^"]').repeat(1) >> str('"')
         end
 
         def named_value
@@ -42,8 +38,7 @@ module Coradoc
         end
 
         def positional_attribute
-          (match['a-zA-Z0-9_\-%.'].repeat(1) >>
-            str("=").absent?
+          (match['a-zA-Z0-9_\-%.'].repeat(1) >> str("=").absent?
           ).as(:positional)
         end
 

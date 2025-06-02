@@ -320,7 +320,9 @@ end
 
 module Asciidoc
   class ContentTester < Coradoc::Parser::Asciidoc::Base
-    rule(:document) { (contents | any.as(:unparsed)).repeat(1) }
+    rule(:document) do
+      (contents | any.as(:unparsed)).repeat(1)
+    end
     root :document
 
     def self.parse(text)

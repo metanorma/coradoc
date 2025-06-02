@@ -1,0 +1,35 @@
+# frozen_string_literal: true
+
+module Coradoc
+  module Model
+    module Inline
+      class Italic < Base
+        attribute :content, :string
+        attribute :unconstrained, :boolean, default: -> { true }
+
+        asciidoc do
+          map_model to: Coradoc::Element::Inline::Italic
+          map_content to: :content
+        end
+
+        def to_asciidoc
+          _content = Coradoc::Generator.gen_adoc(content)
+          _content = Coradoc::Generator.escape_characters(
+            _content,
+            escape_chars: %w[_],
+          )
+
+          if _content.empty?
+            return ""
+          end
+
+          if unconstrained
+            "__#{_content}__"
+          else
+            "_#{_content}_"
+          end
+        end
+      end
+    end
+  end
+end

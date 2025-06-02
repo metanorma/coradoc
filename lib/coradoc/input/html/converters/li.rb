@@ -6,7 +6,7 @@ module Coradoc
           def to_coradoc(node, state = {})
             id = node["id"]
             content = treat_children_coradoc(node, state)
-            Coradoc::Element::ListItem.new(content, id: id)
+            Coradoc::Element::ListItem.new(content:, id:)
           end
         end
 

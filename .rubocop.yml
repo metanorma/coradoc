@@ -20,11 +20,74 @@ AllCops:
 Layout/HashAlignment:
   EnforcedHashRocketStyle: table
 
+Layout/MultilineMethodArgumentLineBreaks:
+  AllowMultilineFinalElement: false
+  Enabled: true
+
+Layout/MultilineMethodParameterLineBreaks:
+  AllowMultilineFinalElement: false
+  Enabled: true
+
+Layout/ParameterAlignment:
+  EnforcedStyle: with_first_parameter
+  Enabled: true
+
+Layout/ArgumentAlignment:
+  EnforcedStyle: with_first_argument
+  Enabled: true
+
+Layout/RedundantLineBreak:
+  Enabled: true
+
+Layout/FirstMethodArgumentLineBreak:
+  AllowMultilineFinalElement: false
+  Enabled: true
+
+Layout/FirstMethodParameterLineBreak:
+  AllowMultilineFinalElement: false
+  Enabled: true
+
+Layout/FirstParameterIndentation:
+  EnforcedStyle: consistent
+  Enabled: true
+
 RSpec/ImplicitSubject:
   EnforcedStyle: require_implicit
+  Enabled: true
 
 Naming/BlockForwarding:
   EnforcedStyle: explicit
+  Enabled: true
 
 Metrics/MethodLength:
   Max: 20
+
+Style/BlockDelimiters:
+  EnforcedStyle: semantic
+  Enabled: true
+
+Lint/UselessAssignment:
+  AutoCorrect: false
+
+Style/DigChain:
+  Enabled: true
+
+Style/RedundantFilterChain:
+  Enabled: true
+
+Style/MethodDefParentheses:
+  EnforcedStyle: require_parentheses
+  Enabled: true
+
+Lint/UnusedMethodArgument:
+  Enabled: true
+  IgnoreEmptyMethods: true
+
+Layout/BlockAlignment:
+  Enabled: true
+
+Layout/SingleLineBlockChain:
+  Enabled: true
+
+Gemspec/RequireMFA:
+  AutoCorrect: false

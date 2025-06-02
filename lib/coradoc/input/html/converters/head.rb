@@ -5,7 +5,7 @@ module Coradoc
         class Head < Base
           def to_coradoc(node, _state = {})
             title = extract_title(node)
-            Coradoc::Element::Header.new(title)
+            Coradoc::Element::Header.new(title:)
           end
 
           def extract_title(node)
