@@ -93,6 +93,17 @@ format (right now: `.adoc`), you can execute:
 Coradoc::Converter.("input.html", "output.adoc")
 ----
 
+[NOTE]
+====
+Coradoc converts all visible content in a `.docx` file, including both the original and modified
+text if the document contains tracked changes. This behavior is due to the way Word stores change
+history in the document XML and may result in duplicated or unexpected content if not addressed beforehand.
+
+To ensure that only the final intended content is converted, open the `.docx` file in Microsoft Word,
+accept all tracked changes via `Review` > `Accept` > `Accept All Changes`, and then save the document
+before running Coradoc.
+====
+
 The converters are chosen based on file extension, but you can select a converter manually like so:
 
 [source,ruby]
