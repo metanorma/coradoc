@@ -90,21 +90,21 @@ format (right now: `.adoc`), you can execute:
 
 [source,ruby]
 ----
-Coradoc::Converter.("input.html", "output.adoc")
+Coradoc::Converter.call("input.html", "output.adoc")
 ----
 
 The converters are chosen based on file extension, but you can select a converter manually like so:
 
 [source,ruby]
 ----
-Coradoc::Converter.("input", "output", input_processor: :html, output_processor: :adoc)
+Coradoc::Converter.call("input", "output", input_processor: :html, output_processor: :adoc)
 ----
 
 Some converters may support additional options, which can likewise be passed as keyword arguments:
 
 [source,ruby]
 ----
-Coradoc::Converter.(
+Coradoc::Converter.call(
   "input.html", "output.adoc",
   input_options: { external_images: true, split_sections: 2 }
 )
