@@ -31,3 +31,13 @@ Dir[File.join("spec", "**", "support", "**", "*.rb")]
 def node_for(html)
   Nokogiri::HTML.parse(html).root.child.child
 end
+
+# Parser::Markdown:
+def markdown_example(name, source, expected_result, opts={})
+  it "parses example #{name}" do
+    expect(subject.parse_with_debug(source)).to eq(expected_result)
+  end if (opts[:strip].nil? ? true : (opts[:strip] != :only))
+  it "parses example #{name} stripped" do
+    expect(subject.parse_with_debug(source.strip)).to eq(expected_result)
+  end if (opts[:strip].nil? ? true : opts[:strip])
+end

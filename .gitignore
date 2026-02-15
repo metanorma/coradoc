@@ -4,6 +4,7 @@
 .DS_Store
 
 /.bundle/
+/vendor/bundle/
 /.yardoc
 /_yardoc/
 /coverage/
