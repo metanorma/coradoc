@@ -37,12 +37,14 @@ module Coradoc
         end
 
         def asciidoc?
-          @columns.any?(&:asciidoc?)
+          @columns.any? { |c| c.respond_to?(:asciidoc?) && c.asciidoc? }
         end
 
         def to_adoc
           delim = asciidoc? ? "\n" : " "
-          content = @columns.map { |col| Coradoc::Generator.gen_adoc(col) }.join(delim)
+          content = @columns.map do |col|
+            Coradoc::Generator.gen_adoc(col)
+          end.join(delim)
           result  = "#{content}\n"
           result << "\n" if asciidoc?
           table_header_row? ? result + underline_for : result

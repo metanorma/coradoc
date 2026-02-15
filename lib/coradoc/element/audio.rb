@@ -16,8 +16,8 @@ module Coradoc
       def to_adoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         title = ".#{@title}\n" unless @title.empty?
-        attrs = @attributes.empty? ? "\[\]" : @attributes.to_adoc
-        [anchor, title, "audio::", @src, attrs].join("")
+        attrs = @attributes.empty? ? "[]" : @attributes.to_adoc
+        [anchor, title, "audio::", @src, attrs].join
       end
 
       extend AttributeList::Matchers
@@ -27,7 +27,7 @@ module Coradoc
         end: Integer,
         options: many("nofollow", "noopener", "inline", "interactive"),
         opts: many("nofollow", "noopener", "inline", "interactive"),
-      }
+      }.freeze
     end
   end
 end

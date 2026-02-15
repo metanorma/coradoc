@@ -3,11 +3,12 @@ module Coradoc
     module List
       class Ordered < Core
         def initialize(items, options = {})
-          super(items, options)
+          super
         end
 
         def prefix
           return @marker if @marker
+
           "." * [@ol_count, 1].max
         end
       end

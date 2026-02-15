@@ -5,7 +5,7 @@ RSpec.describe Coradoc::Element::Paragraph do
     it "initilizes and exposes paragraph attributes" do
       contents = [Coradoc::Element::TextElement.new("Hi there")]
 
-      paragraph = Coradoc::Element::Paragraph.new(contents)
+      paragraph = described_class.new(contents)
 
       expect(paragraph.content).to eq(contents)
     end

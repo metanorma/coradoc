@@ -5,7 +5,16 @@ module Coradoc
 
       def initialize(key, value, _options = {})
         @key = key.to_s
-        @value = build_values(value.to_s)
+        @value = if extensions_value?(value.to_s)
+                   build_values(value.to_s)
+                 else
+                   value.to_s.strip
+                 end
+      end
+
+      def extensions_value?(value)
+        v = value.split(",").map(&:strip)
+        v.intersect? %w[xml html pdf xml adoc rxl]
       end
 
       private

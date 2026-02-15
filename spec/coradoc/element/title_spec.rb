@@ -3,7 +3,7 @@ require "spec_helper"
 RSpec.describe Coradoc::Element::Title do
   describe ".initialization" do
     it "initializes instance and exposes attributes" do
-      title = Coradoc::Element::Title.new(
+      title = described_class.new(
         ast[:title],
         ast[:level_int],
         id: ast[:id],

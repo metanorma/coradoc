@@ -25,7 +25,10 @@ module Coradoc
       end
 
       def to_adoc
-        Coradoc::Generator.gen_adoc(@content) + @line_break
+        str = ""
+        str += "[[#{@id}]] " if @id
+        str += Coradoc::Generator.gen_adoc(@content) + @line_break.to_s
+        str
       end
 
       def treat_text_to_adoc(text)
@@ -39,7 +42,7 @@ module Coradoc
       end
 
       def preserve_nbsp(text)
-        text.gsub(/\u00A0/, "&nbsp;")
+        text.gsub("\u00A0", "&nbsp;")
       end
 
       def escape_links(text)

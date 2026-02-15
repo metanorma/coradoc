@@ -1,10 +1,8 @@
 require "spec_helper"
 
 RSpec.describe "Coradoc::Parser::Asciidoc::List" do
-  describe "parsing problem not fixed yet: " do
-
+  describe "parsing problem not fixed yet:" do
     xit "problem with parsing attribute_list before block in between two lists latter of which has block attached to it" do
-
       content = <<~ADOC
         . Unordered list item 1
 
@@ -19,13 +17,11 @@ RSpec.describe "Coradoc::Parser::Asciidoc::List" do
         block attached
         ====
       ADOC
-      ast = Coradoc::Parser::Base.new.parse(content)
-      # pp ast
-
+      Coradoc::Parser::Base.new.parse(content)
     end
 
-    xit "some problem with nested blocks" do
-      content =<<~TEXT
+    it "some problem with nested blocks" do
+      content = <<~TEXT
         .Source block (open block syntax)
         [source]
         --
@@ -35,7 +31,7 @@ RSpec.describe "Coradoc::Parser::Asciidoc::List" do
         --
       TEXT
       ast = Coradoc::Parser::Base.new.parse(content)
-    # pp ast
+      expect(ast[:document][0][:block][:lines][0][:block][:lines][0][:text]).to eq("Text inside of a block.")
     end
   end
 end

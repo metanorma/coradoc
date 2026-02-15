@@ -26,18 +26,16 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
 
   spec.require_paths = ["lib"]
-  spec.required_ruby_version = ">= 2.7.0"
+  spec.required_ruby_version = ">= 3.1.0"
 
+  spec.add_dependency "base64"
   spec.add_dependency "marcel", "~> 1.0.0"
-  spec.add_dependency "mathml2asciimath"
   spec.add_dependency "nokogiri", "~> 1.13"
   spec.add_dependency "oscal", "~> 0.1.1"
   spec.add_dependency "parslet"
-  spec.add_dependency "premailer", "~> 1.11.0"
-  spec.add_dependency "word-to-markdown"
-  spec.add_dependency "base64"
+  spec.add_dependency "plurimath"
   spec.add_dependency "thor", ">= 1.3.0"
-  spec.add_development_dependency "codeclimate-test-reporter"
+  spec.add_dependency "codeclimate-test-reporter"
   spec.add_development_dependency "pry"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "redcarpet"
@@ -49,4 +47,6 @@ Gem::Specification.new do |spec|
   # spec.add_development_dependency "parallel_tests"
   # spec.add_development_dependency "stackprof"
   # spec.add_runtime_dependency "thor"
+  spec.add_dependency "unitsml"
+  spec.add_dependency "word-to-markdown"
 end

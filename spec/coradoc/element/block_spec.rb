@@ -8,7 +8,7 @@ RSpec.describe Coradoc::Element::Block do
 
       expect(block.title).to eq(title)
       expect(block.lines).to be_empty
-      expect(block.attributes.empty?).to eq(true)
+      expect(block.attributes.empty?).to be(true)
     end
   end
 

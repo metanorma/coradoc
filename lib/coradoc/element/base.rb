@@ -39,18 +39,30 @@ module Coradoc
 
       def self.declare_children(*children)
         @children = (@children || []).dup + children
+        access_children
+      end
+
+      # Make each child available for access
+      def self.access_children
+        @children.each do |child|
+          attr_accessor child
+        end
       end
 
       def self.visit(element, &block)
+        return element if element.nil?
+
         element = yield element, :pre
         element = if element.respond_to? :visit
                     element.visit(&block)
                   elsif element.is_a? Array
                     element.map { |child| visit(child, &block) }.flatten.compact
                   elsif element.is_a? Hash
-                    element.to_h do |k, v|
-                      [visit(k, &block), visit(v, &block)]
+                    result = {}
+                    element.each do |k, v|
+                      result[k] = visit(v, &block)
                     end
+                    result
                   else
                     element
                   end

@@ -7,15 +7,12 @@ require_relative "asciidoc/base"
 module Coradoc
   module Parser
     class Base < Coradoc::Parser::Asciidoc::Base
-
       root :document
       rule(:document) do
         (
           admonition_line |
           bib_entry |
           block_image |
-          term | term2 |
-          citation |
           tag |
           comment_block |
           comment_line |

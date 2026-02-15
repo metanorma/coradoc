@@ -4,7 +4,7 @@ module Coradoc
       if content.is_a?(Array)
         content.map do |elem|
           Coradoc::Generator.gen_adoc(elem)
-        end.join("")
+        end.join
       elsif content.respond_to? :to_adoc
         content.to_adoc
       elsif content.is_a?(String)

@@ -2,7 +2,6 @@ module Coradoc
   module Parser
     module Asciidoc
       module Header
-
         def header
           header_title >>
             author.maybe.as(:author) >>
@@ -10,7 +9,7 @@ module Coradoc
         end
 
         def header_title
-          match("^=") >> str('=').absent? >> space? >> text.as(:title) >> newline
+          match("^=") >> str("=").absent? >> space? >> text.as(:title) >> newline
         end
 
         def author

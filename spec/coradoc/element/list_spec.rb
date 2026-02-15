@@ -9,15 +9,23 @@ RSpec.describe Coradoc::Element::List do
 
       expect(list.items).to eq(items)
     end
+
     it "handles list continuations" do
-      items2 = Coradoc::Element::ListItem.new(["Item 2a", "Item 2b", "Item 2c"])
+      items2 = Coradoc::Element::ListItem.new(
+        [
+          Coradoc::Element::Paragraph.new("Item 2a"),
+          Coradoc::Element::Paragraph.new("Item 2b"),
+          Coradoc::Element::Paragraph.new("Item 2c"),
+        ],
+      )
       item1 = Coradoc::Element::ListItem.new("Item 1")
       items = [item1, items2]
 
       list = Coradoc::Element::List::Unordered.new(items)
 
-      expect(list.to_adoc).to eq("\n\n* Item 1\n* Item 2a\n+\nItem 2b\n+\nItem 2c\n")
+      expect(list.to_adoc).to eq("\n\n* Item 1\n* {empty}\n+\nItem 2a\n+\nItem 2b\n+\nItem 2c\n")
     end
+
     it "handles complex list items" do
       items2 = Coradoc::Element::ListItem.new("Item 2\nsecond line\nthird line")
       item1 = Coradoc::Element::ListItem.new("Item 1")
@@ -27,8 +35,10 @@ RSpec.describe Coradoc::Element::List do
 
       expect(list.to_adoc).to eq("\n\n* Item 1\n* Item 2\nsecond line\nthird line\n")
     end
+
     it "handles definition list" do
-      item = Coradoc::Element::ListItemDefinition.new("Coffee","Black hot drink")
+      item = Coradoc::Element::ListItemDefinition.new("Coffee",
+                                                      "Black hot drink")
       items = [item]
 
       list = Coradoc::Element::List::Definition.new(items)

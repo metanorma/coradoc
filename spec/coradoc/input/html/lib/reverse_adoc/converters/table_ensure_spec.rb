@@ -3,8 +3,8 @@ require "spec_helper"
 # We know better what syntax looks nice :)
 # rubocop:disable all
 
-describe Coradoc::Input::HTML::Converters::Table do
-  let(:converter) { Coradoc::Input::HTML::Converters::Table.new }
+describe Coradoc::Input::Html::Converters::Table do
+  let(:converter) { Coradoc::Input::Html::Converters::Table.new }
 
   let(:c) { '<td colspan="1" rowspan="1"></td>' }
   let(:e) { '<td x-added="x-added"></td>' } # Added cell
@@ -40,23 +40,23 @@ describe Coradoc::Input::HTML::Converters::Table do
   def get_html(doc); doc.at_css("table").to_html; end
 
   shared_examples "should convert input to result" do
-    it "should convert input to result" do
+    it "converts input to result" do
       tree = Nokogiri::HTML(input)
       converter.ensure_row_column_integrity_and_get_column_sizes(tree)
-      result.should be == get_html(tree)
+      expect(result).to be == get_html(tree)
     end
   end
 
   shared_examples "should compute sizes correctly" do
-    it "should compute sizes correctly" do
+    it "computes sizes correctly" do
       tree = Nokogiri::HTML(input)
       my_sizes = converter.ensure_row_column_integrity_and_get_column_sizes(tree)
-      my_sizes.should be == sizes
+      expect(my_sizes).to be == sizes
     end
   end
 
   shared_examples "should not cause error" do
-    it "should not cause error" do
+    it "does not cause error" do
       tree = Nokogiri::HTML(input)
       converter.ensure_row_column_integrity_and_get_column_sizes(tree)
     end

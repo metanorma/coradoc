@@ -1,6 +1,9 @@
-:sandi-metz: footnote:[http://robots.thoughtbot.com/post/50655960596/sandi-metz-rules-for-developers]
+= Coradoc: object-oriented AsciiDoc parser
 
-= Coradoc
+image:https://img.shields.io/gem/v/coradoc.svg["Gem Version", link="https://rubygems.org/gems/coradoc"]
+image:https://github.com/metanorma/coradoc/workflows/rake/badge.svg["Build Status", link="https://github.com/metanorma/coradoc/actions?workflow=rake"]
+image:https://img.shields.io/github/issues-pr-raw/metanorma/coradoc.svg["Pull Requests", link="https://github.com/metanorma/coradoc/pulls"]
+image:https://img.shields.io/github/commits-since/metanorma/coradoc/latest.svg["Commits since latest",link="https://github.com/metanorma/coradoc/releases"]
 
 Coradoc is a modern Parser for Asciidoc document. It defines a grammar for
 AsciiDoc, and then build the Parser for that grammar.
@@ -31,12 +34,7 @@ Or install it yourself as:
 gem install coradoc
 ----
 
-== Development
 
-We are following Sandi Metz's Rules for this gem, you can read the
-description of the rules here.{sandi-metz} All new code should follow these
-rules. If you make changes in a pre-existing file that violates these rules you
-should fix the violations as part of your contribution.
 
 == Setup
 

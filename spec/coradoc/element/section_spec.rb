@@ -7,7 +7,7 @@ RSpec.describe Coradoc::Element::Section do
       text = Coradoc::Element::TextElement.new("Text", line_break: "\n")
       title = Coradoc::Element::Title.new("Title", "==", line_break: "\n")
 
-      section = Coradoc::Element::Section.new(title, id: id, contents: [text])
+      section = described_class.new(title, id: id, contents: [text])
 
       expect(section.id).to eq(id)
       expect(section.title).to eq(title)

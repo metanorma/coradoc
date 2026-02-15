@@ -2,6 +2,6 @@
 
 RSpec.describe Coradoc do
   it "has a version number" do
-    expect(Coradoc::VERSION).not_to be nil
+    expect(Coradoc::VERSION).not_to be_nil
   end
 end

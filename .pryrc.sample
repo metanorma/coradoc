@@ -1,1 +1,1 @@
-doc = Coradoc::Parser.parse("spec/fixtures/sample.adoc")
+load ".irbrc"

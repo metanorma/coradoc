@@ -21,7 +21,7 @@ module Coradoc
         anchor = @anchor.nil? ? "" : "#{@anchor.to_adoc}\n"
         title = ".#{@title}\n" unless @title.empty?
         attrs = @attributes.to_adoc
-        [anchor, title, "video::", @src, attrs].join("")
+        [anchor, title, "video::", @src, attrs].join
       end
 
       extend AttributeList::Matchers
@@ -29,7 +29,7 @@ module Coradoc
         [:alt, String],
         [:width, Integer],
         [:height, Integer],
-      ]
+      ].freeze
 
       VALIDATORS_NAMED = {
         title: String,
@@ -44,7 +44,7 @@ module Coradoc
         playlist: String,
         options: many("autoplay", "loop", "modest",
                       "nocontrols", "nofullscreen", "muted"),
-      }
+      }.freeze
     end
   end
 end

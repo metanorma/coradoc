@@ -2,7 +2,7 @@ require "spec_helper"
 
 RSpec.describe "Coradoc::Asciidoc::Section" do
   describe ".parse" do
-    it "it parses section tile and body" do
+    it "parses section tile and body" do
       section = <<~TEXT
         == Section title
         Section content
@@ -16,7 +16,37 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(paragraph[:lines][0][:text]).to eq("Section content")
     end
 
-    it "it parses section id, title and body" do
+    it "parses section tile and body" do
+      section = <<~TEXT
+        == Section title
+        [[inline_id]] Section content
+      TEXT
+
+      ast = Asciidoc::SectionTester.parse(section)
+      paragraph = ast.first[:section][:contents][0][:paragraph]
+
+      expect(ast.first[:section][:title][:level]).to eq("==")
+      expect(ast.first[:section][:title][:text]).to eq("Section title")
+      expect(paragraph[:lines][0][:text]).to eq("Section content")
+    end
+
+    it "parses section id, title and body" do
+      section = <<~TEXT
+        [[section_id]]
+        == Section title
+        Section content
+      TEXT
+
+      ast = Asciidoc::SectionTester.parse(section)
+      paragraph = ast.first[:section][:contents][0][:paragraph]
+
+      expect(ast.first[:section][:id]).to eq("section_id")
+      expect(ast.first[:section][:title][:level]).to eq("==")
+      expect(ast.first[:section][:title][:text]).to eq("Section title")
+      expect(paragraph[:lines][0][:text]).to eq("Section content")
+    end
+
+    it "parses section id, title and body" do
       section = <<~TEXT
         [#section_id]
         == Section title
@@ -32,7 +62,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(paragraph[:lines][0][:text]).to eq("Section content")
     end
 
-    it "it parses legacy section id" do
+    it "parses legacy section id" do
       section = <<~TEXT
         [[section_id]]
         == Section title
@@ -44,14 +74,13 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       TEXT
 
       ast = Asciidoc::SectionTester.parse(section)
-
       expect(ast.first[:section][:id]).to eq("section_id")
       expect(ast.first[:section][:title][:level]).to eq("==")
       expect(ast.first[:section][:title][:text]).to eq("Section title")
       expect(ast.first[:section][:sections].first[:section][:id]).to eq("section_id_5.1")
     end
 
-    it "it parses nested sub sections" do
+    it "parses nested sub sections" do
       section = <<~TEXT
         == Section title
 
@@ -105,7 +134,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(level_seven[:title][:text]).to eq("Level 7 clause heading")
     end
 
-    it "it parses section with inline id" do
+    it "parses section with inline id" do
       section = <<~TEXT
         [[section_id]]
         == Section title
@@ -118,7 +147,6 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       TEXT
 
       ast = Asciidoc::SectionTester.parse(section)
-
       contents = ast.first[:section][:contents]
 
       expect(ast.first[:section][:id]).to eq("section_id")
@@ -133,7 +161,7 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
       expect(sub_sections[0][:section][:title][:text]).to eq("This is another section id")
     end
 
-    it "it parses section with inline id" do
+    it "parses section with inline id" do
       section = <<~TEXT
         [[section_id]]
         == Section title
@@ -190,7 +218,6 @@ RSpec.describe "Coradoc::Asciidoc::Section" do
 
   module Asciidoc
     class SectionTester < Coradoc::Parser::Asciidoc::Base
-
       rule(:document) { (section | any.as(:unparsed)).repeat(1) }
       root :document
 

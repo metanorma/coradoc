@@ -1,10 +1,9 @@
 require "spec_helper"
 
-describe Coradoc::Input::HTML do
-  let(:input)    { File.read("spec/coradoc/input/html/assets/sections.html") }
-  let(:document) { Nokogiri::HTML(input) }
-  let(:level)    { 1 }
-  subject { Coradoc::Input::HTML.convert(input, split_sections: level) }
+describe Coradoc::Input::Html do
+  subject { described_class.convert(input, split_sections: level) }
+
+  let(:input) { File.read("spec/coradoc/input/html/assets/sections.html") }
   let(:l1sections) do
     %w[sections/section-01.adoc
        sections/section-02.adoc
@@ -19,24 +18,27 @@ describe Coradoc::Input::HTML do
        sections/section-03/section-01.adoc
        sections/section-03.adoc] + [nil]
   end
+  let(:document) { Nokogiri::HTML(input) }
+  let(:level)    { 1 }
 
   context "splitting in level nil" do
     let(:level) { nil }
 
-    it { should_not be_a Hash }
+    it { is_expected.not_to be_a Hash }
   end
 
   shared_examples "can split and generate correct index" do
-    it { should be_a Hash }
-    it "should have a correct keys" do
-      subject.keys.should be == expected_sections
+    it { is_expected.to be_a Hash }
+
+    it "has a correct keys" do
+      expect(subject.keys).to eq expected_sections
     end
 
-    it "should have a correct index" do
+    it "has a correct index" do
       section_content = l1sections.compact.map do |i|
         "include::#{i}[]\n\n"
       end.join
-      subject[nil].should be == "[[__brokendiv]]\nPreface\n#{section_content}"
+      expect(subject[nil]).to eq "[[__brokendiv]]\nPreface\n#{section_content}"
     end
   end
 
@@ -44,27 +46,17 @@ describe Coradoc::Input::HTML do
     let(:level) { 1 }
     let(:expected_sections) { l1sections }
 
-    include_examples "can split and generate correct index"
+    it_behaves_like "can split and generate correct index"
   end
 
   context "splitting in level 2" do
     let(:level) { 2 }
     let(:expected_sections) { l2sections }
 
-    include_examples "can split and generate correct index"
+    it_behaves_like "can split and generate correct index"
 
-    it "should have a correct level2 index" do
-      subject["sections/section-02.adoc"].should be ==
-        "== Section 2\n" +
-          "\n" +
-          "This document describes something.\n" +
-          "\n" +
-          "include::../sections/section-02/section-01.adoc[]\n" +
-          "\n" +
-          "include::../sections/section-02/section-02.adoc[]\n" +
-          "\n" +
-          "include::../sections/section-02/section-03.adoc[]\n" +
-          "\n"
+    it "has a correct level2 index" do
+      expect(subject["sections/section-02.adoc"]).to eq "== Section 2\n\nThis document describes something.\n\ninclude::../sections/section-02/section-01.adoc[]\n\ninclude::../sections/section-02/section-02.adoc[]\n\ninclude::../sections/section-02/section-03.adoc[]\n\n"
     end
   end
 end

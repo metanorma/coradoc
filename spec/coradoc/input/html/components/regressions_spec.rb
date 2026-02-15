@@ -1,20 +1,23 @@
 require "spec_helper"
 
-describe Coradoc::Input::HTML do
+describe Coradoc::Input::Html do
   let(:document) { Nokogiri::HTML(input) }
-  let(:adoc) { Coradoc::Input::HTML.convert(document) }
+  let(:adoc) { described_class.convert(document) }
 
   shared_examples "test" do |name, test, expected_result|
     context name do
       let(:input) { test }
       let(:subject) { adoc }
-      it("is fixed") { subject.chomp.chomp.should be == expected_result }
+
+      it "is fixed" do
+        expect(subject.chomp.chomp).to eq expected_result
+      end
     end
   end
 
   def self.t(name = nil, test, expected_result)
     name ||= expected_result
-    include_examples "test", name, test, expected_result
+    it_behaves_like "test", name, test, expected_result
   end
 
   # https://github.com/metanorma/reverse_adoc/issues/93

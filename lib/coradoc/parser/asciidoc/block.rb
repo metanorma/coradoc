@@ -2,7 +2,6 @@ module Coradoc
   module Parser
     module Asciidoc
       module Block
-
         def block(n_deep = 3)
           (example_block(n_deep) |
           sidebar_block(n_deep) |
@@ -32,20 +31,13 @@ module Coradoc
         end
 
         def block_title
-          str('.') >> space.absent? >> text.as(:title) >> newline
+          str(".") >> space.absent? >> text.as(:title) >> newline
         end
 
         def block_type(type)
-          (str("[") >> str("[").absent? >>
+          (line_start? >> str("[") >> str("[").absent? >>
             str(type).as(:type) >>
-            str("]")) | 
-          (match('^\[') >> keyword.as(:type) >> str("]")) >> newline
-        end
-
-        def block_id
-          line_start? >>
-          (str("[[") >> str('[').absent? >> keyword.as(:id) >> str("]]") |
-            str("[#") >> keyword.as(:id) >> str("]")) >> newline
+            str("]")) >> newline # |
         end
 
         def block_content(n_deep = 3)
@@ -53,42 +45,49 @@ module Coradoc
             list |
             text_line |
             empty_line.as(:line_break)
-          c = c | block(n_deep - 1) if (n_deep > 0)
+          c = c | block(n_deep - 1) if n_deep.positive?
           c.repeat(1)
         end
 
         def block_delimiter
-          line_start? >> 
-          ((str("*") |
-            str("=") |
-            str("_") |
-            str("+") |
-            str("-")).repeat(4) |
-            str("-").repeat(2,2)) >>
+          line_start? >>
+            ((str("*") |
+              str("=") |
+              str("_") |
+              str("+") |
+              str("-")).repeat(4) |
+              str("-").repeat(2, 2)) >>
             newline
         end
 
-        def block_style(n_deep = 3, delimiter = "*", repeater = 4, type = nil)
+        def element_attributes
           block_title.maybe >>
-          block_id.maybe >>
-            (attribute_list >> newline ).maybe >>
-          block_title.maybe >>
+            element_id.maybe >>
+            (attribute_list >> newline).maybe >>
+            block_title.maybe >>
             newline.maybe >>
-            (line_start? >> str('[').present? >> attribute_list >> newline ).maybe >>
-            block_id.maybe >>
-            (str('[').present? >> attribute_list >> newline ).maybe >>
+            (attribute_list >> newline).maybe >>
+            element_id.maybe
+        end
+
+        def block_style(n_deep = 3, delimiter = "*", repeater = 4, type = nil)
+          current_delimiter = str(delimiter).repeat(repeater).capture(:delimit)
+          closing_delimiter = dynamic do |_s, c|
+            str(c.captures[:delimit].to_s.strip)
+          end
+
+          element_attributes >>
+            (line_start? >> attribute_list >> newline).maybe >>
             line_start? >>
-            str(delimiter).repeat(repeater).capture(:delimit).as(:delimiter) >> newline >>
+            current_delimiter.as(:delimiter) >> newline >>
             if type == :pass
               (text_line | empty_line.as(:line_break)).repeat(1).as(:lines)
             else
-              block_delimiter.absent? >> block_content(n_deep-1).as(:lines)
+              (closing_delimiter >> newline).absent? >> block_content(n_deep - 1).as(:lines)
             end >>
             line_start? >>
-            dynamic { |s,c| str(c.captures[:delimit].to_s.strip) } >> newline
-            # str(delimiter).repeat(repeater) >> str(delimiter).absent? >> newline
+            closing_delimiter >> newline
         end
-
       end
     end
   end
