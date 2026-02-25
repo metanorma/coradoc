@@ -1,0 +1,84 @@
+# Lychee link checker configuration for Coradoc documentation
+
+# Exclude patterns
+exclude = [
+  # Local development links
+  "^http://localhost",
+  "^http://127.0.0.1",
+  "^http://0.0.0.0",
+
+  # Unmerged/draft PRs
+  "github.com/metanorma/coradoc/pull/",
+  "github.com/metanorma/coradoc/pull/[0-9]+$",
+
+  # Example domains
+  "example.com",
+  "example.org",
+  "example.net",
+
+  # Internal anchor links (handled by Jekyll)
+  "^#",
+
+  # GitHub features that may not have stable URLs
+  "github.com/metanorma/coradoc/actions",
+  "github.com/metanorma/coradoc/projects",
+  "github.com/metanorma/coradoc/wiki",
+  "github.com/metanorma/coradoc/security",
+
+  # GitHub user/profile links (may change)
+  "github.com/*",
+
+  # Test/example content
+  "test:",
+  "testing:",
+  "localhost:",
+]
+
+# Accept these HTTP status codes
+accept = [
+  200,    # OK
+  204,    # No Content
+  301,    # Moved Permanently
+  302,    # Found
+  303,    # See Other
+  307,    # Temporary Redirect
+  308,    # Permanent Redirect
+  429,    # Too Many Requests (rate limiting)
+]
+
+# Cache configuration
+cache = true
+
+# Maximum number of redirects to follow
+max_redirects = 10
+
+# Request timeout in seconds
+timeout = 20
+
+# Number of concurrent requests
+max_concurrency = 8
+
+# User agent for requests
+user_agent = "Mozilla/5.0 (compatible; Lychee/2.0; +https://github.com/lycheeverse/lychee)"
+
+# Retry configuration
+retry = true
+max_retries = 3
+
+# Verbose output
+verbose = true
+
+# Show progress
+progress = true
+
+# Exclude private/internal IP addresses
+exclude_private = true
+
+# Exclude all private IPs
+exclude_all_private = true
+
+# Exclude mail addresses (optional)
+exclude_mail = true
+
+# Include mail addresses (override exclude_mail if needed)
+include_mail = false

@@ -2,7 +2,7 @@
 
 module Coradoc
   class Logger
-    BADGE = "Coradoc"
+    BADGE = 'Coradoc'
 
     COLORS = {
       error: "\e[31m", # Red
@@ -11,7 +11,7 @@ module Coradoc
       success: "\e[32m", # Green
       warn: "\e[33m", # Yellow
       bold: "\e[1m",
-      unbold: "\e[22m",
+      unbold: "\e[22m"
     }.freeze
 
     def self.error(message)
@@ -37,7 +37,7 @@ module Coradoc
     private
 
     def color(type)
-      if COLORS.keys.include?(type)
+      if COLORS.key?(type)
         COLORS[type]
       else
         raise ArgumentError,
@@ -56,7 +56,7 @@ module Coradoc
       colorize(
         "\n[#{BADGE}] #{COLORS[:bold]}#{type.upcase}#{COLORS[:unbold]}" \
         ": #{message}\n",
-        type,
+        type
       )
     end
   end

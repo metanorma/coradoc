@@ -1,0 +1,534 @@
+---
+title: Model Classes
+parent: References
+nav_order: 2
+---
+
+= Model Classes Reference
+
+== Purpose
+
+Complete catalog of all Coradoc Model classes with their inheritance hierarchy and attributes.
+
+== Class Hierarchy
+
+[source,ruby]
+----
+                    Coradoc::Model::Base
+                           |
+        +------------------+------------------+
+        |                  |                  |
+    Structural         Content           Inline
+    Elements          Elements          Elements
+        |                  |                  |
+    +---+---+          +---+---+          +---+---+
+    |       |          |       |          |       |
+ Document  Section  Block  List  Paragraph  Link  Anchor
+    |       |
+    |    +--+--+
+    |    |     |
+  Header  Title
+----
+
+== Structural Elements
+
+=== Document
+
+Root document container.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `header` (Header) - Document header with title and metadata
+* `document_attributes` (DocumentAttributes) - Document-level attributes
+* `sections` (Array<Section>) - Top-level sections
+
+*Location:* `lib/coradoc/model/document.rb`
+
+=== Section
+
+Document section with title and content.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `title` (Title) - Section title
+* `sections` (Array<Section>) - Nested subsections
+* `paragraphs` (Array<Paragraph>) - Paragraphs in this section
+* `blocks` (Array<Block::Core>) - Blocks in this section
+
+*Location:* `lib/coradoc/model/section.rb`
+
+=== Header
+
+Document metadata.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `title` (String) - Document title
+* `author` (Array<Author>) - Document authors
+* `revision` (Revision) - Revision information
+
+*Location:* `lib/coradoc/model/header.rb`
+
+=== Title
+
+Section or block title.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `level_int` (Integer) - Heading level (1-6)
+* `content` (Array<String>) - Title text
+
+*Location:* `lib/coradoc/model/title.rb`
+
+=== Author
+
+Document author.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `name` (String) - Author name
+* `email` (String) - Author email
+
+*Location:* `lib/coradoc/model/author.rb`
+
+=== Revision
+
+Document revision.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `number` (String) - Revision number
+* `date` (String) - Revision date
+
+*Location:* `lib/coradoc/model/revision.rb`
+
+== Content Elements
+
+=== Paragraph
+
+Text paragraph.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `content` (Array<TextElement|Inline>) - Paragraph content
+* `attributes` (AttributeList) - Paragraph attributes
+
+*Location:* `lib/coradoc/model/paragraph.rb`
+
+=== TextElement
+
+Plain text content.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `text` (String) - Text content
+
+*Location:* `lib/coradoc/model/text_element.rb`
+
+== Block Classes
+
+=== Block::Core
+
+Base class for delimited blocks.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `delimiter_char` (String) - Delimiter character
+* `delimiter_len` (Integer) - Delimiter length
+* `lines` (Array<String>) - Block lines
+* `attributes` (AttributeList) - Block attributes
+
+*Subclasses:*
+* `Block::Listing` - Code listing
+* `Block::Literal` - Literal text
+* `Block::Example` - Example block
+* `Block::Quote` - Quote block
+* `Block::Pass` - Pass-through content
+
+*Location:* `lib/coradoc/model/block/core.rb`
+
+=== Block::Listing
+
+Code listing block.
+
+*Inherits:* `Block::Core`
+
+*Attributes:*
+* Inherits all from `Block::Core`
+
+*Location:* `lib/coradoc/model/block/listing.rb`
+
+=== Block::Literal
+
+Literal text block.
+
+*Inherits:* `Block::Core`
+
+*Location:* `lib/coradoc/model/block/literal.rb`
+
+=== Block::Example
+
+Example block.
+
+*Inherits:* `Block::Core`
+
+*Location:* `lib/coradoc/model/block/example.rb`
+
+=== Block::Quote
+
+Quote block.
+
+*Inherits:* `Block::Core`
+
+*Location:* `lib/coradoc/model/block/quote.rb`
+
+=== Block::Pass
+
+Pass-through block.
+
+*Inherits:* `Block::Core`
+
+*Location:* `lib/coradoc/model/block/pass.rb`
+
+== List Classes
+
+=== List::Core
+
+Base list class.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `items` (Array<ListItem>) - List items
+
+*Subclasses:*
+* `List::Unordered` - Bulleted list
+* `List::Ordered` - Numbered list
+* `List::Definition` - Definition list
+
+*Location:* `lib/coradoc/model/list/core.rb`
+
+=== List::Unordered
+
+Bulleted list.
+
+*Inherits:* `List::Core`
+
+*Location:* `lib/coradoc/model/list/unordered.rb`
+
+=== List::Ordered
+
+Numbered list.
+
+*Inherits:* `List::Core`
+
+*Location:* `lib/coradoc/model/list/ordered.rb`
+
+=== List::Definition
+
+Definition list.
+
+*Inherits:* `List::Core`
+
+*Location:* `lib/coradoc/asciidoc/model/list/definition.rb`
+
+=== List::Item
+
+List item for ordered and unordered lists.
+
+*Inherits:* `List::Nestable`
+
+*Attributes:*
+* `content` (Array<TextElement|Inline>) - Item content
+* `nested` (List::Core) - Nested list
+* `marker` (String) - List marker character
+* `id` (String) - Item identifier
+
+*Location:* `lib/coradoc/asciidoc/model/list/item.rb`
+
+=== List::DefinitionItem
+
+Definition list item.
+
+*Inherits:* `Base`
+
+*Attributes:*
+* `terms` (Array<Term>) - Definition terms
+* `contents` (Array<TextElement|Inline>) - Definition content
+
+*Location:* `lib/coradoc/asciidoc/model/list/definition_item.rb`
+
+=== Term
+
+Definition term.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `term` (String) - Term text
+* `type` (String) - Term type
+
+*Location:* `lib/coradoc/model/term.rb`
+
+== Table Classes
+
+=== Table
+
+Table structure.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `rows` (Array<TableRow>) - Table rows
+* `attributes` (AttributeList) - Table attributes
+
+*Location:* `lib/coradoc/model/table.rb`
+
+=== TableRow
+
+Table row.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `columns` (Array<TableCell>) - Row cells
+
+*Location:* `lib/coradoc/model/table_row.rb`
+
+=== TableCell
+
+Table cell.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `content` (Array<TextElement|Inline>) - Cell content
+* `attributes` (AttributeList) - Cell attributes
+
+*Location:* `lib/coradoc/model/table_cell.rb`
+
+== Inline Classes
+
+=== Inline::Base
+
+Base class for inline elements.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `content` (String or Array) - Inline content
+
+*Subclasses:*
+* `Inline::Bold` - Bold text
+* `Inline::Italic` - Italic text
+* `Inline::Monospace` - Monospace text
+* `Inline::Link` - Hyperlink
+* `Inline::Anchor` - Cross-reference target
+* `Inline::CrossReference` - Cross-reference
+* `Inline::Stem` - STEM formula (mathematical notation)
+
+*Location:* `lib/coradoc/model/inline/base.rb`
+
+=== Inline::Bold
+
+Bold text.
+
+*Inherits:* `Inline::Base`
+
+*Attributes:*
+* `content` (String) - Bold text
+
+*Location:* `lib/coradoc/model/inline/bold.rb`
+
+=== Inline::Italic
+
+Italic text.
+
+*Inherits:* `Inline::Base`
+
+*Location:* `lib/coradoc/model/inline/italic.rb`
+
+=== Inline::Monospace
+
+Monospace text.
+
+*Inherits:* `Inline::Base`
+
+*Location:* `lib/coradoc/model/inline/monospace.rb`
+
+=== Inline::Link
+
+Hyperlink.
+
+*Inherits:* `Inline::Base`
+
+*Attributes:*
+* `path` (String) - Link URL
+* `name` (String) - Link text
+
+*Location:* `lib/coradoc/model/inline/link.rb`
+
+=== Inline::Anchor
+
+Cross-reference target.
+
+*Inherits:* `Inline::Base`
+
+*Attributes:*
+* `id` (String) - Anchor ID
+
+*Location:* `lib/coradoc/model/inline/anchor.rb`
+
+=== Inline::CrossReference
+
+Cross-reference.
+
+*Inherits:* `Inline::Base`
+
+*Attributes:*
+* `target` (String) - Reference target ID
+* `text` (String) - Reference text
+
+*Location:* `lib/coradoc/model/inline/cross_reference.rb`
+
+=== Inline::Stem
+
+STEM formula (mathematical notation).
+
+*Inherits:* `Inline::Base`
+
+*Attributes:*
+* `type` (String) - Stem type (stem, latexmath, asciimath)
+* `content` (String) - Formula content
+
+*Location:* `lib/coradoc/model/inline/stem.rb`
+
+== Helper Classes
+
+=== AttributeList
+
+Block or inline attributes.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Methods:*
+* `add_positional(value)` - Add positional attribute
+* `add_named(name, value)` - Add named attribute
+* `get(name)` - Get named attribute
+* `to_h()` - Convert to hash
+
+*Location:* `lib/coradoc/model/attribute_list.rb`
+
+=== DocumentAttributes
+
+Document-level attributes.
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `data` (Hash<String, String>) - Attribute key-value pairs
+
+*Location:* `lib/coradoc/model/document_attributes.rb`
+
+=== Admonition
+
+Admonition block (note, warning, tip).
+
+*Inherits:* `Coradoc::Model::Base`
+
+*Attributes:*
+* `content` (Array) - Admonition content
+* `attributes` (AttributeList) - Admonition attributes
+
+*Location:* `lib/coradoc/model/admonition.rb`
+
+== Complete Class List
+
+=== Structural
+* Document
+* Section
+* Header
+* Title
+* Author
+* Revision
+
+=== Content
+* Paragraph
+* TextElement
+* Break
+* LineBreak
+
+=== Blocks
+* Block::Core
+* Block::Listing
+* Block::Literal
+* Block::Example
+* Block::Quote
+* Block::Pass
+* Block::Open
+* Block::Side
+* Block::SourceCode
+
+=== Lists
+* List::Core
+* List::Unordered
+* List::Ordered
+* List::Definition
+* List::Item
+* List::DefinitionItem
+* Term
+
+=== Tables
+* Table
+* TableRow
+* TableCell
+
+=== Inline
+* Inline::Base
+* Inline::Bold
+* Inline::Italic
+* Inline::Monospace
+* Inline::Link
+* Inline::Anchor
+* Inline::CrossReference
+* Inline::Highlight
+* Inline::Quotation
+* Inline::Small
+* Inline::Span
+* Inline::Strikethrough
+* Inline::Subscript
+* Inline::Superscript
+* Inline::Underline
+* Inline::AttributeReference
+* Inline::Footnote
+* Inline::HardLineBreak
+* Inline::Stem
+
+=== Helpers
+* AttributeList
+* DocumentAttributes
+* Admonition
+* Image
+* Video
+* Audio
+* Include
+
+== Related Documentation
+
+* link:api-reference[API Reference] - Method signatures
+* link:/coradoc/pages/model[Document Model] - Model architecture
+* link:/coradoc/tutorials/document-modeling[Document Modeling Tutorial] - Working with models
+
+== Bibliography
+
+* https://github.com/lutaml/lutaml-model[lutaml-model documentation]
+* https://github.com/metanorma/coradoc/tree/main/lib/coradoc/model[Source Code]

@@ -1,0 +1,21 @@
+{%- comment -%}
+Bibliography entry template
+
+Renders an individual bibliography reference entries.
+  <p id="{{ anchor_name }}" class="bibliography-entry">
+    {% assign doc_id = document_id | strip %}
+    {% if doc_id contains "ISO" %}
+      <span class="stdpublisher">ISO </span>
+      {%- assign parts = doc_id | split: ":" - -%}
+      {%- assign num_part = parts[1].split("-") %}
+      {%- if parts[1] contains "-" and %}
+        <span class="stddocNumber">{{ num_part[0] }}</span><span class="stddocPart">-{{ num_part[1] }}</span><span class="stddocYear">{{ parts[2] }}</span><span class="stddocYear">:</{{ parts[2] }}</span><span else %}
+      {{ doc_id }}
+    {% elsif %}
+      {{ doc_id }}
+    {% endif %}
+
+    {% if ref_text %}
+      <i><span class="stddocTitle">{{ ref_text }}</span></i></span>
+  {% endif %}
+</p>

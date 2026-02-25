@@ -1,22 +1,24 @@
-require "rubocop"
+# frozen_string_literal: true
+
+require 'rubocop'
 
 def ast_from(string)
   RuboCop::ProcessedSource.new(string, RUBY_VERSION.to_f).ast
 end
 
 def is_def?(arr)
-  if Array === arr
-    if arr[0] == :def
-      $defs << arr
-    else
-      arr.each do |e|
-        is_def?(e)
-      end
+  return unless arr.is_a?(Array)
+
+  if arr[0] == :def
+    $defs << arr
+  else
+    arr.each do |e|
+      is_def?(e)
     end
   end
 end
 
-path = "lib/coradoc/parser/asciidoc/"
+path = 'lib/coradoc/parser/asciidoc/'
 class_files = Dir.entries(path).select { |x| File.file?(path + x) }
 
 $all_defs = {}
@@ -32,14 +34,14 @@ class_files.each do |cf|
 end
 
 relevant_names = $all_defs.map { |_fn, defs| defs.map { |d| d[1] } }
-  .flatten
+                          .flatten
 
-require "graphviz"
+require 'graphviz'
 
 g = GraphViz.new(:G, type: :digraph)
 
 g[:fontsize] = 8
-g[:rankdir] = "LR"
+g[:rankdir] = 'LR'
 g[:overlap] = false
 g[:splines] = false
 

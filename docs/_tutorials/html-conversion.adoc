@@ -1,0 +1,426 @@
+---
+title: HTML Conversion
+parent: Tutorials
+nav_order: 5
+---
+
+= HTML to AsciiDoc Conversion Tutorial
+
+== Purpose
+
+This tutorial teaches you how to convert HTML documents to AsciiDoc using Coradoc's HTML input converter.
+
+== Prerequisites
+
+* Completed link:basic-parsing[Basic Parsing Tutorial]
+* Basic understanding of HTML structure
+* Familiarity with AsciiDoc syntax
+
+== Tutorial Overview
+
+You'll learn to:
+
+* Convert HTML to AsciiDoc
+* Handle common HTML elements
+* Customize the conversion process
+* Handle complex HTML structures
+
+== HTML Input Converter
+
+Coradoc includes an HTML input converter that transforms HTML into the Document Model, which can then be serialized to AsciiDoc.
+
+[source,ruby]
+----
+require 'coradoc'
+
+html = "<h1>Title</h1><p>Content here.</p>"
+
+# Parse HTML to Document Model
+doc = Coradoc::Input::HTML.convert(html)
+
+# Serialize to AsciiDoc
+asciidoc = doc.to_adoc
+----
+
+== Example 1: Basic HTML Conversion
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+html = <<~HTML
+  <!DOCTYPE html>
+  <html>
+  <head><title>My Document</title></head>
+  <body>
+    <h1>Main Title</h1>
+    <p>This is a paragraph.</p>
+  </body>
+  </html>
+HTML
+
+# Convert HTML to Document Model
+doc = Coradoc::Input::HTML.convert(html)
+
+# Serialize to AsciiDoc
+puts "Converted AsciiDoc:"
+puts doc.to_adoc
+----
+
+=== What It Does
+
+1. Parses HTML document
+2. Converts to Coradoc Document Model
+3. Serializes to AsciiDoc
+
+=== Expected Output
+
+[source,asciidoc]
+----
+Converted AsciiDoc:
+= Main Title
+
+This is a paragraph
+----
+
+== Example 2: Converting Headings
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+html = <<~HTML
+  <h1>Level 1 Heading</h1>
+  <h2>Level 2 Heading</h2>
+  <h3>Level 3 Heading</h3>
+  <h4>Level 4 Heading</h4>
+HTML
+
+doc = Coradoc::Input::HTML.convert(html)
+puts doc.to_adoc
+----
+
+=== What It Does
+
+Converts HTML heading levels to AsciiDoc section levels.
+
+=== Expected Output
+
+[source,asciidoc]
+----
+= Level 1 Heading
+
+== Level 2 Heading
+
+=== Level 3 Heading
+
+==== Level 4 Heading
+----
+
+== Example 3: Converting Lists
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+html = <<~HTML
+  <h2>Lists</h2>
+  <ul>
+    <li>Unordered item 1</li>
+    <li>Unordered item 2</li>
+  </ul>
+  <ol>
+    <li>Ordered item 1</li>
+    <li>Ordered item 2</li>
+  </ol>
+HTML
+
+doc = Coradoc::Input::HTML.convert(html)
+puts doc.to_adoc
+----
+
+=== What It Does
+
+Converts HTML unordered and ordered lists to AsciiDoc lists.
+
+=== Expected Output
+
+----
+== Lists
+
+* Unordered item 1
+* Unordered item 2
+
+. Ordered item 1
+. Ordered item 2
+----
+
+== Example 4: Converting Links and Formatting
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+html = <<~HTML
+  <p>This has <strong>bold</strong> and <em>italic</em> text.</p>
+  <p>It also has a <a href="https://example.com">link</a>.</p>
+HTML
+
+doc = Coradoc::Input::HTML.convert(html)
+puts doc.to_adoc
+----
+
+=== What It Does
+
+Converts HTML inline formatting to AsciiDoc equivalents.
+
+=== Expected Output
+
+----
+This has *bold* and _italic_ text.
+
+It also has a https://example.com[link]
+----
+
+== Example 5: Converting Tables
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+html = <<~HTML
+  <table>
+    <tr>
+      <th>Header 1</th>
+      <th>Header 2</th>
+    </tr>
+    <tr>
+      <td>Cell 1</td>
+      <td>Cell 2</td>
+    </tr>
+  </table>
+HTML
+
+doc = Coradoc::Input::HTML.convert(html)
+puts doc.to_adoc
+----
+
+=== What It Does
+
+Converts HTML tables to AsciiDoc table format.
+
+=== Expected Output
+
+----
+|===
+|Header 1 |Header 2
+
+|Cell 1 |Cell 2
+|===
+----
+
+== Example 6: Converting Code Blocks
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+html = <<~HTML
+  <h2>Code Example</h2>
+  <pre><code>def hello
+    puts "world"
+  end</code></pre>
+HTML
+
+doc = Coradoc::Input::HTML.convert(html)
+puts doc.to_adoc
+----
+
+=== What It Does
+
+Converts HTML `<pre><code>` blocks to AsciiDoc listing blocks.
+
+=== Expected Output
+
+----
+== Code Example
+
+----
+def hello
+  puts "world"
+end
+----
+----
+
+== HTML Conversion Reference
+
+### Supported Elements
+
+| HTML Element | AsciiDoc Equivalent |
+|-------------|-------------------|
+| `<h1>` - `<h6>` | `=` heading levels |
+| `<p>` | Paragraph |
+| `<ul>`, `<li>` | Unordered list (`*`) |
+| `<ol>`, `<li>` | Ordered list (`.`) |
+| `<strong>` | Bold (`*text*`) |
+| `<em>` | Italic (`_text_`) |
+| `<code>` | Monospace (`` `text` ``) |
+| `<a>` | Link |
+| `<table>` | Table |
+| `<pre><code>` | Listing block |
+
+### Unsupported Elements
+
+Some HTML elements may not convert cleanly:
+
+* `<div>` - Often converted to paragraphs or ignored
+* `<span>` - May not preserve semantic meaning
+* Complex nested structures
+* Script and style elements
+
+== Customizing Conversion
+
+The HTML converter uses a plugin system for handling specific elements. You can customize conversion by:
+
+### 1. Creating Custom Converters
+
+[source,ruby]
+----
+module Coradoc
+  module Input
+    module HTML
+      module Converter
+        class CustomConverter < Base
+          def convert(node)
+            # Custom conversion logic
+          end
+        end
+      end
+    end
+  end
+end
+----
+
+### 2. Registering Converters
+
+[source,ruby]
+----
+Coradoc::Input::HTML.register_converter(
+  :custom_element,
+  Coradoc::Input::HTML::Converter::CustomConverter
+)
+----
+
+## Complete Example: Web Page Conversion
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+html = <<~HTML
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>My Article</title>
+  </head>
+  <body>
+    <article>
+      <h1>Understanding Round-tripping</h1>
+
+      <p>Round-tripping is the process of <strong>parsing</strong> a document,
+      <em>serializing</em> it, and <code>parsing</code> it again.</p>
+
+      <h2>Key Concepts</h2>
+
+      <ul>
+        <li>Semantic preservation</li>
+        <li>Structure equivalence</li>
+        <li>Content fidelity</li>
+      </ul>
+
+      <h2>Example</h2>
+
+      <pre><code># Parse and serialize
+doc = Coradoc.parse(input)
+output = doc.to_adoc</code></pre>
+
+      <p>See <a href="https://example.com">the documentation</a> for more.</p>
+    </article>
+  </body>
+  </html>
+HTML
+
+doc = Coradoc::Input::HTML.convert(html)
+puts "Converted AsciiDoc:"
+puts doc.to_adoc
+----
+
+=== Expected Output
+
+[source,asciidoc]
+----
+Converted AsciiDoc:
+= Understanding Round-tripping
+
+Round-tripping is the process of *parsing* a document,
+_serializing_ it, and `parsing` it again.
+
+== Key Concepts
+
+* Semantic preservation
+* Structure equivalence
+* Content fidelity
+
+== Example
+
+Parse and serialize code:
+
+  # Parse and serialize
+  doc = Coradoc.parse(input)
+  output = doc.to_adoc
+
+See https://example.com[the documentation] for more.
+----
+
+## Summary
+
+In this tutorial you learned:
+
+* How to convert HTML to AsciiDoc
+* Which HTML elements are supported
+* How to customize the conversion process
+* How to handle complex HTML structures
+
+## Exercises
+
+Practice your skills:
+
+1. Convert a real HTML document from the web
+2. Write a custom converter for a specific HTML element
+3. Handle HTML with class/id attributes
+4. Create a script that batch-converts HTML files
+
+## Next Steps
+
+* link:/coradoc/guides/custom-blocks[Custom Blocks Guide] - Extend Coradoc
+* link:/coradoc/references/output-formats[Output Formats] - More format options
+* link:/coradoc/pages/architecture[Architecture] - Understanding input processing
+
+## Bibliography
+
+* https://developer.mozilla.org/en-US/docs/Web/HTML[MDN HTML Documentation]
+* https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[AsciiDoc Syntax Reference]

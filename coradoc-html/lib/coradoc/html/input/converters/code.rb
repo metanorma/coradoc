@@ -1,0 +1,25 @@
+# frozen_string_literal: true
+
+module Coradoc
+  module Input
+    module Html
+      module Converters
+        class Code < Markup
+          def coradoc_format_type
+            'monospace'
+          end
+
+          def markup_ancestor_tag_names
+            %w[code tt kbd samp var]
+          end
+        end
+
+        register :code, Code.new
+        register :tt, Code.new
+        register :kbd, Code.new
+        register :samp, Code.new
+        register :var, Code.new
+      end
+    end
+  end
+end

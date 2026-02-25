@@ -1,0 +1,35 @@
+---
+title: Core Pages
+nav_order: 2
+has_children: true
+---
+
+= Core Pages
+
+This section contains the foundational documentation for Coradoc. These pages explain the core concepts, architecture, and features of the library.
+
+== Overview
+
+The Core Pages are organized to help you understand Coradoc from multiple perspectives:
+
+* link:/coradoc/pages/getting-started/[Getting Started] - Begin here if you're new to Coradoc
+* link:/coradoc/pages/architecture/[Architecture] - Understand how Coradoc works internally
+* link:/coradoc/pages/parsing/[Parsing] - Learn about the parsing layer
+* link:/coradoc/pages/transformation/[Transformation] - Understand AST to Model conversion
+* link:/coradoc/pages/model/[Document Model] - Explore the document object model
+* link:/coradoc/pages/serialization/[Serialization] - Learn about output generation
+
+== Navigation
+
+* link:/coradoc/pages/getting-started/[Getting Started] - Installation and quick start
+* link:/coradoc/pages/architecture/[Architecture] - System architecture and data flow
+* link:/coradoc/pages/parsing/[Parsing] - AsciiDoc parsing with Parslet
+* link:/coradoc/pages/transformation/[Transformation] - Transformer layer explanation
+* link:/coradoc/pages/model/[Document Model] - Document model classes
+* link:/coradoc/pages/serialization/[Serialization] - AsciiDoc serialization
+
+== Related Documentation
+
+* link:/coradoc/tutorials/[Tutorials] - Hands-on learning with examples
+* link:/coradoc/guides/[Guides] - Task-oriented documentation
+* link:/coradoc/references/[References] - Technical specifications

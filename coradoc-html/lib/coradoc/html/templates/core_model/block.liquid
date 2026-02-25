@@ -1,0 +1,68 @@
+{%- comment -%}
+Block template (paragraph, listing, quote, example, literal, source)
+
+Handles Coradoc::CoreModel::Block with various delimiter types:
+- "----" : source code / listing
+- "____" : quote
+- "====" : example
+- "****" : sidebar
+- "...." : literal
+- "++++" : pass-through (raw HTML)
+
+For paragraphs (element_type: "paragraph"), content can be:
+- content: string content
+- children: array of strings/inline elements
+{%- endcomment -%}
+
+{%- case delimiter_type -%}
+  {%- when "----" -%}
+    {%- comment -%}Source code / listing block{%- endcomment -%}
+    {%- assign lang = language | default: "" -%}
+    <pre id="{{ id }}" class="sourcecode{% if lang != '' %} language-{{ lang }}{% endif %}"{% if lang != '' %} data-lang="{{ lang }}"{% endif %}><code>{{ content | escape }}</code></pre>
+
+  {%- when "____" -%}
+    {%- comment -%}Quote block{%- endcomment -%}
+    <blockquote id="{{ id }}" class="quote">
+      {{ content }}
+    </blockquote>
+
+  {%- when "====" -%}
+    {%- comment -%}Example block{%- endcomment -%}
+    <div id="{{ id }}" class="example">
+      {% if title %}<span class="example-title">{{ title }}</span>{% endif %}
+      {{ content }}
+    </div>
+
+  {%- when "****" -%}
+    {%- comment -%}Sidebar block{%- endcomment -%}
+    <aside id="{{ id }}" class="sidebar">
+      {{ content }}
+    </aside>
+
+  {%- when "...." -%}
+    {%- comment -%}Literal block{%- endcomment -%}
+    <pre id="{{ id }}" class="literal">
+{{ content | escape }}
+    </pre>
+
+  {%- when "++++" -%}
+    {%- comment -%}Pass-through (raw HTML){%- endcomment -%}
+    {{ content }}
+
+  {%- else -%}
+    {%- comment -%}Generic block (including paragraphs){%- endcomment -%}
+    <div id="{{ id }}" class="block block-{{ element_type | default: 'unknown' }}">
+      {%- if element_type == "paragraph" -%}
+        <p class="paragraph">
+          {%- if content -%}
+            {{ content }}
+          {%- elsif children -%}
+            {%- for child in children -%}{{ child | render_element }}{%- endfor -%}
+          {%- endif -%}
+        </p>
+      {%- else -%}
+        {{ content }}
+      {%- endif -%}
+    </div>
+
+{%- endcase -%}

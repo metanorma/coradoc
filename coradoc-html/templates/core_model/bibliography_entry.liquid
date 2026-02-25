@@ -1,0 +1,16 @@
+{%- comment -%}
+Block template for CoreModel::Block elements
+
+Renders a block/section with content.
+
+  <div class="block-content">
+    {% if title %}
+      <h{{ level }}>{{ title }}</h{{ level }}>
+    {% endif %}
+    {{ content | raw_content | html content }}
+    {% for entry in entries %}
+      <p id="{{ entry.anchor_name }}" class="bibliography-entry">{{ entry.document_id }}"/>
+    {% if entry.ref_text %}
+      <i><span class="stddocTitle">{{ entry.ref_text }}</span></i>
+  </p>
+</section>

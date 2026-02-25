@@ -1,6 +1,8 @@
-$LOAD_PATH.unshift("../coradoc/lib")
-require "coradoc"
-require "pp"
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift('../coradoc/lib')
+require 'coradoc'
+require 'pp'
 
 def pretty_print_obj(obj)
   sio = StringIO.new
@@ -11,9 +13,9 @@ end
 def print_parsed(str)
   parse = Coradoc::Parser::Base.new.parse(str)
   puts str
-  puts ""
+  puts ''
   pretty_print_obj parse[:document]
-  puts ""
+  puts ''
   doc = Coradoc::Transformer.transform(parse[:document])
   pp doc
   puts Coradoc::Generator.gen_adoc(doc)
