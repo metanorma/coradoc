@@ -1,4 +1,4 @@
-require "coradoc"
+require_relative "converter"
 
 module Coradoc
   module Output

@@ -1,5 +1,3 @@
-require "coradoc/input"
-
 module Coradoc
   module Input
     module Adoc

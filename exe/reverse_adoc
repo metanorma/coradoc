@@ -4,8 +4,7 @@
 require "rubygems"
 require "bundler/setup"
 
-require "coradoc/input/html"
-require "coradoc/converter"
+require "coradoc"
 require "optparse"
 require "fileutils"
 

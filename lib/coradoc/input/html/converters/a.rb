@@ -1,4 +1,4 @@
-require "coradoc"
+require "coradoc/document"
 
 module Coradoc
   module Input

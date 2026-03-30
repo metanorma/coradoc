@@ -2,7 +2,6 @@
 
 require "digest"
 require "nokogiri"
-require "coradoc/input"
 require_relative "html/errors"
 require_relative "html/cleaner"
 require_relative "html/config"
