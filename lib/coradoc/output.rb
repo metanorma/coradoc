@@ -1,11 +1,4 @@
-require_relative "converter"
-
-module Coradoc
-  module Output
-    @processors = {}
-    extend Converter::CommonInputOutputMethods
-  end
-end
+require_relative "output/setup"
 
 require "coradoc/output/adoc"
 require "coradoc/output/coradoc_tree_debug"

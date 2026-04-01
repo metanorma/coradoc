@@ -1,3 +1,5 @@
+require_relative "../../util"
+
 module Coradoc
   module Input
     module Html

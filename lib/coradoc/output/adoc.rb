@@ -1,3 +1,5 @@
+require_relative "../generator"
+
 module Coradoc
   module Output
     module Adoc

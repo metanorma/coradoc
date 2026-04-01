@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "setup"
 require "digest"
 require "nokogiri"
 require_relative "html/errors"

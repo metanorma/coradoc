@@ -1,5 +1,6 @@
 require "parslet"
 require "parslet/convenience"
+require_relative "../../logger"
 
 require_relative "admonition"
 require_relative "attribute_list"

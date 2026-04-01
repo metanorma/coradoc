@@ -1,3 +1,7 @@
+require_relative "setup"
+require_relative "../parser"
+require_relative "../transformer"
+
 module Coradoc
   module Input
     module Adoc
