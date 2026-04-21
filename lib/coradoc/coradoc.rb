@@ -163,9 +163,7 @@ module Coradoc
       return model if model.is_a?(CoreModel::Base)
 
       # Check if model is an AsciiDoc model
-      if defined?(Coradoc::AsciiDoc::Model::Base) && model.is_a?(Coradoc::AsciiDoc::Model::Base)
-        return Coradoc::AsciiDoc::Transform::ToCoreModel.transform(model)
-      end
+      return Coradoc::AsciiDoc::Transform::ToCoreModel.transform(model) if defined?(Coradoc::AsciiDoc::Model::Base) && model.is_a?(Coradoc::AsciiDoc::Model::Base)
 
       # Try to find a transformer via registered formats
       registry.each_value do |format_module|

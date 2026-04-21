@@ -155,7 +155,7 @@ module Coradoc
       # When children are all plain strings, use the content attribute instead
       # since it already has proper spacing between lines.
       def renderable_content
-        return content if children.nil? || !children.any?
+        return content if children.nil? || children.none?
         return content if content && children.all?(String)
 
         children

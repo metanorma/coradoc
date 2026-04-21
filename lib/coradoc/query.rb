@@ -192,9 +192,7 @@ module Coradoc
         return true if @element_type == '*'
 
         # First check the element_type attribute if present (for StructuralElement)
-        if element.respond_to?(:element_type) && element.element_type && (element.element_type.to_s.downcase == @element_type.downcase)
-          return true
-        end
+        return true if element.respond_to?(:element_type) && element.element_type && (element.element_type.to_s.downcase == @element_type.downcase)
 
         # Then check the class name
         element_type = element.class.name

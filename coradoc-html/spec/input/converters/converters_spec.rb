@@ -477,9 +477,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
       when Coradoc::CoreModel::InlineElement
         # Extract from both content and nested_elements
         text_parts = [extract_text_from_content(c.content)]
-        if c.respond_to?(:nested_elements) && c.nested_elements
-          text_parts << extract_text_from_content(c.nested_elements)
-        end
+        text_parts << extract_text_from_content(c.nested_elements) if c.respond_to?(:nested_elements) && c.nested_elements
         text_parts.join
       when Coradoc::CoreModel::Base
         if c.respond_to?(:children) && c.children.is_a?(Array)

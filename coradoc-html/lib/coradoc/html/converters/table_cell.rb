@@ -63,19 +63,13 @@ module Coradoc
           style_parts = []
 
           # Horizontal alignment
-          if cell.respond_to?(:alignment) && cell.alignment
-            style_parts << "text-align: #{escape_attribute(cell.alignment)}"
-          end
+          style_parts << "text-align: #{escape_attribute(cell.alignment)}" if cell.respond_to?(:alignment) && cell.alignment
 
           # Vertical alignment
-          if cell.respond_to?(:vertical_alignment) && cell.vertical_alignment
-            style_parts << "vertical-align: #{escape_attribute(cell.vertical_alignment)}"
-          end
+          style_parts << "vertical-align: #{escape_attribute(cell.vertical_alignment)}" if cell.respond_to?(:vertical_alignment) && cell.vertical_alignment
 
           # Background color
-          if cell.respond_to?(:bgcolor) && cell.bgcolor
-            style_parts << "background-color: #{escape_attribute(cell.bgcolor)}"
-          end
+          style_parts << "background-color: #{escape_attribute(cell.bgcolor)}" if cell.respond_to?(:bgcolor) && cell.bgcolor
 
           # Text color
           style_parts << "color: #{escape_attribute(cell.color)}" if cell.respond_to?(:color) && cell.color

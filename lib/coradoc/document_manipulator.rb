@@ -254,9 +254,7 @@ module Coradoc
 
     # Transform headings in an element
     def transform_headings_in_element(element, &block)
-      if element.is_a?(Coradoc::CoreModel::StructuralElement) && element.title.is_a?(String)
-        element.title = yield(element.title)
-      end
+      element.title = yield(element.title) if element.is_a?(Coradoc::CoreModel::StructuralElement) && element.title.is_a?(String)
 
       # Recurse into children
       return unless element.respond_to?(:children) && element.children

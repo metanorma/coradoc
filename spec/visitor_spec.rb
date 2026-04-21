@@ -122,9 +122,7 @@ RSpec.describe Coradoc::Visitor do
 
       it 'can modify elements' do
         transformer = described_class.new do |element|
-          if element.is_a?(Coradoc::CoreModel::Block) && element.content.is_a?(String)
-            element.content = element.content.upcase
-          end
+          element.content = element.content.upcase if element.is_a?(Coradoc::CoreModel::Block) && element.content.is_a?(String)
         end
 
         document.accept(transformer)
@@ -193,9 +191,7 @@ RSpec.describe Coradoc::Visitor do
     it 'allows visitor pattern on CoreModel elements' do
       word_count = 0
       visitor = Coradoc::Visitor::Transformer.new do |element|
-        if element.is_a?(Coradoc::CoreModel::Block) && element.content.is_a?(String)
-          word_count += element.content.split.length
-        end
+        word_count += element.content.split.length if element.is_a?(Coradoc::CoreModel::Block) && element.content.is_a?(String)
       end
 
       document.accept(visitor)

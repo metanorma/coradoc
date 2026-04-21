@@ -85,7 +85,7 @@ module Coradoc
       # since it already has proper spacing between lines.
       # @return [Array, String, nil] content to render
       def renderable_content
-        return content if children.nil? || !children.any?
+        return content if children.nil? || children.none?
         return content if content && children.all?(String)
 
         children

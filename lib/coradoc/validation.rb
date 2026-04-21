@@ -232,13 +232,9 @@ module Coradoc
           errors = []
           length = value.respond_to?(:length) ? value.length : 0
 
-          if options[:min] && length < options[:min]
-            errors << "#{field} must have at least #{options[:min]} characters/items"
-          end
+          errors << "#{field} must have at least #{options[:min]} characters/items" if options[:min] && length < options[:min]
 
-          if options[:max] && length > options[:max]
-            errors << "#{field} must have at most #{options[:max]} characters/items"
-          end
+          errors << "#{field} must have at most #{options[:max]} characters/items" if options[:max] && length > options[:max]
 
           errors
         end
