@@ -290,17 +290,26 @@ module Coradoc
             # Skip inline parsing for code blocks - content is literal
             return { code_block: process_node(hash[:code_block]) } if hash.key?(:code_block)
 
-            # Skip inline parsing for headings - just process escape sequences
-            if hash.key?(:heading)
-              result = { heading: process_node(hash[:heading]) }
-              result[:text] = process_node(hash[:text]) if hash.key?(:text)
-              return result
-            end
-
             result = {}
 
             hash.each do |key, value|
               case key
+              when :heading
+                # Heading marker - process escape sequences only
+                result[key] = process_node(value)
+              when :text
+                result[key] = if hash.key?(:heading)
+                                # Heading text - process escape sequences for plain strings,
+                                # inline parse for structured content (setext headings)
+                                case value
+                                when String
+                                  process_node(value)
+                                else
+                                  process_inlines_recursive(value, inline_parser)
+                                end
+                              else
+                                process_inlines_recursive(value, inline_parser)
+                              end
               when :ln
                 # Parse inline content for lines
                 inline_result = parse_inline_content(value, inline_parser)

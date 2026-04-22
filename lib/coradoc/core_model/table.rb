@@ -99,7 +99,7 @@ module Coradoc
       # Override to include raw Ruby children attribute in hash output
       def to_hash
         super.tap do |h|
-          h["children"] = serialize_children(children) if children&.any?
+          h['children'] = serialize_children(children) if children&.any?
         end
       end
 

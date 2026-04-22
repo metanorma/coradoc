@@ -11,8 +11,8 @@ Foo *bar*
 Foo *bar*
 ---------
 ', [
-  { heading: '=========', text: { ln: 'Foo *bar*' } }, # XXX: inline
-  { heading: '---------', text: { ln: 'Foo *bar*' } } # XXX: inline
+  { heading: '=========', text: { ln: ['Foo ', { em: 'bar' }] } },
+  { heading: '---------', text: { ln: ['Foo ', { em: 'bar' }] } }
 ]
 
     markdown_example 81, '
@@ -20,7 +20,7 @@ Foo *bar
 baz*
 ====
 ', [
-  { heading: '====', text: [{ ln: 'Foo *bar' }, { ln: 'baz*' }] } # XXX: inline
+  { heading: '====', text: [{ ln: 'Foo *bar' }, { ln: 'baz*' }] }
 ]
 
     markdown_example 82, '
@@ -28,7 +28,7 @@ baz*
 baz*
 ====
 ', [
-  { heading: '====', text: [{ ln: 'Foo *bar' }, { ln: 'baz*' }] } # XXX: inline
+  { heading: '====', text: [{ ln: 'Foo *bar' }, { ln: 'baz*' }] }
 ]
 
     markdown_example 83, '
@@ -113,14 +113,14 @@ Foo
 Foo
 -----
 ', [
-  { heading: '-----', text: { ln: 'Foo' } } # XXX: inline
+  { heading: '-----', text: { ln: 'Foo' } }
 ]
 
     markdown_example 90, '
 Foo\
 -----
 ', [
-  { heading: '-----', text: { ln: 'Foo\\' } } # XXX: inline, escape
+  { heading: '-----', text: { ln: 'Foo\\' } }
 ]
 
     markdown_example 91, '

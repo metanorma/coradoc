@@ -60,9 +60,9 @@ module Coradoc
         when Array
           value.map { |v| normalize_value(v, **options) }
         when Hash
-          result = value.transform_values { |v| normalize_value(v, **options) }
+          value.transform_values { |v| normalize_value(v, **options) }
           # Ensure type info is present
-          result
+
         when String
           normalize_string(value, **options)
         when CoreModel::Base
