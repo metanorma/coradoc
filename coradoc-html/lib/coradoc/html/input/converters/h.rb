@@ -30,14 +30,14 @@ module Coradoc
 
           def treat_children_no_anchors(node, state)
             node.children.reject { |a| a.name == 'a' }
-                         .map do |child|
+                .map do |child|
               treat_coradoc(child, state)
             end.flatten.compact
           end
 
           def treat_children_anchors(node, state)
             node.children.select { |a| a.name == 'a' }
-                         .map do |child|
+                .map do |child|
               treat_coradoc(child, state)
             end.flatten.compact
           end

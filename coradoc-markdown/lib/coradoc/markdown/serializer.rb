@@ -82,13 +82,32 @@ module Coradoc
       end
 
       def serialize_paragraph(para)
-        para.text.to_s
+        if para.children.any?
+          para.children.map { |child| serialize_inline_content(child) }.join
+        else
+          para.text.to_s
+        end
+      end
+
+      def serialize_inline_content(element)
+        case element
+        when String
+          element
+        when Emphasis, Strong, Code, Link, Image, FootnoteReference, Model::Math, Model::Extension
+          serialize(element)
+        else
+          element.respond_to?(:to_md) ? element.to_md : element.to_s
+        end
       end
 
       def serialize_list(list)
         marker = list.ordered ? '1.' : '-'
         list.items.map do |item|
-          text = item.text.to_s
+          text = if item.children.any?
+                   item.children.map { |child| serialize_inline_content(child) }.join
+                 else
+                   item.text.to_s
+                 end
           if item.checked == true
             "- [x] #{text.sub(/^- \[[ x]\] /, '')}"
           elsif item.checked == false
