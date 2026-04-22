@@ -34,7 +34,7 @@ module Coradoc
             if content_nodes.any?
               content = content_nodes.flat_map { |n| convert_node_to_core(n, state) }.compact
               # Store as children for mixed content
-              item.instance_variable_set(:@children, content) if content.any?
+              item.children = content if content.any?
             end
 
             item.nested = nested_list if nested_list

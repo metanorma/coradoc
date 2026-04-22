@@ -130,6 +130,20 @@ module Coradoc
 
       private
 
+      # Serialize mixed-content children array for to_hash
+      # Handles String and Base (lutaml-model) elements
+      def serialize_children(children_arr)
+        children_arr.map do |child|
+          if child.is_a?(String)
+            child
+          elsif child.respond_to?(:to_hash)
+            child.to_hash
+          else
+            child.to_s
+          end
+        end
+      end
+
       # List of attributes to compare for semantic equivalence
       #
       # Override in subclasses to define which attributes matter for

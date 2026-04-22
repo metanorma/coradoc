@@ -35,7 +35,7 @@ module Coradoc
               element_type: block_type,
               content: extract_plain_text(children)
             )
-            block.instance_variable_set(:@children, children)
+            block.children = children
             block.id = id if id
             block
           end

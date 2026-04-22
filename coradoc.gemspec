@@ -32,11 +32,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   # Dependencies
-  spec.add_dependency 'lutaml-model', '~> 0.7'
+  spec.add_dependency 'lutaml-model', '~> 0.8.0'
   spec.add_dependency 'thor', '>= 1.0'
-
-  # Development dependencies
-  spec.add_development_dependency 'rake'
-  spec.add_development_dependency 'rspec'
-  spec.add_development_dependency 'rubocop'
 end

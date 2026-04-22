@@ -31,7 +31,7 @@ module Coradoc
               marker: marker_for(ilvl),
               content: extract_plain_text(children)
             )
-            item.instance_variable_set(:@children, children)
+            item.children = children
             item
           end
 

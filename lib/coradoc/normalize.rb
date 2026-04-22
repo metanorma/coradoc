@@ -6,13 +6,8 @@ module Coradoc
   # Provides utilities to canonicalize documents to a normalized form,
   # enabling reliable comparison and round-trip testing.
   #
-  # Extracts attributes from CoreModel objects using instance variable inspection,
-  # which is more reliable than lutaml-model's to_hash for recursive types.
-  #
-  # TRACKING: Once lutaml-model fixes the recursive type issue (see
-  # docs/lutaml-model-recursive-types-proposal.md), update this module to use
-  # to_hash instead of instance variable inspection. This TODO tracks an
-  # external dependency improvement, not a code quality issue.
+  # Uses lutaml-model's to_hash for serialized attributes, supplemented
+  # with raw Ruby attributes (children, nested) that to_hash doesn't capture.
   #
   # @example Comparing documents
   #   doc1 = Coradoc.parse(text1, format: :asciidoc)
@@ -23,20 +18,6 @@ module Coradoc
   #   end
   #
   module Normalize
-    # Types that lutaml-model handles well (no recursive references)
-    SAFE_SERIALIZABLE_TYPES = %w[
-      StructuralElement
-      Block
-      Table
-      TableRow
-      TableCell
-      Image
-      Term
-      AnnotationBlock
-      ListBlock
-      ListItem
-    ].freeze
-
     class << self
       # Check if two documents are semantically equal
       #
@@ -57,9 +38,7 @@ module Coradoc
       def normalize(doc, **options)
         return nil if doc.nil?
 
-        normalized = normalize_value(doc, **options)
-        normalized = add_type_info(doc, normalized) if normalized.is_a?(Hash)
-        normalized
+        normalize_value(doc, **options)
       end
 
       # Compute a hash fingerprint for a document
@@ -81,11 +60,13 @@ module Coradoc
         when Array
           value.map { |v| normalize_value(v, **options) }
         when Hash
-          value.transform_values { |v| normalize_value(v, **options) }
+          result = value.transform_values { |v| normalize_value(v, **options) }
+          # Ensure type info is present
+          result
         when String
           normalize_string(value, **options)
         when CoreModel::Base
-          normalize_core_model(value, **options)
+          normalize_model(value, **options)
         when Lutaml::Model::Serializable
           normalize_serializable(value, **options)
         else
@@ -93,51 +74,46 @@ module Coradoc
         end
       end
 
-      # Normalize CoreModel objects by extracting instance variables
-      def normalize_core_model(obj, **_options)
+      # Normalize CoreModel objects using to_hash
+      def normalize_model(obj, **options)
+        normalize_via_to_hash(obj, **options)
+      end
+
+      # Use to_hash for lutaml-model declared attributes
+      def normalize_via_to_hash(obj, **options)
+        hash = obj.to_hash
+        result = hash.transform_values { |v| normalize_value(v, **options) }
+        result['_type'] = obj.class.name.split('::').last
+        result
+      rescue SystemStackError, Lutaml::Model::IncorrectModelError
+        # Fallback for:
+        # - deeply recursive structures that exhaust the stack
+        # - type validation errors (e.g., children collection has mixed String/Base)
+        normalize_via_ivar(obj, **options)
+      end
+
+      # Normalize generic Serializable objects using to_hash
+      def normalize_serializable(obj, **options)
+        normalize_via_to_hash(obj, **options)
+      end
+
+      # Fallback: normalize by extracting public attributes
+      def normalize_via_ivar(obj, **_options)
         result = {}
 
-        # Get all instance variables
         obj.instance_variables.each do |var|
           key = var.to_s.delete_prefix('@')
-          value = obj.instance_variable_get(var)
+          next if key.start_with?('using_default', 'lutaml_')
 
-          # Skip nil values
+          value = obj.public_send(key)
           next if value.nil?
-
-          # Skip empty collections
           next if value.respond_to?(:empty?) && value.empty?
 
           result[key] = normalize_value(value)
         end
 
-        # Add type info
         result['_type'] = obj.class.name.split('::').last
-
         result
-      end
-
-      # Normalize generic Serializable objects using to_hash
-      def normalize_serializable(obj, **options)
-        type_name = obj.class.name.split('::').last
-
-        if SAFE_SERIALIZABLE_TYPES.include?(type_name)
-          # Use to_hash for safe types
-          obj.to_hash.transform_values { |v| normalize_value(v, **options) }
-        else
-          # Fall back to instance variable extraction for recursive types
-          normalize_core_model(obj, **options)
-        end
-      rescue SystemStackError, StandardError
-        # Fall back to manual extraction
-        normalize_core_model(obj, **options)
-      end
-
-      def add_type_info(obj, normalized)
-        return normalized unless obj.is_a?(CoreModel::Base)
-
-        # Type info is already added in normalize_core_model
-        normalized
       end
 
       def normalize_string(str, **options)

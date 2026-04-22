@@ -30,13 +30,6 @@ module Coradoc
       #   @return [String] the text content of the list item
       attribute :content, :string
 
-      # Raw Ruby attributes for complex nested structures
-      # Not serialized via Lutaml::Model - use for in-memory processing
-
-      # @!attribute nested
-      #   @return [ListBlock, nil] nested list block if present
-      attr_reader :nested
-
       # @!attribute children
       #   @return [Array] array of attached blocks/elements (mixed content)
       attr_reader :children
@@ -44,13 +37,28 @@ module Coradoc
       # Initialize with optional nested structure support
       # @param args [Hash] initialization arguments
       def initialize(args = {})
-        @nested = args.delete(:nested) || args.delete(:nested_list)
         @children = args.delete(:children) || []
+        # Support :nested as alias for :nested_list
+        args[:nested_list] = args.delete(:nested) if args.key?(:nested)
         super(args)
       end
 
-      # Alias for backward compatibility
-      alias nested_list nested
+      # Delegate nested to nested_list (lutaml attribute added by list_block.rb)
+      def nested
+        nested_list if respond_to?(:nested_list)
+      end
+
+      # Set nested list
+      # @param value [ListBlock, nil] nested list block
+      def nested=(value)
+        self.nested_list = value if respond_to?(:nested_list=)
+      end
+
+      # Set children array
+      # @param value [Array] mixed content array
+      def children=(value)
+        @children = value || []
+      end
 
       # Get content for rendering, preferring children over content
       # When children are all plain strings, use the content attribute instead
@@ -61,6 +69,13 @@ module Coradoc
         return content if content && children.all?(String)
 
         children
+      end
+
+      # Override to include raw Ruby children attribute in hash output
+      def to_hash
+        super.tap do |h|
+          h["children"] = serialize_children(children) if children&.any?
+        end
       end
 
       # Convert to hash representation

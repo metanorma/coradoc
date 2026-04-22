@@ -166,10 +166,9 @@ module Coradoc
             Coradoc::CoreModel::Block.new(
               element_type: 'paragraph',
               id: para.id,
-              content: extract_text_content(para.content)
-            ).tap do |block|
-              block.instance_variable_set(:@children, children)
-            end
+              content: extract_text_content(para.content),
+              children: children
+            )
           end
 
           # Transform inline content, preserving inline element structure
@@ -349,33 +348,25 @@ module Coradoc
             items = Array(list.items).map do |item|
               # Handle both ListItem (content) and ListItemDefinition (contents, terms)
               if item.is_a?(Coradoc::AsciiDoc::Model::List::DefinitionItem)
-                # Definition list item - preserve inline elements in definitions
-                # Transform term content
+                # Definition list item
                 term_content = item.terms
-                term_children = transform_inline_content(term_content)
-
-                # Transform definition content - this preserves STEM and other inline elements
                 def_content = item.contents
-                def_children = transform_inline_content(def_content)
 
                 Coradoc::CoreModel::DefinitionItem.new(
                   term: extract_text_content(term_content),
                   definitions: [extract_text_content(def_content)]
-                ).tap do |di|
-                  di.instance_variable_set(:@term_children, term_children)
-                  di.instance_variable_set(:@def_children, def_children)
-                end
+                )
               else
                 # Regular list item - preserve inline elements
                 content_val = item.respond_to?(:content) ? item.content : item.contents
                 children = transform_inline_content(content_val)
 
-                Coradoc::CoreModel::ListItem.new(
+                li = Coradoc::CoreModel::ListItem.new(
                   content: extract_text_content(content_val),
                   marker: item.marker
-                ).tap do |li|
-                  li.instance_variable_set(:@children, children)
-                end
+                )
+                li.children = children
+                li
               end
             end
 

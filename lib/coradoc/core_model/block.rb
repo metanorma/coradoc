@@ -69,8 +69,7 @@ module Coradoc
       #   @return [String, nil] language identifier for source code blocks
       attribute :language, :string
 
-      # Raw Ruby attribute for mixed content (strings and InlineElement objects)
-      # Not serialized via Lutaml::Model - use for in-memory processing only
+      # Mixed content (strings and InlineElement objects)
       # @return [Array] mixed content array
       attr_reader :children
 
@@ -79,6 +78,12 @@ module Coradoc
       def initialize(args = {})
         @children = args.delete(:children) || []
         super(args)
+      end
+
+      # Set children array
+      # @param value [Array] mixed content array
+      def children=(value)
+        @children = value || []
       end
 
       # Get content for rendering, preferring children over content
@@ -90,6 +95,13 @@ module Coradoc
         return content if content && children.all?(String)
 
         children
+      end
+
+      # Override to include raw Ruby children attribute in hash output
+      def to_hash
+        super.tap do |h|
+          h["children"] = serialize_children(children) if children&.any?
+        end
       end
 
       private

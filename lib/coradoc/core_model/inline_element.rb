@@ -66,6 +66,28 @@ module Coradoc
       #   @return [String, nil] target URL or reference (for links, xrefs)
       attribute :target, :string
 
+      # Mixed content (strings and InlineElement objects)
+      # @return [Array] mixed content array
+      attr_reader :children
+
+      # Initialize with optional children support
+      def initialize(args = {})
+        @children = args.delete(:children) || []
+        super(args)
+      end
+
+      # Set children array
+      def children=(value)
+        @children = value || []
+      end
+
+      # Override to include raw Ruby children attribute in hash output
+      def to_hash
+        super.tap do |h|
+          h["children"] = serialize_children(children) if children&.any?
+        end
+      end
+
       private
 
       # Attributes to compare for semantic equivalence

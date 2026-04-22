@@ -9,7 +9,6 @@ gem 'coradoc-docx', path: './coradoc-docx'
 gem 'coradoc-html', path: './coradoc-html'
 gem 'coradoc-markdown', path: './coradoc-markdown'
 
-gem 'activesupport'
 gem 'lutaml-model', github: 'lutaml/lutaml-model', branch: 'main'
 gem 'lutaml-xsd'
 gem 'nokogiri'
@@ -25,6 +24,7 @@ group :development do
 end
 
 group :test do
+  gem 'benchmark'
   gem 'bundler-audit'
   gem 'codeclimate-test-reporter'
   gem 'rspec'

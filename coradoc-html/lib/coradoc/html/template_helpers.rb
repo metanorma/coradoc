@@ -19,9 +19,10 @@ module Coradoc
         # Get the renderer from context registers
         renderer ||= @context.registers[:renderer]
 
-        # If input is a Liquid::Drop, extract the original object
-        # Lutaml::Model Drops store the original in @object
-        original = if input.is_a?(::Liquid::Drop) && input.instance_variable_defined?(:@object)
+        # If input is a Liquid::Drop, extract the original model object.
+        # Liquid::Drop stores the wrapped object as @object with no public
+        # reader — this is the only way to unwrap it.
+        original = if input.is_a?(::Liquid::Drop)
                      input.instance_variable_get(:@object)
                    else
                      input

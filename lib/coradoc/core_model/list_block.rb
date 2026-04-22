@@ -39,10 +39,6 @@ module Coradoc
       #   Note: Typed as string initially, retyped after ListBlock defined
       attribute :nested_list, :string
 
-      # @!attribute children
-      #   @return [Array<Base>, nil] child elements (blocks, paragraphs)
-      attribute :children, Base, collection: true
-
       private
 
       # Attributes to compare for semantic equivalence
@@ -127,7 +123,7 @@ module Coradoc
     end
 
     # Re-open ListItem to properly type nested_list now that ListBlock
-    # is defined, and to support children as raw Ruby attribute
+    # is defined
     class ListItem
       # Remove the temporary string-typed attribute
       remove_method :nested_list if method_defined?(:nested_list)
@@ -135,31 +131,6 @@ module Coradoc
 
       # Re-define with proper ListBlock type
       attribute :nested_list, ListBlock
-
-      # Also need to handle children as raw attribute for mixed content
-      # Remove the collection-based definition if present
-      if method_defined?(:children)
-        remove_method :children if method_defined?(:children)
-        remove_method :children= if method_defined?(:children=)
-      end
-
-      # Use raw Ruby attribute for children to support mixed content
-      attr_reader :children
-
-      def initialize(args = {})
-        @children = args.delete(:children) || []
-        super(args)
-      end
-
-      # Get content for rendering, preferring children over content
-      # When children are all plain strings, use the content attribute instead
-      # since it already has proper spacing between lines.
-      def renderable_content
-        return content if children.nil? || children.none?
-        return content if content && children.all?(String)
-
-        children
-      end
     end
   end
 end
