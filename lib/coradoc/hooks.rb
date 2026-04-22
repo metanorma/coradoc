@@ -68,10 +68,10 @@ module Coradoc
         registry[hook_point] << {
           id: hook_id,
           priority: priority,
+          sequence: next_sequence,
           callback: block
         }
-        # Sort by priority after insertion
-        registry[hook_point].sort_by! { |h| h[:priority] }
+        registry[hook_point].sort_by! { |h| [h[:priority], h[:sequence]] }
         hook_id
       end
 
@@ -109,6 +109,7 @@ module Coradoc
       def clear_all
         total = registry.values.sum(&:size)
         @registry = {}
+        @sequence_counter = nil
         total
       end
 
@@ -199,6 +200,10 @@ module Coradoc
 
       def registry
         @registry ||= {}
+      end
+
+      def next_sequence
+        @sequence_counter = (@sequence_counter || 0) + 1
       end
 
       def validate_hook_point!(hook_point)
