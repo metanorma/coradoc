@@ -1,0 +1,488 @@
+---
+title: API Reference
+parent: References
+nav_order: 1
+---
+
+= API Reference
+
+== Purpose
+
+Complete API documentation for Coradoc's public interface.
+
+== Core Module
+
+=== Coradoc
+
+The main Coradoc module provides the primary API for parsing and converting documents.
+
+[source,ruby]
+----
+module Coradoc
+  VERSION: String
+
+  # Parse an AsciiDoc string
+  def self.parse(input, **options) -> Coradoc::Model::Document
+
+  # Parse an AsciiDoc file
+  def self.parse_file(filename, **options) -> Coradoc::Model::Document
+
+  # Convert a document to a format
+  def self.convert(document, to:, **options) -> String
+end
+----
+
+== Core Methods
+
+=== Coradoc.parse(input, **options)
+
+Parse an AsciiDoc string into a document model.
+
+[source,ruby]
+----
+signature: parse(input, **options) -> Coradoc::Model::Document
+----
+
+*Parameters:*
+
+* `input` (String) - AsciiDoc string to parse
+* `schema` (Symbol) - Schema to use for parsing (`:default`, `:iso`, custom)
+* `strict` (Boolean) - Whether to raise on parse errors (default: `false`)
+* `preserve_whitespace` (Boolean) - Preserve whitespace in text (default: `false`)
+* `attributes` (Hash) - Default document attributes
+
+*Returns:* `Coradoc::Model::Document`
+
+*Raises:* `Coradoc::ParseError` if parsing fails and `strict: true`
+
+*Examples:*
+
+[source,ruby]
+----
+# Basic parsing
+doc = Coradoc.parse("== Title\n\nContent")
+
+# With schema
+doc = Coradoc.parse(input, schema: :iso)
+
+# With attributes
+doc = Coradoc.parse(input, attributes: { "author" => "John Doe" })
+
+# Strict mode
+begin
+  doc = Coradoc.parse(input, strict: true)
+rescue Coradoc::ParseError => e
+  puts "Parse error: #{e.message}"
+end
+----
+
+=== Coradoc.parse_file(filename, **options)
+
+Parse an AsciiDoc file into a document model.
+
+[source,ruby]
+----
+signature: parse_file(filename, **options) -> Coradoc::Model::Document
+----
+
+*Parameters:*
+
+* `filename` (String) - Path to AsciiDoc file
+* `schema` (Symbol) - Schema to use for parsing
+* `strict` (Boolean) - Whether to raise on parse errors
+* `preserve_whitespace` (Boolean) - Preserve whitespace
+* `attributes` (Hash) - Default document attributes
+* `encoding` (String) - File encoding (default: `"UTF-8"`)
+* `base_dir` (String) - Base directory for include resolution
+
+*Returns:* `Coradoc::Model::Document`
+
+*Raises:* `Coradoc::ParseError`, `Errno::ENOENT` (file not found)
+
+*Examples:*
+
+[source,ruby]
+----
+# Basic file parsing
+doc = Coradoc.parse_file("document.adoc")
+
+# With encoding
+doc = Coradoc.parse_file("document.adoc", encoding: "ISO-8859-1")
+
+# With base directory for includes
+doc = Coradoc.parse_file("main.adoc", base_dir: "/path/to/docs")
+----
+
+=== Coradoc.convert(document, to:, **options)
+
+Convert a document model to a specified format.
+
+[source,ruby]
+----
+signature: convert(document, to:, **options) -> String
+----
+
+*Parameters:*
+
+* `document` (Coradoc::Model::Base) - Document model to convert
+* `to` (Symbol) - Target format (`:adoc`, `:html`)
+* `indent` (Integer) - Output indentation (default: `0`)
+* `line_width` (Integer, nil) - Maximum line width (default: `nil`)
+* `sort_attributes` (Boolean) - Sort attributes alphabetically
+
+*Returns:* String output in specified format
+
+*Raises:* `Coradoc::SerializationError` if serialization fails
+
+*Examples:*
+
+[source,ruby]
+----
+doc = Coradoc.parse("= Title\n\nContent")
+
+# Convert to AsciiDoc
+asciidoc = Coradoc.convert(doc, to: :adoc)
+
+# Convert with formatting
+asciidoc = Coradoc.convert(doc, to: :adoc, indent: 2, line_width: 80)
+
+# Write to file
+File.write("output.adoc", Coradoc.convert(doc, to: :adoc))
+----
+
+== Model Classes
+
+=== Coradoc::Model::Base
+
+Base class for all model elements.
+
+[source,ruby]
+----
+class Coradoc::Model::Base
+  # Serialize to AsciiDoc
+  def to_adoc(**options) -> String
+
+  # Convert to format
+  def convert(to:, **options) -> String
+end
+----
+
+=== Coradoc::Model::Document
+
+Root document container.
+
+[source,ruby]
+----
+class Coradoc::Model::Document < Base
+  attr_accessor :header        # Coradoc::Model::Header
+  attr_accessor :document_attributes  # Coradoc::Model::DocumentAttributes
+  attr_accessor :sections       # Array<Coradoc::Model::Section>
+end
+----
+
+=== Coradoc::Model::Section
+
+Document section with title and content.
+
+[source,ruby]
+----
+class Coradoc::Model::Section < Base
+  attr_accessor :title          # Coradoc::Model::Title
+  attr_accessor :sections       # Array<Coradoc::Model::Section> (nested)
+  attr_accessor :paragraphs     # Array<Coradoc::Model::Paragraph>
+  attr_accessor :blocks         # Array<Coradoc::Model::Block::Core>
+end
+----
+
+=== Coradoc::Model::Paragraph
+
+Text paragraph with inline elements.
+
+[source,ruby]
+----
+class Coradoc::Model::Paragraph < Base
+  attr_accessor :content        # Array<TextElement, Inline>
+  attr_accessor :attributes     # Coradoc::Model::AttributeList
+end
+----
+
+=== Coradoc::Model::Header
+
+Document metadata.
+
+[source,ruby]
+----
+class Coradoc::Model::Header
+  attr_accessor :title          # String
+  attr_accessor :author         # Array<Coradoc::Model::Author>
+  attr_accessor :revision       # Coradoc::Model::Revision
+end
+----
+
+=== Coradoc::Model::Title
+
+Section or block title.
+
+[source,ruby]
+----
+class Coradoc::Model::Title
+  attr_accessor :level_int      # Integer (1-6)
+  attr_accessor :content        # Array<String>
+end
+----
+
+== Block Classes
+
+=== Coradoc::Model::Block::Core
+
+Base class for delimited blocks.
+
+[source,ruby]
+----
+class Coradoc::Model::Block::Core < Base
+  attr_accessor :delimiter_char # String
+  attr_accessor :delimiter_len  # Integer
+  attr_accessor :lines          # Array<String>
+  attr_accessor :attributes     # Coradoc::Model::AttributeList
+end
+----
+
+=== Block Types
+
+* `Coradoc::Model::Block::Listing` - Code listing block
+* `Coradoc::Model::Block::Literal` - Literal text block
+* `Coradoc::Model::Block::Example` - Example block
+* `Coradoc::Model::Block::Quote` - Quoted text block
+* `Coradoc::Model::Block::Pass` - Pass-through content
+
+== List Classes
+
+=== Coradoc::Model::List::Core
+
+Base list class.
+
+[source,ruby]
+----
+class Coradoc::Model::List::Core < Base
+  attr_accessor :items          # Array<Coradoc::Model::ListItem>
+end
+----
+
+=== List Types
+
+* `Coradoc::Model::List::Unordered` - Bulleted list
+* `Coradoc::Model::List::Ordered` - Numbered list
+* `Coradoc::Model::List::Definition` - Definition list
+
+=== Coradoc::Model::ListItem
+
+List item.
+
+[source,ruby]
+----
+class Coradoc::Model::ListItem
+  attr_accessor :content        # Array<TextElement, Inline>
+  attr_accessor :nested_list    # Coradoc::Model::List::Core
+end
+----
+
+== Table Classes
+
+=== Coradoc::Model::Table
+
+Table structure.
+
+[source,ruby]
+----
+class Coradoc::Model::Table < Base
+  attr_accessor :rows           # Array<Coradoc::Model::TableRow>
+  attr_accessor :attributes     # Coradoc::Model::AttributeList
+end
+----
+
+=== Coradoc::Model::TableRow
+
+Table row.
+
+[source,ruby]
+----
+class Coradoc::Model::TableRow
+  attr_accessor :columns        # Array<Coradoc::Model::TableCell>
+end
+----
+
+=== Coradoc::Model::TableCell
+
+Table cell.
+
+[source,ruby]
+----
+class Coradoc::Model::TableCell
+  attr_accessor :content        # Array<TextElement, Inline>
+  attr_accessor :attributes     # Coradoc::Model::AttributeList
+end
+----
+
+== Inline Classes
+
+=== Coradoc::Model::Inline::Base
+
+Base class for inline elements.
+
+[source,ruby]
+----
+class Coradoc::Model::Inline::Base < Base
+  attr_accessor :content        # String or Array
+end
+----
+
+=== Inline Types
+
+* `Coradoc::Model::Inline::Bold` - Bold text (`*text*`)
+* `Coradoc::Model::Inline::Italic` - Italic text (`_text_`)
+* `Coradoc::Model::Inline::Monospace` - Monospace text (`` `text` ``)
+* `Coradoc::Model::Inline::Link` - Hyperlink (`https://example.com[label]`)
+* `Coradoc::Model::Inline::Anchor` - Cross-reference target (`[[id]]`)
+* `Coradoc::Model::Inline::CrossReference` - Cross-reference (`<<id,text>>`)
+
+=== Coradoc::Model::TextElement
+
+Plain text content.
+
+[source,ruby]
+----
+class Coradoc::Model::TextElement
+  attr_accessor :text           # String
+end
+----
+
+== Helper Classes
+
+=== Coradoc::Model::AttributeList
+
+Block or inline attributes.
+
+[source,ruby]
+----
+class Coradoc::Model::AttributeList
+  def add_positional(value) -> void
+  def add_named(name, value) -> void
+  def get(name) -> String, nil
+  def to_h -> Hash
+end
+----
+
+=== Coradoc::Model::DocumentAttributes
+
+Document-level metadata.
+
+[source,ruby]
+----
+class Coradoc::Model::DocumentAttributes
+  attr_accessor :data           # Hash<String, String>
+end
+----
+
+== Configuration
+
+=== Coradoc.configure
+
+Configure global settings.
+
+[source,ruby]
+----
+Coradoc.configure do |config|
+  config.default_schema = :iso
+  config.strict = false
+  config.parser.warn_on_undefined = true
+end
+----
+
+=== Coradoc.debug
+
+Enable/disable debug mode.
+
+[source,ruby]
+----
+Coradoc.debug = true  # Enable debug output
+Coradoc.debug = false # Disable debug output
+----
+
+== Input Conversion
+
+=== Coradoc::Input::HTML.convert
+
+Convert HTML to Document Model.
+
+[source,ruby]
+----
+signature: Coradoc::Input::HTML.convert(html) -> Coradoc::Model::Document
+----
+
+*Parameters:*
+
+* `html` (String) - HTML string to convert
+
+*Returns:* `Coradoc::Model::Document`
+
+*Examples:*
+
+[source,ruby]
+----
+html = "<h1>Title</h1><p>Content</p>"
+doc = Coradoc::Input::HTML.convert(html)
+asciidoc = doc.to_adoc
+----
+
+== Error Classes
+
+=== Coradoc::ParseError
+
+Raised when parsing fails.
+
+[source,ruby]
+----
+class Coradoc::ParseError < StandardError
+  attr_reader :line           # Integer
+  attr_reader :column         # Integer
+end
+----
+
+=== Coradoc::SerializationError
+
+Raised when serialization fails.
+
+[source,ruby]
+----
+class Coradoc::SerializationError < StandardError
+  attr_reader :model          # Coradoc::Model::Base
+end
+----
+
+=== Coradoc::SchemaError
+
+Raised for schema-related errors.
+
+[source,ruby]
+----
+class Coradoc::SchemaError < StandardError
+end
+----
+
+## Version Information
+
+[source,ruby]
+----
+Coradoc::VERSION  # => "0.x.x"
+----
+
+## Related Documentation
+
+* link:model-classes[Model Classes] - Complete model class catalog
+* link:/coradoc/guides/configuration[Configuration Guide] - Configuration options
+* link:/coradoc/pages/architecture[Architecture] - System architecture
+
+## Bibliography
+
+* https://rubydoc.info/gems/coradoc[YARD Documentation]
+* https://github.com/metanorma/coradoc[Source Code]

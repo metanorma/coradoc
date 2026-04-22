@@ -1,0 +1,21 @@
+{%- comment -%}
+TOC template for CoreModel::Toc elements
+<nav id="{{ toc.id }}" class="toc">
+  <h2>{{ toc.title | default: "Table of Contents" }}</h2>
+  <ul>
+    {% for entry in toc.entries %}
+      <li>
+        <a href="#{{ entry.id }}">{{ entry.title }}</a>
+        {% if entry.children and entry.children.size > 0 %}
+          <ul>
+            {% for child in entry.children %}
+              <li>
+                <a href="#{{ child.id }}">{{ child.title }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</nav>

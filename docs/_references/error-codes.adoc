@@ -1,0 +1,449 @@
+---
+title: Error Codes Reference
+parent: References
+nav_order: 41
+---
+
+= Error Codes Reference
+
+This document describes error classes, codes, and recovery strategies for Coradoc.
+
+== Error Class Hierarchy
+
+.Coradoc Error Hierarchy
+[source]
+----
+Coradoc::Error < StandardError (root base class)
+│
+├── Coradoc::ParseError
+│   └── Raised when document parsing fails
+│
+├── Coradoc::ValidationError
+│   └── Raised when document validation fails
+│
+├── Coradoc::TransformationError
+│   └── Raised when model transformation fails
+│
+├── Coradoc::UnsupportedFormatError
+│   └── Raised for unknown format requests
+│
+├── Coradoc::ConfigurationError
+│   └── Raised for configuration issues
+│
+├── Coradoc::AsciiDoc::Error
+│   ├── Coradoc::AsciiDoc::ParseError
+│   └── Coradoc::AsciiDoc::Model::Serialization::Errors::AsciidocError
+│       ├── ParseError
+│       ├── MappingError
+│       ├── ValidationError
+│       └── SerializationError
+│
+├── Coradoc::Html::Error
+│   ├── UnknownTagError
+│   └── InvalidConfigurationError
+│
+├── Coradoc::Html::ConverterBase::ValidationError
+├── Coradoc::Html::ConverterBase::UnsupportedDocumentError
+│
+└── Coradoc::Markdown::Error
+    ├── ParseError
+    ├── SerializationError
+    ├── UnsupportedFeatureError
+    └── TransformationError
+----
+
+== Base Error Classes
+
+=== Coradoc::Error
+
+The root error class for all Coradoc errors.
+
+[source,ruby]
+----
+begin
+  # Coradoc operations
+rescue Coradoc::Error => e
+  puts "Coradoc error: #{e.message}"
+end
+----
+
+.Attributes
+[horizontal]
+`message`:: `String` - Error message
+
+=== Coradoc::ParseError
+
+Raised when document parsing fails.
+
+[source,ruby]
+----
+class Coradoc::ParseError < Coradoc::Error
+  attr_reader :line      # Integer - Line number where error occurred
+  attr_reader :column     # Integer - Column number where error occurred
+  attr_reader :source     # String - Source text snippet
+  attr_reader :suggestion # String - Suggested fix (optional)
+end
+----
+
+.Example
+[source,ruby]
+----
+begin
+  doc = Coradoc.parse(invalid_input, format: :asciidoc, strict: true)
+rescue Coradoc::ParseError => e
+  puts "Parse error at line #{e.line}, column #{e.column}"
+  puts "Source: #{e.source}"
+  puts "Suggestion: #{e.suggestion}" if e.suggestion
+end
+----
+
+=== Coradoc::ValidationError
+
+Raised when document validation fails against a schema.
+
+[source,ruby]
+----
+class Coradoc::ValidationError < Coradoc::Error
+  attr_reader :errors    # Array<ValidationError> - List of errors
+  attr_reader :path      # String - Path to invalid element
+  attr_reader :expected   # String - Expected value/type
+  attr_reader :actual     # Object - Actual value found
+end
+----
+
+.Example
+[source,ruby]
+----
+begin
+  result = schema.validate(document)
+  raise result.to_error unless result.valid?
+rescue Coradoc::ValidationError => e
+  e.errors.each do |err|
+    puts "#{err.path}: #{err.message}"
+    puts "  Expected: #{err.expected}"
+    puts "  Actual: #{err.actual}"
+  end
+end
+----
+
+=== Coradoc::UnsupportedFormatError
+
+Raised when requesting an unsupported format.
+
+[source,ruby]
+----
+class Coradoc::UnsupportedFormatError < Coradoc::Error
+  attr_reader :format    # Symbol - The requested format
+  attr_reader :supported # Array<Symbol> - List of supported formats
+end
+----
+
+.Example
+[source,ruby]
+----
+begin
+  Coradoc.convert(input, from: :asciidoc, to: :pdf)
+rescue Coradoc::UnsupportedFormatError => e
+  puts "Format '#{e.format}' is not supported"
+  puts "Supported formats: #{e.supported.join(', ')}"
+end
+----
+
+== AsciiDoc Errors
+
+=== Coradoc::AsciiDoc::Error
+
+Base error for AsciiDoc-specific errors.
+
+[source,ruby]
+----
+begin
+  doc = Coradoc::AsciiDoc.parse(input)
+rescue Coradoc::AsciiDoc::Error => e
+  puts "AsciiDoc error: #{e.message}"
+end
+----
+
+=== Coradoc::AsciiDoc::ParseError
+
+Raised during AsciiDoc parsing.
+
+.Common Causes
+- Invalid block delimiters
+- Malformed tables
+- Unclosed inline formatting
+- Invalid attribute syntax
+
+.Example Error Message
+----
+Parse error at line 42, column 15:
+  |=== invalid table
+              ^
+Expected: cell delimiter after format specification
+Suggestion: Check table cell formatting
+----
+
+== HTML Errors
+
+=== Coradoc::Html::Error
+
+Base error for HTML-related errors.
+
+=== Coradoc::Html::UnknownTagError
+
+Raised when encountering unsupported HTML tags.
+
+[source,ruby]
+----
+class Coradoc::Html::UnknownTagError < Coradoc::Html::Error
+  attr_reader :tag_name # String - The unknown tag
+  attr_reader :position  # Integer - Position in document
+end
+----
+
+.Example
+[source,ruby]
+----
+begin
+  doc = Coradoc.parse(html_input, format: :html)
+rescue Coradoc::Html::UnknownTagError => e
+  puts "Unknown tag: <#{e.tag_name}> at position #{e.position}"
+end
+----
+
+=== Coradoc::Html::InvalidConfigurationError
+
+Raised for invalid HTML converter configuration.
+
+[source,ruby]
+----
+begin
+  Coradoc::Html.serialize(doc, theme: :nonexistent)
+rescue Coradoc::Html::InvalidConfigurationError => e
+  puts "Invalid configuration: #{e.message}"
+end
+----
+
+== Markdown Errors
+
+=== Coradoc::Markdown::Error
+
+Base error for Markdown-specific errors.
+
+=== Coradoc::Markdown::ParseError
+
+Raised during Markdown parsing.
+
+.Common Causes
+- Invalid link syntax
+- Unclosed code fences
+- Malformed tables
+- Invalid emphasis markers
+
+=== Coradoc::Markdown::UnsupportedFeatureError
+
+Raised when using unsupported Markdown features.
+
+[source,ruby]
+----
+class Coradoc::Markdown::UnsupportedFeatureError < Coradoc::Markdown::Error
+  attr_reader :feature # String - The unsupported feature
+end
+----
+
+.Example
+[source,ruby]
+----
+begin
+  doc = Coradoc.parse(markdown_with_math, format: :markdown)
+rescue Coradoc::Markdown::UnsupportedFeatureError => e
+  puts "Feature '#{e.feature}' is not supported in Markdown"
+end
+----
+
+== Error Message Format
+
+=== Standard Format
+
+All error messages follow this format:
+
+----
+[ERROR_TYPE] Error at line X, column Y:
+  Source line content here
+       ^-- Indicator
+Message: Description of the error
+Suggestion: How to fix it (if available)
+----
+
+=== Example Parse Error
+
+----
+[PARSE_ERROR] Error at line 15, column 8:
+  | Cell 1 | Cell 2 | Cell 3
+          ^
+Expected: cell delimiter '|'
+Message: Unexpected content in table cell
+Suggestion: Ensure cells are separated by '|'
+----
+
+== Error Recovery Strategies
+
+=== Graceful Degradation
+
+[source,ruby]
+----
+begin
+  doc = Coradoc.parse(input, format: :asciidoc, strict: true)
+rescue Coradoc::ParseError => e
+  # Try parsing in non-strict mode
+  doc = Coradoc.parse(input, format: :asciidoc, strict: false)
+  warn "Parsed with errors: #{e.message}"
+end
+----
+
+=== Validation with Fallback
+
+[source,ruby]
+----
+result = schema.validate(document)
+unless result.valid?
+  # Log errors but continue
+  result.errors.each { |e| logger.warn("Validation: #{e.message}") }
+
+  # Use document anyway if errors are not critical
+  document = result.document if result.errors.none?(&:critical?)
+end
+----
+
+=== Format Detection
+
+[source,ruby]
+----
+def safe_convert(input, to:)
+  # Try to detect format
+  format = detect_format(input)
+
+  begin
+    Coradoc.convert(input, from: format, to: to)
+  rescue Coradoc::UnsupportedFormatError => e
+    # Fall back to AsciiDoc
+    Coradoc.convert(input, from: :asciidoc, to: to)
+  end
+end
+----
+
+== Debugging Tips
+
+=== Enable Debug Mode
+
+[source,ruby]
+----
+# Enable verbose error output
+Coradoc.debug = true
+
+# Or via environment variable
+ENV['CORADOC_DEBUG'] = 'true'
+----
+
+=== Capture Full Error Context
+
+[source,ruby]
+----
+begin
+  doc = Coradoc.parse(input, format: :asciidoc)
+rescue Coradoc::ParseError => e
+  puts "Error: #{e.class}"
+  puts "Message: #{e.message}"
+  puts "Location: line #{e.line}, column #{e.column}"
+  puts "Source: #{e.source}" if e.respond_to?(:source)
+  puts "Backtrace:"
+  puts e.backtrace.first(5).join("\n")
+end
+----
+
+=== Log Errors for Analysis
+
+[source,ruby]
+----
+require 'logger'
+
+logger = Logger.new('coradoc_errors.log')
+
+begin
+  result = Coradoc.parse(input, format: format)
+rescue Coradoc::Error => e
+  logger.error({
+    error_class: e.class.name,
+    message: e.message,
+    input_length: input.length,
+    format: format,
+    backtrace: e.backtrace
+  }.to_json)
+  raise
+end
+----
+
+== Common Error Scenarios
+
+=== Table Parsing Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| Unclosed table | Missing `\|===` | Add closing delimiter |
+| Invalid cell format | Wrong format spec | Check colspan/rowspan syntax |
+| Missing delimiter | No cell separator | Add `\|` between cells |
+
+=== List Parsing Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| Invalid nesting | Wrong indentation | Check list level markers |
+| Unclosed continuation | Missing content | Add content after `+` |
+| Mixed markers | Inconsistent markers | Use consistent list markers |
+
+=== Inline Formatting Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| Unclosed emphasis | Missing closing marker | Add closing `_` or `*` |
+| Invalid link | Missing URL | Add URL in `[]` or `()` |
+| Nested formatting | Conflicting markers | Check nesting rules |
+
+== Exit Codes (CLI)
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Success | - |
+| 1 | General error | Check error message |
+| 2 | Parse error | Fix input syntax |
+| 3 | Validation error | Fix validation issues |
+| 4 | Unsupported format | Use supported format |
+| 5 | File not found | Check file path |
+| 6 | Configuration error | Check config file |
+| 7 | Permission denied | Check file permissions |
+
+== Reporting Errors
+
+When reporting errors, include:
+
+1. **Error class and message** - From the exception
+2. **Input that caused the error** - Minimal reproducible example
+3. **Expected behavior** - What should have happened
+4. **Environment** - Ruby version, Coradoc version
+
+[source,ruby]
+----
+# Generate error report
+def error_report(error, input)
+  <<~REPORT
+    Error Class: #{error.class}
+    Message: #{error.message}
+    Location: line #{error.line}, column #{error.column}
+    Ruby: #{RUBY_VERSION}
+    Coradoc: #{Coradoc::VERSION}
+
+    Input (first 500 chars):
+    #{input[0, 500]}
+  REPORT
+end
+----

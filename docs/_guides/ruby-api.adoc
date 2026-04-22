@@ -1,0 +1,775 @@
+---
+title: Ruby API Guide
+parent: Guides
+nav_order: 50
+---
+
+= Ruby API Guide
+
+This guide provides practical examples and patterns for using Coradoc's Ruby API.
+
+== Getting Started
+
+=== Installation
+
+Add to your Gemfile:
+
+[source,ruby]
+----
+gem 'coradoc'
+gem 'coradoc-html'      # For HTML support
+gem 'coradoc-markdown'   # For Markdown support
+----
+
+Or install directly:
+
+[source,bash]
+----
+gem install coradoc coradoc-html coradoc-markdown
+----
+
+=== Quick Start
+
+[source,ruby]
+----
+require 'coradoc'
+require 'coradoc/html'
+require 'coradoc/markdown'
+
+# Simple conversion
+html = Coradoc.convert("# Title\n\nParagraph", from: :markdown, to: :html)
+
+# Parse to model
+doc = Coradoc.parse("# Title\n\nParagraph", format: :markdown)
+
+# Access content
+puts doc.title           # => "Title"
+puts doc.children.first  # => Paragraph element
+----
+
+== Basic Operations
+
+=== Parsing Documents
+
+Parse a document to work with its structure:
+
+[source,ruby]
+----
+# Parse from string
+doc = Coradoc.parse(asciidoc_content, format: :asciidoc)
+
+# Parse from file
+doc = Coradoc.parse_file("document.adoc", format: :asciidoc)
+
+# Parse with options
+doc = Coradoc.parse(content,
+  format: :asciidoc,
+  strict: true,           # Raise on errors
+  attributes: {           # Document attributes
+    "author" => "John Doe",
+    "version" => "1.0"
+  }
+)
+
+# Access parsed content
+doc.element_type  # => "document"
+doc.title         # => "Document Title"
+doc.id            # => "doc-id"
+doc.children      # => Array of child elements
+----
+
+=== Serializing Documents
+
+Convert a model to string output:
+
+[source,ruby]
+----
+# Serialize to different formats
+html = Coradoc.serialize(doc, to: :html)
+markdown = Coradoc.serialize(doc, to: :markdown)
+asciidoc = Coradoc.serialize(doc, to: :asciidoc)
+
+# With formatting options
+output = Coradoc.serialize(doc,
+  to: :html,
+  theme: :modern,
+  indent: 2
+)
+----
+
+=== One-Step Conversion
+
+Convert directly between formats:
+
+[source,ruby]
+----
+# Direct conversion
+html = Coradoc.convert(markdown_content, from: :markdown, to: :html)
+
+# With options
+html = Coradoc.convert(content,
+  from: :asciidoc,
+  to: :html,
+  theme: :modern,
+  validate: true
+)
+
+# Auto-detect source format (by extension)
+html = Coradoc.convert(File.read("input.adoc"), to: :html)
+----
+
+== Working with CoreModel
+
+=== Creating Documents
+
+Build documents programmatically:
+
+[source,ruby]
+----
+# Create a document
+doc = Coradoc::CoreModel::StructuralElement.new(
+  element_type: "document",
+  title: "My Document",
+  id: "my-doc",
+  children: []
+)
+
+# Add a section
+section = Coradoc::CoreModel::StructuralElement.new(
+  element_type: "section",
+  level: 1,
+  title: "Introduction",
+  id: "intro",
+  children: []
+)
+
+# Add a paragraph
+para = Coradoc::CoreModel::Block.new(
+  element_type: "paragraph",
+  content: "This is the introduction."
+)
+
+section.children << para
+doc.children << section
+----
+
+=== Building Lists
+
+Create different list types:
+
+[source,ruby]
+----
+# Unordered list
+ulist = Coradoc::CoreModel::ListBlock.new(
+  marker_type: "unordered",
+  items: [
+    Coradoc::CoreModel::ListItem.new(content: "First item", marker: "*"),
+    Coradoc::CoreModel::ListItem.new(content: "Second item", marker: "*")
+  ]
+)
+
+# Ordered list
+olist = Coradoc::CoreModel::ListBlock.new(
+  marker_type: "ordered",
+  items: [
+    Coradoc::CoreModel::ListItem.new(content: "Step 1", marker: "."),
+    Coradoc::CoreModel::ListItem.new(content: "Step 2", marker: ".")
+  ]
+)
+
+# Definition list
+def_list = Coradoc::CoreModel::DefinitionList.new(
+  items: [
+    Coradoc::CoreModel::DefinitionItem.new(
+      term: "API",
+      definitions: ["Application Programming Interface"]
+    )
+  ]
+)
+
+# Nested list
+parent_item = Coradoc::CoreModel::ListItem.new(
+  content: "Parent item",
+  marker: "*",
+  nested: [
+    Coradoc::CoreModel::ListBlock.new(
+      marker_type: "unordered",
+      items: [
+        Coradoc::CoreModel::ListItem.new(content: "Child item", marker: "**")
+      ]
+    )
+  ]
+)
+----
+
+=== Building Tables
+
+Create tables with full formatting:
+
+[source,ruby]
+----
+# Simple table
+table = Coradoc::CoreModel::Table.new(
+  frame: "all",
+  grid: "all",
+  rows: [
+    # Header row
+    Coradoc::CoreModel::TableRow.new(
+      header: true,
+      cells: [
+        Coradoc::CoreModel::TableCell.new(content: "Name", header: true),
+        Coradoc::CoreModel::TableCell.new(content: "Value", header: true)
+      ]
+    ),
+    # Data row
+    Coradoc::CoreModel::TableRow.new(
+      cells: [
+        Coradoc::CoreModel::TableCell.new(content: "Item 1"),
+        Coradoc::CoreModel::TableCell.new(content: "100")
+      ]
+    )
+  ]
+)
+
+# Table with cell formatting
+formatted_cell = Coradoc::CoreModel::TableCell.new(
+  content: "Centered and bold",
+  alignment: "center",
+  style: "strong",
+  colspan: 2
+)
+
+spanning_cell = Coradoc::CoreModel::TableCell.new(
+  content: "Spans 2 rows",
+  rowspan: 2,
+  alignment: "center"
+)
+----
+
+=== Building Blocks
+
+Create different block types:
+
+[source,ruby]
+----
+# Paragraph
+para = Coradoc::CoreModel::Block.new(
+  element_type: "paragraph",
+  content: "Simple paragraph text."
+)
+
+# Code block
+code = Coradoc::CoreModel::Block.new(
+  element_type: "block",
+  delimiter_type: "----",
+  content: "def hello\n  puts 'world'\nend",
+  language: "ruby",
+  title: "Example Code"
+)
+
+# Quote block
+quote = Coradoc::CoreModel::Block.new(
+  element_type: "block",
+  delimiter_type: "____",
+  content: "Quote text here.",
+  attributes: { "attribution" => "Author Name" }
+)
+
+# Example block
+example = Coradoc::CoreModel::Block.new(
+  element_type: "block",
+  delimiter_type: "====",
+  content: "Example content.",
+  title: "Example"
+)
+
+# Admonition
+note = Coradoc::CoreModel::AnnotationBlock.new(
+  annotation_type: "NOTE",
+  content: "This is an important note."
+)
+----
+
+=== Building Inline Elements
+
+Create inline formatting:
+
+[source,ruby]
+----
+# Bold text
+bold = Coradoc::CoreModel::InlineElement.new(
+  format_type: "bold",
+  content: "Important text"
+)
+
+# Italic text
+italic = Coradoc::CoreModel::InlineElement.new(
+  format_type: "italic",
+  content: "Emphasized text"
+)
+
+# Link
+link = Coradoc::CoreModel::InlineElement.new(
+  format_type: "link",
+  content: "Click here",
+  target: "https://example.com"
+)
+
+# Image
+image = Coradoc::CoreModel::Image.new(
+  src: "images/diagram.png",
+  alt: "System Diagram",
+  title: "Figure 1: Architecture",
+  width: "800"
+)
+----
+
+== Document Manipulation
+
+=== Using DocumentManipulator
+
+Chain operations on documents:
+
+[source,ruby]
+----
+require 'coradoc/document_manipulator'
+
+manipulator = Coradoc::DocumentManipulator.new(doc)
+
+# Chain multiple operations
+result = manipulator
+  .transform_text(&:upcase)                    # Uppercase all text
+  .transform_headings(&:capitalize)             # Capitalize headings
+  .add_toc(levels: 3, position: :top)           # Add TOC
+  .add_metadata("processed_at" => Time.now.iso8601)  # Add metadata
+  .remove_elements(:comment_line)               # Remove comments
+  .to_html                                      # Output as HTML
+----
+
+=== Querying Documents
+
+Find elements using CSS-like selectors:
+
+[source,ruby]
+----
+# Parse document
+doc = Coradoc.parse(input, format: :asciidoc)
+
+# Find all sections
+sections = doc.query('section')
+
+# Find level-2 sections
+level_2_sections = doc.query('section.level-2')
+
+# Find by ID
+intro = doc.query('#intro').first
+
+# Find by class/role
+examples = doc.query('.example')
+
+# Find paragraphs in sections
+paragraphs = doc.query('section > paragraph')
+
+# Complex queries
+results = doc.query('section > paragraph:first-child')
+
+# Query within element
+section = sections.first
+paragraphs = doc.query_within(section, 'paragraph')
+
+# Chain queries
+important = doc.query('section')
+              .select { |s| s.has_role?('important') }
+              .first
+----
+
+== Advanced Patterns
+
+=== Custom Processing Pipeline
+
+Build a reusable document processor:
+
+[source,ruby]
+----
+class DocumentProcessor
+  def initialize(input, format: :asciidoc)
+    @doc = Coradoc.parse(input, format: format)
+    @manipulator = Coradoc::DocumentManipulator.new(@doc)
+  end
+
+  def process(steps)
+    steps.each do |step, args|
+      case step
+      when :upcase
+        @manipulator.transform_text(&:upcase)
+      when :add_toc
+        @manipulator.add_toc(**args)
+      when :add_metadata
+        @manipulator.add_metadata(args)
+      when :remove_comments
+        @manipulator.remove_elements(:comment_line)
+      end
+    end
+    self
+  end
+
+  def to_html(theme: :modern)
+    @manipulator.to_html(theme: theme)
+  end
+
+  def to_markdown
+    @manipulator.to_markdown
+  end
+end
+
+# Usage
+processor = DocumentProcessor.new(input, format: :asciidoc)
+html = processor.process(
+  upcase: true,
+  add_toc: { levels: 3, position: :top },
+  add_metadata: { "version" => "1.0" },
+  remove_comments: true
+).to_html
+----
+
+=== Batch Conversion
+
+Convert multiple files:
+
+[source,ruby]
+----
+class BatchConverter
+  def initialize(input_dir, output_dir, from:, to:)
+    @input_dir = input_dir
+    @output_dir = output_dir
+    @from = from
+    @to = to
+  end
+
+  def convert_all
+    Dir.glob("#{@input_dir}/*.#{@from}").each do |input_file|
+      convert_file(input_file)
+    end
+  end
+
+  def convert_file(input_file)
+    output_file = output_path(input_file)
+
+    content = File.read(input_file)
+    result = Coradoc.convert(content, from: @from, to: @to)
+
+    File.write(output_file, result)
+    puts "Converted: #{input_file} -> #{output_file}"
+  rescue Coradoc::Error => e
+    puts "Error converting #{input_file}: #{e.message}"
+  end
+
+  private
+
+  def output_path(input_file)
+    basename = File.basename(input_file, ".*")
+    File.join(@output_dir, "#{basename}.#{@to}")
+  end
+end
+
+# Usage
+converter = BatchConverter.new(
+  "docs/src",
+  "docs/build",
+  from: :asciidoc,
+  to: :html
+)
+converter.convert_all
+----
+
+=== Streaming Large Documents
+
+Process large files without loading everything into memory:
+
+[source,ruby]
+----
+# Stream parse large file
+Coradoc::Streaming.parse_large_file("large.adoc",
+                                    format: :asciidoc,
+                                    chunk_size: 100) do |chunk|
+  chunk.each do |element|
+    process_element(element)
+  end
+end
+
+# Transform in chunks
+results = Coradoc::Streaming.transform_in_chunks(elements, chunk_size: 50) do |chunk|
+  chunk.map { |el| transform_element(el) }
+end
+
+# Incremental serialization
+File.open("output.html", "w") do |file|
+  Coradoc::Streaming.serialize_incremental(document, format: :html) do |chunk|
+    file.write(chunk)
+  end
+end
+----
+
+=== Lazy Evaluation
+
+Process documents efficiently:
+
+[source,ruby]
+----
+# Wrap for lazy iteration
+wrapper = Coradoc::Lazy.wrap(document)
+
+# Process sections on-demand
+wrapper.each_section do |section|
+  process_section(section)
+end
+
+# Lazy transformation pipeline
+result = Coradoc::Lazy.transform(sections) do |p|
+  p.map { |s| transform_section(s) }
+   .select { |s| s.visible? }
+   .take(10)
+end.to_a  # Only evaluates here
+
+# Process in batches
+wrapper.each_batch(10) do |batch|
+  batch.each { |section| process(section) }
+end
+----
+
+== Validation
+
+=== Schema Validation
+
+Validate documents against schemas:
+
+[source,ruby]
+----
+# Define a validation schema
+schema = Coradoc::Validation::Schema.define do
+  required :title, type: String, min_length: 1
+  required :sections, type: Array, min_count: 1
+  optional :author, type: String
+
+  rule :check_references do |doc|
+    refs = doc.query('xref')
+    missing = refs.reject { |r| doc.resolve_reference(r) }
+    missing.map { |r| "Unresolved reference: #{r.target}" }
+  end
+end
+
+# Validate document
+result = schema.validate(document)
+
+if result.valid?
+  puts "Document is valid"
+else
+  result.errors.each { |e| puts "#{e.path}: #{e.message}" }
+end
+----
+
+=== Custom Validation Rules
+
+Add custom validation logic:
+
+[source,ruby]
+----
+class DocumentValidator
+  def initialize(schema)
+    @schema = schema
+  end
+
+  def validate(doc)
+    errors = []
+
+    # Check required sections
+    required_sections = %w[introduction conclusion]
+    required_sections.each do |section_id|
+      unless doc.query("##{section_id}").any?
+        errors << "Missing required section: #{section_id}"
+      end
+    end
+
+    # Check image references
+    doc.query('image').each do |img|
+      unless File.exist?(img.src)
+        errors << "Missing image: #{img.src}"
+      end
+    end
+
+    # Check cross-references
+    doc.query('xref').each do |xref|
+      unless doc.resolve_reference(xref)
+        errors << "Unresolved reference: #{xref.target}"
+      end
+    end
+
+    errors
+  end
+end
+----
+
+== Error Handling
+
+=== Comprehensive Error Handling
+
+[source,ruby]
+----
+def safe_convert(input, from:, to:)
+  doc = Coradoc.parse(input, format: from, strict: true)
+  Coradoc.serialize(doc, to: to)
+rescue Coradoc::ParseError => e
+  {
+    success: false,
+    error: :parse_error,
+    message: e.message,
+    line: e.line,
+    column: e.column
+  }
+rescue Coradoc::ValidationError => e
+  {
+    success: false,
+    error: :validation_error,
+    message: e.message,
+    errors: e.errors
+  }
+rescue Coradoc::UnsupportedFormatError => e
+  {
+    success: false,
+    error: :unsupported_format,
+    message: "Format '#{e.format}' not supported",
+    supported: e.supported
+  }
+rescue Coradoc::Error => e
+  {
+    success: false,
+    error: :unknown,
+    message: e.message
+  }
+end
+----
+
+== Integration Patterns
+
+=== Rails Integration
+
+Use Coradoc in a Rails application:
+
+[source,ruby]
+----
+# app/services/document_service.rb
+class DocumentService
+  def initialize(document)
+    @document = document
+  end
+
+  def to_html
+    @html ||= Coradoc.convert(
+      @document.content,
+      from: @document.format.to_sym,
+      to: :html,
+      theme: :modern
+    )
+  end
+
+  def to_pdf
+    # Convert to HTML first, then use a PDF generator
+    html = to_html
+    # PDF generation logic here
+  end
+end
+
+# app/controllers/documents_controller.rb
+class DocumentsController < ApplicationController
+  def show
+    @document = Document.find(params[:id])
+    @html = DocumentService.new(@document).to_html
+  end
+end
+----
+
+=== Background Job Processing
+
+Process documents asynchronously:
+
+[source,ruby]
+----
+# app/jobs/document_conversion_job.rb
+class DocumentConversionJob < ApplicationJob
+  queue_as :default
+
+  def perform(document_id)
+    document = Document.find(document_id)
+
+    html = Coradoc.convert(
+      document.content,
+      from: document.format.to_sym,
+      to: :html
+    )
+
+    document.update!(
+      html_content: html,
+      converted_at: Time.current
+    )
+  rescue Coradoc::Error => e
+    document.update!(
+      conversion_error: e.message,
+      converted_at: nil
+    )
+  end
+end
+----
+
+== Testing
+
+=== Test Helpers
+
+Create helpers for testing:
+
+[source,ruby]
+----
+# spec/support/coradoc_helpers.rb
+module CoradocHelpers
+  def parse_adoc(content)
+    Coradoc.parse(content, format: :asciidoc)
+  end
+
+  def parse_markdown(content)
+    Coradoc.parse(content, format: :markdown)
+  end
+
+  def convert_to_html(content, from: :asciidoc)
+    Coradoc.convert(content, from: from, to: :html)
+  end
+
+  def assert_roundtrip(content, format: :asciidoc)
+    doc = Coradoc.parse(content, format: format)
+    output = Coradoc.serialize(doc, to: format)
+    expect(output.strip).to eq(content.strip)
+  end
+end
+
+RSpec.configure do |config|
+  config.include CoradocHelpers
+end
+----
+
+=== Example Specs
+
+[source,ruby]
+----
+RSpec.describe "Document Conversion" do
+  it "converts markdown to HTML" do
+    md = "# Title\n\nParagraph"
+    html = convert_to_html(md, from: :markdown)
+
+    expect(html).to include("<h1>Title</h1>")
+    expect(html).to include("<p>Paragraph</p>")
+  end
+
+  it "preserves document structure in round-trip" do
+    adoc = "= Title\n\n== Section\n\nContent"
+    assert_roundtrip(adoc, format: :asciidoc)
+  end
+end
+----

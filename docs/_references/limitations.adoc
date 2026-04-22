@@ -1,0 +1,201 @@
+---
+title: Known Limitations
+parent: References
+nav_order: 50
+---
+
+= Known Limitations
+
+This document lists known limitations and unsupported features in Coradoc. Understanding these helps avoid unexpected behavior.
+
+== Format Support Limitations
+
+=== HTML Input
+
+[WARNING]
+====
+HTML input parsing now works with `Coradoc.parse(text, format: :html)` and `Coradoc::Html.parse_to_core`.
+====
+
+* `Coradoc::Html.parse_to_core()` - Returns a proper CoreModel
+* `Coradoc.parse(text, format: :html)` - Now works correctly
+* Cross-format conversion FROM HTML now works
+
+=== AsciiDoc Serialization
+
+[WARNING]
+====
+AsciiDoc serialization now works!
+====
+
+* `Coradoc::AsciiDoc.serialize(core_model)` - WORKS!
+* `Coradoc::AsciiDoc.serialize(ascii_doc_model)` - NOW WORKS!
+
+=== Markdown Serialization from CoreModel
+
+[WARNING]
+====
+Markdown serialization from CoreModel is now supported!
+====
+
+* `Coradoc::Markdown.serialize(markdown_model)` - works
+* `Coradoc::Markdown.serialize(core_model)` - NOW WORKS!
+* `Coradoc.serialize(core_model, to: :markdown)` - NOW WORKS!
+
+=== Cross-Format Conversion
+
+All conversion paths now work:
+
+| From | To | Status |
+|------|----|--------|
+| AsciiDoc | HTML | Works |
+| Markdown | HTML | Works |
+| HTML | AsciiDoc | Works |
+| HTML | Markdown | Works |
+| AsciiDoc | Markdown | Works |
+| Markdown | AsciiDoc | Works |
+| DOCX | AsciiDoc | Works |
+| DOCX | Markdown | Works |
+
+NOTE: Heading levels are mapped correctly between formats. AsciiDoc level 0 (`=`) maps to Markdown level 1 (`#`), and so on.
+
+== Feature Limitations
+
+=== AsciiDoc Features Not Supported
+
+The following AsciiDoc features are NOT supported by Coradoc's core parser:
+
+[NOTE]
+====
+These are Metanorma-level features, not Coradoc features.
+====
+
+* Standards-specific attributes (`:docnumber:`, `:doctype:`, `:docstage:`)
+* Specialized term definitions (`alt:[]`, `deprecated:[]`, `domain:[]`)
+* Bibliography with specialized citation format
+
+=== Supported AsciiDoc Features
+
+Coradoc DOES support core AsciiDoc:
+
+* Document title and sections
+* Paragraphs and text
+* Lists (ordered, unordered, definition)
+* Tables (with cell format specs, multi-line cells via `+` continuation, dynamic delimiters)
+* Code blocks
+* Blockquotes
+* Admonitions (NOTE, TIP, WARNING, etc.)
+* Sidebar blocks (with attribute lists and nested content)
+* Example blocks
+* Images (block and inline)
+* Links and basic cross-references
+* Basic attributes
+* `%key` definition lists
+
+=== Markdown Features
+
+Coradoc supports:
+
+* CommonMark specification
+* GitHub Flavored Markdown (GFM) tables
+* GFM task lists
+* GFM strikethrough
+
+Coradoc does NOT support:
+
+* LaTeX math
+* Complex HTML blocks
+* Custom containers
+
+=== DOCX Input
+
+Coradoc supports parsing DOCX (Word) files into CoreModel via the
+`coradoc-docx` gem and Uniword. The DOCX pipeline supports:
+
+* Headings (via style detection including custom heading styles)
+* Paragraphs with inline formatting (bold, italic, underline, monospace, etc.)
+* Ordered and unordered lists (via numbering resolver)
+* Tables with rowspan/colspan
+* Images (inline and anchored drawings)
+* Hyperlinks and cross-references (bookmarks)
+* Footnotes
+* Math formulas (OMML via Plurimath/LaTeX)
+* Code blocks (via style detection)
+
+DOCX limitations:
+
+* **Parse only** -- CoreModel to DOCX is not yet implemented
+* **Print layout** -- Page size, margins, headers/footers as page regions are discarded
+* **Complex fields** -- Field characters (TOC, PAGE) are partially handled
+* **Tracked changes** -- Deleted text is currently skipped
+* **VML shapes** -- Only inline drawings are extracted
+
+== Working Patterns
+
+These patterns are verified to work:
+
+[source,ruby]
+----
+# Parse AsciiDoc and convert to HTML
+adoc = "= Title\n\nParagraph."
+html = Coradoc.convert(adoc, from: :asciidoc, to: :html)
+
+# Parse Markdown and convert to HTML
+md = "# Title\n\nParagraph."
+html = Coradoc.convert(md, from: :markdown, to: :html)
+
+# Parse AsciiDoc to CoreModel
+adoc = "= Title\n\nParagraph."
+core = Coradoc.parse(adoc, format: :asciidoc)
+
+# Parse HTML to CoreModel (NOW WORKS!)
+html = "<h1>Title</h1><p>Paragraph.</p>"
+core = Coradoc.parse(html, format: :html)
+
+# Serialize CoreModel to HTML
+html = Coradoc::Html.serialize_static(core)
+
+# Serialize CoreModel to AsciiDoc
+core = Coradoc.parse("= Title", format: :asciidoc)
+adoc = Coradoc::AsciiDoc.serialize(core)
+
+# Convert HTML to AsciiDoc
+html = "<h1>Title</h1><p>Paragraph.</p>"
+adoc = Coradoc.convert(html, from: :html, to: :asciidoc)
+
+# Convert HTML to Markdown
+html = "<h1>Title</h1><p>Paragraph.</p>"
+md = Coradoc.convert(html, from: :html, to: :markdown)
+
+# Convert AsciiDoc to Markdown (NOW WORKS!)
+adoc = "= Title\n\n== Section\n\nContent."
+md = Coradoc.convert(adoc, from: :asciidoc, to: :markdown)
+
+# Convert Markdown to AsciiDoc (NOW WORKS!)
+md = "# Title\n\n## Section\n\nContent."
+adoc = Coradoc.convert(md, from: :markdown, to: :asciidoc)
+
+# Convert DOCX to AsciiDoc (requires coradoc-docx gem)
+require 'coradoc/docx'
+adoc = Coradoc.convert("input.docx", from: :docx, to: :asciidoc)
+
+# Convert DOCX to Markdown
+md = Coradoc.convert("input.docx", from: :docx, to: :markdown)
+----
+
+== Non-Working Patterns
+
+=== HTML Serialization Bug
+
+[WARNING]
+====
+When using `Coradoc::Html.serialize_static()`, complex documents may output Ruby object representations instead of proper HTML elements. This affects table cells and some nested structures.
+====
+
+This is a known issue in the HTML serializer. The parsing works correctly, but the serialization layer needs improvement to properly handle all model types.
+
+=== Reporting Issues
+
+If you encounter issues not listed here, please report them at:
+
+https://github.com/metanorma/coradoc/issues

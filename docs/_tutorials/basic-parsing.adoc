@@ -1,0 +1,324 @@
+---
+title: Basic Parsing
+parent: Tutorials
+nav_order: 1
+---
+
+= Basic Parsing Tutorial
+
+== Purpose
+
+This tutorial teaches you how to parse AsciiDoc documents with Coradoc. You'll learn to parse strings, files, and access document structure.
+
+== Prerequisites
+
+* Ruby installed on your machine
+* Coradoc gem installed (see link:/coradoc/pages/getting-started[Getting Started])
+* Basic familiarity with AsciiDoc syntax
+
+== Tutorial Overview
+
+You'll learn to:
+
+* Parse a simple AsciiDoc string
+* Parse an AsciiDoc file
+* Access document header information
+* Navigate sections
+* Work with paragraphs and blocks
+* Parse lists and inline formatting
+
+== Example 1: Parse a Simple Document
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+input = <<~ASCIIDOC
+  = Hello World
+
+  This is a paragraph.
+
+  == Section 1
+
+  This is content in section 1.
+ASCIIDOC
+
+doc = Coradoc.parse(input)
+puts "Document title: #{doc.header.title}"
+puts "Number of sections: #{doc.sections.size}"
+
+# Find the first actual Section
+section = doc.sections.find { |s| s.is_a?(Coradoc::Model::Section) }
+if section
+  puts "First section title: #{section.title.content}"
+end
+----
+
+=== What It Does
+
+1. Parses an AsciiDoc string containing a title and section
+2. Accesses the document title from the header
+3. Counts the sections
+4. Prints the first section's title
+
+=== Expected Output
+
+----
+Document title: Hello World
+Number of sections: 1
+First section title: ["Section 1"]
+----
+
+== Example 2: Parse from File
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+# Create a temporary file
+temp_file = "/tmp/coradoc_example.adoc"
+File.write(temp_file, <<~ASCIIDOC)
+  = Document Title
+  Author Name <author@example.com>
+
+  == Introduction
+
+  This is the introduction paragraph.
+
+  * List item 1
+  * List item 2
+  * List item 3
+ASCIIDOC
+
+doc = Coradoc.parse_file(temp_file)
+puts "Document title: #{doc.header.title}"
+puts "Author: #{doc.header.author&.first&.name}"
+
+section = doc.sections.find { |s| s.is_a?(Coradoc::Model::Section) }
+if section
+  paragraphs = section.contents.select { |c| c.is_a?(Coradoc::Model::Paragraph) }
+  lists = section.contents.select { |c| c.is_a?(Coradoc::Model::List::Core) }
+  puts "Number of paragraphs: #{paragraphs.size}"
+  puts "Number of lists: #{lists.size}"
+end
+
+# Cleanup
+File.delete(temp_file) if File.exist?(temp_file)
+----
+
+=== What It Does
+
+1. Creates a temporary AsciiDoc file
+2. Parses the file with `parse_file`
+3. Accesses header information (title, author)
+4. Counts paragraphs and lists in the section
+
+=== Expected Output
+
+----
+Document title: Document Title
+Author: Author Name
+Number of paragraphs: 1
+Number of lists: 1
+----
+
+== Example 3: Parse with Inline Formatting
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+input = <<~ASCIIDOC
+  = Formatting Examples
+
+  This has *bold text* and _italic text_.
+
+  This has `monospace text` and a https://example.com[link].
+ASCIIDOC
+
+doc = Coradoc.parse(input)
+
+# Find a paragraph (may be at document level)
+paragraph = doc.sections.find { |s| s.is_a?(Coradoc::Model::Paragraph) }
+if !paragraph
+  # Try nested in first section
+  section = doc.sections.find { |s| s.is_a?(Coradoc::Model::Section) }
+  paragraph = section&.paragraphs&.first
+end
+
+if paragraph
+  puts "Paragraph has #{paragraph.content.size} content elements"
+  paragraph.content.each do |element|
+    puts "  - #{element.class.name}"
+  end
+end
+----
+
+=== What It Does
+
+1. Parses text with bold, italic, monospace, and links
+2. Finds a paragraph in the document
+3. Inspects the content elements
+4. Shows the different element types
+
+=== Expected Output
+
+----
+Paragraph has 7 content elements
+  - Coradoc::Model::TextElement
+  - Coradoc::Model::Inline::Bold
+  - Coradoc::Model::TextElement
+  - Coradoc::Model::Inline::Italic
+  - Coradoc::Model::TextElement
+  - Coradoc::Model::Inline::Monospace
+  - Coradoc::Model::Inline::Link
+----
+
+== Example 4: Parse Lists
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+input = <<~ASCIIDOC
+  = Lists
+
+  * Unordered item 1
+  ** Nested item
+  * Unordered item 2
+
+  . Ordered item 1
+  . Ordered item 2
+  . Ordered item 3
+
+  [horizontal]
+  Term 1:: Definition 1
+  Term 2:: Definition 2
+ASCIIDOC
+
+doc = Coradoc.parse(input)
+
+# Find all list objects at document level
+lists = doc.sections.select { |s| s.is_a?(Coradoc::Model::List::Core) }
+puts "Number of lists: #{lists.size}"
+
+lists.each_with_index do |list, i|
+  puts "  List #{i + 1}: #{list.class.name} with #{list.items.size} items"
+end
+----
+
+=== What It Does
+
+1. Parses unordered, ordered, and definition lists
+2. Finds all list objects in the document
+3. Prints the list type and item count
+
+=== Expected Output
+
+----
+Number of lists: 3
+  List 1: Coradoc::Model::List::Unordered with 2 items
+  List 2: Coradoc::Model::List::Ordered with 3 items
+  List 3: Coradoc::Model::List::Definition with 2 items
+----
+
+== Example 5: Parse Blocks
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+input = <<~ASCIIDOC
+  = Blocks
+
+  [source,ruby]
+  ----
+  def hello
+    puts "Hello, World!"
+  end
+  ----
+
+  ____
+  Quoted text block.
+  ____
+
+  NOTE: This is a note admonition.
+ASCIIDOC
+
+doc = Coradoc.parse(input)
+
+# Find section with blocks
+section = doc.sections.find { |s| s.is_a?(Coradoc::Model::Section) }
+if section
+  puts "Block types in document:"
+  section.contents.each do |block|
+    puts "  - #{block.class.name}"
+    if block.respond_to?(:lines)
+      puts "    Lines: #{block.lines.size}"
+    end
+    if block.respond_to?(:content)
+      puts "    Content: #{block.content}"
+    end
+  end
+end
+----
+
+=== What It Does
+
+1. Parses listing, quote, and admonition blocks
+2. Identifies block types by class name
+3. Shows block-specific attributes
+
+=== Expected Output
+
+----
+Block types in document:
+  - Coradoc::Model::Block::Listing
+    Lines: 3
+  - Coradoc::Model::Block::Quote
+    Lines: 2
+  - Coradoc::Model::Admonition
+    Content: [["This", " ", "is", " ", "a", " ", "note", " ", "admonition."]]
+----
+
+== Summary
+
+In this tutorial you learned:
+
+* How to parse AsciiDoc strings with `Coradoc.parse`
+* How to parse files with `Coradoc.parse_file`
+* How to access document headers
+* How to navigate sections
+* How to work with paragraphs and content elements
+* How to parse lists, blocks, and inline formatting
+
+== Exercises
+
+Practice your skills:
+
+1. Parse a document with nested sections and print the section hierarchy
+2. Create a document with a table and access the table cells
+3. Parse a document with cross-references (`<<id,text>>`) and access the link targets
+4. Write a script that counts all paragraphs in a document
+
+== Next Steps
+
+* link:document-modeling[Document Modeling Tutorial] - Learn to manipulate the model
+* link:/coradoc/pages/parsing[Parsing Layer] - Deep dive into the parser
+* link:/coradoc/references/api-reference[API Reference] - Complete parsing API
+
+== Source Code
+
+The source code for these examples is available at:
+
+* link:https://github.com/metanorma/coradoc/tree/main/examples/basic_parsing.rb[examples/basic_parsing.rb]

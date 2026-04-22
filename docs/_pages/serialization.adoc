@@ -1,0 +1,300 @@
+---
+title: Serialization
+parent: Core Pages
+nav_order: 6
+---
+
+= Serialization
+
+== Purpose
+
+This page explains how Coradoc serializes Document Models back to AsciiDoc text. You'll learn about the serialization layer, how it works, and how to customize it for your needs.
+
+== Overview
+
+All Model objects in Coradoc can be serialized to AsciiDoc through the `to_adoc` method. The serialization layer converts the rich object model back into AsciiDoc text, enabling round-trip document processing.
+
+== Basic Serialization
+
+=== Serializing Individual Elements
+
+Any Model object can be serialized to AsciiDoc:
+
+[source,ruby]
+----
+# Serialize a paragraph
+paragraph.to_adoc
+
+# Serialize a section
+section.to_adoc
+
+# Serialize a complete document
+document.to_adoc
+----
+
+=== Example: Paragraph Serialization
+
+[source,ruby]
+----
+paragraph = Coradoc::Model::Paragraph.new
+paragraph.content = [Coradoc::Model::TextElement.new("Hello")]
+paragraph.to_adoc  # => "Hello\n"
+----
+
+=== Example: Section Serialization
+
+[source,ruby]
+----
+section = Coradoc::Model::Section.new
+section.title = Coradoc::Model::Title.new
+section.title.level_int = 2
+section.title.content = ["Chapter 1"]
+para = Coradoc::Model::Paragraph.new
+para.content = [Coradoc::Model::TextElement.new("Section content")]
+section.blocks = [para]
+
+section.to_adoc
+# => "== Chapter 1\n\nSection content\n"
+----
+
+== Serialization Methods
+
+### Model#to_adoc
+
+Serialize any Model object to AsciiDoc.
+
+[source,ruby]
+----
+paragraph.to_adoc
+section.to_adoc
+table.to_adoc
+document.to_adoc
+----
+
+*Returns:* (String) AsciiDoc representation
+
+### Coradoc::Output::Adoc.serialize
+
+Explicit serialization through the Output module.
+
+[source,ruby]
+----
+Coradoc::Output::Adoc.serialize(paragraph)
+Coradoc::Output::Adoc.serialize(section)
+----
+
+### Coradoc.convert
+
+Convert with explicit format specification.
+
+[source,ruby]
+----
+doc = Coradoc.parse_file("input.adoc")
+
+# Convert to AsciiDoc (same as to_adoc)
+output = Coradoc.convert(doc, to: :adoc)
+----
+
+*Parameters:*
+
+* `document` (Coradoc::Model::Base) - Document model to convert
+* `to` (Symbol) - Target format (`:adoc`, `:html`)
+* `**options` (Hash) - Conversion options
+
+*Returns:* String output in specified format
+
+== Serialization Architecture
+
+### Element Registry
+
+The ElementRegistry maps Model classes to their serializers:
+
+[source,ruby]
+----
+Coradoc::Output::Adoc::ElementRegistry.register(
+  Coradoc::Model::Block::Custom,
+  Coradoc::Output::Adoc::Serializers::Block::CustomSerializer
+)
+----
+
+### Serializer Classes
+
+Each Model type has a corresponding serializer:
+
+* `DocumentSerializer` - Serializes documents
+* `SectionSerializer` - Serializes sections
+* `ParagraphSerializer` - Serializes paragraphs
+* `ListSerializer` - Serializes lists
+* `TableSerializer` - Serializes tables
+* `InlineSerializer` - Serializes inline elements
+
+## Serialization Examples
+
+### Serializing Lists
+
+[source,ruby]
+----
+# Unordered list
+list = Coradoc::Model::List::Unordered.new
+item1 = Coradoc::Model::ListItem.new
+item1.content = [Coradoc::Model::TextElement.new("First item")]
+list.items << item1
+
+item2 = Coradoc::Model::ListItem.new
+item2.content = [Coradoc::Model::TextElement.new("Second item")]
+list.items << item2
+
+puts list.to_adoc
+# => * First item\n* Second item\n
+----
+
+### Serializing Tables
+
+[source,ruby]
+----
+table = Coradoc::Model::Table.new
+
+# Add header row
+header_row = Coradoc::Model::TableRow.new
+%w[Name Age City].each do |header_text|
+  cell = Coradoc::Model::TableCell.new
+  cell.content = [Coradoc::Model::TextElement.new(header_text)]
+  header_row.columns << cell
+end
+table.rows << header_row
+
+# Add data row
+data_row = Coradoc::Model::TableRow.new
+%w[Alice 25 NYC].each do |cell_text|
+  cell = Coradoc::Model::TableCell.new
+  cell.content = [Coradoc::Model::TextElement.new(cell_text)]
+  data_row.columns << cell
+end
+table.rows << data_row
+
+puts table.to_adoc
+# => |===\n|Name |Age |City\n\n|Alice |25 |NYC\n|===\n"
+----
+
+### Serializing Blocks
+
+[source,ruby]
+----
+# Listing block
+listing = Coradoc::Model::Block::Listing.new
+listing.lines = ["def hello", "  puts 'Hello, World!'", "end"]
+listing.attributes = Coradoc::Model::AttributeList.new
+listing.attributes.add_positional("ruby")
+puts listing.to_adoc
+# => [source,ruby]\n----\ndef hello\n  puts 'Hello, World!'\nend\n----\n
+
+# Quote block
+quote = Coradoc::Model::Block::Quote.new
+quote.lines = ["This is a quote.", "It spans multiple lines."]
+puts quote.to_adoc
+# => ____\nThis is a quote.\nIt spans multiple lines.\n____\n
+----
+
+### Serializing Inline Elements
+
+[source,ruby]
+----
+# Create paragraph with various inline elements
+paragraph = Coradoc::Model::Paragraph.new
+paragraph.content = [
+  Coradoc::Model::TextElement.new("Text with "),
+  Coradoc::Model::Inline::Bold.new(content: "bold"),
+  Coradoc::Model::TextElement.new(", "),
+  Coradoc::Model::Inline::Italic.new(content: "italic"),
+  Coradoc::Model::TextElement.new(", and "),
+  Coradoc::Model::Inline::Monospace.new(content: "monospace"),
+  Coradoc::Model::TextElement.new(" text."),
+]
+
+puts paragraph.to_adoc
+# => Text with *bold*, _italic_, and `monospace` text.\n
+
+# Link
+link = Coradoc::Model::Inline::Link.new
+link.path = "https://example.com"
+link.name = "Example Site"
+puts link.to_adoc
+# => https://example.com[Example Site]
+
+# Anchor
+anchor = Coradoc::Model::Inline::Anchor.new
+anchor.id = "section1"
+puts anchor.to_adoc
+# => [[section1]]
+----
+
+## Round-Trip Serialization
+
+Serialization is designed for round-trip processing:
+
+[source,ruby]
+----
+original = "== My Document\n\nThis is content."
+
+# Parse to model
+doc = Coradoc.parse(original)
+
+# Serialize back to AsciiDoc
+regenerated = doc.to_adoc
+
+# Parse again to verify semantic equivalence
+doc2 = Coradoc.parse(regenerated)
+
+# The models should be semantically equivalent
+# (formatting may differ, but meaning is preserved)
+----
+
+== Custom Serializers
+
+To add a serializer for a custom element:
+
+### 1. Create the Serializer Class
+
+[source,ruby]
+----
+module Coradoc
+  module Output
+    module Adoc
+      module Serializers
+        class CustomSerializer < Core
+          def serialize_to_adoc
+            parts = []
+            parts << @model.gen_delimiter << "\n"
+            parts << @model.gen_title
+            parts << @model.gen_attributes
+            parts << @model.gen_lines
+            parts << @model.gen_delimiter << "\n"
+            parts.join
+          end
+        end
+      end
+    end
+  end
+end
+----
+
+### 2. Register the Serializer
+
+[source,ruby]
+----
+Coradoc::Output::Adoc::ElementRegistry.register(
+  Coradoc::Model::Block::Custom,
+  Coradoc::Output::Adoc::Serializers::Block::CustomSerializer
+)
+----
+
+## Related Documentation
+
+* link:architecture[Architecture] - Serialization layer overview
+* link:model[Document Model] - Model class details
+* link:/coradoc/tutorials/serialization[Serialization Tutorial] - Hands-on examples
+* link:/coradoc/references/output-formats[Output Formats] - Format options
+
+## Bibliography
+
+* https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[AsciiDoc Syntax Reference]

@@ -1,0 +1,464 @@
+---
+title: Document Modeling
+parent: Tutorials
+nav_order: 2
+---
+
+= Document Modeling Tutorial
+
+== Purpose
+
+This tutorial teaches you how to work with the Coradoc Document Model. You'll learn to navigate, query, and manipulate document structure programmatically.
+
+== Prerequisites
+
+* Completed link:basic-parsing[Basic Parsing Tutorial] or equivalent
+* Understanding of Ruby objects and methods
+* Familiarity with AsciiDoc structure
+
+== Tutorial Overview
+
+You'll learn to:
+
+* Access document structure
+* Work with paragraphs and inline elements
+* Navigate nested sections
+* Manipulate lists and tables
+* Work with document attributes
+
+== Example 1: Accessing Document Structure
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+input = <<~ASCIIDOC
+  = Main Title
+
+  == Section 1
+
+  Paragraph in section 1.
+
+  === Subsection 1.1
+
+  Content in subsection.
+
+  == Section 2
+
+  Paragraph in section 2.
+ASCIIDOC
+
+doc = Coradoc.parse(input)
+
+puts "Document title: #{doc.header.title}"
+puts "Top-level sections: #{doc.sections.map { |s| s.title&.content&.first || '(unnamed)' }.join(', ')}"
+
+# Navigate to nested sections
+section1 = doc.sections.find { |s| s.is_a?(Coradoc::Model::Section) }
+if section1
+  subsections = section1.sections.select { |s| s.is_a?(Coradoc::Model::Section) }
+  puts "Section 1 subsections: #{subsections.map { |s| s.title.content.first }.join(', ')}"
+end
+----
+
+=== What It Does
+
+1. Parses a document with nested sections
+2. Accesses the document title
+3. Lists all top-level sections
+4. Navigates to nested subsections
+
+=== Expected Output
+
+----
+Document title: Main Title
+Top-level sections: Section 1, Section 2
+Section 1 subsections: Subsection 1.1
+----
+
+== Example 2: Working with Paragraphs
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+input = <<~ASCIIDOC
+  = Paragraph Examples
+
+  First paragraph.
+
+  Second paragraph with *bold* text.
+
+  Third paragraph with a https://example.com[link].
+ASCIIDOC
+
+doc = Coradoc.parse(input)
+
+# Find a section with paragraphs
+section = doc.sections.find { |s| s.is_a?(Coradoc::Model::Section) }
+if !section
+  # Try document-level paragraphs
+  paragraphs = doc.sections.select { |s| s.is_a?(Coradoc::Model::Paragraph) }
+else
+  paragraphs = section.paragraphs
+end
+
+paragraphs.each_with_index do |para, i|
+  puts "Paragraph #{i + 1}:"
+  para.content.each do |element|
+    case element
+    when Coradoc::Model::TextElement
+      puts "  Text: #{element.text}"
+    when Coradoc::Model::Inline::Bold
+      puts "  Bold: #{element.content}"
+    when Coradoc::Model::Inline::Link
+      puts "  Link: #{element.path} [#{element.name}]"
+    end
+  end
+end
+----
+
+=== What It Does
+
+1. Parses a document with multiple paragraphs
+2. Finds paragraphs in the document
+3. Inspects content elements within each paragraph
+4. Shows different element types (text, bold, link)
+
+=== Expected Output
+
+----
+Paragraph 1:
+  Text: First paragraph.
+Paragraph 2:
+  Text: Second paragraph with
+  Bold: bold
+  Text:  text.
+Paragraph 3:
+  Text: Third paragraph with a
+  Link: https://example.com [link]
+  Text: .
+----
+
+== Example 3: Working with Lists
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+input = <<~ASCIIDOC
+  = List Examples
+
+  * Item 1
+  ** Item 1.1
+  ** Item 1.2
+  * Item 2
+
+  . Step 1
+  . Step 2
+  . Step 3
+ASCIIDOC
+
+doc = Coradoc.parse(input)
+
+# Find a section with lists
+section = doc.sections.find { |s| s.is_a?(Coradoc::Model::Section) }
+if !section
+  # Try document-level lists
+  lists = doc.sections.select { |s| s.is_a?(Coradoc::Model::List::Core) }
+else
+  lists = section.blocks.select { |b| b.is_a?(Coradoc::Model::List::Core) }
+end
+
+# Find unordered list
+unordered_list = lists.find { |l| l.is_a?(Coradoc::Model::List::Unordered) }
+if unordered_list
+  puts "Unordered list has #{unordered_list.items.size} top-level items"
+  unordered_list.items.each do |item|
+    text = item.content.first&.text || "(empty)"
+    puts "  Item: #{text}"
+    # Check for nested lists
+    if item.nested_list
+      puts "    Has nested list with #{item.nested_list.items.size} items"
+    end
+  end
+end
+
+# Find ordered list
+ordered_list = lists.find { |l| l.is_a?(Coradoc::Model::List::Ordered) }
+if ordered_list
+  puts "\nOrdered list has #{ordered_list.items.size} items"
+end
+----
+
+=== What It Does
+
+1. Parses a document with unordered and ordered lists
+2. Finds the unordered list
+3. Iterates through list items
+4. Detects and reports nested lists
+
+=== Expected Output
+
+----
+Unordered list has 2 top-level items
+  Item: Item 1
+    Has nested list with 2 items
+  Item: Item 2
+
+Ordered list has 3 items
+----
+
+== Example 4: Working with Tables
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+input = <<~ASCIIDOC
+  = Table Examples
+
+  |===
+  | Header 1 | Header 2 | Header 3
+
+  | Cell 1.1 | Cell 1.2 | Cell 1.3
+  | Cell 2.1 | Cell 2.2 | Cell 2.3
+  |===
+ASCIIDOC
+
+doc = Coradoc.parse(input)
+
+# Find a section with tables
+section = doc.sections.find { |s| s.is_a?(Coradoc::Model::Section) }
+if !section
+  # Try document-level tables
+  table = doc.sections.find { |s| s.is_a?(Coradoc::Model::Table) }
+else
+  table = section.blocks.find { |b| b.is_a?(Coradoc::Model::Table) }
+end
+
+if table
+  puts "Table has #{table.rows.size} rows"
+  table.rows.each_with_index do |row, i|
+    cells_text = row.columns.map { |cell| cell.content.first&.text || '' }.join(" | ")
+    puts "  Row #{i + 1}: #{cells_text}"
+  end
+end
+----
+
+=== What It Does
+
+1. Parses a document with a table
+2. Finds the table in the document
+3. Reports row count
+4. Prints each row's cell contents
+
+=== Expected Output
+
+----
+Table has 3 rows
+  Row 1: Header 1 | Header 2 | Header 3
+  Row 2: Cell 1.1 | Cell 1.2 | Cell 1.3
+  Row 3: Cell 2.1 | Cell 2.2 | Cell 2.3
+----
+
+== Example 5: Working with Inline Elements
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+input = <<~ASCIIDOC
+  = Inline Elements
+
+  This paragraph has *bold*, _italic_, and `monospace` text.
+
+  It also has a https://example.com[link to example] and <<anchor,cross-reference>>.
+
+  [[anchor]]
+  This section has an anchor.
+ASCIIDOC
+
+doc = Coradoc.parse(input)
+
+# Find a paragraph with inline elements
+section = doc.sections.find { |s| s.is_a?(Coradoc::Model::Section) }
+if !section
+  # Try document-level paragraphs
+  paragraph = doc.sections.find { |s| s.is_a?(Coradoc::Model::Paragraph) }
+else
+  paragraph = section.paragraphs.first
+end
+
+if paragraph
+  puts "Inline element types in first paragraph:"
+  element_types = paragraph.content.map { |e| e.class.name }.uniq
+  element_types.each do |type|
+    puts "  - #{type}"
+  end
+end
+----
+
+=== What It Does
+
+1. Parses a document with various inline elements
+2. Finds a paragraph
+3. Lists all unique inline element types
+
+=== Expected Output
+
+----
+Inline element types in first paragraph:
+  - Coradoc::Model::TextElement
+  - Coradoc::Model::Inline::Bold
+  - Coradoc::Model::Inline::Italic
+  - Coradoc::Model::Inline::Monospace
+  - Coradoc::Model::Inline::Link
+  - Coradoc::Model::Inline::CrossReference
+----
+
+== Example 6: Working with Attributes
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+input = <<~ASCIIDOC
+  = Document Title
+  :author: John Doe
+  :version: 1.0
+
+  == Section
+
+  Content here.
+ASCIIDOC
+
+doc = Coradoc.parse(input)
+
+puts "Document attributes:"
+doc.document_attributes.data.each do |key, value|
+  puts "  #{key}: #{value}"
+end
+----
+
+=== What It Does
+
+1. Parses a document with attributes
+2. Accesses the document attributes
+3. Prints all key-value pairs
+
+=== Expected Output
+
+----
+Document attributes:
+  author: John Doe
+  version: 1.0
+----
+
+== Example 7: Working with Blocks
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+input = <<~ASCIIDOC
+  = Block Examples
+
+  [source,ruby]
+  ----
+  def example
+    puts "Hello"
+  end
+  ----
+
+  ____
+  This is a quote block.
+  It can span multiple lines.
+  ____
+
+  NOTE: This is a note admonition.
+ASCIIDOC
+
+doc = Coradoc.parse(input)
+
+# Find section with blocks
+section = doc.sections.find { |s| s.is_a?(Coradoc::Model::Section) }
+if section
+  puts "Block types in document:"
+  section.contents.each do |block|
+    puts "  - #{block.class.name}"
+    if block.respond_to?(:lines)
+      puts "    Lines: #{block.lines.size}"
+    end
+    if block.respond_to?(:content)
+      puts "    Content: #{block.content}"
+    end
+  end
+end
+----
+
+=== What It Does
+
+1. Parses a document with different block types
+2. Identifies block types
+3. Shows block-specific properties
+
+=== Expected Output
+
+----
+Block types in document:
+  - Coradoc::Model::Block::Listing
+    Lines: 3
+  - Coradoc::Model::Block::Quote
+    Lines: 2
+  - Coradoc::Model::Admonition
+    Content: [["This", " ", "is", " ", "a", " ", "note", " ", "admonition."]]
+----
+
+== Summary
+
+In this tutorial you learned:
+
+* How to access document structure (header, sections)
+* How to work with paragraphs and content elements
+* How to navigate nested sections
+* How to manipulate lists and detect nesting
+* How to work with tables
+* How to identify inline element types
+* How to access document attributes
+* How to work with different block types
+
+== Exercises
+
+Practice your skills:
+
+1. Write a function that recursively prints the entire section hierarchy
+2. Create a script that extracts all links from a document
+3. Count the total number of list items in a document (including nested)
+4. Write a function that finds all admonitions in a document
+
+== Next Steps
+
+* link:serialization[Serialization Tutorial] - Learn to output AsciiDoc
+* link:/coradoc/pages/model[Document Model] - Model class details
+* link:/coradoc/references/model-classes[Model Classes Reference] - Complete catalog
+
+== Source Code
+
+The source code for these examples is available at:
+
+* link:https://github.com/metanorma/coradoc/tree/main/examples/document_modeling.rb[examples/document_modeling.rb]

@@ -1,23 +1,25 @@
-$LOAD_PATH.unshift("../coradoc/lib")
+# frozen_string_literal: true
 
-require "coradoc"
-require "coradoc/input/html"
+$LOAD_PATH.unshift('../coradoc/lib')
 
-require "pp"
-require "stringio"
+require 'coradoc'
+require 'coradoc/input/html'
+
+require 'pp'
+require 'stringio'
 
 rt = ARGV[0]
 
-rt_path = if rt == "rice-2023"
-            "../mn-samples-iso/sources/international-standard/rice-2023/"
-          elsif rt.to_s.include? "samples"
-            "../mn-samples-iso/sources/"
+rt_path = if rt == 'rice-2023'
+            '../mn-samples-iso/sources/international-standard/rice-2023/'
+          elsif rt.to_s.include? 'samples'
+            '../mn-samples-iso/sources/'
           else
-            "./spec/fixtures/"
+            './spec/fixtures/'
           end
 
-if !Dir.exist?(rt_path)
-  puts "pleas set path to rice-2023"
+unless Dir.exist?(rt_path)
+  puts 'pleas set path to rice-2023'
   exit
 end
 
@@ -34,15 +36,15 @@ adoc_files.each do |file_path|
   adoc_file = File.read(file_path)
   next if adoc_file.empty?
 
-  puts "parsing..."
+  puts 'parsing...'
   ast = Coradoc::Parser::Base.new.parse(adoc_file)
   sio = StringIO.new
   PP.pp(ast, sio)
   ast_string = sio.string
   File.write(file_path_ast, ast_string)
-  puts "transforming..."
+  puts 'transforming...'
   doc = Coradoc::Transformer.transform(ast[:document])
-  puts "generating..."
+  puts 'generating...'
   generated_adoc = Coradoc::Generator.gen_adoc(doc)
   cleaned_adoc = Coradoc::Input::HTML.cleaner.tidy(generated_adoc)
   File.write("#{file_path}.roundtrip", cleaned_adoc)

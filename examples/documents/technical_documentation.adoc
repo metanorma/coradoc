@@ -1,0 +1,97 @@
+= Technical Documentation Example
+
+:author: Jane Doe
+:email: jane@example.com
+:version: 1.0
+:revdate: 2024-01-15
+
+== Overview
+
+This document demonstrates various AsciiDoc features for technical documentation.
+
+== Code Examples
+
+Literal block without syntax highlighting:
+
+----
+def hello_world
+  puts "Hello, World!"
+end
+----
+
+Listing block with syntax highlighting:
+
+[source,ruby]
+----
+class Greeter
+  def initialize(name)
+    @name = name
+  end
+
+  def greet
+    puts "Hello, #{@name}!"
+  end
+end
+----
+
+== Tables
+
+.Table of Commands
+[cols="1,2,3"]
+|===
+|Command |Description |Example
+
+|`ls` |List directory contents |`ls -la`
+
+|`cd` |Change directory |`cd /home`
+
+|`pwd` |Print working directory |`pwd`
+|===
+
+== Admonitions
+
+NOTE: This is a note admonition for important information.
+
+TIP: This is a tip for helpful advice.
+
+WARNING: This is a warning for cautionary information.
+
+CAUTION: This is a caution for potential issues.
+
+IMPORTANT: This is important information that should be highlighted.
+
+== Lists
+
+Unordered list:
+
+* Item 1
+* Item 2
+** Nested item 2.1
+** Nested item 2.2
+* Item 3
+
+Ordered list:
+
+. Step one
+. Step two
+. Step three
+
+Definition list:
+
+[horizontal]
+Term 1:: Definition of term 1
+Term 2:: Definition of term 2
+Term 3:: Definition of term 3
+
+== Inline Formatting
+
+You can use *bold text*, _italic text_, and `monospace text` for emphasis.
+
+Links are easy: https://www.asciidoctor.org[AsciiDoctor Home]
+
+You can also create <<section-cross-references,cross-references>> to other sections.
+
+[[section-cross-references]]
+== Cross References
+
+This section demonstrates cross-references within the document.

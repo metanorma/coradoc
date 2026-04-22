@@ -1,0 +1,23 @@
+{%- comment -%}
+List block template (ordered, unordered, definition lists)
+{%- endcomment -%}
+
+{%- if marker_type == "ordered" -%}
+<ol id="{{ id }}" class="ordered-list">
+  {%- for item in items -%}
+    <li>{{ item | render_element: renderer }}</li>
+  {%- endfor -%}
+</ol>
+{%- elsif marker_type == "definition" -%}
+<dl id="{{ id }}" class="definition-list">
+  {%- for item in items -%}
+    {{ item | render_element: renderer }}
+  {%- endfor -%}
+</dl>
+{%- else -%}
+<ul id="{{ id }}" class="unordered-list">
+  {%- for item in items -%}
+    <li>{{ item | render_element: renderer }}</li>
+  {%- endfor -%}
+</ul>
+{%- endif -%}

@@ -1,0 +1,31 @@
+{%- comment -%}
+List item template for CoreModel::ListItem elements
+{%- endcomment -%}
+
+<li id="{{ id }}" class="list-item{% if role %} {{ role }}{% endif %}">
+  {% if content %}
+    {{ content | render_element }}
+  {% endif %}
+  {% if items and items.size > 0 %}
+    {%- comment -%}Nested list{%- endcomment -%}
+    {% if marker_type == "ordered" %}
+      <ol>
+        {% for item in items %}
+          {{ item | render_element }}
+        {% endfor %}
+      </ol>
+    {% elsif marker_type == "definition" %}
+      <dl>
+        {% for item in items %}
+          {{ item | render_element }}
+        {% endfor %}
+      </dl>
+    {% else %}
+      <ul>
+        {% for item in items %}
+          {{ item | render_element }}
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endif %}
+</li>

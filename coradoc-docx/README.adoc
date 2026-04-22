@@ -1,0 +1,164 @@
+= coradoc-docx
+image:https://img.shields.io/gem/v/coradoc-docx.svg[RubyGems Version]
+
+DOCX (OOXML) format support for the
+https://github.com/lutaml/coradoc[Coradoc] document transformation library.
+
+== Purpose
+
+coradoc-docx reads Microsoft Word `.docx` files via
+https://github.com/lutaml/uniword[Uniword] and transforms the OOXML model
+tree into Coradoc's canonical CoreModel. Once in CoreModel, the document can
+be serialized to AsciiDoc, Markdown, or any other supported output format.
+
+== Installation
+
+Add to your Gemfile:
+
+[source,ruby]
+----
+gem 'coradoc-docx'
+----
+
+Or install directly:
+
+[source,bash]
+----
+gem install coradoc-docx
+----
+
+The gem depends on `coradoc` and `uniword`, which will be installed
+automatically.
+
+== Usage
+
+=== Convert DOCX to AsciiDoc
+
+[source,ruby]
+----
+require 'coradoc'
+require 'coradoc/docx'
+
+adoc = Coradoc.convert("input.docx", from: :docx, to: :asciidoc)
+----
+
+=== Convert DOCX to Markdown
+
+[source,ruby]
+----
+md = Coradoc.convert("input.docx", from: :docx, to: :markdown)
+----
+
+=== Parse DOCX to CoreModel
+
+[source,ruby]
+----
+core = Coradoc.parse("input.docx", format: :docx)
+
+core.title         # => "Document Title"
+core.children      # => Array of sections, paragraphs, tables, etc.
+
+# Serialize to any format
+adoc = Coradoc.serialize(core, to: :asciidoc)
+html = Coradoc.serialize(core, to: :html)
+----
+
+=== CLI
+
+[source,bash]
+----
+# Convert DOCX to AsciiDoc
+coradoc convert document.docx -o output.adoc
+
+# Convert DOCX to Markdown
+coradoc convert document.docx -o output.md
+----
+
+== How It Works
+
+The DOCX pipeline uses Uniword to parse the OOXML zip archive into a typed
+model tree, then transforms it to CoreModel:
+
+....
+DOCX file
+  → Uniword::DocumentFactory.from_file
+  → OOXML model tree (Uniword::Wordprocessingml::*)
+  → Coradoc::Docx::Transform::ToCoreModel (rule-based dispatch)
+  → CoreModel tree (canonical hub)
+  → FromCoreModel (AsciiDoc or Markdown)
+  → Format model tree → Serializer → .adoc or .md file
+....
+
+The transform uses a **rule registry** with priority-based dispatch. Each
+OOXML element type has a dedicated rule class that produces a typed CoreModel
+node. Style-based semantic detection (headings, lists, quotes) is handled by
+`StyleResolver` and `NumberingResolver`.
+
+=== Supported OOXML Elements
+
+| OOXML Element | Style/Condition | CoreModel Target |
+|---------------|-----------------|------------------|
+| `w:p` (Heading style) | pStyle=HeadingN | StructuralElement (section) |
+| `w:p` (numPr) | numbering reference | ListBlock + ListItem |
+| `w:p` (Quote style) | style detection | Block (quote) |
+| `w:p` (Code style) | style detection | Block (source/listing) |
+| `w:p` (default) | - | Block (paragraph) |
+| `w:r` (bold) | rPr/bold | InlineElement (bold) |
+| `w:r` (italic) | rPr/italic | InlineElement (italic) |
+| `w:r` (underline) | rPr/underline | InlineElement (underline) |
+| `w:r` (strike) | rPr/strike | InlineElement (strikethrough) |
+| `w:r` (sub/sup) | rPr/vertAlign | InlineElement (subscript/superscript) |
+| `w:hyperlink` | r:id or w:anchor | InlineElement (link) |
+| `w:tbl` | - | Table |
+| `w:drawing` / `w:pict` | inline or anchor | Image |
+| `m:oMathPara` / `m:oMath` | - | Block or InlineElement (stem) |
+| `w:footnoteReference` | - | FootnoteReference |
+
+== Limitations
+
+* **Parse only** -- DOCX to CoreModel is supported; CoreModel to DOCX is not
+  yet implemented.
+* **Print layout** -- Page size, margins, headers/footers as page regions are
+  discarded (CoreModel is semantic, not print layout).
+* **Complex fields** -- Field characters (TOC, PAGE) are partially handled.
+* **Tracked changes** -- Deleted text is currently skipped.
+* **VML shapes** -- Only inline drawings are extracted.
+
+== Architecture
+
+=== Rule Classes
+
+Each OOXML element type is handled by a dedicated rule class in
+`Coradoc::Docx::Transform::Rules`:
+
+- `HeadingRule` -- Detects heading paragraphs via style or outline level
+- `ListItemRule` -- Detects numbered/bulleted paragraphs via numbering resolver
+- `ParagraphRule` -- Default paragraph transform
+- `RunRule` -- Inline formatting (bold, italic, monospace, links, etc.)
+- `TableRule` -- Table structure with rowspan/colspan
+- `HyperlinkRule` -- External links and bookmarks
+- `ImageRule` -- Inline and anchored drawings
+- `FootnoteRule` -- Footnote references
+- `MathRule` -- OMML math via Plurimath/LaTeX
+
+=== Resolvers
+
+- `StyleResolver` -- Walks the OOXML style definitions to detect semantic
+  roles (heading levels, code style, quote style) including `basedOn` chains
+- `NumberingResolver` -- Resolves numbering definitions to detect ordered vs.
+  unordered lists and their marker types
+
+== Development
+
+Run tests:
+
+[source,bash]
+----
+bundle exec rake spec:coradoc_docx
+----
+
+== License
+
+Copyright:: 2024-2026 Ribose Inc.
+
+Licensed under the https://www.apache.org/licenses/LICENSE-2.0.html[Apache License, Version 2.0].

@@ -1,0 +1,204 @@
+---
+title: Feature Support Matrix
+parent: References
+nav_order: 40
+---
+
+= Feature Support Matrix
+
+This document shows feature support across Coradoc's supported formats.
+
+== Format Support Overview
+
+| Format | Parse | Serialize | Round-trip |
+|--------|:-----:|:---------:|:----------:|
+| AsciiDoc | ✓ | ✓ | ✓ |
+| Markdown | ✓ | ✓ | ✓ |
+| HTML | ✓ | ✓ | Partial |
+| DOCX | ✓ | - | - |
+
+== Document Structure Features
+
+| Feature | AsciiDoc | Markdown | HTML | DOCX | Notes |
+|---------|:--------:|:--------:|:----:|:----:|-------|
+| Document title | ✓ | ✓ | ✓ | ✓ | DOCX: first H1 extracted |
+| Sections (1-5) | ✓ | ✓ | ✓ | ✓ | DOCX: heading styles |
+| Author metadata | ✓ | Partial | ✓ | - | AsciiDoc has full author support |
+| Revision info | ✓ | - | - | - | AsciiDoc only |
+| Document attributes | ✓ | Partial | - | - | AsciiDoc native |
+| Custom IDs | ✓ | ✓ | ✓ | ✓ | DOCX: bookmarks |
+| Roles/classes | ✓ | Partial | ✓ | - | CSS class support |
+
+== Block Elements
+
+| Feature | AsciiDoc | Markdown | HTML | DOCX | Notes |
+|---------|:--------:|:--------:|:----:|:----:|-------|
+| Paragraphs | ✓ | ✓ | ✓ | ✓ | |
+| Code blocks (fenced) | ✓ | ✓ | ✓ | ✓ | DOCX: style detection |
+| Code blocks (indented) | ✓ | ✓ | ✓ | - | Markdown style |
+| Quote blocks | ✓ | ✓ | ✓ | ✓ | DOCX: quote style |
+| Example blocks | ✓ | - | - | - | AsciiDoc only |
+| Sidebar blocks | ✓ | - | - | - | AsciiDoc only |
+| Pass blocks | ✓ | - | - | - | Raw HTML pass-through |
+| Literal blocks | ✓ | ✓ | ✓ | ✓ | Preformatted |
+| Open blocks | ✓ | - | - | - | Generic container |
+| Admonitions | ✓ | Partial | ✓ | - | NOTE, TIP, WARNING, etc. |
+| Thematic breaks | ✓ | ✓ | ✓ | ✓ | DOCX: section breaks |
+| Math (OMML) | - | - | - | ✓ | Via Plurimath/LaTeX |
+
+== List Features
+
+| Feature | AsciiDoc | Markdown | HTML | DOCX | Notes |
+|---------|:--------:|:--------:|:----:|:----:|-------|
+| Unordered lists | ✓ | ✓ | ✓ | ✓ | DOCX: bullet numbering |
+| Ordered lists | ✓ | ✓ | ✓ | ✓ | DOCX: decimal numbering |
+| Definition lists | ✓ | ✓ | ✓ | - | Term/definition pairs |
+| Nested lists | ✓ | ✓ | ✓ | ✓ | Multiple levels |
+| List continuation | ✓ | - | - | - | Attach blocks to items |
+| Checklists | - | ✓ | ✓ | - | Task lists (GFM) |
+| Custom markers | ✓ | - | - | - | AsciiDoc marker styles |
+
+== Table Features
+
+| Feature | AsciiDoc | Markdown | HTML | DOCX | Notes |
+|---------|:--------:|:--------:|:----:|:----:|-------|
+| Basic tables | ✓ | ✓ | ✓ | ✓ | Rows and cells |
+| Header rows | ✓ | ✓ | ✓ | ✓ | |
+| Cell alignment | ✓ | Partial | ✓ | ✓ | Left/center/right |
+| Colspan | ✓ | - | ✓ | ✓ | Cell spanning columns |
+| Rowspan | ✓ | - | ✓ | ✓ | Cell spanning rows |
+| Cell styles | ✓ | - | - | - | Strong, emphasis, monospace |
+| Cell colors | ✓ | - | ✓ | - | Bgcolor, text color |
+| Variable delimiters | ✓ | - | - | - | `|===`, `!===`, etc. |
+| Nested tables | Partial | - | ✓ | - | Limited support |
+| Column specifications | ✓ | - | - | - | Widths, alignment per column |
+
+== Inline Formatting
+
+| Feature | AsciiDoc | Markdown | HTML | DOCX | Notes |
+|---------|:--------:|:--------:|:----:|:----:|-------|
+| Bold | ✓ | ✓ | ✓ | ✓ | Strong text |
+| Italic | ✓ | ✓ | ✓ | ✓ | Emphasis |
+| Monospace | ✓ | ✓ | ✓ | ✓ | DOCX: code style |
+| Underline | ✓ | - | ✓ | ✓ | |
+| Strikethrough | - | ✓ | ✓ | ✓ | GFM extension |
+| Highlight | ✓ | - | - | ✓ | Mark/highlight |
+| Subscript | ✓ | - | ✓ | ✓ | |
+| Superscript | ✓ | - | ✓ | ✓ | |
+| Inline images | ✓ | - | ✓ | ✓ | DOCX: drawings |
+| Links | ✓ | ✓ | ✓ | ✓ | External URLs |
+| Cross-references | ✓ | - | - | ✓ | DOCX: bookmark anchors |
+| Footnotes | ✓ | ✓ | - | ✓ | Reference notes |
+
+== Image Features
+
+| Feature | AsciiDoc | Markdown | HTML | DOCX | Notes |
+|---------|:--------:|:--------:|:----:|:----:|-------|
+| Block images | ✓ | ✓ | ✓ | ✓ | |
+| Inline images | ✓ | ✓ | ✓ | ✓ | |
+| Alt text | ✓ | ✓ | ✓ | - | |
+| Image sizing | ✓ | - | ✓ | ✓ | Width/height |
+| Image links | ✓ | - | ✓ | - | Clickable images |
+| Image captions | ✓ | - | ✓ | - | Title attribute |
+| Data URIs | ✓ | ✓ | ✓ | - | Embedded images |
+
+== DOCX-Specific Pipeline
+
+The DOCX format uses Uniword to parse OOXML into a typed model tree, then transforms to CoreModel:
+
+....
+DOCX file
+  → Uniword::DocumentFactory.from_file
+  → OOXML model tree (Uniword::Wordprocessingml::*)
+  → Coradoc::Docx::Transform::ToCoreModel
+  → CoreModel tree (canonical hub)
+  → FromCoreModel (AsciiDoc or Markdown)
+  → Format model tree → Serializer → .adoc or .md file
+....
+
+=== Supported OOXML Elements
+
+| OOXML Element | Style/Condition | CoreModel Target |
+|---------------|-----------------|------------------|
+| `w:p` (Heading style) | pStyle=HeadingN | StructuralElement (section) |
+| `w:p` (numPr) | numbering reference | ListBlock + ListItem |
+| `w:p` (Quote style) | style detection | Block (quote) |
+| `w:p` (Code style) | style detection | Block (source/listing) |
+| `w:p` (default) | - | Block (paragraph) |
+| `w:r` (bold) | rPr/bold | InlineElement (bold) |
+| `w:r` (italic) | rPr/italic | InlineElement (italic) |
+| `w:r` (underline) | rPr/underline | InlineElement (underline) |
+| `w:r` (strike) | rPr/strike | InlineElement (strikethrough) |
+| `w:r` (sub/sup) | rPr/vertAlign | InlineElement (subscript/superscript) |
+| `w:hyperlink` | r:id or w:anchor | InlineElement (link) |
+| `w:tbl` | - | Table |
+| `w:drawing` / `w:pict` | inline or anchor | Image |
+| `m:oMathPara` / `m:oMath` | - | Block or InlineElement (stem) |
+| `w:footnoteReference` | - | FootnoteReference |
+
+== Cross-Format Conversion
+
+| From → To | Fidelity | Notes |
+|-----------|:--------:|-------|
+| AsciiDoc → HTML | ✓ High | Full semantic conversion |
+| HTML → AsciiDoc | ✓ High | Preserves structure |
+| Markdown → HTML | ✓ High | Full conversion |
+| HTML → Markdown | ✓ Medium | Some loss of semantics |
+| AsciiDoc → Markdown | ✓ Medium | Loss of AsciiDoc-specific features |
+| Markdown → AsciiDoc | ✓ High | Clean conversion |
+| DOCX → AsciiDoc | ✓ High | Preserves structure and formatting |
+| DOCX → Markdown | ✓ High | Preserves structure and formatting |
+
+== Known Limitations
+
+=== DOCX Limitations
+
+1. **Parse only** - DOCX → CoreModel is supported; CoreModel → DOCX is not yet implemented
+2. **Print layout** - Page size, margins, headers/footers as page regions are discarded (CoreModel is semantic, not print layout)
+3. **Complex fields** - Field characters (TOC, PAGE) are partially handled
+4. **Tracked changes** - Deleted text is currently skipped
+5. **VML shapes** - Only inline drawings are extracted
+
+=== AsciiDoc Limitations
+
+1. **Complex includes** - Nested include directives may not resolve correctly
+2. **Custom macros** - User-defined macros require custom handlers
+3. **Backend-specific features** - PDF/DocBook backends not supported
+4. **Counter variables** - Limited counter variable support
+
+=== Markdown Limitations
+
+1. **Definition lists** - Syntax differs from some Markdown flavors
+2. **Footnotes** - Inline footnotes not supported
+3. **Math blocks** - LaTeX math not natively supported
+4. **Custom containers** - No equivalent to AsciiDoc open blocks
+
+=== HTML Limitations
+
+1. **Script tags** - JavaScript content is stripped
+2. **Style tags** - CSS content is stripped
+3. **Custom elements** - Web components not supported
+4. **SVG content** - Limited SVG support
+
+== Performance Characteristics
+
+| Operation | Complexity | Notes |
+|-----------|------------|-------|
+| Parse AsciiDoc | O(n) | Linear with document size |
+| Parse Markdown | O(n) | Linear with document size |
+| Parse HTML | O(n) | Linear with document size |
+| Parse DOCX | O(n) | Linear with document size |
+| Serialize | O(n) | Linear with model size |
+| Round-trip | O(2n) | Parse + serialize |
+| Query | O(n) | Depends on query complexity |
+| Transform | O(n) | Linear with content size |
+
+== Ruby Version Support
+
+| Ruby | Support | Notes |
+|------|:-------:|-------|
+| 3.3 | ✓ Full | Primary target |
+| 3.2 | ✓ Full | |
+| 3.1 | ✓ Full | |
+| 3.0 | ✓ Full | |
+| 2.7 | ✗ EOL | Not supported |

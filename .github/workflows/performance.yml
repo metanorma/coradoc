@@ -1,0 +1,135 @@
+# Performance Regression Tests
+# Runs benchmarks and fails if performance degrades beyond acceptable thresholds
+name: performance
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    # Only run on PRs that might affect performance
+    paths:
+      - 'lib/**'
+      - 'spec/**'
+      - '.github/workflows/performance.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ['3.1', '3.2', '3.3']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Install dependencies
+        run: bundle install --jobs 4 --retry 3
+
+      - name: Run performance regression tests
+        run: |
+          bundle exec ruby -e "
+            require 'coradoc'
+            require 'coradoc/asciidoc'
+            require 'coradoc/html'
+            require 'coradoc/markdown'
+            require 'coradoc/performance_regression'
+
+            puts 'Running performance regression tests...'
+            puts '=' * 60
+
+            summary = Coradoc::PerformanceRegression.run_all_with_summary(iterations: 3)
+            Coradoc::PerformanceRegression.print_results(summary)
+
+            if summary[:failed_count] > 0
+              puts
+              puts 'FAILED: Performance regression detected!'
+              puts \"  #{summary[:failed_count]} of #{summary[:total]} benchmarks failed\"
+              exit 1
+            else
+              puts
+              puts 'PASSED: All performance benchmarks within thresholds'
+            end
+          "
+
+      - name: Save benchmark results
+        if: always()
+        run: |
+          mkdir -p benchmark_results
+          bundle exec ruby -e "
+            require 'coradoc'
+            require 'coradoc/asciidoc'
+            require 'coradoc/html'
+            require 'coradoc/markdown'
+            require 'coradoc/performance_regression'
+            require 'json'
+
+            results = Coradoc::PerformanceRegression.run_all(iterations: 3)
+            data = results.map(&:to_h)
+            File.write('benchmark_results/results.json', JSON.pretty_generate(data))
+          "
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results-${{ matrix.ruby }}
+          path: benchmark_results/
+          retention-days: 30
+
+  # Optional: Compare against baseline from main branch
+  compare-baseline:
+    runs-on: ubuntu-latest
+    needs: benchmark
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Install dependencies
+        run: bundle install --jobs 4 --retry 3
+
+      - name: Download baseline
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results-3.3
+          path: baseline/
+
+      - name: Compare with baseline
+        run: |
+          if [ -f baseline/results.json ]; then
+            echo "Comparing with baseline..."
+            bundle exec ruby -e "
+              require 'coradoc'
+              require 'coradoc/performance_regression'
+
+              results = Coradoc::PerformanceRegression.compare_with_baseline('baseline/results.json', iterations: 3)
+              Coradoc::PerformanceRegression.print_results(results)
+
+              failed = results.select { |r| r.regressed?(0.2) }
+              if failed.any?
+                puts
+                puts 'WARNING: Performance regression detected (>20% slower than baseline)'
+                failed.each do |r|
+                  pct = ((r.duration - r.baseline) / r.baseline * 100).round(1)
+                  puts \"  - #{r.name}: #{pct}% slower\"
+                end
+              end
+            "
+          else
+            echo "No baseline found, skipping comparison"
+          fi

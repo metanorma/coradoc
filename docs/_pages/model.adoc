@@ -1,0 +1,333 @@
+---
+title: Document Model
+parent: Core Pages
+nav_order: 5
+---
+
+= Document Model
+
+== Purpose
+
+This page explains the Coradoc Document Model - the Ruby object representation of AsciiDoc documents. You'll learn about the model classes, their relationships, and how to work with them programmatically.
+
+== Overview
+
+The Document Model represents AsciiDoc structure as Ruby objects. Every element in an AsciiDoc document has a corresponding model class. All model classes inherit from `Coradoc::Model::Base`.
+
+== Core Model Classes
+
+=== Document
+
+The root container for all document content.
+
+[source,ruby]
+----
+Coradoc::Model::Document
+  ├── header: Header
+  ├── document_attributes: DocumentAttributes
+  └── sections: Array<Section>
+----
+
+[source,ruby]
+----
+doc = Coradoc.parse("= Title\n\nContent")
+doc.class  # => Coradoc::Model::Document
+----
+
+=== Header
+
+Document metadata including title, author, and revision information.
+
+[source,ruby]
+----
+Coradoc::Model::Header
+  ├── title: String
+  ├── author: Array<Author>
+  └── revision: Revision
+----
+
+[source,ruby]
+----
+doc.header.title          # Document title
+doc.header.author&.first  # First author, if present
+doc.header.revision       # Revision information
+----
+
+=== Section
+
+Hierarchical sections organizing document content.
+
+[source,ruby]
+----
+Coradoc::Model::Section
+  ├── title: Title
+  ├── sections: Array<Section>  # Nested sections
+  ├── paragraphs: Array<Paragraph>
+  └── blocks: Array<Block>
+----
+
+[source,ruby]
+----
+section = Coradoc::Model::Section.new
+section.title = Coradoc::Model::Title.new
+section.title.level_int = 2
+section.title.content = ["Chapter 1"]
+
+# Add paragraphs
+para = Coradoc::Model::Paragraph.new
+para.content = [Coradoc::Model::TextElement.new("Content here")]
+section.blocks = [para]
+----
+
+=== Title
+
+Section or block title with level information.
+
+[source,ruby]
+----
+Coradoc::Model::Title
+  ├── level_int: Integer
+  └── content: Array<String>
+----
+
+=== Paragraph
+
+Text paragraph containing inline elements.
+
+[source,ruby]
+----
+Coradoc::Model::Paragraph
+  ├── content: Array<TextElement | Inline>
+  └── attributes: AttributeList
+----
+
+[source,ruby]
+----
+para = Coradoc::Model::Paragraph.new
+
+# Add mixed content
+para.content = [
+  Coradoc::Model::TextElement.new("Regular text"),
+  Coradoc::Model::Inline::Bold.new,
+  Coradoc::Model::Inline::Link.new(path: "https://example.com"),
+]
+
+# Add attributes
+para.attributes = Coradoc::Model::AttributeList.new
+para.attributes.add_named("id", "para1")
+----
+
+== Block Classes
+
+Blocks are delimited content sections like code listings and quotes.
+
+### Block::Core
+
+Base class for all delimited blocks.
+
+[source,ruby]
+----
+Coradoc::Model::Block::Core
+  ├── delimiter_char: String
+  ├── delimiter_len: Integer
+  ├── lines: Array<String>
+  └── attributes: AttributeList
+----
+
+### Block Types
+
+* `Block::Listing` - Code listing block
+* `Block::Literal` - Literal text block
+* `Block::Example` - Example block
+* `Block::Quote` - Quoted text block
+* `Block::Pass` - Pass-through content
+
+[source,ruby]
+----
+# Create a listing block
+listing = Coradoc::Model::Block::Listing.new
+listing.lines = ["def hello", "  puts 'world'", "end"]
+listing.attributes = Coradoc::Model::AttributeList.new
+listing.attributes.add_positional("ruby")
+----
+
+== List Classes
+
+Lists organize items hierarchically.
+
+### List::Core
+
+Base class for all list types.
+
+[source,ruby]
+----
+Coradoc::Model::List::Core
+  └── items: Array<ListItem>
+----
+
+### List Types
+
+* `List::Unordered` - Bulleted list (`*`)
+* `List::Ordered` - Numbered list (`.`)
+* `List::Definition` - Definition list (`::`)
+
+[source,ruby]
+----
+# Unordered list
+list = Coradoc::Model::List::Unordered.new
+item = Coradoc::Model::ListItem.new
+item.content = [Coradoc::Model::TextElement.new("First item")]
+list.items << item
+
+# Ordered list
+ordered = Coradoc::Model::List::Ordered.new
+item = Coradoc::Model::ListItem.new
+item.content = [Coradoc::Model::TextElement.new("Step one")]
+ordered.items << item
+
+# Definition list
+definition = Coradoc::Model::List::Definition.new
+def_item = Coradoc::Model::List::DefinitionItem.new
+def_item.terms = [Coradoc::Model::Term.new(term: "Ruby", type: "language")]
+def_item.contents = [Coradoc::Model::TextElement.new("A programming language")]
+definition.items << def_item
+----
+
+== Table Classes
+
+Tables represent tabular data.
+
+[source,ruby]
+----
+Coradoc::Model::Table
+  ├── rows: Array<TableRow>
+  └── attributes: AttributeList
+
+Coradoc::Model::TableRow
+  └── columns: Array<TableCell>
+
+Coradoc::Model::TableCell
+  └── content: Array<TextElement | Inline>
+----
+
+[source,ruby]
+----
+table = Coradoc::Model::Table.new
+
+row = Coradoc::Model::TableRow.new
+cell = Coradoc::Model::TableCell.new
+cell.content = [Coradoc::Model::TextElement.new("Cell content")]
+row.columns << cell
+table.rows << row
+----
+
+== Inline Classes
+
+Inline elements represent text formatting within blocks.
+
+### Inline::Base
+
+Base class for all inline elements.
+
+### Inline Types
+
+* `Inline::Bold` - Bold text (`*text*`)
+* `Inline::Italic` - Italic text (`_text_`)
+* `Inline::Monospace` - Monospace text (`` `text` ``)
+* `Inline::Link` - Hyperlink (`https://example.com[label]`)
+* `Inline::Anchor` - Cross-reference target (`[[id]]`)
+
+[source,ruby]
+----
+# Bold text
+bold = Coradoc::Model::Inline::Bold.new
+bold.content = "Important text"
+
+# Links
+link = Coradoc::Model::Inline::Link.new
+link.path = "https://example.com"
+link.name = "Example"
+
+# Anchors (cross-reference targets)
+anchor = Coradoc::Model::Inline::Anchor.new
+anchor.id = "section1"
+----
+
+== Helper Classes
+
+### TextElement
+
+Plain text content.
+
+[source,ruby]
+----
+Coradoc::Model::TextElement.new("Hello, world!")
+----
+
+### AttributeList
+
+Block or inline attributes.
+
+[source,ruby]
+----
+attrs = Coradoc::Model::AttributeList.new
+attrs.add_named("id", "my-id")
+attrs.add_positional("ruby")
+----
+
+### DocumentAttributes
+
+Document-level metadata attributes.
+
+[source,ruby]
+----
+doc.document_attributes.data.each do |key, value|
+  puts "#{key}: #{value}"
+end
+----
+
+## Working with the Model
+
+### Navigation
+
+[source,ruby]
+----
+doc = Coradoc.parse("= Main\n\n== Section 1\n\nContent.\n\n=== Subsection\n\nMore.")
+
+# Navigate to sections
+doc.sections.each do |section|
+  puts section.title.content
+  section.sections.each do |subsection|
+    puts "  #{subsection.title.content}"
+  end
+end
+----
+
+### Manipulation
+
+[source,ruby]
+----
+doc = Coradoc.parse("= Title\n\n== Section\n\nOld content.")
+
+# Find section
+section = doc.sections.first
+
+# Modify paragraph
+section.paragraphs.first.content = [
+  Coradoc::Model::TextElement.new("New content.")
+]
+
+# Serialize changes
+output = doc.to_adoc
+----
+
+## Related Documentation
+
+* link:architecture[Architecture] - Model hierarchy diagrams
+* link:/coradoc/references/model-classes[Model Classes Reference] - Complete catalog
+* link:/coradoc/tutorials/document-modeling[Document Modeling Tutorial] - Hands-on examples
+* link:/coradoc/references/api-reference[API Reference] - Model class API
+
+## Bibliography
+
+* https://github.com/lutaml/lutaml-model[lutaml-model] - Model definition framework

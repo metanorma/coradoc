@@ -1,0 +1,117 @@
+# Site Configuration
+title: Coradoc Documentation
+description: Parser, model, and serializer for AsciiDoc documents
+baseurl: "/coradoc"
+url: "https://metanorma.github.io"
+
+# Repository Information
+repository: metanorma/coradoc
+
+# Theme Configuration
+theme: just-the-docs
+
+# Plugins
+plugins:
+  - jekyll-asciidoc
+
+# AsciiDoc Configuration
+asciidoc:
+  processor: asciidoctor
+  attributes:
+    source-highlighter: rouge
+    icons: font
+    toc: macro
+    toclevels: 3
+    sectnums:
+    sectnumlevels: 3
+    stylesdir: /_assets/css/
+    stylesheet:
+    imagesdir: /assets/images/
+    # Set site attributes for proper link resolution
+    site-uri: https://metanorma.github.io/coradoc/
+    site-url: https://metanorma.github.io/coradoc/
+    relfilesuffix: /
+
+# Collections Configuration
+# Define the 4 main documentation collections
+collections:
+  # Core conceptual documentation
+  pages:
+    output: true
+    permalink: /:collection/:path/
+
+  # Step-by-step learning tutorials
+  tutorials:
+    output: true
+    permalink: /:collection/:path/
+
+  # Task-oriented guides
+  guides:
+    output: true
+    permalink: /:collection/:path/
+
+  # Technical reference documentation
+  references:
+    output: true
+    permalink: /:collection/:path/
+
+# just-the-docs Theme Configuration
+just_the_docs:
+  # Navigation behavior
+  nav_sort: case_insensitive
+  use_underscores: true
+
+  # Search configuration
+  search_enabled: true
+  search.heading_level: 2
+  search.preview_words_before: 5
+  search.preview_words_after: 5
+  search.rel_url: true
+  search.button: true
+
+  # Color scheme (nil = minimal theme)
+  color_scheme: nil
+
+  # Aux links (external links in top navigation)
+  aux_links:
+    "Coradoc on GitHub": https://github.com/metanorma/coradoc
+    "RubyGems": https://rubygems.org/gems/coradoc
+
+  # Aux links new tab setting
+  aux_links_new_tab: false
+
+  # Back to top link
+  back_to_top: true
+  back_to_top_text: "Back to top"
+
+  # Footer content
+  footer_content: "Copyright &copy; 2024 Ribose. Distributed under the Apache 2.0 License."
+
+  # Heading level for TOC
+  heading_anchors: true
+  heading_level: 2
+
+  # Permalink icon
+  permalink: false
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - gemfiles/
+  - README.md
+  - .gitignore
+
+# Markdown Processing (not used, but configured for compatibility)
+markdown: kramdown
+kramdown:
+  syntax_highlighter_opts:
+    default_lang: ruby
+
+# Sass/SCSS settings
+sass:
+  sass_dir: _assets/css
+  style: compressed

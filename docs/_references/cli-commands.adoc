@@ -1,0 +1,451 @@
+---
+title: CLI Command Reference
+parent: References
+nav_order: 20
+---
+
+= CLI Command Reference
+
+The `coradoc` command-line interface provides document conversion and processing capabilities.
+
+== Installation
+
+[source,bash]
+----
+gem install coradoc
+----
+
+Verify installation:
+
+[source,bash]
+----
+coradoc version
+# => coradoc 1.0.0
+----
+
+== Global Options
+
+These options apply to all commands:
+
+[horizontal]
+`--verbose`, `-v`:: Enable verbose output
+`--quiet`, `-q`:: Suppress non-essential output
+`--config FILE`:: Path to configuration file (default: `.coradoc.yml`)
+`--help`, `-h`:: Show help message
+`--version`:: Show version information
+
+== Commands
+
+=== convert
+
+Convert documents between formats.
+
+.Syntax
+----
+coradoc convert INPUT [OPTIONS]
+----
+
+.Arguments
+[horizontal]
+`INPUT`:: Input file path (required)
+
+.Options
+[horizontal]
+`--output`, `-o FILE`:: Output file path (default: stdout)
+`--from`, `-f FORMAT`:: Source format (auto-detected from extension)
+`--to`, `-t FORMAT`:: Target format (required unless output extension specified)
+`--theme THEME`:: HTML theme (classic, modern, minimal)
+`--validate`:: Validate document before conversion
+`--strip-comments`:: Remove comments from output
+`--preserve-ids`:: Preserve element IDs during conversion
+`--base-dir DIR`:: Base directory for include resolution
+
+.Supported Formats
+[horizontal]
+`asciidoc`, `adoc`:: AsciiDoc format
+`markdown`, `md`:: CommonMark Markdown
+`html`:: HTML5
+`docx`:: Microsoft Word DOCX (requires coradoc-docx gem)
+
+.Examples
+----
+# Convert Markdown to HTML (output to stdout)
+coradoc convert document.md
+
+# Convert to specific output file
+coradoc convert document.md -o output.html
+
+# Convert AsciiDoc to Markdown
+coradoc convert input.adoc --to markdown -o output.md
+
+# Convert DOCX to AsciiDoc (requires coradoc-docx gem)
+coradoc convert document.docx -o output.adoc
+
+# Convert DOCX to Markdown
+coradoc convert document.docx -o output.md
+
+# Auto-detect output format from extension
+coradoc convert input.md -o output.adoc
+
+# Convert with modern HTML theme
+coradoc convert input.adoc -o output.html --theme modern
+
+# Convert with validation
+coradoc convert important.adoc -o output.html --validate
+
+# Verbose output
+coradoc convert document.md -o output.html --verbose
+----
+
+.Exit Codes
+[horizontal]
+`0`:: Success
+`1`:: General error (file not found, parse error, etc.)
+`2`:: Validation error
+`3`:: Unsupported format
+
+---
+
+=== parse
+
+Parse a document and output the document structure.
+
+.Syntax
+----
+coradoc parse INPUT [OPTIONS]
+----
+
+.Arguments
+[horizontal]
+`INPUT`:: Input file path (required)
+
+.Options
+[horizontal]
+`--format`, `-f FORMAT`:: Source format (auto-detected)
+`--output`, `-o FILE`:: Output file for structure dump
+`--json`:: Output as JSON
+`--yaml`:: Output as YAML
+`--show-model`:: Show CoreModel structure
+`--show-ast`:: Show parse tree (AST)
+
+.Examples
+----
+# Parse and show document structure
+coradoc parse document.adoc
+
+# Parse and output as JSON
+coradoc parse document.md --json -o structure.json
+
+# Show CoreModel representation
+coradoc parse input.adoc --show-model
+
+# Show raw AST
+coradoc parse input.md --show-ast
+----
+
+---
+
+=== formats
+
+List supported formats and their capabilities.
+
+.Syntax
+----
+coradoc formats [OPTIONS]
+----
+
+.Options
+[horizontal]
+`--json`:: Output as JSON
+`--detailed`:: Show detailed feature support
+
+.Examples
+----
+# List supported formats
+coradoc formats
+
+# Detailed feature matrix
+coradoc formats --detailed
+
+# JSON output for scripting
+coradoc formats --json
+----
+
+.Output Format
+----
+Supported Formats:
+  asciidoc (.adoc, .asciidoc)
+    - Parse: ✓
+    - Serialize: ✓
+    - Features: tables, lists, blocks, continuation
+
+  markdown (.md, .markdown)
+    - Parse: ✓
+    - Serialize: ✓
+    - Features: tables, lists, code blocks
+
+  html (.html, .htm)
+    - Parse: ✓
+    - Serialize: ✓
+    - Features: semantic HTML, tables
+----
+
+---
+
+=== validate
+
+Validate a document against its format specification.
+
+.Syntax
+----
+coradoc validate INPUT [OPTIONS]
+----
+
+.Arguments
+[horizontal]
+`INPUT`:: Input file path (required)
+
+.Options
+[horizontal]
+`--format`, `-f FORMAT`:: Source format (auto-detected)
+`--schema FILE`:: Custom validation schema
+`--strict`:: Enable strict validation
+`--warnings`:: Treat warnings as errors
+
+.Examples
+----
+# Validate a document
+coradoc validate document.adoc
+
+# Validate with strict mode
+coradoc validate important.adoc --strict
+
+# Validate with custom schema
+coradoc validate custom.xml --schema schemas/custom.yml
+----
+
+.Exit Codes
+[horizontal]
+`0`:: Valid
+`1`:: Invalid (errors found)
+`2`:: Schema error
+
+---
+
+=== version
+
+Show version information.
+
+.Syntax
+----
+coradoc version [OPTIONS]
+----
+
+.Options
+[horizontal]
+`--short`:: Show version number only
+`--all`:: Show all component versions
+
+.Examples
+----
+# Full version info
+coradoc version
+# => coradoc 1.0.0
+# => coradoc-adoc 1.0.0
+# => coradoc-html 1.0.0
+# => coradoc-markdown 1.0.0
+
+# Short version
+coradoc version --short
+# => 1.0.0
+----
+
+== Configuration File
+
+Create `.coradoc.yml` in your project directory:
+
+[source,yaml]
+----
+# Default format settings
+defaults:
+  input_format: asciidoc
+  output_format: html
+
+# HTML output settings
+html:
+  theme: modern
+  embed_css: true
+  syntax_highlight: true
+
+# Validation settings
+validation:
+  strict: true
+  warnings_as_errors: false
+
+# Include path resolution
+includes:
+  base_dir: .
+  allow_url_includes: false
+----
+
+== Environment Variables
+
+[horizontal]
+`CORADOC_CONFIG`:: Path to configuration file
+`CORADOC_THEME`:: Default HTML theme
+`CORADOC_VERBOSE`:: Enable verbose mode (1 or 0)
+`CORADOC_FORMAT`:: Default output format
+
+.Example
+[source,bash]
+----
+export CORADOC_THEME=modern
+export CORADOC_VERBOSE=1
+coradoc convert document.adoc -o output.html
+----
+
+== Shell Integration
+
+=== Bash Completion
+
+Add to `~/.bashrc`:
+
+[source,bash]
+----
+eval "$(coradoc completion bash)"
+----
+
+=== Zsh Completion
+
+Add to `~/.zshrc`:
+
+[source,bash]
+----
+eval "$(coradoc completion zsh)"
+----
+
+== CI/CD Integration
+
+=== GitHub Actions
+
+[source,yaml]
+----
+name: Convert Docs
+on: [push]
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+      - run: gem install coradoc
+      - run: |
+          for f in docs/*.adoc; do
+            coradoc convert "$f" -o "build/${f%.adoc}.html"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: html-docs
+          path: build/
+----
+
+=== GitLab CI
+
+[source,yaml]
+----
+convert-docs:
+  image: ruby:3.3
+  script:
+    - gem install coradoc
+    - mkdir -p build
+    - find docs -name '*.adoc' -exec sh -c
+        'coradoc convert "$1" -o "build/$(basename "${1%.adoc}").html"' _ {} \;
+  artifacts:
+    paths:
+      - build/
+----
+
+=== Makefile
+
+[source,makefile]
+----
+.SUFFIXES: .adoc .html .md
+
+ADOC_FILES := $(wildcard docs/*.adoc)
+HTML_FILES := $(patsubst %.adoc,build/%.html,$(ADOC_FILES))
+
+all: $(HTML_FILES)
+
+build/%.html: docs/%.adoc
+	@mkdir -p build
+	coradoc convert $< -o $@
+
+clean:
+	rm -rf build/
+
+.PHONY: all clean
+----
+
+== Troubleshooting
+
+=== Common Errors
+
+.File Not Found
+----
+Error: File not found: document.adoc
+----
+Check file path and current directory.
+
+.Unsupported Format
+----
+Error: Unsupported format: .xyz
+----
+Use `coradoc formats` to see supported formats.
+
+.Parse Error
+----
+Parse error at line 42, column 15:
+  |=== invalid table
+              ^
+----
+Check syntax in the input file.
+
+.Validation Error
+----
+Validation error: Missing required attribute 'title'
+----
+Fix the document or use `--no-validate` to skip validation.
+
+=== Debugging
+
+Use `--verbose` for detailed output:
+
+[source,bash]
+----
+coradoc convert input.adoc -o output.html --verbose
+----
+
+Check document structure:
+
+[source,bash]
+----
+coradoc parse input.adoc --show-model
+----
+
+=== Getting Help
+
+[source,bash]
+----
+# General help
+coradoc --help
+
+# Command-specific help
+coradoc convert --help
+coradoc parse --help
+
+# Version info
+coradoc version --all
+----

@@ -1,0 +1,51 @@
+{%- comment -%}
+Inline element template for text formatting
+
+Handles Coradoc::CoreModel::InlineElement with various format types:
+- bold: *text* or **text**
+- italic: _text_ or __text__
+- monospace: `text` or ``text``
+- subscript: ~text~
+- superscript: ^text^
+- underline: [underline]#text#
+- strikethrough: [line-through]#text#
+- highlight: [mark]#text#
+- link: link:url[text]
+- xref: <<ref>>
+{%- endcomment -%}
+
+{%- case format_type -%}
+  {%- when "bold" -%}
+    <strong>{{ content }}{%- for nested in nested_elements -%}{{ nested | render_element }}{%- endfor -%}</strong>
+
+  {%- when "italic" -%}
+    <em>{{ content }}{%- for nested in nested_elements -%}{{ nested | render_element }}{%- endfor -%}</em>
+
+  {%- when "monospace" -%}
+    <code>{{ content }}{%- for nested in nested_elements -%}{{ nested | render_element }}{%- endfor -%}</code>
+
+  {%- when "subscript" -%}
+    <sub>{{ content }}{%- for nested in nested_elements -%}{{ nested | render_element }}{%- endfor -%}</sub>
+
+  {%- when "superscript" -%}
+    <sup>{{ content }}{%- for nested in nested_elements -%}{{ nested | render_element }}{%- endfor -%}</sup>
+
+  {%- when "underline" -%}
+    <u>{{ content }}{%- for nested in nested_elements -%}{{ nested | render_element }}{%- endfor -%}</u>
+
+  {%- when "strikethrough" -%}
+    <del>{{ content }}{%- for nested in nested_elements -%}{{ nested | render_element }}{%- endfor -%}</del>
+
+  {%- when "highlight" -%}
+    <mark>{{ content }}{%- for nested in nested_elements -%}{{ nested | render_element }}{%- endfor -%}</mark>
+
+  {%- when "link" -%}
+    <a href="{{ target }}">{{ content }}{%- for nested in nested_elements -%}{{ nested | render_element }}{%- endfor -%}</a>
+
+  {%- when "xref" -%}
+    <a href="#{{ target }}">{{ content }}{%- for nested in nested_elements -%}{{ nested | render_element }}{%- endfor -%}</a>
+
+  {%- else -%}
+    {%- if content -%}{{ content }}{%- endif -%}{%- for nested in nested_elements -%}{{ nested | render_element }}{%- endfor -%}
+
+{%- endcase -%}

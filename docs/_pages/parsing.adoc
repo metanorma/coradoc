@@ -1,0 +1,198 @@
+---
+title: Parsing
+parent: Core Pages
+nav_order: 3
+---
+
+= Parsing Layer
+
+== Purpose
+
+This page explains how Coradoc parses AsciiDoc documents into a structured document model. You'll learn about the parser layer, what it produces, and how to work with parsed documents.
+
+== Overview
+
+Coradoc parses AsciiDoc documents into a rich object model using the https://github.com/kschiess/parslet[Parslet] parsing expression grammar library. The parser converts text into an Abstract Syntax Tree (AST), which is then transformed into Model objects.
+
+== Parsing Methods
+
+=== Coradoc.parse(input, **options)
+
+Parse an AsciiDoc string into a document model.
+
+[source,ruby]
+----
+doc = Coradoc.parse("== Title\n\nContent")
+----
+
+*Parameters:*
+
+* `input` (String) - AsciiDoc string to parse
+* `**options` (Hash) - Optional parsing parameters
+
+*Returns:* `Coradoc::Model::Document`
+
+=== Coradoc.parse_file(filename, **options)
+
+Parse an AsciiDoc file into a document model.
+
+[source,ruby]
+----
+doc = Coradoc.parse_file("document.adoc")
+----
+
+*Parameters:*
+
+* `filename` (String) - Path to AsciiDoc file
+* `**options` (Hash) - Optional parsing parameters
+
+*Returns:* `Coradoc::Model::Document`
+
+== The Parsing Process
+
+=== Stage 1: Lexical Analysis
+
+The AsciiDoc text is tokenized into meaningful elements:
+
+* Headings (`== Title`)
+* Delimiters (`----`, `____`)
+* List markers (`*`, `.`)
+* Inline formatting (`*bold*`, `_italic_`)
+* Attributes (`:name: value`)
+
+=== Stage 2: AST Generation
+
+Parslet constructs an Abstract Syntax Tree representing the syntactic structure of the document. The AST captures:
+
+* Hierarchical heading structure
+* Block boundaries and types
+* List nesting
+* Inline element boundaries
+
+=== Stage 3: Transformation
+
+The AST is transformed into Model objects by the Transformer layer. This is where syntax becomes semantics:
+
+* AST heading node → `Coradoc::Model::Title`
+* AST paragraph node → `Coradoc::Model::Paragraph`
+* AST list node → `Coradoc::Model::List::Unordered`
+
+== Working with Parsed Documents
+
+=== Accessing the Header
+
+[source,ruby]
+----
+doc = Coradoc.parse("= Document Title\n\nContent")
+
+doc.header.title              # => "Document Title"
+doc.header.author             # => Array of Author objects
+doc.header.revision           # => Revision object
+----
+
+=== Accessing Sections
+
+[source,ruby]
+----
+doc = Coradoc.parse("== Section 1\n\nContent\n\n== Section 2\n\nContent")
+
+# All top-level sections
+doc.sections.each do |section|
+  puts section.title.content
+end
+
+# First section
+section = doc.sections.first
+puts section.title.level_int  # => 2
+puts section.paragraphs       # => Array of paragraphs
+
+# Nested sections
+section.sections.each do |subsection|
+  puts subsection.title.content
+end
+----
+
+=== Accessing Document Attributes
+
+[source,ruby]
+----
+doc = Coradoc.parse(":author: John Doe\n\n== Title\n\nContent")
+
+# All attributes
+doc.document_attributes.data.each do |key, value|
+  puts "#{key}: #{value}"
+end
+
+# Specific attribute
+doc.document_attributes.data["author"]  # => "John Doe"
+----
+
+=== Accessing Blocks
+
+[source,ruby]
+----
+doc = Coradoc.parse("== Section\n\nParagraph 1.\n\nParagraph 2.")
+
+section = doc.sections.first
+
+# Paragraphs
+section.paragraphs.each do |para|
+  puts para.content
+end
+
+# All blocks (paragraphs, lists, tables, etc.)
+section.blocks.each do |block|
+  puts block.class.name
+end
+----
+
+=== Accessing Inline Elements
+
+[source,ruby]
+----
+doc = Coradoc.parse("= Title\n\nThis has *bold* and _italic_ text.")
+
+paragraph = doc.sections.first.paragraphs.first
+
+paragraph.content.each do |element|
+  case element
+  when Coradoc::Model::TextElement
+    puts "Text: #{element.text}"
+  when Coradoc::Model::Inline::Bold
+    puts "Bold: #{element.content}"
+  when Coradoc::Model::Inline::Italic
+    puts "Italic: #{element.content}"
+  end
+end
+----
+
+== What Gets Parsed
+
+Coradoc parses the following AsciiDoc elements:
+
+* **Structure:** Document title, sections, headers
+* **Blocks:** Paragraphs, delimited blocks, lists, tables
+* **Inline:** Bold, italic, monospace, links, anchors
+* **Attributes:** Document attributes, block attributes
+* **Metadata:** Author, revision info
+
+== Parser Limitations
+
+The parser focuses on semantic AsciiDoc elements. Some advanced features may not be fully supported:
+
+* Complex include directives
+* All macro types
+* Conditional processing
+
+See link:/coradoc/guides/troubleshooting[Troubleshooting] for known limitations.
+
+== Related Documentation
+
+* link:transformation[Transformation Layer] - How AST becomes Model
+* link:model[Document Model] - Model object details
+* link:/coradoc/tutorials/basic-parsing[Basic Parsing Tutorial] - Hands-on examples
+
+== Bibliography
+
+* https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[AsciiDoc Syntax Quick Reference]
+* https://github.com/kschiess/parslet[Parslet Documentation]

@@ -1,0 +1,6 @@
+{%- comment -%}
+Table cell template for CoreModel::TableCell
+{%- endcomment -%}
+<td id="{{ id }}"{% if colspan %} colspan="{{ colspan }}"{% endif %}{% if rowspan %} rowspan="{{ rowspan }}"{% endif %}{% if halign %} style="text-align: {{ halign }};"{% endif %}>
+  {{ content | render_element }}
+</td>

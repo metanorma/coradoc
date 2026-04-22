@@ -1,0 +1,46 @@
+{%- comment -%}
+Structural element template (document, section, header)
+
+Handles Coradoc::CoreModel::StructuralElement which can be:
+- document (element_type: "document")
+- section (element_type: "section")
+- header (element_type: "header")
+{%- endcomment -%}
+
+{%- assign element_type_val = element_type | default: "section" -%}
+{%- assign level_val = level | default: 1 -%}
+
+{%- case element_type_val -%}
+  {%- when "document" -%}
+    <article id="{{ id }}" class="document">
+      {% if title %}<h1>{{ title }}</h1>{% endif %}
+      <div class="document-content">
+        {% for child in children %}{{ child | render_element }}{% endfor %}
+      </div>
+    </article>
+
+  {%- when "section" -%}
+    <section id="{{ id }}" class="section">
+      {% if title %}
+        {%- assign heading_level = level_val | at_least: 1 | at_most: 6 -%}
+        <h{{ heading_level }}>{{ title }}</h{{ heading_level }}>
+      {% endif %}
+      <div class="section-content">
+        {% for child in children %}{{ child | render_element }}{% endfor %}
+      </div>
+    </section>
+
+  {%- when "header" -%}
+    <header id="{{ id }}" class="document-header">
+      {% if title %}<h1>{{ title }}</h1>{% endif %}
+      <div class="header-content">
+        {% for child in children %}{{ child | render_element }}{% endfor %}
+      </div>
+    </header>
+
+  {%- else -%}
+    <div id="{{ id }}" class="structural-element {{ element_type_val }}">
+      {% if title %}<h2>{{ title }}</h2>{% endif %}
+      {% for child in children %}{{ child | render_element }}{% endfor %}
+    </div>
+{%- endcase -%}

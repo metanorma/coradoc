@@ -1,3 +1,6 @@
+# local gemfile
+Gemfile.local
+
 # Direnv
 .direnv/
 
@@ -29,6 +32,17 @@ relaton/
 oscal.yml
 .pryrc
 
-# reverse_adoc
 # Some odd files created by specs
 /test1
+
+docs/_site
+.rubocop-https-*
+
+# Temporary documentation
+old-docs/
+output/
+
+# Work in progress files
+user_templates/
+
+coverage/

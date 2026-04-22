@@ -1,0 +1,311 @@
+---
+title: Transformation
+parent: Core Pages
+nav_order: 4
+---
+
+= Transformation Layer
+
+== Purpose
+
+This page explains the Transformation layer, which converts the Abstract Syntax Tree (AST) produced by the Parser into Coradoc Model objects. Understanding this layer is important for extending Coradoc with custom elements.
+
+== Overview
+
+The Transformation layer is the bridge between the Parser and the Model. While the Parser produces an AST representing the *syntax* of AsciiDoc, the Transformer converts this into Model objects representing the *semantics* of the document.
+
+== Why a Separate Transformation Layer?
+
+Separating parsing from transformation provides several benefits:
+
+* **Clean separation** - Parser rules focus on syntax, transformer on semantics
+* **Testability** - Each layer can be tested independently
+* **Flexibility** - Different parsers could produce the same models
+* **Extensibility** - Custom elements can be added without modifying parser
+
+== Document Resolution
+
+When working with documents that have external references (includes, images, media), you can "freeze" the document to resolve all references.
+
+=== The `freeze` Method
+
+The `freeze` method creates a NEW document with resolved references:
+
+[source,ruby]
+----
+doc = Coradoc::AsciiDoc.parse(File.read("document.adoc"))
+
+# Resolve includes only
+frozen = doc.freeze(base_dir: "/path/to/docs", includes: true)
+
+# Create self-contained document with embedded images
+frozen = doc.freeze(
+  base_dir: "/path/to/docs",
+  includes: true,
+  images: :embed,
+  output_dir: "/output"
+)
+----
+
+=== Resolution Strategies
+
+For images and media references:
+
+[cols="1,3"]
+|===
+| Strategy | Description
+
+| `:reference`
+| Keep path as-is (default)
+
+| `:copy`
+| Copy file to output directory, update path
+
+| `:embed`
+| Embed as data URI (base64) for self-contained output
+|===
+
+=== Resolution Infrastructure
+
+The resolution infrastructure provides unified handling for different reference types:
+
+* `Resolvable` module - Interface for resolvable elements
+* `Resolver` class - Configurable resolution engine
+* `IncludeResolver` - Handles include directives
+* `ImageResolver` - Handles image references
+* `MediaResolver` - Handles video/audio references
+
+=== Legacy Method
+
+The `expand_includes` method is preserved for backward compatibility:
+
+[source,ruby]
+----
+# Equivalent to freeze(includes: true, images: :reference, media: :reference)
+expanded = doc.expand_includes("/path/to/docs")
+----
+
+== The Transformation Process
+
+=== AST Structure
+
+The Parser produces an AST like:
+
+[source,ruby]
+----
+{
+  header: { title: "My Document", ... },
+  sections: [
+    { title: { level: 2, content: ["Section 1"] },
+      blocks: [...] }
+  ]
+}
+----
+
+=== Model Transformation
+
+The Transformer converts this AST node by node:
+
+[source,ruby]
+----
+# AST: { title: { level: 2, content: ["Section 1"] } }
+# Becomes:
+Coradoc::Model::Section.new(
+  title: Coradoc::Model::Title.new(level_int: 2, content: ["Section 1"])
+)
+----
+
+== Transformer Architecture
+
+=== Main Transformer
+
+*Location:* `lib/coradoc/transformer.rb`
+
+The main transformer coordinates the transformation process:
+
+[source,ruby]
+----
+module Coradoc
+  class Transformer
+    def transform(ast)
+      # Transform document root
+      transform_document(ast)
+    end
+
+    private
+
+    def transform_document(ast)
+      # Create Document model
+      # Transform header
+      # Transform sections
+      # Return complete document
+    end
+  end
+end
+----
+
+=== Transformers Router
+
+*Location:* `lib/coradoc/transformer_router.rb`
+
+Routes specific AST node types to their corresponding transformers:
+
+[source,ruby]
+----
+module Coradoc
+  class TransformerRouter
+    TRANSFORMERS = {
+      section: SectionTransformer,
+      paragraph: ParagraphTransformer,
+      list: ListTransformer,
+      # ... more transformers
+    }
+  end
+end
+----
+
+=== Individual Transformers
+
+Each document type has a dedicated transformer:
+
+* `SectionTransformer` - Transforms section nodes
+* `ParagraphTransformer` - Transforms paragraphs
+* `ListTransformer` - Transforms all list types
+* `BlockTransformer` - Transforms delimited blocks
+* `InlineTransformer` - Transforms inline elements
+
+== Custom Transformers
+
+To add a custom transformer for a new element:
+
+=== 1. Create the Transformer Class
+
+[source,ruby]
+----
+module Coradoc
+  class Transformer
+    class CustomBlockTransformer
+      def transform(ast_node)
+        Coradoc::Model::Block::Custom.new(
+          lines: ast_node[:lines],
+          attributes: transform_attributes(ast_node[:attributes])
+        )
+      end
+
+      private
+
+      def transform_attributes(ast_attributes)
+        # Convert AST attributes to AttributeList
+      end
+    end
+  end
+end
+----
+
+=== 2. Register the Transformer
+
+[source,ruby]
+----
+Coradoc::TransformerRouter::TRANSFORMERS[:custom_block] =
+  Coradoc::Transformer::CustomBlockTransformer
+----
+
+=== 3. Create a Corresponding Model Class
+
+[source,ruby]
+----
+module Coradoc
+  module Model
+    module Block
+      class Custom < Core
+        attribute :lines, :array, default: -> { [] }
+        attribute :attributes, :AttributeList
+      end
+    end
+  end
+end
+----
+
+== Transformer Registry
+
+The transformer router maintains a registry of all transformers:
+
+[source,ruby]
+----
+# Get transformer for a node type
+transformer = Coradoc::TransformerRouter.get_transformer(:section)
+
+# Transform a node
+model = transformer.transform(ast_node)
+----
+
+## Transformation Rules
+
+### Preserving Semantics
+
+The transformer preserves semantic meaning, not necessarily exact formatting:
+
+* AsciiDoc: `==  Title  ` (extra spaces)
+* Model: `Title.new(content: ["Title"])` (normalized)
+
+### Handling Ambiguity
+
+When AST structure is ambiguous, the transformer:
+
+* Infers type from context
+* Falls back to default behavior
+* Logs warnings for uncertain cases
+
+## Debugging Transformation
+
+### Inspect AST
+
+To see what the parser produces:
+
+[source,ruby]
+----
+require 'coradoc/parser'
+
+parser = Coradoc::Parser::AsciiDoc.new
+ast = parser.parse("= Title\n\nContent")
+
+puts ast.inspect
+----
+
+### Trace Transformation
+
+Enable debug output to trace transformation:
+
+[source,ruby]
+----
+Coradoc::Transformer.debug = true
+doc = Coradoc.parse(input)
+----
+
+## Common Transformation Issues
+
+### Missing Transformer
+
+*Error:* `No transformer found for node type: :custom`
+
+*Solution:* Register a transformer for the custom node type
+
+### Invalid AST Structure
+
+*Error:* `Invalid AST node structure for :section`
+
+*Solution:* Ensure parser produces correct AST structure
+
+See link:/coradoc/guides/troubleshooting[Troubleshooting] for more issues.
+
+## Related Documentation
+
+* link:architecture[Architecture] - Overall system architecture
+* link:parsing[Parsing Layer] - How AST is produced
+* link:model[Document Model] - Model object details
+* link:/coradoc/guides/custom-blocks[Custom Blocks Guide] - Creating custom elements
+
+## Bibliography
+
+* https://en.wikipedia.org/wiki/Abstract_syntax_tree[Abstract Syntax Tree - Wikipedia]
+* https://github.com/kschiess/parslet[Parslet - Parsing Expression Grammars]

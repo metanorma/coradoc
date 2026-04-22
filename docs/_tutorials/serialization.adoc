@@ -1,0 +1,457 @@
+---
+title: Serialization
+parent: Tutorials
+nav_order: 3
+---
+
+= Serialization Tutorial
+
+== Purpose
+
+This tutorial teaches you how to serialize Coradoc Document Models to AsciiDoc output. You'll learn to convert model objects back to AsciiDoc text.
+
+== Prerequisites
+
+* Completed link:document-modeling[Document Modeling Tutorial] or equivalent
+* Understanding of the Document Model
+* Familiarity with AsciiDoc syntax
+
+== Tutorial Overview
+
+You'll learn to:
+
+* Serialize basic documents
+* Serialize individual elements
+* Serialize lists, tables, and blocks
+* Serialize inline elements
+* Perform round-trip serialization
+
+== Example 1: Basic Serialization
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+input = <<~ASCIIDOC
+  = Document Title
+
+  == Section 1
+
+  This is a paragraph.
+ASCIIDOC
+
+doc = Coradoc.parse(input)
+output = doc.to_adoc
+
+puts "Serialized output:"
+puts output
+----
+
+=== What It Does
+
+1. Parses an AsciiDoc document
+2. Serializes it back to AsciiDoc
+3. Prints the result
+
+=== Expected Output
+
+----
+Serialized output:
+= Document Title
+
+== Section 1
+
+This is a paragraph
+----
+
+== Example 2: Serialize Individual Elements
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+# Serialize a paragraph
+paragraph = Coradoc::Model::Paragraph.new
+paragraph.content = [
+  Coradoc::Model::TextElement.new("This is a paragraph with "),
+  Coradoc::Model::Inline::Bold.new(content: "bold text"),
+]
+puts "Paragraph:"
+puts paragraph.to_adoc
+puts
+
+# Serialize a section
+section = Coradoc::Model::Section.new
+section.title = Coradoc::Model::Title.new
+section.title.level_int = 2
+section.title.content = ["Custom Section"]
+para = Coradoc::Model::Paragraph.new
+para.content = [Coradoc::Model::TextElement.new("Section content")]
+section.blocks = [para]
+puts "Section:"
+puts section.to_adoc
+----
+
+=== What It Does
+
+1. Creates a paragraph model with inline elements
+2. Serializes the paragraph
+3. Creates a section model with content
+4. Serializes the section
+
+=== Expected Output
+
+----
+Paragraph:
+This is a paragraph with *bold text*
+
+Section:
+== Custom Section
+
+Section content
+----
+
+== Example 3: Serialize Lists
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+# Unordered list
+list = Coradoc::Model::List::Unordered.new
+item1 = Coradoc::Model::ListItem.new
+item1.content = [Coradoc::Model::TextElement.new("First item")]
+list.items << item1
+
+item2 = Coradoc::Model::ListItem.new
+item2.content = [Coradoc::Model::TextElement.new("Second item")]
+list.items << item2
+
+puts "Unordered list:"
+puts list.to_adoc
+puts
+
+# Ordered list
+ordered = Coradoc::Model::List::Ordered.new
+item = Coradoc::Model::ListItem.new
+item.content = [Coradoc::Model::TextElement.new("Step one")]
+ordered.items << item
+
+item = Coradoc::Model::ListItem.new
+item.content = [Coradoc::Model::TextElement.new("Step two")]
+ordered.items << item
+
+puts "Ordered list:"
+puts ordered.to_adoc
+----
+
+=== What It Does
+
+1. Creates an unordered list model
+2. Serializes the unordered list
+3. Creates an ordered list model
+4. Serializes the ordered list
+
+=== Expected Output
+
+----
+Unordered list:
+* First item
+* Second item
+
+Ordered list:
+. Step one
+. Step two
+----
+
+== Example 4: Serialize Tables
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+table = Coradoc::Model::Table.new
+
+# Add header row
+header_row = Coradoc::Model::TableRow.new
+%w[Name Age City].each do |header_text|
+  cell = Coradoc::Model::TableCell.new
+  cell.content = [Coradoc::Model::TextElement.new(header_text)]
+  header_row.columns << cell
+end
+table.rows << header_row
+
+# Add data row
+data_row = Coradoc::Model::TableRow.new
+%w[Alice 25 NYC].each do |cell_text|
+  cell = Coradoc::Model::TableCell.new
+  cell.content = [Coradoc::Model::TextElement.new(cell_text)]
+  data_row.columns << cell
+end
+table.rows << data_row
+
+puts "Table:"
+puts table.to_adoc
+----
+
+=== What It Does
+
+1. Creates a table model
+2. Adds a header row with cells
+3. Adds a data row with cells
+4. Serializes the table
+
+=== Expected Output
+
+----
+Table:
+|===
+|Name |Age |City
+
+|Alice |25 |NYC
+|===
+----
+
+== Example 5: Serialize Blocks
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+# Listing block
+listing = Coradoc::Model::Block::Listing.new
+listing.lines = ["def hello", "  puts 'Hello, World!'", "end"]
+listing.attributes = Coradoc::Model::AttributeList.new
+listing.attributes.add_positional("ruby")
+puts "Listing block:"
+puts listing.to_adoc
+puts
+
+# Quote block
+quote = Coradoc::Model::Block::Quote.new
+quote.lines = ["This is a quote.", "It spans multiple lines."]
+puts "Quote block:"
+puts quote.to_adoc
+----
+
+=== What It Does
+
+1. Creates a listing block with attributes
+2. Serializes the listing block
+3. Creates a quote block
+4. Serializes the quote block
+
+=== Expected Output
+
+----
+Listing block:
+[source,ruby]
+----
+def hello
+  puts 'Hello, World!'
+end
+----
+
+Quote block:
+____
+This is a quote.
+It spans multiple lines.
+____
+----
+
+== Example 6: Serialize Inline Elements
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+# Create paragraph with various inline elements
+paragraph = Coradoc::Model::Paragraph.new
+paragraph.content = [
+  Coradoc::Model::TextElement.new("Text with "),
+  Coradoc::Model::Inline::Bold.new(content: "bold"),
+  Coradoc::Model::TextElement.new(", "),
+  Coradoc::Model::Inline::Italic.new(content: "italic"),
+  Coradoc::Model::TextElement.new(", and "),
+  Coradoc::Model::Inline::Monospace.new(content: "monospace"),
+  Coradoc::Model::TextElement.new(" text."),
+]
+
+puts "Paragraph with inline elements:"
+puts paragraph.to_adoc
+puts
+
+# Link
+link = Coradoc::Model::Inline::Link.new
+link.path = "https://example.com"
+link.name = "Example Site"
+puts "Link:"
+puts "#{link.to_adoc}\n"
+puts
+
+# Anchor
+anchor = Coradoc::Model::Inline::Anchor.new
+anchor.id = "section1"
+puts "Anchor:"
+puts "#{anchor.to_adoc}\n"
+----
+
+=== What It Does
+
+1. Creates a paragraph with multiple inline element types
+2. Serializes each inline element type
+3. Creates and serializes a link
+4. Creates and serializes an anchor
+
+=== Expected Output
+
+----
+Paragraph with inline elements:
+Text with *bold*, _italic_, and `monospace` text.
+
+Link:
+https://example.com[Example Site]
+
+Anchor:
+[[section1]]
+----
+
+== Example 7: Round-Trip Preservation
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+original = <<~ASCIIDOC
+  = Document Title
+
+  == Section One
+
+  This is a paragraph with *bold* and _italic_ text.
+
+  * List item 1
+  * List item 2
+ASCIIDOC
+
+# Parse
+doc1 = Coradoc.parse(original)
+
+# Serialize
+serialized = doc1.to_adoc
+
+# Parse again
+doc2 = Coradoc.parse(serialized)
+
+puts "Original document title: #{doc1.header.title}"
+puts "Re-parsed document title: #{doc2.header.title}"
+
+# Both should have the same structure
+puts "Original sections: #{doc1.sections.size}"
+puts "Re-parsed sections: #{doc2.sections.size}"
+
+puts "\nSerialized output:"
+puts serialized
+----
+
+=== What It Does
+
+1. Parses an original document
+2. Serializes it to AsciiDoc
+3. Parses the serialized output again
+4. Compares the two models for semantic equivalence
+
+=== Expected Output
+
+----
+Original document title: Document Title
+Re-parsed document title: Document Title
+Original sections: 1
+Re-parsed sections: 1
+
+Serialized output:
+= Document Title
+
+== Section One
+
+This is a paragraph with *bold* and _italic_ text.
+
+* List item 1
+* List item 2
+----
+
+== Example 8: Using Coradoc.convert
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+doc = Coradoc.parse("= Test\n\nContent")
+
+# Convert to AsciiDoc (same as to_adoc)
+output = Coradoc.convert(doc, to: :adoc)
+puts "Converted output:"
+puts output
+----
+
+=== What It Does
+
+1. Parses a document
+2. Uses the `convert` method with explicit format
+3. Prints the result
+
+=== Expected Output
+
+----
+Converted output:
+= Test
+
+Content
+----
+
+== Summary
+
+In this tutorial you learned:
+
+* How to serialize complete documents
+* How to serialize individual elements
+* How to serialize lists, tables, and blocks
+* How to serialize inline elements
+* How round-trip serialization preserves semantics
+* How to use the `convert` method
+
+== Exercises
+
+Practice your skills:
+
+1. Create a document model programmatically and serialize it
+2. Write a function that adds a section to an existing document
+3. Create a custom block type and serialize it
+4. Parse a complex document, modify it, and serialize the changes
+
+== Next Steps
+
+* link:round-tripping[Round-tripping Tutorial] - Learn about preservation
+* link:/coradoc/pages/serialization[Serialization Layer] - Deep dive into serializers
+* link:/coradoc/guides/custom-blocks[Custom Blocks Guide] - Create custom serializers
+
+== Source Code
+
+The source code for these examples is available at:
+
+* link:https://github.com/metanorma/coradoc/tree/main/examples/serialization.rb[examples/serialization.rb]

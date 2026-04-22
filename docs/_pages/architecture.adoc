@@ -1,0 +1,176 @@
+---
+title: Architecture
+parent: Core Pages
+nav_order: 2
+---
+
+= Coradoc Architecture
+
+== Purpose
+
+This page explains Coradoc's architecture, including the data flow pipeline and layer structure. Understanding the architecture helps you use Coradoc effectively and extend it when needed.
+
+== Data Flow Pipeline
+
+Coradoc processes documents through a hub-and-spoke pipeline:
+
+[source,ascii]
+----
+                 ┌─────────────┐
+                 │   Input     │
+                 │ (adoc/md/   │
+                 │  html/docx) │
+                 └─────┬───────┘
+                       │
+                       ▼
+                 ┌─────────────┐
+                 │    Parser   │
+                 │  (format-   │
+                 │  specific)  │
+                 └─────┬───────┘
+                       │
+                       ▼
+                 ┌─────────────┐
+                 │ ToCoreModel │
+                 │ Transformer │
+                 └─────┬───────┘
+                       │
+                       ▼
+                 ┌─────────────┐
+                 │  CoreModel  │
+                 │    Hub      │
+                 └─────┬───────┘
+                       │
+           ┌───────────┴───────────┐
+           ▼                       ▼
+    ┌──────────┐            ┌──────────┐
+    │FromCore  │            │ Query /  │
+    │ Model    │            │ Validate │
+    │Transform │            │ / Edit   │
+    └────┬─────┘            └──────────┘
+         │
+         ▼
+    ┌──────────┐
+    │Serialize │
+    │  Output  │
+    │(adoc/md/ │
+    │  html)   │
+    └──────────┘
+----
+
+=== Pipeline Stages
+
+1. **Input** - Text or file is received (AsciiDoc, Markdown, HTML, or DOCX)
+2. **Parser** - Format-specific parser produces a format model tree
+3. **ToCoreModel** - Transforms format model into canonical CoreModel
+4. **CoreModel** - Hub representation; can be queried, validated, or edited
+5. **FromCoreModel** - Transforms CoreModel to a target format model
+6. **Serialize** - Produces output text
+
+=== DOCX Pipeline
+
+DOCX files follow a specialized path through Uniword:
+
+....
+DOCX file
+  → Uniword::DocumentFactory.from_file
+  → OOXML model tree (Uniword::Wordprocessingml::*)
+  → Coradoc::Docx::Transform::ToCoreModel (rule-based dispatch)
+  → CoreModel tree (canonical hub)
+  → FromCoreModel (AsciiDoc or Markdown)
+  → Format model tree → Serializer → .adoc or .md file
+....
+
+The DOCX transform uses a **rule registry** with priority-based dispatch.
+Each OOXML element type has a dedicated rule class that produces a typed
+CoreModel node. Style-based semantic detection (headings, lists, quotes)
+is handled by `StyleResolver` and `NumberingResolver`.
+
+== Layer Structure
+
+Coradoc is organized into logical layers:
+
+=== Parser Layer
+
+*Location:* `lib/coradoc/parser/`
+
+Parses AsciiDoc text using Parslet parsing expressions. This layer produces an AST that represents the syntactic structure of the input.
+
+=== Transformer Layer
+
+*Location:* `lib/coradoc/transformer.rb`
+
+Converts the AST into Model objects. This is where syntactic structures become semantic document elements.
+
+=== Model Layer
+
+*Location:* `lib/coradoc/model/`
+
+Defines the document structure as Ruby objects. All model elements inherit from `Coradoc::Model::Base`.
+
+=== Serialization Layer
+
+*Location:* `lib/coradoc/output/`
+
+Converts Model objects back to AsciiDoc text. Each model class has a corresponding serializer.
+
+=== Schema Layer
+
+*Location:* `lib/coradoc/schema/`
+
+Provides customizable schemas for different document types (e.g., ISO documents, standards).
+
+== Model Class Hierarchy
+
+[source,ruby]
+----
+                    ┌─────────────────────────┐
+                    │     Coradoc::Model::Base    │
+                    │     (All Model classes     │
+                    │      inherit from Base)      │
+                    └───────────────┬─────────────┘
+                                    │
+                ┌───────────────────┴───────────────┐
+                │                                       │
+      ┌─────────┴────────┐      ┌──────────────┴─────────────┐
+      │                  │      │                            │
+  ┌───┴──┐          ┌───┴──┐  │   ┌──────┴──────┐    ┌──────┴──────┐
+  │Block│          │List  │  │   │   Section  │    │    Inline    │
+  │     │          │      │  │   │           │    │             │
+  └───┬──┘          └───┬──┘  │   └──────┬──────┘    └──────────────┘
+      │                │     │          │
+      │      ┌─────────┴─────│──────────┘
+      │      │                   │
+      │   ┌───┴────────┐   ┌──┴──────────┐
+      │   │            │   │             │
+      └───┴──Paragraph│   │Ordered      │
+         │Unordered   │   │Definition  │
+         │            │   │             │
+         └────────────┘   └─────────────┘
+----
+
+== Key Design Principles
+
+=== Object-Oriented Model
+
+Every document element is a Ruby object with methods for manipulation and serialization.
+
+=== Semantic Preservation
+
+The model preserves semantic meaning, not just formatting. This enables round-tripping.
+
+=== Extensibility
+
+New block types, inline elements, and serializers can be added through inheritance and registration.
+
+== Related Documentation
+
+* link:parsing[Parsing Layer] - Detailed parser documentation
+* link:transformation[Transformation Layer] - Transformer explanation
+* link:model[Document Model] - Model class details
+* link:serialization[Serialization] - Serializer architecture
+
+== Bibliography
+
+* https://github.com/kschiess/parslet[Parslet] - Parsing expression grammar library
+* https://github.com/lutaml/lutaml-model[lutaml-model] - Model definition library

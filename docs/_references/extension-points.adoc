@@ -1,0 +1,514 @@
+---
+title: Extension Points
+parent: References
+nav_order: 4
+---
+
+= Extension Points Reference
+
+== Purpose
+
+Complete reference for extending Coradoc with custom elements, parsers, serializers, and schemas.
+
+== Extension Architecture
+
+Coradoc's extension architecture allows you to:
+
+* Add custom block types
+* Add custom inline elements
+* Create custom serializers
+* Define custom schemas
+* Extend the parser
+
+== Element Registry
+
+The ElementRegistry maps Model classes to their serializers.
+
+=== Registering Elements
+
+[source,ruby]
+----
+Coradoc::Output::Adoc::ElementRegistry.register(
+  Coradoc::Model::Block::CustomBlock,
+  Coradoc::Output::Adoc::Serializers::Block::CustomBlockSerializer
+)
+----
+
+=== Querying Registry
+
+[source,ruby]
+----
+# Check if a serializer exists
+serializer = Coradoc::Output::Adoc::ElementRegistry[Coradoc::Model::Block::Quote]
+
+# List all registered serializers
+Coradoc::Output::Adoc::ElementRegistry.each do |klass, serializer|
+  puts "#{klass} => #{serializer}"
+end
+----
+
+== Custom Block Types
+
+### Block Class Definition
+
+[source,ruby]
+----
+module Coradoc
+  module Model
+    module Block
+      class CustomBlock < Core
+        attribute :custom_attr, :string
+        attribute :lines, :array, default: -> { [] }
+      end
+    end
+  end
+end
+----
+
+**Required Attributes:**
+
+* `delimiter_char` (String) - Character for block delimiters
+* `delimiter_len` (Integer) - Length of delimiter line
+
+**Custom Attributes:**
+
+Any attributes your block needs.
+
+### Block Serializer Definition
+
+[source,ruby]
+----
+module Coradoc
+  module Output
+    module Adoc
+      module Serializers
+        module Block
+          class CustomBlockSerializer < Core
+            def serialize_to_adoc
+              parts = []
+              parts << @model.gen_delimiter << "\n"
+              parts << @model.gen_title
+              parts << @model.gen_attributes
+              parts << @model.gen_lines
+              parts << @model.gen_delimiter << "\n"
+              parts.join
+            end
+          end
+        end
+      end
+    end
+  end
+end
+----
+
+**Required Methods:**
+
+* `serialize_to_adoc` - Return AsciiDoc string representation
+
+**Helper Methods (inherited from Core):**
+
+* `gen_delimiter` - Generate delimiter line
+* `gen_title` - Generate title line
+* `gen_attributes` - Generate attribute lines
+* `gen_lines` - Generate content lines
+
+## Custom Inline Elements
+
+### Inline Class Definition
+
+[source,ruby]
+----
+module Coradoc
+  module Model
+        module Inline
+          class CustomInline < Base
+            attribute :text, :string
+            attribute :custom_attr, :string
+          end
+        end
+  end
+end
+----
+
+### Inline Serializer Definition
+
+[source,ruby]
+----
+module Coradoc
+  module Output
+    module Adoc
+      module Serializers
+        module Inline
+          class CustomInlineSerializer
+            def initialize(model)
+              @model = model
+            end
+
+            def serialize_to_adoc
+              # Return AsciiDoc representation
+              "##{@model.text}#"
+            end
+          end
+        end
+      end
+    end
+  end
+end
+----
+
+## Custom Serializers
+
+### Serializer Interface
+
+All serializers must implement:
+
+[source,ruby]
+----
+class CustomSerializer
+  def initialize(model)
+    @model = model
+  end
+
+  def serialize_to_adoc
+    # Return String
+  end
+end
+----
+
+### Serializer Base Classes
+
+[source,ruby]
+----
+# Block serializer base
+Coradoc::Output::Adoc::Serializers::Block::Core
+
+# Inline serializer base
+Coradoc::Output::Adoc::Serializers::Inline::Base
+
+# Section serializer base
+Coradoc::Output::Adoc::Serializers::Section
+----
+
+## Custom Schemas
+
+### Schema Class Definition
+
+[source,ruby]
+----
+module Coradoc
+  module Schema
+    class CustomSchema < Schema
+      def schema_name
+        :custom
+      end
+
+      def default_attributes
+        {
+          "doctype" => "custom",
+          "version" => "1.0"
+        }
+      end
+
+      def parsing_rules
+        {
+          custom_element: ->(node) { parse_custom(node) }
+        }
+      end
+
+      def serialization_rules
+        {
+          custom_element: ->(model) { serialize_custom(model) }
+        }
+      end
+
+      def validate_document(doc)
+        # Validation logic
+      end
+    end
+  end
+end
+----
+
+### Schema Methods
+
+**Required:**
+
+* `schema_name` - Return symbol identifying the schema
+
+**Optional:**
+
+* `default_attributes` - Hash of default document attributes
+* `parsing_rules` - Hash of parsing rule procs
+* `serialization_rules` - Hash of serialization rule procs
+* `validate_document(doc)` - Validate document structure
+* `pre_parse(input)` - Transform input before parsing
+* `post_serialize(output)` - Transform output after serialization
+
+### Schema Registration
+
+[source,ruby]
+----
+Coradoc::Schema.register(:custom, Coradoc::Schema::CustomSchema)
+----
+
+## Parser Extensions
+
+### Parser Rule Definition
+
+[source,ruby]
+----
+module Coradoc
+  class Parser
+    class AsciiDoc
+      # Add custom rule
+      rule(:custom_block) do
+        # Parslet parsing expression
+        str('!!!').repeat(4) >> space?
+      end
+    end
+  end
+end
+----
+
+### Transformer Rule Definition
+
+[source,ruby]
+----
+module Coradoc
+  class Transformer
+    class CustomBlockTransformer
+      def self.transform(ast_node)
+        Coradoc::Model::Block::CustomBlock.new(
+          lines: ast_node[:lines],
+          attributes: transform_attributes(ast_node[:attributes])
+        )
+      end
+    end
+  end
+end
+----
+
+### Register Transformer
+
+[source,ruby]
+----
+Coradoc::TransformerRouter.register(
+  :custom_block,
+  Coradoc::Transformer::CustomBlockTransformer
+)
+----
+
+## Plugin System
+
+### Creating Plugins
+
+[source,ruby]
+----
+module CoradocPlugin
+  class MyCustomBlock < Coradoc::Model::Block::Core
+    attribute :my_attr, :string
+  end
+
+  class MyCustomBlockSerializer
+    def initialize(model)
+      @model = model
+    end
+
+    def serialize_to_adoc
+      "!!!\n#{@model.my_attr}\n!!!\n"
+    end
+  end
+end
+
+# Register plugin
+Coradoc::Plugin.register do |plugin|
+  plugin.block :my_custom_block,
+              class: CoradocPlugin::MyCustomBlock,
+              serializer: CoradocPlugin::MyCustomBlockSerializer
+end
+----
+
+## Extension Hooks
+
+=== Before Parse Hook
+
+[source,ruby]
+----
+Coradoc.config.before_parse do |input, options|
+  # Transform input before parsing
+  input.gsub(/custom/, "replaced")
+end
+----
+
+=== After Parse Hook
+
+[source,ruby]
+----
+Coradoc.config.after_parse do |document, options|
+  # Transform document after parsing
+  document.header.title = document.header.title.upcase
+end
+----
+
+=== Before Serialize Hook
+
+[source,ruby]
+----
+Coradoc.config.before_serialize do |model, options|
+  # Transform model before serialization
+end
+----
+
+=== After Serialize Hook
+
+[source,ruby]
+----
+Coradoc.config.after_serialize do |output, options|
+  # Transform output after serialization
+  output.gsub(/<[^>]+>/, "") # Remove HTML tags
+end
+----
+
+## Extension Best Practices
+
+### 1. Namespace Your Extensions
+
+[source,ruby]
+----
+# Good
+module MyProject
+  module CoradocExtensions
+    class CustomBlock < Coradoc::Model::Block::Core
+    end
+  end
+end
+
+# Avoid
+class CustomBlock < Coradoc::Model::Block::Core
+end
+----
+
+### 2. Use Inheritance Properly
+
+[source,ruby]
+----
+# Good: Inherit from appropriate base
+class MyBlock < Coradoc::Model::Block::Core
+end
+
+class MyInline < Coradoc::Model::Inline::Base
+end
+
+# Avoid: Don't inherit from unrelated classes
+class MyBlock < Coradoc::Model::Inline::Base  # Wrong!
+----
+
+### 3. Register Serializers
+
+[source,ruby]
+----
+# Always register after defining both class and serializer
+class MyBlock < Coradoc::Model::Block::Core
+end
+
+class MyBlockSerializer
+  def serialize_to_adoc
+    "..."
+  end
+end
+
+# Register after both are defined
+Coradoc::Output::Adoc::ElementRegistry.register(
+  MyBlock,
+  MyBlockSerializer
+)
+----
+
+### 4. Handle Errors Gracefully
+
+[source,ruby]
+----
+class MySerializer
+  def serialize_to_adoc
+    begin
+      generate_output
+    rescue StandardError => e
+      raise Coradoc::SerializationError, "Failed to serialize: #{e.message}"
+    end
+  end
+end
+----
+
+## Extension Testing
+
+### Test Custom Elements
+
+[source,ruby]
+----
+require 'coradoc'
+require 'my_extensions'
+
+RSpec.describe MyCustomBlock do
+  it "serializes correctly" do
+    block = MyCustomBlock.new
+    block.my_attr = "test"
+
+    expect(block.to_adoc).to include("test")
+  end
+end
+----
+
+## Extension Distribution
+
+### Gem Structure
+
+[source,text]
+----
+my-coradoc-extension/
+  lib/
+    my-coradoc-extension.rb
+    my-coradoc-extension/
+      version.rb
+      custom_block.rb
+      custom_serializer.rb
+  spec/
+    spec_helper.rb
+    custom_block_spec.rb
+  my-coradoc-extension.gemspec
+  README.md
+----
+
+### Entry Point
+
+[source,ruby]
+----
+# lib/my-coradoc-extension.rb
+require 'coradoc'
+require 'my-coradoc-extension/version'
+require 'my-coradoc-extension/custom_block'
+require 'my-coradoc-extension/custom_serializer'
+
+module MyCoradocExtension
+  class Railtie < Rails::Railtie
+    # Auto-register if Rails
+  end
+end
+
+# Register extension
+Coradoc::Output::Adoc::ElementRegistry.register(
+  MyCoradocExtension::CustomBlock,
+  MyCoradocExtension::CustomBlockSerializer
+)
+----
+
+## Related Documentation
+
+* link:/coradoc/guides/custom-blocks[Custom Blocks Guide] - Creating custom blocks
+* link:/coradoc/guides/custom-inline[Custom Inline Guide] - Creating inline elements
+* link:/coradoc/guides/schema-system[Schema System Guide] - Creating schemas
+* link:/coradoc/pages/architecture[Architecture] - Extension architecture
+
+## Bibliography
+
+* https://github.com/metanorma/coradoc/tree/main/lib/coradoc/output/adoc/element_registry.rb[ElementRegistry Source]
+* https://github.com/lutaml/lutaml-model[lutaml-model documentation]

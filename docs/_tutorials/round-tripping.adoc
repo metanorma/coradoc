@@ -1,0 +1,352 @@
+---
+title: Round-tripping
+parent: Tutorials
+nav_order: 4
+---
+
+= Round-tripping Tutorial
+
+== Purpose
+
+This tutorial teaches you about round-trip processing with Coradoc - parsing a document, serializing it, and parsing again while preserving semantic meaning.
+
+== Prerequisites
+
+* Completed link:basic-parsing[Basic Parsing Tutorial]
+* Completed link:serialization[Serialization Tutorial]
+* Understanding of semantic vs. syntactic preservation
+
+== Tutorial Overview
+
+You'll learn to:
+
+* Understand what round-tripping means
+* Preserve semantic meaning through parse/serialize cycles
+* Handle common round-trip challenges
+* Verify semantic equivalence
+
+== What is Round-tripping?
+
+Round-tripping is the process of:
+
+1. **Parse** - Convert AsciiDoc text to a Document Model
+2. **Serialize** - Convert the Document Model back to AsciiDoc text
+3. **Re-parse** - Parse the serialized output again
+
+The goal is that the semantic meaning remains the same, even if the exact formatting differs.
+
+=== Semantic vs. Syntactic Preservation
+
+[source,ruby]
+----
+# Original (syntactic variation)
+==  My  Title
+
+# After round-trip (normalized)
+== My Title
+----
+
+The *syntax* differs (spacing), but the *semantics* are identical (level-2 heading "My Title").
+
+== Example 1: Basic Round-trip
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+original = <<~ASCIIDOC
+  = Document Title
+
+  == Section One
+
+  This is a paragraph with *bold* and _italic_ text.
+
+  * List item 1
+  * List item 2
+ASCIIDOC
+
+# Parse
+doc1 = Coradoc.parse(original)
+
+# Serialize
+serialized = doc1.to_adoc
+
+# Parse again
+doc2 = Coradoc.parse(serialized)
+
+# Compare
+puts "Original title: #{doc1.header.title}"
+puts "Re-parsed title: #{doc2.header.title}"
+
+puts "\nOriginal sections: #{doc1.sections.size}"
+puts "Re-parsed sections: #{doc2.sections.size}"
+
+puts "\nSerialized output:"
+puts serialized
+----
+
+=== What It Does
+
+1. Parses the original document
+2. Serializes it back to AsciiDoc
+3. Parses the serialized output
+4. Compares key properties
+
+=== Expected Output
+
+----
+Original title: Document Title
+Re-parsed title: Document Title
+
+Original sections: 1
+Re-parsed sections: 1
+
+Serialized output:
+= Document Title
+
+== Section One
+
+This is a paragraph with *bold* and _italic_ text.
+
+* List item 1
+* List item 2
+----
+
+== Example 2: Preserving Document Attributes
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+original = <<~ASCIIDOC
+  = Document Title
+  :author: John Doe
+  :version: 1.0
+
+  Content here.
+ASCIIDOC
+
+doc1 = Coradoc.parse(original)
+serialized = doc1.to_adoc
+doc2 = Coradoc.parse(serialized)
+
+puts "Original attributes:"
+doc1.document_attributes.data.each { |k, v| puts "  #{k}: #{v}" }
+
+puts "\nRe-parsed attributes:"
+doc2.document_attributes.data.each { |k, v| puts "  #{k}: #{v}" }
+
+puts "\nAttributes match: #{doc1.document_attributes.data == doc2.document_attributes.data}"
+----
+
+=== What It Does
+
+1. Parses a document with attributes
+2. Serializes and re-parses
+3. Compares attribute preservation
+
+=== Expected Output
+
+----
+Original attributes:
+  author: John Doe
+  version: 1.0
+
+Re-parsed attributes:
+  author: John Doe
+  version: 1.0
+
+Attributes match: true
+----
+
+== Example 3: Preserving Nested Structure
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+original = <<~ASCIIDOC
+  = Main
+
+  == Section 1
+
+  === Subsection 1.1
+
+  Content in 1.1
+
+  === Subsection 1.2
+
+  Content in 1.2
+
+  == Section 2
+
+  Content in section 2.
+ASCIIDOC
+
+doc1 = Coradoc.parse(original)
+serialized = doc1.to_adoc
+doc2 = Coradoc.parse(serialized)
+
+def count_sections(doc)
+  count = 0
+  doc.sections.each do |s|
+    next unless s.is_a?(Coradoc::Model::Section)
+    count += 1
+    count += count_sections(s)
+  end
+  count
+end
+
+puts "Original section count: #{count_sections(doc1)}"
+puts "Re-parsed section count: #{count_sections(doc2)}"
+----
+
+=== What It Does
+
+1. Parses a document with nested sections
+2. Serializes and re-parses
+3. Recursively counts sections in both versions
+
+=== Expected Output
+
+----
+Original section count: 4
+Re-parsed section count: 4
+----
+
+== Example 4: Preserving Block Types
+
+=== The Code
+
+[source,ruby]
+----
+require 'coradoc'
+
+original = <<~ASCIIDOC
+  = Blocks
+
+  [source,ruby]
+  ----
+  def hello
+    puts "world"
+  end
+  ----
+
+  ____
+  Quote block.
+  ____
+
+  NOTE: Admonition block.
+ASCIIDOC
+
+doc1 = Coradoc.parse(original)
+serialized = doc1.to_adoc
+doc2 = Coradoc.parse(serialized)
+
+def block_types(doc)
+  section = doc.sections.find { |s| s.is_a?(Coradoc::Model::Section) }
+  return [] unless section
+  section.contents.map { |b| b.class.name }
+end
+
+puts "Original block types: #{block_types(doc1).join(', ')}"
+puts "Re-parsed block types: #{block_types(doc2).join(', ')}"
+----
+
+=== What It Does
+
+1. Parses a document with different block types
+2. Serializes and re-parses
+3. Compares block type preservation
+
+=== Expected Output
+
+----
+Original block types: Coradoc::Model::Block::Listing, Coradoc::Model::Block::Quote, Coradoc::Model::Admonition
+Re-parsed block types: Coradoc::Model::Block::Listing, Coradoc::Model::Block::Quote, Coradoc::Model::Admonition
+----
+
+== Round-trip Considerations
+
+### What Gets Preserved
+
+* Semantic structure (sections, blocks, lists)
+* Text content
+* Inline formatting (bold, italic, links)
+* Document attributes
+* Block attributes
+
+### What May Change
+
+* Whitespace normalization
+* Attribute order
+* Delimiter length (for equivalent delimiters)
+* Quote style (when equivalent)
+
+### What May Not Round-trip
+
+* Unrecognized features
+* Complex macro expansions
+* Conditional processing directives
+
+## Verifying Semantic Equivalence
+
+To verify round-trip success:
+
+[source,ruby]
+----
+def equivalent_models?(doc1, doc2)
+  # Compare structure
+  return false if doc1.header.title != doc2.header.title
+  return false if doc1.sections.size != doc2.sections.size
+
+  # Compare attributes
+  return false if doc1.document_attributes.data != doc2.document_attributes.data
+
+  true
+rescue
+  false
+end
+
+original = "= Title\n\nContent"
+doc1 = Coradoc.parse(original)
+serialized = doc1.to_adoc
+doc2 = Coradoc.parse(serialized)
+
+puts "Equivalent: #{equivalent_models?(doc1, doc2)}"
+----
+
+## Summary
+
+In this tutorial you learned:
+
+* What round-tripping means
+* How semantic meaning is preserved
+* What may change during round-trip
+* How to verify semantic equivalence
+
+## Exercises
+
+Practice your skills:
+
+1. Round-trip a complex document and inspect the differences
+2. Write a function that compares two document models for equivalence
+3. Test round-tripping with tables and nested lists
+4. Identify features that don't round-trip successfully
+
+## Next Steps
+
+* link:html-conversion[HTML Conversion Tutorial] - Converting other formats
+* link:/coradoc/pages/architecture[Architecture] - Understanding the transformation layer
+* link:/coradoc/guides/troubleshooting[Troubleshooting] - Common issues
+
+## Bibliography
+
+* https://en.wikipedia.org/wiki/RipProtocol[Round-trip protocols]
+* https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[AsciiDoc Syntax Reference]

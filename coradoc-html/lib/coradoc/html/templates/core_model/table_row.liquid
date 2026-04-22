@@ -1,0 +1,10 @@
+{%- comment -%}
+Table row template for CoreModel::TableRow
+{%- endcomment -%}
+<tr id="{{ id }}">
+  {% if cells %}
+    {% for cell in cells %}
+      {{ cell | render_element }}
+    {% endfor %}
+  {% endif %}
+</tr>

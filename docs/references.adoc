@@ -1,0 +1,62 @@
+---
+title: References
+nav_order: 5
+has_children: true
+---
+
+= References
+
+== Purpose
+
+This section contains technical specifications and detailed reference documentation for Coradoc.
+
+== Overview
+
+References are organized by topic:
+
+=== API References
+
+* link:/coradoc/references/api-reference/[API Reference] - Complete API documentation
+* link:/coradoc/references/ruby-methods/[Ruby Methods Reference] - Ruby API methods reference
+* link:/coradoc/references/coremodel-types/[CoreModel Types] - CoreModel type definitions
+
+=== Syntax Guides
+
+* link:/coradoc/references/asciidoc-syntax/[AsciiDoc Syntax] - AsciiDoc authoring guide
+* link:/coradoc/references/markdown-syntax/[Markdown Syntax] - Markdown authoring guide
+
+=== Tools Reference
+
+* link:/coradoc/references/cli-commands/[CLI Commands] - Command-line interface reference
+* link:/coradoc/references/error-codes/[Error Codes] - Error codes and recovery strategies
+* link:/coradoc/references/feature-matrix/[Feature Matrix] - Feature support across formats
+
+=== Model and Extensions
+
+* link:/coradoc/references/model-classes/[Model Classes] - All model classes catalog
+* link:/coradoc/references/output-formats/[Output Formats] - Format options and converters
+* link:/coradoc/references/extension-points/[Extension Points] - Extension API specification
+
+== Reference Structure
+
+Each reference provides:
+
+* **Specification** - Formal definition
+* **Parameters** - Method/class parameters
+* **Returns** - Return types and values
+* **Raises** - Exceptions that may be raised
+* **Examples** - Usage examples
+* **Notes** - Important considerations
+
+== When to Use References
+
+* **API Reference** - Look up method signatures and parameters
+* **Model Classes** - Find model class inheritance and attributes
+* **Output Formats** - Understand format options
+* **Extension Points** - Learn extension APIs
+
+== Related Documentation
+
+* link:/coradoc/pages/[Core Pages] - Conceptual documentation
+* link:/coradoc/tutorials/[Tutorials] - Step-by-step learning
+* link:/coradoc/guides/[Guides] - Task-oriented guides

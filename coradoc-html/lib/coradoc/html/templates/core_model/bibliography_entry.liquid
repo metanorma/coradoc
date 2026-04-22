@@ -1,0 +1,44 @@
+{%- comment -%}
+Bibliography entry template
+
+Renders a single bibliography reference with proper ISO document ID formatting.
+{%- endcomment -%}
+
+{%- assign anchor = anchor_name | default: "" -%}
+{%- assign doc_id = document_id | default: "" | strip -%}
+{%- assign ref = ref_text | default: "" | strip -%}
+
+<p id="{{ anchor }}" class="bibliography-entry NormRef">
+  {%- if doc_id contains "ISO" -%}
+    {%- assign cleaned_id = doc_id | remove: "ISO " | strip -%}
+    <span class="stdpublisher">ISO </span>
+
+    {%- if cleaned_id contains ":" -%}
+      {%- assign parts = cleaned_id | split: ":" -%}
+      {%- assign num_part = parts[0] -%}
+      {%- assign year = parts[1] -%}
+
+      {%- if num_part contains "-" -%}
+        {%- assign num_and_part = num_part | split: "-" -%}
+        <span class="stddocNumber">{{ num_and_part[0] }}</span><span class="stddocPart">-{{ num_and_part[1] }}</span>
+      {%- else -%}
+        <span class="stddocNumber">{{ num_part }}</span>
+      {%- endif -%}
+
+      <span class="stddocYear">:{{ year }}</span>
+    {%- elsif cleaned_id contains "-" -%}
+      {%- assign num_and_part = cleaned_id | split: "-" -%}
+      <span class="stddocNumber">{{ num_and_part[0] }}</span><span class="stddocPart">-{{ num_and_part[1] }}</span>
+    {%- else -%}
+      <span class="stddocNumber">{{ cleaned_id }}</span>
+    {%- endif -%}
+  {%- else -%}
+    {%- if doc_id != "" -%}
+      {{ doc_id }}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if ref != "" -%}
+    <i><span class="stddocTitle">{{ ref }}</span></i>
+  {%- endif -%}
+</p>

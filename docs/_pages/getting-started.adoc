@@ -1,0 +1,158 @@
+---
+title: Getting Started
+parent: Core Pages
+nav_order: 1
+---
+
+= Getting Started with Coradoc
+
+== Purpose
+
+This page helps you install Coradoc and write your first AsciiDoc parsing code. You'll learn how to parse AsciiDoc documents, access document structure, and serialize back to AsciiDoc.
+
+== Prerequisites
+
+* Ruby 3.1 or higher
+* Basic knowledge of AsciiDoc syntax
+
+== Installation
+
+Add Coradoc to your application's Gemfile:
+
+[source,ruby]
+----
+gem 'coradoc'
+----
+
+Then execute:
+
+[source,bash]
+----
+bundle install
+----
+
+Or install it yourself as a gem:
+
+[source,bash]
+----
+gem install coradoc
+----
+
+== Basic Parsing
+
+=== Parse a Simple Document
+
+Parse an AsciiDoc string into a document model:
+
+[source,ruby]
+----
+# Parse AsciiDoc input
+doc = Coradoc.parse("== Hello World\n\nThis is a paragraph.")
+
+# Access document structure
+doc.header.title                    # => "Hello World"
+doc.sections.first.title.level_int  # => 2
+doc.sections.first.paragraphs.first # => First paragraph object
+
+# Serialize back to AsciiDoc
+output = doc.to_adoc
+----
+
+=== Parse from File
+
+Parse an AsciiDoc file:
+
+[source,ruby]
+----
+# Parse from file
+doc = Coradoc.parse_file("document.adoc")
+
+# Work with the model
+doc.sections.each do |section|
+  puts "Section: #{section.title}"
+end
+----
+
+=== Accessing Document Structure
+
+The document model includes:
+
+* *header* - Title, author, revision info
+* *document_attributes* - Key-value metadata
+* *sections* - Hierarchical content structure
+* *blocks* - Paragraphs, lists, code blocks, tables, etc.
+* *inline elements* - Links, formatting, etc.
+
+[source,ruby]
+----
+# Access document structure
+doc.header.title                  # Document title
+doc.document_attributes.data     # Metadata attributes
+doc.sections                      # Top-level sections
+doc.sections.first.sections       # Nested sections
+doc.sections.first.paragraphs    # Content blocks
+----
+
+== Serialization
+
+Convert document models to AsciiDoc output:
+
+[source,ruby]
+----
+# Any Model object can be serialized to AsciiDoc
+paragraph = Coradoc::Model::Paragraph.new
+paragraph.content = [Coradoc::Model::TextElement.new("Hello")]
+paragraph.to_adoc  # => "Hello\n"
+----
+
+=== Using the Converter
+
+The `Coradoc.convert` method provides explicit format conversion:
+
+[source,ruby]
+----
+doc = Coradoc.parse_file("input.adoc")
+
+# Convert to AsciiDoc (same as to_adoc)
+asciidoc_output = Coradoc.convert(doc, to: :adoc)
+----
+
+== DOCX Conversion
+
+Convert Word documents to AsciiDoc or Markdown:
+
+[source,ruby]
+----
+require 'coradoc/docx'
+
+# Convert DOCX to AsciiDoc
+adoc = Coradoc.convert("input.docx", from: :docx, to: :asciidoc)
+
+# Convert DOCX to Markdown
+md = Coradoc.convert("input.docx", from: :docx, to: :markdown)
+
+# Parse DOCX to CoreModel for inspection
+core = Coradoc.parse("input.docx", format: :docx)
+core.title         # => "Document Title"
+core.children      # => Array of sections, paragraphs, tables
+----
+
+Install DOCX support:
+
+[source,ruby]
+----
+# Gemfile
+gem 'coradoc-docx'
+gem 'uniword'
+----
+
+== Next Steps
+
+* link:/coradoc/tutorials/basic-parsing[Basic Parsing Tutorial] - Deep dive into parsing
+* link:architecture[Architecture] - Understand Coradoc's architecture
+* link:model[Document Model] - Learn about the document model
+
+== References
+
+* link:/coradoc/references/api-reference[API Reference] - Complete API documentation
+* https://asciidoctor.org[AsciiDoctor Documentation] - AsciiDoc syntax reference

@@ -1,0 +1,324 @@
+---
+title: Custom Blocks
+parent: Guides
+nav_order: 1
+---
+
+= Custom Blocks Guide
+
+== Task
+
+Create a custom block type in Coradoc to handle specialized AsciiDoc content.
+
+== Approach
+
+To add a custom block type:
+
+1. Create a block class inheriting from `Coradoc::Model::Block::Core`
+2. Define delimiter characters and length
+3. Create a serializer class
+4. Register the serializer in the ElementRegistry
+
+== Step-by-Step
+
+=== Step 1: Create the Block Class
+
+Define your custom block by inheriting from `Block::Core`:
+
+[source,ruby]
+----
+module Coradoc
+  module Model
+    module Block
+      class Callout < Core
+        attribute :delimiter_char, :string, default: -> { "!" }
+        attribute :delimiter_len, :integer, default: -> { 4 }
+        attribute :callout_id, :string
+        attribute :title, :string
+      end
+    end
+  end
+end
+----
+
+**Key attributes:**
+
+* `delimiter_char` - The character used for block delimiters
+* `delimiter_len` - Length of the delimiter line
+* Custom attributes for your block's specific data
+
+=== Step 2: Create the Serializer
+
+Implement the serializer for your custom block:
+
+[source,ruby]
+----
+module Coradoc
+  module Output
+    module Adoc
+      module Serializers
+        module Block
+          class CalloutSerializer < Core
+            def serialize_to_adoc
+              parts = []
+              # Generate delimiter line
+              parts << @model.gen_delimiter << "\n"
+              # Generate title if present
+              parts << ".#{@model.title}\n" if @model.title
+              # Generate attributes
+              parts << @model.gen_attributes
+              # Generate content
+              parts << @model.gen_lines
+              # Generate closing delimiter
+              parts << @model.gen_delimiter << "\n"
+              parts.join
+            end
+          end
+        end
+      end
+    end
+  end
+end
+----
+
+**Key methods:**
+
+* `gen_delimiter` - Generates delimiter line from `delimiter_char` and `delimiter_len`
+* `gen_title` - Generates title line (e.g., `.Title`)
+* `gen_attributes` - Generates attribute lines
+* `gen_lines` - Generates block content lines
+
+=== Step 3: Register the Serializer
+
+Register your serializer in the ElementRegistry:
+
+[source,ruby]
+----
+Coradoc::Output::Adoc::ElementRegistry.register(
+  Coradoc::Model::Block::Callout,
+  Coradoc::Output::Adoc::Serializers::Block::CalloutSerializer
+)
+----
+
+## Complete Example
+
+=== Creating a Note Block
+
+Here's a complete example of a custom note block:
+
+[source,ruby]
+----
+require 'coradoc'
+
+# 1. Define the block class
+module Coradoc
+  module Model
+    module Block
+      class NoteBlock < Core
+        attribute :delimiter_char, :string, default: -> { "!" }
+        attribute :delimiter_len, :integer, default: -> { 4 }
+        attribute :note_type, :string, default: -> { "note" }
+        attribute :title, :string
+      end
+    end
+  end
+end
+
+# 2. Define the serializer
+module Coradoc
+  module Output
+    module Adoc
+      module Serializers
+        module Block
+          class NoteBlockSerializer < Core
+            def serialize_to_adoc
+              parts = []
+              # Opening delimiter
+              parts << @model.gen_delimiter << "\n"
+              # Title if present
+              if @model.title
+                parts << ".#{@model.title}\n"
+              end
+              # Note type as attribute
+              parts << "[#{@model.note_type}]\n"
+              # Content
+              parts << @model.lines.join("\n")
+              # Closing delimiter
+              parts << "\n" << @model.gen_delimiter << "\n"
+              parts.join
+            end
+          end
+        end
+      end
+    end
+  end
+end
+
+# 3. Register the serializer
+Coradoc::Output::Adoc::ElementRegistry.register(
+  Coradoc::Model::Block::NoteBlock,
+  Coradoc::Output::Adoc::Serializers::Block::NoteBlockSerializer
+)
+
+# 4. Use the custom block
+note = Coradoc::Model::Block::NoteBlock.new
+note.lines = ["This is an important note.", "Pay attention to it."]
+note.title = "Important"
+note.note_type = "warning"
+
+puts note.to_adoc
+----
+
+=== Output
+
+----
+.Important
+[warning]
+This is an important note.
+Pay attention to it.
+!!!!
+
+----
+
+## Creating Different Block Types
+
+=== Single-Line Delimiter Block
+
+For blocks with single-character delimiters (like quotes):
+
+[source,ruby]
+----
+class SimpleBlock < Coradoc::Model::Block::Core
+  attribute :delimiter_char, :string, default: -> { '"' }
+  attribute :delimiter_len, :integer, default: -> { 1 }
+end
+----
+
+=== Multi-Line Delimiter Block
+
+For blocks with multi-character delimiters (like code blocks):
+
+[source,ruby]
+----
+class CodeBlock < Coradoc::Model::Block::Core
+  attribute :delimiter_char, :string, default: -> { "-" }
+  attribute :delimiter_len, :integer, default: -> { 4 }
+end
+----
+
+=== Custom Attribute Block
+
+For blocks with specific attributes:
+
+[source,ruby]
+----
+class AttributedBlock < Coradoc::Model::Block::Core
+  attribute :delimiter_char, :string, default: -> { "|" }
+  attribute :delimiter_len, :integer, default: -> { 4 }
+  attribute :custom_attr, :string
+
+  def gen_attributes
+    return "\n" unless custom_attr
+    "[custom=#{custom_attr}]\n"
+  end
+end
+----
+
+## Common Patterns
+
+=== Block with Nested Content
+
+For blocks that can contain other blocks:
+
+[source,ruby]
+----
+class ContainerBlock < Coradoc::Model::Block::Core
+  attribute :nested_blocks, :array, default: -> { [] }
+
+  def gen_lines
+    nested_blocks.map(&:to_adoc).join("\n")
+  end
+end
+----
+
+=== Block with Source Code
+
+For code blocks with language specification:
+
+[source,ruby]
+----
+class SourceBlock < Coradoc::Model::Block::Core
+  attribute :language, :string
+  attribute :lines, :array, default: -> { [] }
+
+  def gen_attributes
+    return "\n" unless language
+    "[source,#{language}]\n"
+  end
+end
+----
+
+## Caveats
+
+### Parser Integration
+
+Creating a custom block class doesn't automatically make it parseable. To enable parsing:
+
+1. Extend the parser to recognize your delimiter pattern
+2. Add transformer rules to create your block from the AST
+3. Register the transformer
+
+### Serialization Order
+
+The ElementRegistry processes serializers in LIFO order. If your custom block isn't being serialized:
+
+1. Ensure registration happens after loading all standard serializers
+2. Check for conflicts with existing block types
+3. Verify your serializer's `serialize_to_adoc` method returns a string
+
+### Attribute Handling
+
+Block attributes must be an `AttributeList` object:
+
+[source,ruby]
+----
+block.attributes = Coradoc::Model::AttributeList.new
+block.attributes.add_named("id", "my-block")
+block.attributes.add_positional("ruby")
+----
+
+## Troubleshooting
+
+**Problem:** My block isn't being recognized during parsing.
+
+**Solution:** Custom blocks require parser extensions. The block class alone only handles serialization.
+
+**Problem:** Serialization produces empty output.
+
+**Solution:** Verify your serializer's `serialize_to_adoc` method returns a string. Check that all parts are being joined.
+
+**Problem:** Attributes aren't being serialized.
+
+**Solution:** Ensure `gen_attributes` is called in your serializer and returns the correct format.
+
+## Summary
+
+In this guide you learned:
+
+* How to create a custom block class
+* How to implement a serializer
+* How to register the serializer
+* Common block type patterns
+* Caveats and troubleshooting
+
+## Related Documentation
+
+* link:custom-inline[Custom Inline Guide] - Create inline elements
+* link:/coradoc/pages/serialization[Serialization Layer] - Serializer architecture
+* link:/coradoc/references/extension-points[Extension Points] - Extension API
+* link:https://github.com/metanorma/coradoc/tree/main/examples/custom_blocks.rb[examples/custom_blocks.rb] - Example code
+
+## Bibliography
+
+* https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/#delimited-blocks[AsciiDoc Delimited Blocks]
+* https://github.com/lutaml/lutaml-model[lutaml-model documentation]

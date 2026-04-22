@@ -1,0 +1,29 @@
+= Basic Document Example
+
+This is a simple AsciiDoc document to demonstrate basic Coradoc parsing.
+
+== Introduction
+
+Coradoc is a parser, model, and serializer for AsciiDoc documents. It provides a complete toolchain for working with AsciiDoc content.
+
+== Features
+
+* Parsing - Convert AsciiDoc text into a structured document model
+* Manipulation - Modify document content through Ruby objects
+* Serialization - Generate AsciiDoc output from document models
+
+== Getting Started
+
+To parse an AsciiDoc document:
+
+[source,ruby]
+----
+doc = Coradoc.parse("= Title\n\nContent")
+----
+
+To serialize back to AsciiDoc:
+
+[source,ruby]
+----
+output = doc.to_adoc
+----
