@@ -8,7 +8,7 @@ on:
 
 jobs:
   rake:
-    uses: metanorma/ci/.github/workflows/monorepo-rake.yml@main
+    uses: metanorma/ci/.github/workflows/monorepo-rake.yml@monorepo-workflows
     with:
       spec-dirs: >-
         ["spec","coradoc-adoc/spec","coradoc-html/spec","coradoc-markdown/spec"]
