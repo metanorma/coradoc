@@ -1,0 +1,460 @@
+/*
+ * Coradoc Academic Theme
+ * Traditional scholarly design for academic publications
+ * Version: 1.0
+ */
+
+/* Import professional theme as base */
+@import url('professional.css');
+
+/* ====================================================================
+   ACADEMIC THEME OVERRIDES
+   ==================================================================== */
+
+:root {
+  /* Academic color palette - Conservative and readable */
+  --color-text-primary: #2c2c2c;
+  --color-text-secondary: #5a5a5a;
+  --color-text-muted: #7a7a7a;
+  --color-background: #fdfdf8;
+  --color-background-alt: #f5f5f0;
+  --color-background-elevated: #ffffff;
+  --color-border: #d0d0c8;
+  --color-border-light: #e0e0d8;
+  --color-accent: #2a5a8f;
+  --color-accent-hover: #1f4570;
+  --color-accent-light: #e8f1f8;
+
+  /* Academic typography - Serif for body, sans for headings */
+  --font-family-base: "Charter", "Bitstream Charter", "Sitka Text", Cambria,
+    "Georgia", serif;
+  --font-family-heading: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-mono: "Iosevka", "Input Mono", "IBM Plex Mono", Consolas,
+    Monaco, "Courier New", monospace;
+
+  /* Wider line length for academic reading */
+  --content-max-width: 75ch;
+  --page-max-width: 900px;
+
+  /* Larger margins for annotations */
+  --space-margin-note: 200px;
+
+  /* Line height optimized for reading */
+  --line-height-normal: 1.65;
+  --line-height-relaxed: 1.8;
+}
+
+/* Dark mode for academic theme */
+:root[data-theme="dark"],
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-text-primary: #dcd8cc;
+    --color-text-secondary: #b8b4a8;
+    --color-text-muted: #989488;
+    --color-background: #1a1a18;
+    --color-background-alt: #242420;
+    --color-background-elevated: #2a2a26;
+    --color-border: #3a3a36;
+    --color-border-light: #444440;
+    --color-accent: #6b9bd0;
+    --color-accent-hover: #8ab0d9;
+    --color-accent-light: #2a3a4a;
+  }
+}
+
+/* ====================================================================
+   ACADEMIC TYPOGRAPHY ENHANCEMENTS
+   ==================================================================== */
+
+@layer components {
+  /* Refined heading styles */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-heading);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  h1 {
+    text-align: center;
+    border-bottom: none;
+    margin-bottom: var(--space-2xl);
+    font-size: var(--font-size-3xl);
+  }
+
+  h2 {
+    margin-top: var(--space-3xl);
+    border-bottom: none;
+    font-size: var(--font-size-2xl);
+  }
+
+  h2::before {
+    display: block;
+    counter-increment: section;
+    content: counter(section) ".";
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xs);
+  }
+
+  /* Paragraph indentation for academic style */
+  p + p {
+    text-indent: 2em;
+    margin-top: 0;
+  }
+
+  /* No indent after headings or lists */
+  h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p,
+  ul + p, ol + p, .listingblock + p, .tableblock + p,
+  .admonitionblock + p {
+    text-indent: 0;
+  }
+
+  /* Drop caps for chapter/section starts */
+  .lead::first-letter {
+    float: left;
+    font-size: 3.5em;
+    line-height: 0.85;
+    margin: 0.05em 0.1em 0 0;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  /* Small caps for emphasis */
+  .small-caps {
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+  }
+}
+
+/* ====================================================================
+   ACADEMIC BLOCK QUOTES
+   ==================================================================== */
+
+@layer components {
+  .quoteblock {
+    margin-left: var(--space-2xl);
+    margin-right: var(--space-2xl);
+    padding-left: var(--space-xl);
+    border-left: 2px solid var(--color-border);
+    font-style: italic;
+    font-size: 0.95em;
+  }
+
+  .quoteblock::before {
+    content: """;
+    font-size: 3em;
+    line-height: 0;
+    color: var(--color-border);
+    float: left;
+    margin-left: -0.5em;
+  }
+}
+
+/* ====================================================================
+   FOOTNOTES & CITATIONS
+   ==================================================================== */
+
+@layer components {
+  /* Footnote references in text */
+  .footnote, sup a {
+    font-size: 0.75em;
+    vertical-align: super;
+    text-decoration: none;
+    color: var(--color-accent);
+    padding: 0 0.2em;
+  }
+
+  .footnote:hover, sup a:hover {
+    text-decoration: underline;
+  }
+
+  /* Footnotes section */
+  #footnotes {
+    margin-top: var(--space-3xl);
+    padding-top: var(--space-xl);
+    border-top: 2px solid var(--color-border);
+    font-size: 0.9em;
+    line-height: var(--line-height-relaxed);
+  }
+
+  #footnotes .title {
+    font-variant: small-caps;
+    letter-spacing: 0.1em;
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: var(--space-lg);
+  }
+
+  .footnote {
+    text-indent: -1.5em;
+    padding-left: 1.5em;
+    margin-bottom: var(--space-md);
+  }
+
+  /* Bibliography styling */
+  .bibliography .title {
+    font-variant: small-caps;
+    letter-spacing: 0.1em;
+    font-size: var(--font-size-xl);
+    text-align: center;
+    margin-top: var(--space-3xl);
+    margin-bottom: var(--space-xl);
+  }
+
+  .bibliography .entry {
+    text-indent: -2em;
+    padding-left: 2em;
+    margin-bottom: var(--space-md);
+    line-height: var(--line-height-relaxed);
+  }
+}
+
+/* ====================================================================
+   ACADEMIC TABLES
+   ==================================================================== */
+
+@layer components {
+  .tableblock > .title {
+    font-style: italic;
+    font-size: var(--font-size-sm);
+    text-align: center;
+    margin-bottom: var(--space-md);
+    font-weight: normal;
+  }
+
+  .tableblock > .title::before {
+    content: "Table " counter(table) ". ";
+    font-weight: 600;
+    font-style: normal;
+  }
+
+  table {
+    margin: var(--space-xl) auto;
+    border-top: 2px solid var(--color-border);
+    border-bottom: 2px solid var(--color-border);
+    border-left: none;
+    border-right: none;
+  }
+
+  th, td {
+    border: none;
+    border-bottom: 1px solid var(--color-border-light);
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  th {
+    border-bottom: 2px solid var(--color-border);
+    background-color: transparent;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: transparent;
+  }
+
+  tbody tr:hover {
+    background-color: var(--color-background-alt);
+  }
+}
+
+/* ====================================================================
+   ACADEMIC FIGURES
+   ==================================================================== */
+
+@layer components {
+  .imageblock {
+    margin: var(--space-2xl) auto;
+    text-align: center;
+  }
+
+  .imageblock > .title {
+    font-style: italic;
+    font-size: var(--font-size-sm);
+    margin-top: var(--space-md);
+    font-weight: normal;
+  }
+
+  .imageblock > .title::before {
+    content: "Figure " counter(figure) ". ";
+    font-weight: 600;
+    font-style: normal;
+  }
+}
+
+/* ====================================================================
+   ABSTRACT STYLING
+   ==================================================================== */
+
+@layer components {
+  .abstract {
+    max-width: calc(var(--content-max-width) * 0.85);
+    margin: var(--space-2xl) auto;
+    padding: var(--space-xl);
+    background-color: var(--color-background-alt);
+    border-left: 4px solid var(--color-accent);
+    border-right: 4px solid var(--color-accent);
+    font-size: 0.95em;
+    line-height: var(--line-height-relaxed);
+  }
+
+  .abstract .title {
+    font-variant: small-caps;
+    letter-spacing: 0.1em;
+    font-size: var(--font-size-lg);
+    text-align: center;
+    margin-bottom: var(--space-md);
+    font-weight: 600;
+  }
+
+  .abstract p {
+    text-indent: 0;
+  }
+}
+
+/* ====================================================================
+   SECTION NUMBERING
+   ==================================================================== */
+
+@layer components {
+  body {
+    counter-reset: section subsection figure table;
+  }
+
+  h2 {
+    counter-reset: subsection;
+  }
+
+  h3::before {
+    counter-increment: subsection;
+    content: counter(section) "." counter(subsection) " ";
+    color: var(--color-text-muted);
+  }
+
+  .imageblock {
+    counter-increment: figure;
+  }
+
+  .tableblock {
+    counter-increment: table;
+  }
+}
+
+/* ====================================================================
+   TWO-COLUMN LAYOUT FOR WIDE SCREENS
+   ==================================================================== */
+
+@layer utilities {
+  @media (min-width: 1400px) {
+    .two-column {
+      column-count: 2;
+      column-gap: var(--space-2xl);
+      column-rule: 1px solid var(--color-border-light);
+    }
+
+    .two-column h1,
+    .two-column h2,
+    .two-column .tableblock,
+    .two-column .imageblock,
+    .two-column .listingblock {
+      column-span: all;
+    }
+  }
+}
+
+/* ====================================================================
+   MARGIN NOTES (Side annotations)
+   ==================================================================== */
+
+@layer components {
+  @media (min-width: 1200px) {
+    body {
+      position: relative;
+    }
+
+    .sidenote, .marginnote {
+      float: right;
+      clear: right;
+      width: var(--space-margin-note);
+      margin-right: calc(-1 * var(--space-margin-note) - var(--space-2xl));
+      margin-top: 0;
+      margin-bottom: var(--space-md);
+      font-size: var(--font-size-sm);
+      line-height: var(--line-height-normal);
+      color: var(--color-text-secondary);
+      padding: var(--space-sm);
+      background-color: var(--color-background-alt);
+      border-left: 2px solid var(--color-accent-light);
+    }
+
+    .sidenote::before {
+      content: counter(sidenote) " ";
+      counter-increment: sidenote;
+      font-weight: 600;
+      color: var(--color-accent);
+    }
+
+    body {
+      counter-reset: sidenote;
+    }
+  }
+}
+
+/* ====================================================================
+   PRINT OPTIMIZATIONS FOR ACADEMIC PAPERS
+   ==================================================================== */
+
+@layer utilities {
+  @media print {
+    :root {
+      --font-size-base: 11pt;
+      --line-height-normal: 1.5;
+    }
+
+    body {
+      color: #000;
+      background: #fff;
+    }
+
+    h1 {
+      page-break-before: always;
+      page-break-after: avoid;
+    }
+
+    h2, h3 {
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+
+    .tableblock, .imageblock {
+      page-break-inside: avoid;
+      page-break-before: auto;
+    }
+
+    .abstract {
+      page-break-after: always;
+    }
+
+    #footnotes {
+      page-break-before: always;
+    }
+
+    a[href]::after {
+      content: " (" attr(href) ")";
+      font-size: 0.8em;
+    }
+
+    /* Suppress URLs for footnotes */
+    .footnote a[href]::after,
+    sup a[href]::after {
+      content: "";
+    }
+
+    @page {
+      margin: 1in 1.25in;
+      size: letter;
+    }
+  }
+}

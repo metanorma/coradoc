@@ -1,0 +1,130 @@
+---
+title: Coradoc Documentation
+nav_order: 1
+---
+
+= Coradoc Documentation
+
+image:https://img.shields.io/gem/v/coradoc.svg[Gem Version]
+image:https://img.shields.io/github/license/metanorma/coradoc[License]
+image:https://github.com/metanorma/coradoc/actions/workflows/rake.yml/badge.svg["Build Status", link="https://github.com/metanorma/coradoc/actions/workflows/rake.yml"]
+
+== Purpose
+
+Coradoc is a parser, model, and serializer for AsciiDoc documents.
+
+It provides a complete toolchain for working with AsciiDoc:
+
+* *Parsing* - Convert AsciiDoc text into a structured document model
+* *Manipulation* - Modify document content through Ruby objects
+* *Serialization* - Generate AsciiDoc output from document models
+* *Round-tripping* - Parse and serialize while preserving semantic meaning
+
+Coradoc uses https://parslet.rubygem[Parslet] for parsing and https://github.com/metanorma/lutaml-model[lutaml-model] for model definition, providing a robust foundation for AsciiDoc document processing.
+
+== Quick Start
+
+[source,ruby]
+----
+# Parse AsciiDoc input
+doc = Coradoc.parse("== Hello World\n\nThis is a paragraph.")
+
+# Access document structure
+doc.header.title                    # => "Hello World"
+doc.sections.first.title.level_int  # => 2
+
+# Serialize back to AsciiDoc
+output = doc.to_adoc
+----
+
+== Documentation Collections
+
+This documentation is organized into four collections to help you find what you need:
+
+=== Core Pages (link:pages/[Conceptual Documentation])
+
+Foundational documentation about Coradoc's architecture and features:
+
+* link:pages/getting-started[Getting Started] - Installation and quick start guide
+* link:pages/architecture[Architecture] - Data flow and layer structure
+* link:pages/parsing[Parsing] - AsciiDoc parsing layer
+* link:pages/transformation[Transformation] - AST to Model transformation
+* link:pages/model[Document Model] - Document structure and elements
+* link:pages/serialization[Serialization] - Generating AsciiDoc output
+
+=== Tutorials (link:tutorials/[Step-by-Step Learning])
+
+Learn Coradoc through hands-on tutorials:
+
+* link:tutorials/basic-parsing[Basic Parsing] - Parse your first document
+* link:tutorials/document-modeling[Document Modeling] - Work with the document model
+* link:tutorials/serialization[Serialization] - Serialize to AsciiDoc
+* link:tutorials/round-tripping[Round-tripping] - Preserve semantics through parse cycles
+* link:tutorials/html-conversion[HTML Conversion] - Convert HTML to AsciiDoc
+
+=== Guides (link:guides/[Task-Oriented Guides])
+
+Solve specific problems with focused guides:
+
+* link:guides/ruby-api[Ruby API Guide] - Complete Ruby API usage guide
+* link:guides/custom-blocks[Custom Blocks] - Create custom block types
+* link:guides/custom-inline[Custom Inline Elements] - Create custom inline elements
+* link:guides/schema-system[Schema System] - Use schemas for document types
+* link:guides/configuration[Configuration] - Configuration options reference
+* link:guides/troubleshooting[Troubleshooting] - Common issues and solutions
+
+=== References (link:references/[Technical Specifications])
+
+Detailed technical specifications:
+
+* link:references/api-reference[API Reference] - Complete API documentation
+* link:references/ruby-methods[Ruby Methods Reference] - Ruby API methods reference
+* link:references/coremodel-types[CoreModel Types] - CoreModel type definitions
+* link:references/asciidoc-syntax[AsciiDoc Syntax] - AsciiDoc authoring guide
+* link:references/markdown-syntax[Markdown Syntax] - Markdown authoring guide
+* link:references/cli-commands[CLI Commands] - Command-line interface reference
+* link:references/error-codes[Error Codes] - Error codes and recovery strategies
+* link:references/feature-matrix[Feature Matrix] - Feature support across formats
+* link:references/model-classes[Model Classes] - All model classes catalog
+* link:references/output-formats[Output Formats] - Format options and converters
+* link:references/extension-points[Extension Points] - Extension API specification
+
+== Key Features
+
+* link:pages/parsing[Parsing] - Parse AsciiDoc into document models
+* link:pages/model[Document Modeling] - Rich object model for document structure
+* link:pages/serialization[Serialization] - Generate AsciiDoc from models
+* link:tutorials/round-tripping[Round-tripping] - Preserve semantics through parse/serialize cycles
+* link:guides/schema-system[Schema Support] - Customizable schemas for different document types
+* link:guides/custom-blocks[Extending] - Add custom blocks, inline elements, and serializers
+
+== Installation
+
+Add this line to your application's Gemfile:
+
+[source,ruby]
+----
+gem 'coradoc'
+----
+
+And then execute:
+
+[source,bash]
+----
+bundle install
+----
+
+Or install it yourself as:
+
+[source,bash]
+----
+gem install coradoc
+----
+
+== Resources
+
+* link:pages/getting-started[Getting Started Guide]
+* link:tutorials/[All Tutorials]
+* link:references/api-reference[API Reference]
+* https://github.com/metanorma/coradoc[GitHub Repository]
+* https://rubygems.org/gems/coradoc[RubyGems Page]

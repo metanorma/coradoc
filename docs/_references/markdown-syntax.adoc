@@ -1,0 +1,604 @@
+---
+title: Markdown Syntax Reference
+parent: References
+nav_order: 11
+---
+
+= Markdown Syntax Reference
+
+This guide describes the Markdown syntax supported by Coradoc.
+It is based on CommonMark with GitHub Flavored Markdown (GFM) extensions.
+
+== Document Structure
+
+=== Headings
+
+ATX-style headings use `#` markers:
+
+[source,markdown]
+----
+# Heading 1
+
+## Heading 2
+
+### Heading 3
+
+#### Heading 4
+
+##### Heading 5
+
+###### Heading 6
+----
+
+Setext-style headings for level 1 and 2:
+
+[source,markdown]
+----
+Heading 1
+=========
+
+Heading 2
+---------
+----
+
+=== Thematic Breaks
+
+Create horizontal rules with three or more characters:
+
+[source,markdown]
+----
+---
+
+***
+
+___
+----
+
+=== Blank Lines
+
+Blank lines separate block-level elements:
+
+[source,markdown]
+----
+First paragraph.
+
+Second paragraph.
+----
+
+== Text Formatting
+
+=== Emphasis (Italic)
+
+Use `_` or `*` for emphasis:
+
+[source,markdown]
+----
+_italic text_
+*italic text*
+----
+
+=== Strong (Bold)
+
+Use `__` or `**` for strong emphasis:
+
+[source,markdown]
+----
+__bold text__
+**bold text**
+----
+
+=== Combined Formatting
+
+[source,markdown]
+----
+**_bold and italic_**
+*__bold and italic__**
+----
+
+=== Strikethrough (GFM)
+
+Use `~~` for strikethrough:
+
+[source,markdown]
+----
+~~strikethrough text~~
+----
+
+=== Code Spans
+
+Use backticks for inline code:
+
+[source,markdown]
+----
+Inline `code` here.
+----
+
+To include literal backticks, use more backticks:
+
+[source,markdown]
+----
+``Code with `backticks` inside``
+----
+
+== Links
+
+=== Inline Links
+
+[source,markdown]
+----
+[Link text](https://example.com)
+[Link with title](https://example.com "Title")
+----
+
+=== Reference Links
+
+[source,markdown]
+----
+[Link text][ref]
+
+[ref]: https://example.com
+[ref]: https://example.com "Optional title"
+----
+
+=== Autolinks
+
+URLs and email addresses are automatically converted to links:
+
+[source,markdown]
+----
+<https://example.com>
+<user@example.com>
+----
+
+== Images
+
+=== Inline Images
+
+[source,markdown]
+----
+![Alt text](image.png)
+![Alt text](image.png "Optional title")
+----
+
+=== Reference Images
+
+[source,markdown]
+----
+![Alt text][ref]
+
+[ref]: image.png "Optional title"
+----
+
+== Lists
+
+=== Unordered Lists
+
+Use `*`, `-`, or `+` for unordered lists:
+
+[source,markdown]
+----
+* Item one
+* Item two
+* Item three
+
+- Alternative syntax
+- Using dashes
+
++ Another alternative
++ Using plus signs
+----
+
+=== Ordered Lists
+
+Use numbers followed by periods:
+
+[source,markdown]
+----
+1. First item
+2. Second item
+3. Third item
+----
+
+The actual numbers don't matter:
+
+[source,markdown]
+----
+1. First item
+1. Second item  # Will be numbered 2
+1. Third item   # Will be numbered 3
+----
+
+=== Nested Lists
+
+Indent list items for nesting:
+
+[source,markdown]
+----
+* Level 1 item
+  * Level 2 item
+    * Level 3 item
+* Back to level 1
+
+1. First item
+   1. Nested item
+   2. Another nested
+2. Second item
+----
+
+=== Task Lists (GFM)
+
+Create interactive task lists:
+
+[source,markdown]
+----
+- [x] Completed task
+- [ ] Incomplete task
+- [ ] Another task
+----
+
+=== Definition Lists
+
+Coradoc supports definition lists:
+
+[source,markdown]
+----
+Term 1
+: Definition of term 1
+
+Term 2
+: Definition of term 2
+: Second definition of term 2
+----
+
+== Code Blocks
+
+=== Fenced Code Blocks
+
+Use triple backticks or tildes:
+
+[source,markdown]
+----
+```
+Code block without language
+```
+
+```ruby
+def hello_world
+  puts "Hello, World!"
+end
+```
+
+~~~python
+def hello_world():
+    print("Hello, World!")
+~~~
+----
+
+=== Indented Code Blocks
+
+Indent by 4 spaces or a tab:
+
+[source,markdown]
+----
+    This is an indented code block.
+    Multiple lines are preserved.
+----
+
+=== Code Block with Language
+
+Specify language for syntax highlighting:
+
+[source,markdown]
+----
+```javascript
+const greeting = "Hello";
+console.log(greeting);
+```
+
+```html
+<div class="container">
+  <p>Content</p>
+</div>
+```
+----
+
+== Blockquotes
+
+=== Basic Blockquotes
+
+Use `>` for blockquotes:
+
+[source,markdown]
+----
+> This is a blockquote.
+> It can span multiple lines.
+----
+
+=== Nested Blockquotes
+
+[source,markdown]
+----
+> Level 1 quote
+>
+> > Level 2 quote
+> >
+> > > Level 3 quote
+----
+
+=== Blockquotes with Other Elements
+
+[source,markdown]
+----
+> ## Heading in quote
+>
+> * List item in quote
+> * Another item
+>
+> And a paragraph.
+----
+
+== Tables (GFM)
+
+=== Basic Tables
+
+[source,markdown]
+----
+| Header 1 | Header 2 | Header 3 |
+|----------|----------|----------|
+| Cell 1   | Cell 2   | Cell 3   |
+| Cell 4   | Cell 5   | Cell 6   |
+----
+
+=== Alignment
+
+Use colons for alignment:
+
+[source,markdown]
+----
+| Left | Center | Right |
+|:-----|:------:|------:|
+| L1   | C1     | R1    |
+| L2   | C2     | R2    |
+----
+
+[horizontal]
+`:---`:: Left aligned
+`:---:`:: Center aligned
+`---:`:: Right aligned
+
+=== Table Without Header
+
+[source,markdown]
+----
+| Cell 1 | Cell 2 |
+| Cell 3 | Cell 4 |
+{:.no-header}
+----
+
+== HTML
+
+=== Inline HTML
+
+HTML tags can be used inline:
+
+[source,markdown]
+----
+This is <strong>bold</strong> using HTML.
+Use <span class="highlight">highlighted</span> text.
+----
+
+=== Block HTML
+
+HTML blocks are preserved:
+
+[source,markdown]
+----
+<div class="custom-block">
+  <h3>Custom Heading</h3>
+  <p>Custom paragraph.</p>
+</div>
+----
+
+== Escaping
+
+=== Character Escaping
+
+Escape special characters with backslash:
+
+[source,markdown]
+----
+\*Not italic\*
+\**Not bold*\*
+\# Not a heading
+\[Not a link\]
+----
+
+Escapable characters:
+
+[source]
+----
+\ ` * _ { } [ ] ( ) # + - . ! |
+----
+
+=== HTML Entities
+
+[source,markdown]
+----
+&amp;  → &
+&lt;   → <
+&gt;   → >
+&nbsp; → (non-breaking space)
+----
+
+== Paragraphs and Line Breaks
+
+=== Paragraphs
+
+Blank lines create paragraph breaks:
+
+[source,markdown]
+----
+First paragraph.
+
+Second paragraph.
+----
+
+=== Hard Line Breaks
+
+End a line with two or more spaces:
+
+[source,markdown]
+----
+First line
+Second line
+----
+
+Or use `<br>`:
+
+[source,markdown]
+----
+First line<br>
+Second line
+----
+
+== Extensions
+
+=== Abbreviations
+
+Define abbreviations:
+
+[source,markdown]
+----
+The HTML specification is maintained by the W3C.
+
+*[HTML]: Hyper Text Markup Language
+*[W3C]: World Wide Web Consortium
+----
+
+=== Footnotes
+
+Create footnotes:
+
+[source,markdown]
+----
+Here is some text with a footnote[^1].
+
+[^1]: This is the footnote content.
+
+Another footnote[^2] here.
+
+[^2]: Second footnote.
+    Can span multiple lines.
+----
+
+=== Table of Contents
+
+Generate a table of contents:
+
+[source,markdown]
+----
+* TOC
+{:toc}
+----
+
+=== Custom IDs
+
+Add custom IDs to headings:
+
+[source,markdown]
+----
+## Heading {#custom-id}
+
+## Another Heading {: #another-id}
+----
+
+=== Attribute Lists
+
+Add attributes to elements:
+
+[source,markdown]
+----
+# Heading {: #my-id .my-class}
+
+Paragraph with attributes.
+{: #para-id .highlight .important}
+
+* List item
+  {: .list-item-class}
+----
+
+== Coradoc-Specific Features
+
+=== Supported Extensions
+
+Coradoc extends CommonMark with:
+
+1. **Definition lists** - Using `Term: Definition` syntax
+2. **Abbreviations** - Using `*[ABBR]: Definition` syntax
+3. **Footnotes** - Using `[^n]: Definition` syntax
+4. **Attribute lists** - Using `{: attributes }` syntax
+5. **Custom IDs** - Using `{#id}` syntax
+6. **Task lists** - Using `- [ ]` syntax
+
+=== Limitations
+
+The following features have limited support:
+
+1. **Complex HTML blocks** - Some HTML structures may not round-trip
+2. **Definition list nesting** - Limited nesting support
+3. **Complex footnotes** - Inline footnotes not supported
+4. **Math blocks** - LaTeX math not natively supported
+
+== Best Practices
+
+=== Readability
+
+* Use consistent list markers
+* Add blank lines between elements
+* Use reference links for repeated URLs
+
+=== Portability
+
+* Prefer standard CommonMark syntax
+* Avoid HTML where possible
+* Test round-trip conversions
+
+=== Performance
+
+* Minimize deeply nested structures
+* Use fenced code blocks over indented
+* Consider document size for large files
+
+== CommonMark Compliance
+
+Coradoc aims for CommonMark compliance with these notes:
+
+| Feature | Status |
+|---------|--------|
+| ATX Headings | ✓ Full support |
+| Setext Headings | ✓ Full support |
+| Indented code blocks | ✓ Full support |
+| Fenced code blocks | ✓ Full support |
+| Blockquotes | ✓ Full support |
+| Lists | ✓ Full support |
+| Thematic breaks | ✓ Full support |
+| Links | ✓ Full support |
+| Images | ✓ Full support |
+| Emphasis | ✓ Full support |
+| Code spans | ✓ Full support |
+| HTML blocks | Partial support |
+| HTML inline | Partial support |
+| Hard line breaks | ✓ Full support |
+| Soft line breaks | ✓ Full support |
+
+== GFM Compliance
+
+GitHub Flavored Markdown extensions:
+
+| Feature | Status |
+|---------|--------|
+| Tables | ✓ Full support |
+| Task lists | ✓ Full support |
+| Strikethrough | ✓ Full support |
+| Autolinks | ✓ Full support |
+| Fenced code with language | ✓ Full support |

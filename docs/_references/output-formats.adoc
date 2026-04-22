@@ -1,0 +1,380 @@
+---
+title: Output Formats
+parent: References
+nav_order: 3
+---
+
+= Output Formats Reference
+
+== Purpose
+
+Complete reference for output format options and converters in Coradoc.
+
+== Supported Formats
+
+=== AsciiDOC (:adoc)
+
+Default output format. Serializes Document Model to AsciiDoc text.
+
+[source,ruby]
+----
+output = Coradoc.convert(doc, to: :adoc)
+# or
+output = doc.to_adoc
+----
+
+**Format Options:**
+
+* `indent` (Integer) - Output indentation level (default: `0`)
+* `line_width` (Integer, nil) - Maximum line width, `nil` for no limit
+* `sort_attributes` (Boolean) - Sort attributes alphabetically
+* `preserve` (Boolean) - Preserve original formatting when possible
+
+**Examples:**
+
+[source,ruby]
+----
+# Basic output
+output = doc.to_adoc
+
+# With formatting
+output = doc.to_adoc(indent: 2, line_width: 80)
+
+# With sorted attributes
+output = doc.to_adoc(sort_attributes: true)
+----
+
+**Output Characteristics:**
+
+* Preserves semantic meaning
+* Normalizes whitespace
+* Reorders attributes alphabetically (if `sort_attributes: true`)
+* Uses standard AsciiDoc syntax
+
+=== HTML (:html)
+
+Convert Document Model to HTML (experimental).
+
+[source,ruby]
+----
+output = Coradoc.convert(doc, to: :html)
+----
+
+**Format Options:**
+
+* `pretty` (Boolean) - Pretty-print HTML with indentation
+* `include_styles` (Boolean) - Include default CSS styles
+* `header_footer` (Boolean) - Include HTML header and footer
+
+**Examples:**
+
+[source,ruby]
+----
+# Basic HTML
+html = Coradoc.convert(doc, to: :html)
+
+# Pretty-printed HTML
+html = Coradoc.convert(doc, to: :html, pretty: true)
+
+# With styles and structure
+html = Coradoc.convert(doc, to: :html,
+           include_styles: true,
+           header_footer: true)
+----
+
+**HTML Mapping:**
+
+| AsciiDoc Element | HTML Element |
+|-----------------|--------------|
+| Document | `<html><body>...</body></html>` |
+| Section (level 1) | `<h1>` |
+| Section (level 2) | `<h2>` |
+| Paragraph | `<p>` |
+| Bold | `<strong>` |
+| Italic | `<em>` |
+| Monospace | `<code>` |
+| Link | `<a>` |
+| Unordered List | `<ul><li>` |
+| Ordered List | `<ol><li>` |
+| Table | `<table>` |
+
+=== DOCX (:docx)
+
+Parse Microsoft Word DOCX files to CoreModel (parse only, no serialization).
+
+Requires the `coradoc-docx` and `uniword` gems.
+
+[source,ruby]
+----
+require 'coradoc/docx'
+
+# Parse DOCX to CoreModel
+core = Coradoc.parse("input.docx", format: :docx)
+
+# Convert DOCX to AsciiDoc
+adoc = Coradoc.convert("input.docx", from: :docx, to: :asciidoc)
+
+# Convert DOCX to Markdown
+md = Coradoc.convert("input.docx", from: :docx, to: :markdown)
+----
+
+**Supported input types:**
+
+* File path (String)
+* IO / StringIO
+* `Uniword::Wordprocessingml::DocumentRoot` (pre-parsed OOXML)
+
+**DOCX Element Mapping:**
+
+| OOXML Element | CoreModel Target |
+|---------------|------------------|
+| Heading styles | StructuralElement (section) |
+| Numbered paragraphs | ListBlock + ListItem |
+| Quote style | Block (quote) |
+| Code style | Block (source/listing) |
+| Plain paragraphs | Block (paragraph) |
+| Bold runs | InlineElement (bold) |
+| Italic runs | InlineElement (italic) |
+| Hyperlinks | InlineElement (link) |
+| Tables | Table |
+| Drawings | Image |
+| Math (OMML) | Block/InlineElement (stem) |
+| Footnotes | FootnoteReference |
+
+**Limitations:**
+
+* Parse only — DOCX serialization is not yet implemented
+* Print-layout properties (page size, margins, frame styles) are discarded
+* Headers/footers text content is not yet extracted
+
+== Conversion API
+
+=== Coradoc.convert
+
+Primary conversion method.
+
+[source,ruby]
+----
+signature: convert(document, to:, **options) -> String
+----
+
+*Parameters:*
+
+* `document` (Model::Base, String) - Document or file path to convert
+* `to` (Symbol) - Target format (`:adoc`, `:html`, `:markdown`, `:asciidoc`)
+* `format_options` (Hash) - Format-specific options
+
+*Returns:* String in target format
+
+*Raises:* `Coradoc::SerializationError` if conversion fails
+
+=== Model#to_adoc
+
+Convenience method for AsciiDoc output.
+
+[source,ruby]
+----
+signature: to_adoc(**options) -> String
+----
+
+*Parameters:*
+
+* `indent` (Integer) - Indentation level
+* `line_width` (Integer) - Line width limit
+* `sort_attributes` (Boolean) - Sort attributes
+
+*Returns:* AsciiDoc string
+
+=== Model#convert
+
+Generic conversion method.
+
+[source,ruby]
+----
+signature: convert(to:, **options) -> String
+----
+
+*Parameters:*
+
+* `to` (Symbol) - Target format
+* `**options` - Format options
+
+*Returns:* String in target format
+
+## Format-Specific Options
+
+=== AsciiDoc Options
+
+[source,ruby]
+----
+# Indentation
+output = doc.to_adoc(indent: 2)
+# Result: Lines are indented by 2 spaces per level
+
+# Line width
+output = doc.to_adoc(line_width: 80)
+# Result: Lines are wrapped to 80 characters where possible
+
+# Attribute sorting
+output = doc.to_adoc(sort_attributes: true)
+# Result: [a=1 b=2] instead of [b=2 a=1]
+
+# Preserve formatting
+output = doc.to_adoc(preserve: true)
+# Result: Attempts to preserve original formatting
+----
+
+=== HTML Options
+
+[source,ruby]
+----
+# Pretty printing
+html = Coradoc.convert(doc, to: :html, pretty: true)
+# Result: Indented HTML with newlines
+
+# Include styles
+html = Coradoc.convert(doc, to: :html, include_styles: true)
+# Result: HTML includes embedded CSS
+
+# Header and footer
+html = Coradoc.convert(doc, to: :html, header_footer: true)
+# Result: Complete HTML document structure
+
+# Custom CSS
+html = Coradoc.convert(doc, to: :html, custom_css: "body { font: sans-serif; }")
+# Result: HTML with custom styles
+----
+
+## Output Streaming
+
+For large documents, stream output to avoid memory issues:
+
+[source,ruby]
+----
+# Stream to file
+File.open("output.adoc", "w") do |file|
+  file.write(doc.to_adoc)
+end
+
+# Stream line by line (if supported)
+doc.to_adoc.each_line do |line|
+  puts line
+end
+----
+
+## Custom Output Formats
+
+Create custom output formats by implementing a converter:
+
+[source,ruby]
+----
+module Coradoc
+  module Output
+    class Markdown
+      def self.convert(document)
+        # Custom conversion logic
+        "# #{document.header.title}\n\n"
+      end
+    end
+  end
+end
+
+# Register the converter
+Coradoc::Output.register(:markdown, Coradoc::Output::Markdown)
+
+# Use it
+output = Coradoc.convert(doc, to: :markdown)
+----
+
+## Output Quality
+
+### AsciiDoc Output
+
+The AsciiDoc output is:
+
+* **Semantically equivalent** to input meaning
+* **Syntactically normalized** (whitespace, attribute order)
+* **Valid AsciiDoc** that can be re-parsed
+* **Round-trippable** for most documents
+
+### HTML Output
+
+The HTML output is:
+
+* **Semantic HTML5**
+* **Structured** with proper heading hierarchy
+* **Accessible** with appropriate tags
+* **Stylable** with CSS classes
+
+## Output Comparison
+
+Given this input:
+
+[source,asciidoc]
+----
+= Document Title
+
+== Section One
+
+Paragraph with *bold* text.
+
+* Item 1
+* Item 2
+----
+
+=== AsciiDoc Output
+
+[source,asciidoc]
+----
+= Document Title
+
+== Section One
+
+Paragraph with *bold* text.
+
+* Item 1
+* Item 2
+----
+
+=== HTML Output
+
+[source,html]
+----
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Document Title</title>
+</head>
+<body>
+  <h1>Document Title</h1>
+  <h2>Section One</h2>
+  <p>Paragraph with <strong>bold</strong> text.</p>
+  <ul>
+    <li>Item 1</li>
+    <li>Item 2</li>
+  </ul>
+</body>
+</html>
+----
+
+## Format Selection Guide
+
+| Use Case | Recommended Format |
+|----------|-------------------|
+| Store for later editing | AsciiDoc (:adoc) |
+| Display in web browser | HTML (:html) |
+| Version control | AsciiDoc (:adoc) |
+| Email/Markdown systems | AsciiDoc (:adoc) + external converter |
+| Print/PDF | AsciiDoc (:adoc) + AsciiDoctor PDF |
+| Convert Word documents | DOCX (:docx) → AsciiDoc or Markdown |
+
+## Related Documentation
+
+* link:/coradoc/pages/serialization[Serialization Layer] - Serialization architecture
+* link:/coradoc/guides/custom-blocks[Custom Blocks Guide] - Custom serialization
+* link:/coradoc/tutorials/serialization[Serialization Tutorial] - Serialization examples
+
+## Bibliography
+
+* https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[AsciiDoc Syntax Reference]
+* https://developer.mozilla.org/en-US/docs/Web/HTML[MDN HTML Documentation]

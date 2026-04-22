@@ -48,12 +48,6 @@
             category = "App";
           }
           {
-            name = "reverse_adoc";
-            command = "exe/reverse_adoc \"$@\"";
-            help = "Run reverse_adoc CLI";
-            category = "App";
-          }
-          {
             name = "coradoc";
             command = "exe/coradoc \"$@\"";
             help = "Run coradoc CLI";

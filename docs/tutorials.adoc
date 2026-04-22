@@ -1,0 +1,61 @@
+---
+title: Tutorials
+nav_order: 3
+has_children: true
+---
+
+= Tutorials
+
+== Purpose
+
+This section contains step-by-step tutorials to help you learn Coradoc through hands-on examples. Each tutorial builds on previous concepts and includes runnable code.
+
+== Overview
+
+Tutorials are organized by skill level and topic:
+
+* link:/coradoc/tutorials/basic-parsing/[Basic Parsing] - Parse your first AsciiDoc document
+* link:/coradoc/tutorials/document-modeling/[Document Modeling] - Work with the document model
+* link:/coradoc/tutorials/serialization/[Serialization] - Serialize models to AsciiDoc
+* link:/coradoc/tutorials/round-tripping/[Round-tripping] - Preserve semantics through parse cycles
+* link:/coradoc/tutorials/html-conversion/[HTML Conversion] - Convert HTML to AsciiDoc
+
+== Tutorial Structure
+
+Each tutorial follows this structure:
+
+* **Purpose** - What you'll learn
+* **Prerequisites** - What you should know first
+* **Examples** - Step-by-step runnable code
+* **Exercises** - Practice what you learned
+* **Next Steps** - What to learn next
+
+== Learning Path
+
+We recommend this order for learning Coradoc:
+
+. link:/coradoc/tutorials/basic-parsing/[Basic Parsing] - Start here if you're new
+. link:/coradoc/tutorials/document-modeling/[Document Modeling] - Understand the model
+. link:/coradoc/tutorials/serialization/[Serialization] - Generate AsciiDoc output
+. link:/coradoc/tutorials/round-tripping/[Round-tripping] - Learn about preservation
+. link:/coradoc/tutorials/html-conversion/[HTML Conversion] - Advanced conversion
+
+== Example Code
+
+All code examples in tutorials are runnable. You can execute them by:
+
+[source,ruby]
+----
+# Save to a file (e.g., tutorial.rb)
+# Then run with: ruby tutorial.rb
+
+require 'coradoc'
+
+# Paste the example code here
+----
+
+== Related Documentation
+
+* link:/coradoc/pages/[Core Pages] - Conceptual documentation
+* link:/coradoc/guides/[Guides] - Task-oriented guides
+* link:/coradoc/references/[References] - Technical specifications

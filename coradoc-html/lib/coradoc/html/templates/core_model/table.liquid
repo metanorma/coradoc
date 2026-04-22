@@ -1,0 +1,11 @@
+{%- comment -%}
+Table template for CoreModel::Table
+{%- endcomment -%}
+<table id="{{ id }}" class="table">
+  {% if title %}<caption>{{ title }}</caption>{% endif %}
+  {% if rows %}
+    {% for row in rows %}
+      {{ row | render_element }}
+    {% endfor %}
+  {% endif %}
+</table>

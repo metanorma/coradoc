@@ -1,0 +1,54 @@
+---
+title: Guides
+nav_order: 4
+has_children: true
+---
+
+= Guides
+
+== Purpose
+
+This section contains task-oriented guides to help you accomplish specific goals with Coradoc. Each guide focuses on a particular task or problem.
+
+== Overview
+
+Guides are organized by task:
+
+* link:/coradoc/guides/ruby-api/[Ruby API Guide] - Complete Ruby API usage guide
+* link:/coradoc/guides/custom-blocks/[Custom Blocks] - Create custom block types
+* link:/coradoc/guides/custom-inline/[Custom Inline Elements] - Create custom inline elements
+* link:/coradoc/guides/schema-system/[Schema System] - Use schemas for document types
+* link:/coradoc/guides/configuration/[Configuration] - Configuration options reference
+* link:/coradoc/guides/troubleshooting/[Troubleshooting] - Common issues and solutions
+
+== Guide Structure
+
+Each guide follows this structure:
+
+* **Task** - What you want to accomplish
+* **Approach** - Recommended solution
+* **Steps** - Detailed implementation
+* **Examples** - Working code samples
+* **Caveats** - Things to watch out for
+
+== When to Use Guides vs. Tutorials
+
+* **Tutorials** - Learn step-by-step from basics
+* **Guides** - Solve specific problems (assume some knowledge)
+
+== Common Tasks
+
+Quick links for common tasks:
+
+* *"I need to use the Ruby API"* → link:/coradoc/guides/ruby-api/[Ruby API Guide]
+* *"I need a custom block type"* → link:/coradoc/guides/custom-blocks/[Custom Blocks Guide]
+* *"I want to extend inline formatting"* → link:/coradoc/guides/custom-inline/[Custom Inline Guide]
+* *"I'm working with ISO documents"* → link:/coradoc/guides/schema-system/[Schema System Guide]
+* *"Something isn't working"* → link:/coradoc/guides/troubleshooting/[Troubleshooting Guide]
+* *"I need to configure parsing options"* → link:/coradoc/guides/configuration/[Configuration Guide]
+
+== Related Documentation
+
+* link:/coradoc/pages/[Core Pages] - Conceptual documentation
+* link:/coradoc/tutorials/[Tutorials] - Step-by-step learning
+* link:/coradoc/references/[References] - Technical specifications

@@ -1,0 +1,11 @@
+{%- comment -%}
+Term template for CoreModel::Term
+
+Used in definition lists, glossaries, and terminology sections.
+{%- endcomment -%}
+<dt class="term{% if type %} term-{{ type }}{% endif %}"{% if lang %} lang="{{ lang }}"{% endif %}>
+  {{ text }}
+</dt>
+{%- if definition -%}
+<dd class="term-definition">{{ definition }}</dd>
+{%- endif -%}

@@ -1,0 +1,56 @@
+= Article Example
+
+[abstract]
+--
+This article demonstrates how to write articles using AsciiDoc and Coradoc.
+It includes various formatting options and structural elements.
+--
+
+== Introduction
+
+Writing articles in AsciiDoc is straightforward and produces clean, professional output. This article shows you the basics.
+
+== Main Content
+
+=== Paragraphs and Formatting
+
+Paragraphs are separated by blank lines. You can add *bold*, _italic_, or `monospace` formatting easily.
+
+=== Images and Media
+
+You can include images:
+
+.Image Caption
+image::images/sample.png[alt text, width=600]
+
+=== Block Quotes
+
+____
+This is a block quote. It can span multiple lines and is useful for
+highlighting important quotations or excerpts.
+____
+
+=== Callouts
+
+You can add callouts to code:
+
+[source,ruby]
+----
+def greet(name) <1>
+  puts "Hello, #{name}!" <2>
+end
+
+greet("World") <3>
+----
+<1> Define a method
+<2> Print greeting
+<3> Call the method
+
+== Conclusion
+
+AsciiDoc provides a simple, readable format for writing articles while supporting rich formatting options.
+
+== References
+
+* https://asciidoctor.org[AsciiDoctor Documentation]
+* https://github.com/metanorma/coradoc[Coradoc Repository]

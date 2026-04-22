@@ -1,0 +1,563 @@
+---
+title: CoreModel Types Reference
+parent: References
+nav_order: 30
+---
+
+= CoreModel Types Reference
+
+The CoreModel is Coradoc's canonical document representation. All format transformations use CoreModel as the hub.
+
+== Architecture
+
+.Hub-and-Spoke Model
+....
+                    ┌─────────────────────────────────────┐
+                    │           Source Formats            │
+                    │                                     │
+    ┌─────────┐     │  ┌─────────┐  ┌─────────┐  ┌──────┐ │     ┌─────────┐
+    │AsciiDoc │────►│  │ ToCore  │  │  From  │  │ HTML │────►│   HTML  │
+    │  .adoc  │     │  │         │  │  Core  │  │Render│ │     │  .html  │
+    └─────────┘     │  │         │  │         │  │      │ │     └─────────┘
+                    │  │         ▼  ▼         │  │      │ │
+    ┌─────────┐     │  │      ┌─────────┐     │  │      │ │     ┌─────────┐
+    │Markdown │────►│  │      │CoreModel│     │  │      │────►│Markdown │
+    │   .md   │     │  │      │   Hub   │     │  │      │ │     │   .md   │
+    └─────────┘     │  │      └─────────┘     │  │      │ │     └─────────┘
+                    │  │                     │  │      │ │
+    ┌─────────┐     │  │                     │  │      │ │     ┌─────────┐
+    │  HTML   │────►│  │                     │  │      │────►│ AsciiDoc│
+    │  .html  │     │  └─────────────────────┘  └──────┘ │     │  .adoc  │
+    └─────────┘     │                                      │     └─────────┘
+                    └──────────────────────────────────────┘
+....
+
+== Base Class
+
+=== Coradoc::CoreModel::Base
+
+All CoreModel elements inherit from `Base`.
+
+.Class Methods
+[horizontal]
+`new(attributes = {})`:: Create new instance with attributes
+`attribute(name, type, options = {})`:: Define an attribute
+
+.Instance Methods
+[horizontal]
+`to_h`:: Convert to hash representation
+`to_json(*args)`:: Convert to JSON
+`==(other)`:: Equality comparison
+`eql?(other)`:: Hash equality
+
+== Structural Elements
+
+=== Coradoc::CoreModel::StructuralElement
+
+Represents document structure (document, section).
+
+.Attributes
+[horizontal]
+`element_type`:: `String` - Element type ("document", "section")
+`title`:: `String, nil` - Element title
+`level`:: `Integer, nil` - Section level (1-5, nil for document)
+`id`:: `String, nil` - Element identifier
+`children`:: `Array<Base>` - Child elements
+`attributes`:: `Hash, nil` - Additional attributes
+
+.Example
+[source,ruby]
+----
+# Create a document
+doc = Coradoc::CoreModel::StructuralElement.new(
+  element_type: "document",
+  title: "My Document",
+  id: "my-doc",
+  children: []
+)
+
+# Create a section
+section = Coradoc::CoreModel::StructuralElement.new(
+  element_type: "section",
+  level: 1,
+  title: "Introduction",
+  id: "intro",
+  children: []
+)
+----
+
+== Block Elements
+
+=== Coradoc::CoreModel::Block
+
+Generic content block.
+
+.Attributes
+[horizontal]
+`element_type`:: `String` - Block type ("paragraph", "block")
+`content`:: `String` - Block content
+`delimiter_type`:: `String, nil` - Delimiter string ("----", "====", etc.)
+`language`:: `String, nil` - Code language
+`title`:: `String, nil` - Block title
+`id`:: `String, nil` - Block identifier
+`attributes`:: `Hash, nil` - Additional attributes
+
+.Delimiter Types
+[horizontal]
+`"----"`:: Source/listing block
+`"===="`:: Example block
+`"____"`:: Quote block
+`"****"`:: Sidebar block
+`"++++"`:: Pass block
+`"...."`:: Literal block
+`"--"`:: Open block
+
+.Example
+[source,ruby]
+----
+# Paragraph
+para = Coradoc::CoreModel::Block.new(
+  element_type: "paragraph",
+  content: "This is a paragraph."
+)
+
+# Code block
+code = Coradoc::CoreModel::Block.new(
+  element_type: "block",
+  delimiter_type: "----",
+  content: "def hello; puts 'world'; end",
+  language: "ruby",
+  title: "Hello World Example"
+)
+
+# Quote block
+quote = Coradoc::CoreModel::Block.new(
+  element_type: "block",
+  delimiter_type: "____",
+  content: "To be or not to be.",
+  attributes: { "attribution" => "Shakespeare" }
+)
+----
+
+=== Coradoc::CoreModel::AnnotationBlock
+
+Admonition block (NOTE, TIP, WARNING, etc.).
+
+.Attributes
+[horizontal]
+`annotation_type`:: `String` - Type ("NOTE", "TIP", "WARNING", "IMPORTANT", "CAUTION")
+`content`:: `String` - Block content
+`title`:: `String, nil` - Block title
+`id`:: `String, nil` - Block identifier
+
+.Example
+[source,ruby]
+----
+note = Coradoc::CoreModel::AnnotationBlock.new(
+  annotation_type: "NOTE",
+  content: "This is an important note."
+)
+----
+
+== List Elements
+
+=== Coradoc::CoreModel::ListBlock
+
+List container (ordered, unordered, definition).
+
+.Attributes
+[horizontal]
+`marker_type`:: `String` - List type ("ordered", "unordered", "definition")
+`items`:: `Array<ListItem>` - List items
+`title`:: `String, nil` - List title
+`id`:: `String, nil` - List identifier
+
+.Marker Types
+[horizontal]
+`"ordered"`:: Numbered list (`. item`)
+`"unordered"`:: Bulleted list (`* item`)
+`"definition"`:: Definition list (`term:: definition`)
+
+.Example
+[source,ruby]
+----
+# Unordered list
+ulist = Coradoc::CoreModel::ListBlock.new(
+  marker_type: "unordered",
+  items: [
+    Coradoc::CoreModel::ListItem.new(content: "First item", marker: "*"),
+    Coradoc::CoreModel::ListItem.new(content: "Second item", marker: "*")
+  ]
+)
+
+# Ordered list
+olist = Coradoc::CoreModel::ListBlock.new(
+  marker_type: "ordered",
+  items: [
+    Coradoc::CoreModel::ListItem.new(content: "Step one", marker: "."),
+    Coradoc::CoreModel::ListItem.new(content: "Step two", marker: ".")
+  ]
+)
+----
+
+=== Coradoc::CoreModel::ListItem
+
+Individual list item.
+
+.Attributes
+[horizontal]
+`content`:: `String` - Item content
+`marker`:: `String` - Item marker ("*", ".", "**", "..")
+`id`:: `String, nil` - Item identifier
+`attached`:: `Array<Base>, nil` - Attached blocks (continuation)
+`nested`:: `Array<ListBlock>, nil` - Nested lists
+
+.Example
+[source,ruby]
+----
+item = Coradoc::CoreModel::ListItem.new(
+  content: "Main item text",
+  marker: "*",
+  attached: [
+    Coradoc::CoreModel::Block.new(
+      element_type: "paragraph",
+      content: "Attached paragraph via continuation"
+    )
+  ],
+  nested: [
+    Coradoc::CoreModel::ListBlock.new(
+      marker_type: "unordered",
+      items: [...]
+    )
+  ]
+)
+----
+
+=== Coradoc::CoreModel::DefinitionItem
+
+Definition list item.
+
+.Attributes
+[horizontal]
+`term`:: `String` - The term being defined
+`definitions`:: `Array<String>` - Collection of definitions for the term
+
+.Example
+[source,ruby]
+----
+def_item = Coradoc::CoreModel::DefinitionItem.new(
+  term: "API",
+  definitions: ["Application Programming Interface"]
+)
+----
+
+== Table Elements
+
+=== Coradoc::CoreModel::Table
+
+Table container.
+
+.Attributes
+[horizontal]
+`rows`:: `Array<TableRow>` - Table rows
+`title`:: `String, nil` - Table title
+`id`:: `String, nil` - Table identifier
+`frame`:: `String, nil` - Frame style ("all", "topbot", "sides", "none")
+`grid`:: `String, nil` - Grid style ("all", "cols", "rows", "none")
+`width`:: `String, nil` - Table width (e.g., "100%")
+`float`:: `String, nil` - Float position ("left", "right", "center")
+`cols`:: `Array<String>, nil` - Column width specifications
+`col_alignments`:: `Array<String>, nil` - Column alignments
+`col_styles`:: `Array<String>, nil` - Column styles
+`bgcolor`:: `String, nil` - Background color (CSS)
+
+.Example
+[source,ruby]
+----
+table = Coradoc::CoreModel::Table.new(
+  title: "Data Table",
+  frame: "all",
+  grid: "all",
+  cols: ["1", "2", "1"],
+  rows: [
+    Coradoc::CoreModel::TableRow.new(
+      header: true,
+      cells: [
+        Coradoc::CoreModel::TableCell.new(content: "Name", header: true),
+        Coradoc::CoreModel::TableCell.new(content: "Value", header: true)
+      ]
+    ),
+    Coradoc::CoreModel::TableRow.new(
+      cells: [
+        Coradoc::CoreModel::TableCell.new(content: "Item 1"),
+        Coradoc::CoreModel::TableCell.new(content: "100")
+      ]
+    )
+  ]
+)
+----
+
+=== Coradoc::CoreModel::TableRow
+
+Table row container.
+
+.Attributes
+[horizontal]
+`cells`:: `Array<TableCell>` - Row cells
+`header`:: `Boolean` - Is header row (default: false)
+
+.Example
+[source,ruby]
+----
+header_row = Coradoc::CoreModel::TableRow.new(
+  header: true,
+  cells: [
+    Coradoc::CoreModel::TableCell.new(content: "Column A", header: true),
+    Coradoc::CoreModel::TableCell.new(content: "Column B", header: true)
+  ]
+)
+----
+
+=== Coradoc::CoreModel::TableCell
+
+Table cell with full formatting support.
+
+.Attributes
+[horizontal]
+`content`:: `String` - Cell content
+`alignment`:: `String, nil` - Horizontal alignment ("left", "center", "right")
+`vertical_alignment`:: `String, nil` - Vertical alignment ("top", "middle", "bottom")
+`colspan`:: `Integer, nil` - Column span count
+`rowspan`:: `Integer, nil` - Row span count
+`header`:: `Boolean` - Is header cell (default: false)
+`style`:: `String, nil` - Cell style ("default", "strong", "emphasis", "monospace", etc.)
+`bgcolor`:: `String, nil` - Background color (CSS)
+`color`:: `String, nil` - Text color (CSS)
+`width`:: `String, nil` - Cell width (CSS)
+`height`:: `String, nil` - Cell height (CSS)
+`repeat`:: `Boolean` - Repeat last cell (default: false)
+
+.Cell Styles
+[horizontal]
+`"default"`:: Normal text
+`"strong"`:: Bold/strong text
+`"emphasis"`:: Itic/emphasis text
+`"monospace"`:: Code/mono text
+`"asciidoc"`:: Parse nested AsciiDoc content
+`"literal"`:: Preserve whitespace
+`"verse"`:: Verse/poetry format
+
+.Example
+[source,ruby]
+----
+# Basic cell
+cell = Coradoc::CoreModel::TableCell.new(content: "Data")
+
+# Header cell
+header = Coradoc::CoreModel::TableCell.new(
+  content: "Title",
+  header: true,
+  alignment: "center"
+)
+
+# Spanning cell
+spanning = Coradoc::CoreModel::TableCell.new(
+  content: "Spans 2 columns",
+  colspan: 2,
+  alignment: "center"
+)
+
+# Styled cell
+styled = Coradoc::CoreModel::TableCell.new(
+  content: "Important",
+  style: "strong",
+  bgcolor: "#ffcccc"
+)
+----
+
+== Inline Elements
+
+=== Coradoc::CoreModel::InlineElement
+
+Inline formatting element.
+
+.Attributes
+[horizontal]
+`format_type`:: `String` - Format type
+`content`:: `String` - Element content
+`target`:: `String, nil` - Link target (for links)
+`attributes`:: `Hash, nil` - Additional attributes
+
+.Format Types
+[horizontal]
+`"bold"`:: Bold text
+`"italic"`:: Italic text
+`"monospace"`:: Monospace/code text
+`"link"`:: Hyperlink
+`"xref"`:: Cross-reference
+`"highlight"`:: Highlighted text
+`"subscript"`:: Subscript text
+`"superscript"`:: Superscript text
+
+.Example
+[source,ruby]
+----
+# Bold text
+bold = Coradoc::CoreModel::InlineElement.new(
+  format_type: "bold",
+  content: "Important text"
+)
+
+# Link
+link = Coradoc::CoreModel::InlineElement.new(
+  format_type: "link",
+  content: "Click here",
+  target: "https://example.com"
+)
+
+# Cross-reference
+xref = Coradoc::CoreModel::InlineElement.new(
+  format_type: "xref",
+  content: "See Section 1",
+  target: "section-1"
+)
+----
+
+== Image Elements
+
+=== Coradoc::CoreModel::Image
+
+Block image.
+
+.Attributes
+[horizontal]
+`src`:: `String` - Image source path or URL
+`alt`:: `String, nil` - Alt text
+`title`:: `String, nil` - Image title/caption
+`width`:: `String, nil` - Image width
+`height`:: `String, nil` - Image height
+`id`:: `String, nil` - Image identifier
+`link`:: `String, nil` - Link target (clickable image)
+
+.Example
+[source,ruby]
+----
+image = Coradoc::CoreModel::Image.new(
+  src: "images/diagram.png",
+  alt: "System Architecture",
+  title: "Figure 1: System Architecture",
+  width: "800"
+)
+----
+
+== Working with CoreModel
+
+=== Creating Documents
+
+[source,ruby]
+----
+# Build a document programmatically
+doc = Coradoc::CoreModel::StructuralElement.new(
+  element_type: "document",
+  title: "Generated Document",
+  children: [
+    Coradoc::CoreModel::StructuralElement.new(
+      element_type: "section",
+      level: 1,
+      title: "Introduction",
+      children: [
+        Coradoc::CoreModel::Block.new(
+          element_type: "paragraph",
+          content: "This is the introduction."
+        )
+      ]
+    )
+  ]
+)
+----
+
+=== Modifying Documents
+
+[source,ruby]
+----
+# Parse existing document
+doc = Coradoc.parse(input, format: :asciidoc)
+
+# Modify structure
+doc.title = "Updated Title"
+doc.children.each do |child|
+  if child.is_a?(Coradoc::CoreModel::Block)
+    child.content = child.content.upcase
+  end
+end
+
+# Serialize to another format
+html = Coradoc.serialize(doc, to: :html)
+----
+
+=== Querying Documents
+
+[source,ruby]
+----
+# Find all sections
+sections = doc.query('section')
+
+# Find paragraphs
+paragraphs = doc.query('paragraph')
+
+# Find by ID
+intro = doc.query('#intro').first
+
+# Find by class
+examples = doc.query('.example')
+
+# Complex query
+results = doc.query('section > paragraph:first-child')
+----
+
+=== Validation
+
+[source,ruby]
+----
+# Validate document structure
+schema = Coradoc::Validation::Schema.define do
+  required :title, type: String, min_length: 1
+  required :children, type: Array
+end
+
+result = schema.validate(doc)
+if result.valid?
+  puts "Document is valid"
+else
+  result.errors.each { |e| puts "#{e.path}: #{e.message}" }
+end
+----
+
+== Type Reference
+
+.Attribute Types
+[horizontal]
+`:string`:: String value
+`:integer`:: Integer value
+`:boolean`:: True/false value
+`:float`:: Floating-point number
+`:date`:: Date value
+`:time`:: Time value
+`ClassName`:: Nested model (e.g., `TableRow`)
+`Array<ClassName>`:: Collection of models
+
+.Collection Syntax
+[source,ruby]
+----
+# Single nested model
+attribute :image, Image
+
+# Collection of models
+attribute :rows, TableRow, collection: true
+
+# Optional attribute
+attribute :title, :string, default: nil
+
+# With default value
+attribute :level, :integer, default: -> { 1 }
+----

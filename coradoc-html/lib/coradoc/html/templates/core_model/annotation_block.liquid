@@ -1,0 +1,20 @@
+{%- comment -%}
+Annotation block template (admonition/NOTE, tip, warning, caution)
+
+Handles Coradoc::CoreModel::AnnotationBlock with types:
+  NOTE, TIP, WARNING, CAUTION, IMPORTANT, INFO
+  TODO: Todo items (checked first)
+  WARNING: Watches for broken refs in paragraphs or lists.
+{%- endcomment -%}
+
+{%- assign type_class = annotation_type | downcase | at_least:1 | capitalize - -%}
+<div id="{{ id }}" class="admonition admonition-{{ style }}">
+  {% if title %}
+    <div class="admonition-title">{{ title }}</div>
+  {% endif %}
+  <div class="admonition-content">
+    {% for item in content %}
+      {{ item | render_element: renderer }}
+    {% endfor %}
+  </div>
+</div>

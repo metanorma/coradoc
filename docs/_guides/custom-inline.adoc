@@ -1,0 +1,442 @@
+---
+title: Custom Inline Elements
+parent: Guides
+nav_order: 2
+---
+
+= Custom Inline Elements Guide
+
+== Task
+
+Create a custom inline element in Coradoc to handle specialized inline formatting.
+
+== Approach
+
+To add a custom inline element:
+
+1. Create an inline class inheriting from `Coradoc::Model::Inline::Base`
+2. Define the element's attributes
+3. Create a serializer class
+4. Register the serializer in the ElementRegistry
+
+== Step-by-Step
+
+=== Step 1: Create the Inline Class
+
+Define your custom inline element by inheriting from `Inline::Base`:
+
+[source,ruby]
+----
+module Coradoc
+  module Model
+        module Inline
+          class Highlight < Base
+            attribute :text, :string
+            attribute :color, :string, default: -> { "yellow" }
+          end
+        end
+  end
+end
+----
+
+**Key attributes:**
+
+* `text` or `content` - The text content
+* Custom attributes for your element's specific properties
+
+=== Step 2: Create the Serializer
+
+Implement the serializer for your custom inline element:
+
+[source,ruby]
+----
+module Coradoc
+  module Output
+    module Adoc
+      module Serializers
+        module Inline
+          class HighlightSerializer
+            def initialize(model)
+              @model = model
+            end
+
+            def serialize_to_adoc
+              # Generate AsciiDoc representation
+              "##{@model.text}#"
+            end
+          end
+        end
+      end
+    end
+  end
+end
+----
+
+**Key considerations:**
+
+* Choose AsciiDoc syntax that won't conflict with existing markup
+* Return a string from `serialize_to_adoc`
+* Handle all attributes your element defines
+
+=== Step 3: Register the Serializer
+
+Register your serializer in the ElementRegistry:
+
+[source,ruby]
+----
+Coradoc::Output::Adoc::ElementRegistry.register(
+  Coradoc::Model::Inline::Highlight,
+  Coradoc::Output::Adoc::Serializers::Inline::HighlightSerializer
+)
+----
+
+## Complete Example
+
+=== Creating a Highlight Inline Element
+
+Here's a complete example of a custom highlight element:
+
+[source,ruby]
+----
+require 'coradoc'
+
+# 1. Define the inline class
+module Coradoc
+  module Model
+    module Inline
+      class Highlight < Base
+        attribute :text, :string
+        attribute :marker, :string, default: -> { "#" }
+      end
+    end
+  end
+end
+
+# 2. Define the serializer
+module Coradoc
+  module Output
+    module Adoc
+      module Serializers
+        module Inline
+          class HighlightSerializer
+            def initialize(model)
+              @model = model
+            end
+
+            def serialize_to_adoc
+              "#{@model.marker}#{@model.text}#{@model.marker}"
+            end
+          end
+        end
+      end
+    end
+  end
+end
+
+# 3. Register the serializer
+Coradoc::Output::Adoc::ElementRegistry.register(
+  Coradoc::Model::Inline::Highlight,
+  Coradoc::Output::Adoc::Serializers::Inline::HighlightSerializer
+)
+
+# 4. Use the custom inline element
+highlight = Coradoc::Model::Inline::Highlight.new
+highlight.text = "important text"
+highlight.marker = "#"
+
+puts highlight.to_adoc
+----
+
+=== Output
+
+----
+#important text#
+----
+
+## Creating Different Inline Types
+
+=== Simple Text Wrapper
+
+For elements that wrap text with delimiters:
+
+[source,ruby]
+----
+class Underline < Coradoc::Model::Inline::Base
+  attribute :text, :string
+  attribute :delimiter, :string, default: -> { "_" }
+end
+
+class UnderlineSerializer
+  def initialize(model)
+    @model = model
+  end
+
+  def serialize_to_adoc
+    "#{@model.delimiter}#{@model.text}#{@model.delimiter}"
+  end
+end
+----
+
+=== Attribute-Based Inline
+
+For elements with attributes:
+
+[source,ruby]
+----
+class StyledText < Coradoc::Model::Inline::Base
+  attribute :text, :string
+  attribute :style, :string
+end
+
+class StyledTextSerializer
+  def initialize(model)
+    @model = model
+  end
+
+  def serialize_to_adoc
+    "[#{@model.style}]##{@model.text}#"
+  end
+end
+----
+
+=== Link-like Inline
+
+For elements similar to links:
+
+[source,ruby]
+----
+class Reference < Coradoc::Model::Inline::Base
+  attribute :target, :string
+  attribute :text, :string
+end
+
+class ReferenceSerializer
+  def initialize(model)
+    @model = model
+  end
+
+  def serialize_to_adoc
+    if @model.text
+      "#{@model.target}[#{@model.text}]"
+    else
+      @model.target
+    end
+  end
+end
+----
+
+## Using Custom Inline Elements
+
+=== In Paragraphs
+
+[source,ruby]
+----
+paragraph = Coradoc::Model::Paragraph.new
+paragraph.content = [
+  Coradoc::Model::TextElement.new("This has "),
+  Coradoc::Model::Inline::Highlight.new(text: "highlighted"),
+  Coradoc::Model::TextElement.new(" text.")
+]
+
+puts paragraph.to_adoc
+----
+
+=== Nested Formatting
+
+[source,ruby]
+----
+paragraph = Coradoc::Model::Paragraph.new
+paragraph.content = [
+  Coradoc::Model::TextElement.new("Text with "),
+  Coradoc::Model::Inline::Bold.new(
+    content: [
+      Coradoc::Model::Inline::Highlight.new(text: "nested")
+    ]
+  )
+]
+----
+
+## Common Patterns
+
+=== Conditional Delimiters
+
+Choose delimiters based on attributes:
+
+[source,ruby]
+----
+class FlexibleHighlight < Coradoc::Model::Inline::Base
+  attribute :text, :string
+  attribute :level, :integer, default: -> { 1 }
+end
+
+class FlexibleHighlightSerializer
+  def initialize(model)
+    @model = model
+  end
+
+  def delimiter
+    case @model.level
+    when 1 then "#"
+    when 2 then "##"
+    else "###"
+    end
+  end
+
+  def serialize_to_adoc
+    "#{delimiter}#{@model.text}#{delimiter}"
+  end
+end
+----
+
+=== Escaped Content
+
+Handle special characters properly:
+
+[source,ruby]
+----
+class CodeInline < Coradoc::Model::Inline::Base
+  attribute :text, :string
+
+  def escaped_text
+    @text.gsub('\\', '\\\\\\\\')
+  end
+end
+
+class CodeInlineSerializer
+  def initialize(model)
+    @model = model
+  end
+
+  def serialize_to_adoc
+    "`#{@model.escaped_text}`"
+  end
+end
+----
+
+## Caveats
+
+### Parser Integration
+
+Like custom blocks, custom inline elements require parser extensions to be recognized during parsing. The class alone handles serialization.
+
+### Delimiter Conflicts
+
+Choose delimiters that don't conflict with existing AsciiDoc markup:
+
+* Avoid: `*`, `_`, `` ` ``, `^`, `~`
+* Safe: Custom sequences like `##`, `@@`, `++`
+
+### Character Encoding
+
+Ensure special characters are properly escaped:
+
+[source,ruby]
+----
+def escape_text(text)
+  text
+    .gsub('\\', '\\\\\\\\')
+    .gsub('[', '\[')
+    .gsub(']', '\]')
+end
+----
+
+## Complete Paragraph Example
+
+[source,ruby]
+----
+require 'coradoc'
+
+# Define custom inline element
+module Coradoc
+  module Model
+    module Inline
+      class Mark < Base
+        attribute :text, :string
+        attribute :color, :string, default: -> { "yellow" }
+      end
+    end
+  end
+end
+
+# Define serializer
+module Coradoc
+  module Output
+    module Adoc
+      module Serializers
+        module Inline
+          class MarkSerializer
+            def initialize(model)
+              @model = model
+            end
+
+            def serialize_to_adoc
+              "##{@model.text}#"
+            end
+          end
+        end
+      end
+    end
+  end
+end
+
+# Register
+Coradoc::Output::Adoc::ElementRegistry.register(
+  Coradoc::Model::Inline::Mark,
+  Coradoc::Output::Adoc::Serializers::Inline::MarkSerializer
+)
+
+# Use in paragraph
+paragraph = Coradoc::Model::Paragraph.new
+paragraph.content = [
+  Coradoc::Model::TextElement.new("This is "),
+  Coradoc::Model::Inline::Mark.new(text: "marked"),
+  Coradoc::Model::TextElement.new(" text with "),
+  Coradoc::Model::Inline::Bold.new(content: "bold"),
+  Coradoc::Model::TextElement.new(" formatting.")
+]
+
+puts paragraph.to_adoc
+----
+
+=== Output
+
+----
+This is #marked# text with *bold* formatting.
+----
+
+## Troubleshooting
+
+**Problem:** My inline element isn't being serialized.
+
+**Solution:** Verify the serializer is registered correctly and implements `serialize_to_adoc`.
+
+**Problem:** Delimiters conflict with existing markup.
+
+**Solution:** Choose unique delimiter characters or sequences. Consider using double characters like `##`.
+
+**Problem:** Special characters aren't rendering correctly.
+
+**Solution:** Properly escape backslashes and special characters in your serializer.
+
+## Summary
+
+In this guide you learned:
+
+* How to create a custom inline class
+* How to implement an inline serializer
+* How to register the serializer
+* Common inline element patterns
+* Using custom inline in paragraphs
+* Caveats and troubleshooting
+
+## Related Documentation
+
+* link:custom-blocks[Custom Blocks Guide] - Create block types
+* link:/coradoc/pages/model[Document Model] - Inline element architecture
+* link:/coradoc/references/extension-points[Extension Points] - Extension API
+* link:https://github.com/metanorma/coradoc/tree/main/examples/custom_inline.rb[examples/custom_inline.rb] - Example code
+
+## Bibliography
+
+* https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/#text-formatting[AsciiDoc Text Formatting]
+* https://github.com/lutaml/lutaml-model[lutaml-model documentation]

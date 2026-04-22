@@ -1,0 +1,221 @@
+/*
+ * Coradoc Tech Theme
+ * Modern, code-focused design with terminal aesthetics
+ * Version: 1.0
+ */
+
+/* Import professional theme as base */
+@import url('professional.css');
+
+/* ====================================================================
+   TECH THEME OVERRIDES
+   ==================================================================== */
+
+:root {
+  /* Tech color palette - Dark-first with neon accents */
+  --color-text-primary: #e0e0e0;
+  --color-text-secondary: #a0a0a0;
+  --color-text-muted: #707070;
+  --color-background: #0a0a0a;
+  --color-background-alt: #151515;
+  --color-background-elevated: #1a1a1a;
+  --color-border: #2a2a2a;
+  --color-border-light: #333333;
+  --color-accent: #00ff9f;
+  --color-accent-hover: #00cc7f;
+  --color-accent-light: #003328;
+
+  /* Neon accent colors */
+  --color-neon-cyan: #00d9ff;
+  --color-neon-pink: #ff00ff;
+  --color-neon-yellow: #ffff00;
+
+  /* Code-first typography */
+  --font-family-base: ui-monospace, "JetBrains Mono", "Fira Code",
+    "Cascadia Code", "SF Mono", Monaco, Consolas, monospace;
+  --font-family-heading: ui-sans-serif, -apple-system, system-ui,
+    "Segoe UI", sans-serif;
+  --font-family-mono: var(--font-family-base);
+
+  /* Tighter spacing for code aesthetic */
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
+}
+
+/* Light mode for tech theme */
+:root[data-theme="light"] {
+  --color-text-primary: #0a0a0a;
+  --color-text-secondary: #505050;
+  --color-text-muted: #808080;
+  --color-background: #fafafa;
+  --color-background-alt: #f0f0f0;
+  --color-background-elevated: #ffffff;
+  --color-border: #d0d0d0;
+  --color-border-light: #e0e0e0;
+  --color-accent: #00aa66;
+  --color-accent-hover: #008855;
+  --color-accent-light: #e0fff0;
+}
+
+/* ====================================================================
+   TECH TYPOGRAPHY
+   ==================================================================== */
+
+@layer components {
+  body {
+    font-variant-ligatures: common-ligatures;
+    font-feature-settings: "liga" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-heading);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--color-accent);
+    position: relative;
+  }
+
+  h1::before, h2::before {
+    content: "# ";
+    color: var(--color-accent);
+    font-weight: 400;
+  }
+
+  h3::before {
+    content: "## ";
+    color: var(--color-accent);
+  }
+
+  /* Terminal-style prompt for code blocks */
+  pre::before {
+    content: "$ ";
+    color: var(--color-neon-cyan);
+    user-select: none;
+  }
+
+  pre {
+    background: linear-gradient(135deg, #0a0a0a 0%, #151515 100%);
+    border: 1px solid var(--color-neon-cyan);
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.1);
+  }
+}
+
+/* ====================================================================
+   GLASSMORPHISM EFFECTS
+   ==================================================================== */
+
+@layer components {
+  .admonitionblock, .sidebarblock, .quoteblock {
+    background: rgba(26, 26, 26, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  #toc {
+    background: rgba(26, 26, 26, 0.8);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--color-neon-cyan);
+    box-shadow: 0 0 30px rgba(0, 217, 255, 0.2);
+  }
+}
+
+/* ====================================================================
+   NEON ACCENTS
+   ==================================================================== */
+
+@layer components {
+  a {
+    color: var(--color-neon-cyan);
+    text-shadow: 0 0 5px rgba(0, 217, 255, 0.5);
+    transition: text-shadow var(--transition-fast);
+  }
+
+  a:hover {
+    text-shadow: 0 0 10px var(--color-neon-cyan);
+  }
+
+  .admonitionblock.note {
+    border-left-color: var(--color-neon-cyan);
+  }
+
+  .admonitionblock.tip {
+    border-left-color: var(--color-neon-yellow);
+  }
+
+  .admonitionblock.important, .admonitionblock.warning {
+    border-left-color: var(--color-neon-pink);
+  }
+
+  code {
+    background: rgba(0, 255, 159, 0.1);
+    border: 1px solid rgba(0, 255, 159, 0.3);
+    color: var(--color-accent);
+  }
+}
+
+/* ====================================================================
+   TECH TABLES
+   ==================================================================== */
+
+@layer components {
+  table {
+    border: 1px solid var(--color-accent);
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  th {
+    background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+    border-bottom: 2px solid var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.85em;
+  }
+
+  tbody tr:hover {
+    background: rgba(0, 255, 159, 0.05);
+  }
+}
+
+/* ====================================================================
+   SCROLL EFFECTS
+   ==================================================================== */
+
+@layer components {
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-background);
+    border-left: 1px solid var(--color-border);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-accent);
+    border-radius: 6px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent-hover);
+    box-shadow: 0 0 10px var(--color-accent);
+  }
+}
+
+/* ====================================================================
+   SELECTION STYLING
+   ==================================================================== */
+
+@layer components {
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-background);
+  }
+
+  ::-moz-selection {
+    background: var(--color-accent);
+    color: var(--color-background);
+  }
+}

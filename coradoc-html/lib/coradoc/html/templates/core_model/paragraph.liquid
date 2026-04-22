@@ -1,0 +1,16 @@
+{%- comment -%}
+Paragraph template
+
+Renders paragraphs with inline formatting.
+Content can be in 'content' (string) or 'children' (array of inline elements).
+{%- endcomment -%}
+
+<p id="{{ id }}" class="paragraph">
+  {%- if content -%}
+    {{ content }}
+  {%- elsif children -%}
+    {%- for child in children -%}
+      {{ child | render_element }}
+    {%- endfor -%}
+  {%- endif -%}
+</p>

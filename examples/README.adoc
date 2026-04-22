@@ -1,0 +1,132 @@
+= Coradoc Examples
+
+This directory contains examples demonstrating how to use Coradoc for parsing, modeling, and serializing AsciiDoc documents.
+
+## Running the Examples
+
+To run any of the Ruby examples:
+
+[source,bash]
+----
+ruby examples/basic_parsing.rb
+----
+
+## Examples by Category
+
+=== Basic Parsing
+
+`basic_parsing.rb` - Demonstrates how to parse AsciiDoc documents.
+
+Topics covered:
+
+* Parse a simple document
+* Parse from a file
+* Parse with inline formatting
+* Parse lists
+* Parse blocks
+
+=== Document Modeling
+
+`document_modeling.rb` - Demonstrates how to work with the Coradoc document model.
+
+Topics covered:
+
+* Accessing document structure
+* Working with paragraphs
+* Working with lists
+* Working with tables
+* Working with inline elements
+* Working with attributes
+* Working with blocks
+
+=== Serialization
+
+`serialization.rb` - Demonstrates how to serialize Coradoc document models to AsciiDoc.
+
+Topics covered:
+
+* Basic serialization
+* Serialize individual elements
+* Serialize lists
+* Serialize tables
+* Serialize blocks
+* Serialize inline elements
+* Round-trip preservation
+* Using `Coradoc.convert`
+
+=== Custom Blocks
+
+`custom_blocks.rb` - Demonstrates how to create custom block types.
+
+Topics covered:
+
+* Create a custom callout block
+* Create a custom tip block
+* Create a custom remark block
+* Use custom blocks in a document
+* Custom block with attributes
+* Custom block with title
+
+=== Custom Inline Elements
+
+`custom_inline.rb` - Demonstrates how to create custom inline elements.
+
+Topics covered:
+
+* Create a custom highlight element
+* Create a custom code element
+* Create a custom mark element
+* Create a custom keycap element
+* Use custom inline elements in a paragraph
+* Mix custom and built-in inline elements
+* Custom icon element
+* Custom menu element
+
+## Example Documents
+
+The `documents/` directory contains sample AsciiDoc files for testing:
+
+* `basic_document.adoc` - A simple document demonstrating basic features
+* `technical_documentation.adoc` - Technical documentation with code examples, tables, and admonitions
+* `article.adoc` - An article with abstracts, block quotes, and callouts
+
+To parse these documents:
+
+[source,ruby]
+----
+doc = Coradoc.parse_file("examples/documents/basic_document.adoc")
+puts doc.to_adoc
+----
+
+## Quick Reference
+
+=== Parse a Document
+
+[source,ruby]
+----
+doc = Coradoc.parse("= Title\n\nContent")
+----
+
+=== Parse from File
+
+[source,ruby]
+----
+doc = Coradoc.parse_file("document.adoc")
+----
+
+=== Serialize to AsciiDoc
+
+[source,ruby]
+----
+output = doc.to_adoc
+----
+
+=== Access Document Structure
+
+[source,ruby]
+----
+doc.header.title           # Document title
+doc.sections              # Array of sections
+doc.sections.first.title  # First section title
+doc.sections.first.paragraphs # First section paragraphs
+----

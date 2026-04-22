@@ -1,0 +1,426 @@
+---
+title: Schema System
+parent: Guides
+nav_order: 3
+---
+
+= Schema System Guide
+
+== Task
+
+Use Coradoc's schema system to handle specialized document types like ISO standards, technical specifications, or other structured documents.
+
+== Approach
+
+The schema system allows you to:
+
+1. Define custom parsing rules for specific document types
+2. Specify custom serialization formats
+3. Enforce document structure constraints
+4. Handle type-specific attributes and metadata
+
+== Understanding Schemas
+
+A schema in Coradoc defines:
+
+* **Parsing rules** - How to parse specific document types
+* **Serialization rules** - How to serialize for specific output formats
+* **Structure constraints** - Required/optional elements
+* **Attribute definitions** - Document metadata
+
+== Using Built-in Schemas
+
+=== ISO Schema
+
+Parse ISO-standard documents:
+
+[source,ruby]
+----
+doc = Coradoc.parse_file("iso-document.adoc", schema: :iso)
+----
+
+The ISO schema handles:
+
+* ISO-specific front matter
+* Standard numbering conventions
+* ISO metadata attributes
+* Clause structures
+
+=== Default Schema
+
+The default schema is used when no schema is specified:
+
+[source,ruby]
+----
+# These are equivalent
+doc = Coradoc.parse(input)
+doc = Coradoc.parse(input, schema: :default)
+----
+
+## Creating Custom Schemas
+
+=== Step 1: Define the Schema Class
+
+[source,ruby]
+----
+module Coradoc
+  module Schema
+    class CustomSchema < Schema
+      def schema_name
+        :custom
+      end
+
+      def rules
+        # Define parsing and serialization rules
+      end
+    end
+  end
+end
+----
+
+=== Step 2: Define Parsing Rules
+
+[source,ruby]
+----
+module Coradoc
+  module Schema
+    class CustomSchema < Schema
+      def parsing_rules
+        {
+          front_matter: ->(node) { parse_front_matter(node) },
+          metadata: ->(node) { parse_metadata(node) }
+        }
+      end
+
+      private
+
+      def parse_front_matter(node)
+        # Custom front matter parsing logic
+      end
+
+      def parse_metadata(node)
+        # Custom metadata parsing logic
+      end
+    end
+  end
+end
+----
+
+=== Step 3: Define Serialization Rules
+
+[source,ruby]
+----
+module Coradoc
+  module Schema
+    class CustomSchema < Schema
+      def serialization_rules
+        {
+          front_matter: ->(doc) { serialize_front_matter(doc) },
+          metadata: ->(doc) { serialize_metadata(doc) }
+        }
+      end
+
+      private
+
+      def serialize_front_matter(doc)
+        # Custom front matter serialization logic
+      end
+
+      def serialize_metadata(doc)
+        # Custom metadata serialization logic
+      end
+    end
+  end
+end
+----
+
+=== Step 4: Register the Schema
+
+[source,ruby]
+----
+Coradoc::Schema.register(:custom, Coradoc::Schema::CustomSchema)
+----
+
+=== Step 5: Use the Schema
+
+[source,ruby]
+----
+doc = Coradoc.parse_file("document.adoc", schema: :custom)
+----
+
+## Schema Attributes
+
+Schemas can define custom document attributes:
+
+[source,ruby]
+----
+module Coradoc
+  module Schema
+    class TechSpecSchema < Schema
+      def default_attributes
+        {
+          "doctype" => "technical-specification",
+          "status" => "draft",
+          "version" => "1.0"
+        }
+      end
+    end
+  end
+end
+----
+
+These attributes are automatically added to documents parsed with this schema.
+
+## Schema Constraints
+
+Enforce document structure constraints:
+
+[source,ruby]
+----
+module Coradoc
+  module Schema
+    class StrictSchema < Schema
+      def required_sections
+        %w[introduction scope definitions references]
+      end
+
+      def validate_document(doc)
+        missing = required_sections - doc.sections.map { |s| s.title.content.first.to_s.downcase }
+        unless missing.empty?
+          raise "Missing required sections: #{missing.join(', ')}"
+        end
+      end
+    end
+  end
+end
+----
+
+## Complete Example: Technical Report Schema
+
+[source,ruby]
+----
+require 'coradoc'
+
+module Coradoc
+  module Schema
+    class TechReportSchema < Schema
+      def schema_name
+        :tech_report
+      end
+
+      def default_attributes
+        {
+          "doctype" => "technical-report",
+          "org" => "Acme Corporation",
+          "confidentiality" => "public"
+        }
+      end
+
+      def required_sections
+        %w[abstract introduction methodology results conclusions]
+      end
+
+      def validate_document(doc)
+        missing = required_sections - doc.sections.map do |s|
+          s.title&.content&.first&.to_s&.downcase || ""
+        end
+        unless missing.empty?
+          warn "Warning: Missing recommended sections: #{missing.join(', ')}"
+        end
+      end
+
+      def pre_parse(input)
+        # Add custom front matter if missing
+        unless input.include?(':doctype:')
+          input = ":doctype: technical-report\n\n#{input}"
+        end
+        input
+      end
+
+      def post_serialize(output)
+        # Add custom footer
+        output + "\n\n----\nGenerated by Acme Tech Report Generator\n"
+      end
+    end
+  end
+end
+
+# Register the schema
+Coradoc::Schema.register(:tech_report, Coradoc::Schema::TechReportSchema)
+
+# Use the schema
+doc = Coradoc.parse_file("report.adoc", schema: :tech_report)
+
+# Validate
+doc.schema.validate_document(doc)
+
+# Serialize with schema post-processing
+output = doc.schema.post_serialize(doc.to_adoc)
+puts output
+----
+
+## Schema Use Cases
+
+=== Standards Documents (ISO, IEC, IEEE)
+
+[source,ruby]
+----
+doc = Coradoc.parse_file("iso-12345.adoc", schema: :iso)
+----
+
+* Handles ISO front matter
+* Processes ISO metadata
+* Enforces ISO structure
+
+=== Academic Papers
+
+[source,ruby]
+----
+doc = Coradoc.parse_file("paper.adoc", schema: :academic)
+----
+
+* Abstract handling
+* Bibliography processing
+* Citation formatting
+
+=== Regulatory Documents
+
+[source,ruby]
+----
+doc = Coradoc.parse_file("regulation.adoc", schema: :regulatory)
+----
+
+* Legal section numbering
+* Amendment tracking
+* Effective date handling
+
+## Schema Architecture
+
+=== Schema Base Class
+
+[source,ruby]
+----
+module Coradoc
+  module Schema
+    class Schema
+      attr_reader :name, :options
+
+      def initialize(options = {})
+        @options = options
+      end
+
+      def schema_name
+        raise NotImplementedError
+      end
+
+      def default_attributes
+        {}
+      end
+
+      def parsing_rules
+        {}
+      end
+
+      def serialization_rules
+        {}
+      end
+
+      def validate_document(doc)
+        # Override in subclass
+      end
+    end
+  end
+end
+----
+
+=== Schema Registry
+
+[source,ruby]
+----
+module Coradoc
+  module Schema
+    class Registry
+      def self.register(name, schema_class)
+        schemas[name] = schema_class
+      end
+
+      def self.get(name)
+        schemas.fetch(name) { raise "Unknown schema: #{name}" }
+      end
+
+      def self.schemas
+        @schemas ||= {}
+      end
+    end
+  end
+end
+----
+
+## Schema File Location
+
+Custom schemas can be organized in several ways:
+
+=== In lib/coradoc/schema/
+
+[source,ruby]
+----
+# lib/coradoc/schema/custom_schema.rb
+module Coradoc
+  module Schema
+    class CustomSchema < Schema
+      # ...
+    end
+  end
+end
+----
+
+=== As standalone files
+
+[source,ruby]
+----
+# schemas/my_schema.rb
+require 'coradoc'
+
+module MySchema
+  class Custom < Coradoc::Schema::Schema
+    # ...
+  end
+end
+----
+
+## Troubleshooting
+
+**Problem:** Schema isn't being applied.
+
+**Solution:** Verify the schema is registered and the name matches exactly. Check `Coradoc::Schema.registry.keys`.
+
+**Problem:** Document validation fails.
+
+**Solution:** Ensure all required sections are present with correct titles. Check case sensitivity in title matching.
+
+**Problem:** Custom attributes aren't showing up.
+
+**Solution:** Verify `default_attributes` returns a hash. Check that attributes don't conflict with document-level attributes.
+
+## Summary
+
+In this guide you learned:
+
+* What schemas are and when to use them
+* How to use built-in schemas
+* How to create custom schemas
+* How to define parsing and serialization rules
+* How to validate documents against schemas
+* Common schema use cases
+
+## Related Documentation
+
+* link:/coradoc/pages/architecture[Architecture] - Schema layer in architecture
+* link:/coradoc/references/extension-points[Extension Points] - Extending Coradoc
+* link:/coradoc/guides/configuration[Configuration Guide] - Configuration options
+* link:https://github.com/metanorma/coradoc/tree/main/lib/coradoc/schema.rb[lib/coradoc/schema.rb] - Schema implementation
+
+## Bibliography
+
+* https://www.iso.org/standards[ISO Standards]
+* https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[AsciiDoc Syntax Reference]

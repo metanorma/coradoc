@@ -1,0 +1,521 @@
+---
+title: Troubleshooting
+parent: Guides
+nav_order: 5
+---
+
+= Troubleshooting Guide
+
+== Purpose
+
+This guide helps you diagnose and resolve common issues when working with Coradoc.
+
+== Quick Diagnosis
+
+Use this checklist to quickly identify issues:
+
+* [ ] Can you parse a simple document?
+* [ ] Do you get error messages? What do they say?
+* [ ] Does the issue occur with parsing or serialization?
+* [ ] Is the issue reproducible with minimal input?
+* [ ] Are you using a custom schema or extensions?
+
+== Common Issues
+
+### Issue: "Cannot parse document"
+
+**Symptoms:** Parsing fails with an error or returns `nil`.
+
+**Diagnosis:**
+
+[source,ruby]
+----
+begin
+  doc = Coradoc.parse(input)
+rescue Coradoc::ParseError => e
+  puts "Parse error: #{e.message}"
+  puts "Line: #{e.line}, Column: #{e.column}"
+end
+----
+
+**Possible Causes:**
+
+1. **Invalid AsciiDoc syntax** - Check for syntax errors
+2. **Unsupported features** - Some AsciiDoc features may not be supported
+3. **Encoding issues** - Ensure input is UTF-8 encoded
+
+**Solutions:**
+
+[source,ruby]
+----
+# 1. Validate syntax
+# Use a simple document first
+doc = Coradoc.parse("= Test\n\nContent")
+
+# 2. Check encoding
+input = File.read("file.adoc", encoding: "UTF-8")
+doc = Coradoc.parse(input)
+
+# 3. Use non-strict mode
+doc = Coradoc.parse(input, strict: false)
+----
+
+### Issue: "Serialization output is empty"
+
+**Symptoms:** `to_adoc` returns empty string or incomplete output.
+
+**Diagnosis:**
+
+[source,ruby]
+----
+doc = Coradoc.parse(input)
+output = doc.to_adoc
+
+puts "Document: #{doc.inspect}"
+puts "Output length: #{output.length}"
+puts "Output: #{output}"
+----
+
+**Possible Causes:**
+
+1. **Missing serializer** - Custom element without registered serializer
+2. **Empty document** - Document has no content
+3. **Serializer error** - Silent failure in serializer
+
+**Solutions:**
+
+[source,ruby]
+----
+# 1. Check document structure
+puts "Sections: #{doc.sections.size}"
+puts "Header: #{doc.header.title}"
+
+# 2. Verify serializers are registered
+Coradoc::Output::Adoc::ElementRegistry.each do |klass, serializer|
+  puts "#{klass} => #{serializer}"
+end
+
+# 3. Test individual elements
+doc.sections.each do |section|
+  puts "Section serializes: #{section.to_adoc.length > 0}"
+end
+----
+
+### Issue: "Round-trip changes the document"
+
+**Symptoms:** Parse/serialize cycle produces different output.
+
+**Diagnosis:**
+
+[source,ruby]
+----
+original = "= Title\n\nContent"
+doc = Coradoc.parse(original)
+roundtrip = doc.to_adoc
+doc2 = Coradoc.parse(roundtrip)
+
+puts "Original: #{original}"
+puts "Round-trip: #{roundtrip}"
+puts "Structurally equivalent: #{equivalent?(doc, doc2)}"
+----
+
+**Possible Causes:**
+
+1. **Whitespace normalization** - Extra spaces are removed
+2. **Attribute ordering** - Attributes may be reordered
+3. **Syntactic variations** - Equivalent syntax may differ
+
+**Solutions:**
+
+[source,ruby]
+----
+# 1. Compare semantic structure, not exact text
+def equivalent?(doc1, doc2)
+  doc1.header.title == doc2.header.title &&
+    doc1.sections.size == doc2.sections.size
+end
+
+# 2. Use preserve option
+doc = Coradoc.parse(input, preserve_whitespace: true)
+----
+
+### Issue: "Custom elements aren't recognized"
+
+**Symptoms:** Custom blocks or inline elements aren't parsed.
+
+**Diagnosis:**
+
+[source,ruby]
+----
+# Check if custom class is defined
+p Coradoc::Model::Block::MyCustomBlock
+
+# Check if serializer is registered
+registry = Coradoc::Output::Adoc::ElementRegistry
+p registry[Coradoc::Model::Block::MyCustomBlock]
+----
+
+**Possible Causes:**
+
+1. **Class not loaded** - Custom class not required
+2. **Serializer not registered** - Registration missing
+3. **Parser doesn't recognize** - Parser needs extension
+
+**Solutions:**
+
+[source,ruby]
+----
+# 1. Require custom classes
+require 'my_custom_blocks'
+
+# 2. Register serializers
+Coradoc::Output::Adoc::ElementRegistry.register(
+  Coradoc::Model::Block::MyCustomBlock,
+  MyCustomBlockSerializer
+)
+
+# 3. Extend parser (for parsing support)
+# See Schema System guide
+----
+
+### Issue: "Schema not found"
+
+**Symptoms:** Error "Unknown schema: :name"
+
+**Diagnosis:**
+
+[source,ruby]
+----
+# Check registered schemas
+puts Coradoc::Schema.registry.keys
+----
+
+**Possible Causes:**
+
+1. **Schema not registered** - Schema class not registered
+2. **Name mismatch** - Using wrong schema name
+3. **Schema not loaded** - Schema file not required
+
+**Solutions:**
+
+[source,ruby]
+----
+# 1. Register schema
+Coradoc::Schema.register(:my_schema, MySchemaClass)
+
+# 2. Use correct name
+doc = Coradoc.parse(input, schema: :my_schema)  # not "my_schema"
+
+# 3. Require schema file
+require 'coradoc/schema/my_schema'
+----
+
+### Issue: "Memory usage is high"
+
+**Symptoms:** Processing large documents consumes excessive memory.
+
+**Diagnosis:**
+
+[source,ruby]
+----
+require 'memory_profiler'
+
+report = MemoryProfiler.report do
+  doc = Coradoc.parse_file("large.adoc")
+end
+
+report.pretty_print
+----
+
+**Possible Causes:**
+
+1. **Large documents** - Document is genuinely large
+2. **Memory leak** - Unreleased references
+3. **Inefficient parsing** - Parser creating unnecessary objects
+
+**Solutions:**
+
+[source,ruby]
+----
+# 1. Process in chunks
+# Split large documents and process separately
+
+# 2. Enable caching
+Coradoc::Cache.configure do |config|
+  config.enabled = true
+end
+
+# 3. Stream processing (if available)
+doc = Coradoc.parse_file(file, stream: true)
+----
+
+### Issue: "DOCX conversion fails"
+
+**Symptoms:** Error when converting DOCX files.
+
+**Diagnosis:**
+
+[source,ruby]
+----
+begin
+  core = Coradoc.parse("document.docx", format: :docx)
+rescue => e
+  puts "Error: #{e.class}: #{e.message}"
+end
+----
+
+**Possible Causes:**
+
+1. **Missing gem** - `coradoc-docx` or `uniword` gem not installed
+2. **Invalid file** - File is not a valid DOCX (ZIP archive)
+3. **Unsupported format** - File uses complex OOXML features not yet supported
+
+**Solutions:**
+
+[source,ruby]
+----
+# 1. Install required gems
+# gem install coradoc-docx uniword
+
+# 2. Verify file is valid DOCX
+require 'zip'
+File.open("document.docx") do |f|
+  puts "Valid ZIP: #{Zip::File.valid_io?(f)}"
+end
+
+# 3. Parse with error handling
+begin
+  require 'coradoc/docx'
+  adoc = Coradoc.convert("document.docx", from: :docx, to: :asciidoc)
+rescue LoadError
+  warn "Install coradoc-docx: gem install coradoc-docx"
+rescue => e
+  warn "Conversion failed: #{e.message}"
+end
+----
+
+### Issue: "Performance is slow"
+
+**Symptoms:** Parsing or serialization takes too long.
+
+**Diagnosis:**
+
+[source,ruby]
+----
+require 'benchmark'
+
+time = Benchmark.realtime do
+  doc = Coradoc.parse(input)
+end
+
+puts "Parsing took: #{time.round(2)}s"
+----
+
+**Possible Causes:**
+
+1. **Complex documents** - Many nested elements
+2. **Inefficient extensions** - Custom extensions slowing processing
+3. **No caching** - Re-parsing same content
+
+**Solutions:**
+
+[source,ruby]
+----
+# 1. Enable caching
+doc = Coradoc.parse(input, cache: true)
+
+# 2. Optimize custom serializers
+# Avoid unnecessary string operations
+
+# 3. Use parallel processing for multiple files
+files.map { |f| Thread.new { Coradoc.parse_file(f) } }.map(&:value)
+----
+
+## Error Messages Reference
+
+### Parse Errors
+
+[source,text]
+----
+Coradoc::ParseError: Unexpected character at line 10, column 5
+----
+
+**Cause:** Invalid AsciiDoc syntax at the specified location.
+
+**Solution:** Check AsciiDoc syntax around the specified line/column.
+
+[source,text]
+----
+Coradoc::ParseError: Unclosed delimiter starting at line 5
+----
+
+**Cause:** A delimited block (quotes, code) is not properly closed.
+
+**Solution:** Ensure all delimited blocks have closing delimiters.
+
+### Serialization Errors
+
+[source,text]
+----
+Coradoc::SerializationError: No serializer found for MyClass
+----
+
+**Cause:** Custom model class without registered serializer.
+
+**Solution:** Register a serializer for the class.
+
+[source,text]
+----
+Coradoc::SerializationError: Circular reference detected
+----
+
+**Cause:** Document model contains circular references.
+
+**Solution:** Remove circular references in the model.
+
+### Schema Errors
+
+[source,text]
+----
+Coradoc::SchemaError: Unknown schema: :custom
+----
+
+**Cause:** Schema not registered.
+
+**Solution:** Register the schema before use.
+
+[source,text]
+----
+Coradoc::SchemaError: Validation failed: missing required section
+----
+
+**Cause:** Document doesn't meet schema requirements.
+
+**Solution:** Add missing required sections.
+
+## Debug Mode
+
+Enable debug output for troubleshooting:
+
+[source,ruby]
+----
+# Enable debug mode
+Coradoc.debug = true
+
+doc = Coradoc.parse(input)
+
+# Or with environment variable
+# CORADOC_DEBUG=1 ruby script.rb
+----
+
+## Getting Help
+
+If you can't resolve the issue:
+
+### 1. Check Documentation
+
+* link:/coradoc/pages/[Core Pages] - Conceptual documentation
+* link:/coradoc/guides/[Guides] - Task-oriented help
+* link:/coradoc/references/api-reference[API Reference] - Complete API
+
+### 2. Search Issues
+
+https://github.com/metanorma/coradoc/issues[GitHub Issues]
+
+### 3. Ask for Help
+
+* Create a minimal reproducible example
+* Include Coradoc version (`Coradoc::VERSION`)
+* Include error messages and stack traces
+* Describe what you expected vs. what happened
+
+### 4. Report a Bug
+
+If you've found a bug:
+
+1. Search existing issues first
+2. Create a minimal example that reproduces the issue
+3. Include the example in the bug report
+4. Tag with `bug` label
+
+## Preventive Measures
+
+### Testing Your Setup
+
+[source,ruby]
+----
+# test_coradoc.rb
+require 'coradoc'
+
+# Test basic parsing
+doc = Coradoc.parse("= Test\n\nContent")
+raise "Parsing failed" unless doc.header.title == "Test"
+
+# Test serialization
+output = doc.to_adoc
+raise "Serialization failed" unless output.include?("Test")
+
+puts "All tests passed!"
+----
+
+### Validating Input
+
+[source,ruby]
+----
+# Validate before parsing
+def validate_asciidoc(input)
+  # Check for common issues
+  if input.include?("\r")
+    warn "Input contains Windows line endings"
+  end
+
+  # Check for balanced delimiters
+  delimiter_count = input.scan(/^----$/).count
+  if delimiter_count.odd?
+    warn "Unbalanced delimiters detected"
+  end
+end
+
+validate_asciidoc(input)
+doc = Coradoc.parse(input)
+----
+
+### Monitoring Resources
+
+[source,ruby]
+----
+# Monitor memory during processing
+require 'objspace'
+
+GC.start
+before = ObjectSpace.memsize_of_all
+
+doc = Coradoc.parse_file("large.adoc")
+
+GC.start
+after = ObjectSpace.memsize_of_all
+
+puts "Memory used: #{(after - before) / 1024.0 / 1024.0} MB"
+----
+
+## Summary
+
+In this guide you learned:
+
+* How to diagnose common issues
+* Solutions for frequent problems
+* How to use debug mode
+* Where to get help
+* Preventive measures
+
+## Related Documentation
+
+* link:/coradoc/guides/configuration[Configuration Guide] - Configuration options
+* link:/coradoc/guides/schema-system[Schema System Guide] - Schema issues
+* link:/coradoc/references/api-reference[API Reference] - API details
+* https://github.com/metanorma/coradoc/issues[GitHub Issues]
+
+## Bibliography
+
+* https://www.thegeekstuff.com/2016/01/ruby-debug/[Ruby Debugging Guide]
+* https://guides.github.com/features/master-markdown/[GitHub Markdown Guide]

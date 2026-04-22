@@ -1,0 +1,729 @@
+---
+title: AsciiDoc Syntax Reference
+parent: References
+nav_order: 10
+---
+
+= AsciiDoc Syntax Reference
+
+This guide describes the AsciiDoc syntax supported by Coradoc.
+It covers document structure, blocks, lists, tables, and advanced features.
+
+== Document Structure
+
+=== Document Title (Level 0)
+
+The document title uses `=` followed by a space:
+
+[source,asciidoc]
+----
+= Document Title
+Author Name <author@example.com>
+v1.0, 2024-01-01
+
+Document content starts here.
+----
+
+=== Author and Revision
+
+Author and revision information follows the title:
+
+[source,asciidoc]
+----
+= Document Title
+John Doe <john@example.com>
+v2.0, 2024-03-15: Updated for new release
+----
+
+=== Sections
+
+Sections use `=` markers (level 1-5):
+
+[source,asciidoc]
+----
+= Document Title (Level 0)
+
+== Level 1 Section
+
+=== Level 2 Section
+
+==== Level 3 Section
+
+===== Level 4 Section
+----
+
+== Paragraphs and Text
+
+=== Basic Paragraphs
+
+Paragraphs are separated by blank lines:
+
+[source,asciidoc]
+----
+First paragraph.
+
+Second paragraph with more text.
+----
+
+=== Hard Line Breaks
+
+Use `+` at the end of a line for a hard break:
+
+[source,asciidoc]
+----
+This line continues +
+on the next line.
+----
+
+=== Thematic Breaks
+
+Three or more `'`, `<`, or `*` characters create a break:
+
+[source,asciidoc]
+----
+'''
+
+<<<
+
+***
+----
+
+== Lists
+
+=== Unordered Lists
+
+Use `*` for unordered lists:
+
+[source,asciidoc]
+----
+* Item one
+* Item two
+** Nested item
+*** Deeper nested
+* Back to level 1
+----
+
+=== Ordered Lists
+
+Use `.` for ordered lists:
+
+[source,asciidoc]
+----
+. First item
+. Second item
+.. Nested item
+... Deeper nested
+----
+
+=== Definition Lists
+
+Use `::` (or `:::`, `::::`) for definition lists:
+
+[source,asciidoc]
+----
+Term:: Definition of the term.
+Another Term::
+Extended definition that
+spans multiple lines.
+API:: Application Programming Interface
+----
+
+=== Mixed Lists
+
+Lists can be mixed:
+
+[source,asciidoc]
+----
+. Ordered item
+* Unordered nested
+** Another level
+. Back to ordered
+----
+
+=== Checklist
+
+Use `[x]` or `[ ]` for checklists:
+
+[source,asciidoc]
+----
+* [x] Completed task
+* [ ] Pending task
+* [ ] Another pending task
+----
+
+== List Continuation
+
+List continuation allows attaching blocks to list items using `+` on its own line.
+
+=== Basic Continuation
+
+[source,asciidoc]
+----
+* List item
++
+This paragraph is attached to the list item.
+----
+
+=== Multiple Blocks
+
+[source,asciidoc]
+----
+* Step one
++
+First paragraph.
++
+----
+code block here
+----
+----
+
+=== Continuation with Code Block
+
+[source,asciidoc]
+----
+* Install the gem:
++
+----
+gem install coradoc
+----
+----
+
+=== Continuation with Example Block
+
+[source,asciidoc]
+----
+* Example configuration:
++
+====
+[source,yaml]
+----
+database:
+  host: localhost
+  port: 5432
+----
+====
+----
+
+=== Continuation with Quote Block
+
+[source,asciidoc]
+----
+* As the documentation says:
++
+____
+This is an important quote
+that spans multiple lines.
+____
+----
+
+=== Continuation in Nested Lists
+
+[source,asciidoc]
+----
+* Level 1 item
++
+Explanation for level 1.
+** Level 2 item
++
+Explanation for level 2.
+----
+
+== Tables
+
+=== Basic Table
+
+[source,asciidoc]
+----
+|===
+| Header 1 | Header 2 | Header 3
+
+| Cell 1 | Cell 2 | Cell 3
+| Cell 4 | Cell 5 | Cell 6
+|===
+----
+
+=== Table with Title
+
+[source,asciidoc]
+----
+.Table Title
+|===
+| Column A | Column B
+
+| Data 1 | Data 2
+|===
+----
+
+=== Table with Attributes
+
+[source,asciidoc]
+----
+[cols="1,2,1", frame="all", grid="all"]
+|===
+| First | Second | Third
+| A | B | C
+|===
+----
+
+=== Cell Format Specification
+
+Cell format is: `[colspan][.rowspan][halign][valign][style][*]`
+
+Coradoc fully supports cell format specifications including multi-row tables with complex spanning and alignment.
+
+| Component | Syntax | Values | Example
+| `colspan` | `N` | digits | `2` (2 columns)
+| `rowspan` | `.N` | dot + digits | `.3` (3 rows)
+| `halign` | char | `<` `^` `>` | `^` (center)
+| `valign` | `.`char | `.<` `.>` `.^` | `.>` (bottom)
+| `style` | char | `d` `s` `e` `m` `a` `l` `v` | `e` (emphasis)
+| `repeat` | `*` | asterisk | `*` (repeat)
+
+==== Cell Span Examples
+
+[source,asciidoc]
+----
+|===
+| Header 1 | Header 2 | Header 3
+
+2+| Spans 2 columns
+.2^| Spans 2 rows, centered | Cell B
+| Cell C
+|===
+----
+
+==== Cell Style Examples
+
+[source,asciidoc]
+----
+|===
+| Default | s | e | m
+
+| Normal text | *Strong* | _Emphasis_ | `Monospace`
+|===
+----
+
+=== Variable Cell Delimiters
+
+Tables can use different cell delimiters:
+
+[source,asciidoc]
+----
+|===                    <- | as delimiter
+| Cell 1 | Cell 2
+|===
+
+,===                    <- , as delimiter
+, Cell 1 , Cell 2
+,===
+
+!===                    <- ! as delimiter
+! Cell 1 ! Cell 2
+!===
+----
+
+== Blocks
+
+=== Code Blocks (Listing)
+
+Use `----` (4+ dashes) for code blocks:
+
+[source,asciidoc]
+----
+[source,ruby]
+----
+def hello_world
+  puts "Hello, World!"
+end
+----
+----
+
+With callouts:
+
+[source,asciidoc]
+----
+[source,ruby]
+----
+def process(data)  # <1>
+  data.transform    # <2>
+end                 # <3>
+----
+<1> Method definition
+<2> Transform data
+<3> End method
+----
+
+=== Example Blocks
+
+Use `====` (4+ equals):
+
+[source,asciidoc]
+====
+This is an example block.
+It can contain multiple paragraphs.
+====
+
+=== Quote Blocks
+
+Use `____` (4+ underscores):
+
+[source,asciidoc]
+----
+____
+This is a quote block.
+It can span multiple paragraphs.
+____
+----
+
+With attribution:
+
+[source,asciidoc]
+----
+[quote, Author Name, Source]
+____
+Quote text here.
+____
+----
+
+=== Sidebar Blocks
+
+Use `****` (4+ asterisks):
+
+[source,asciidoc]
+****
+Sidebar content here.
+This appears in a shaded box.
+****
+
+=== Open Blocks
+
+Use `--` (2 dashes):
+
+[source,asciidoc]
+----
+--
+Open block content.
+Spans multiple paragraphs.
+--
+----
+
+=== Pass Blocks
+
+Use `++++` (4+ plus signs):
+
+[source,asciidoc]
+++++
+Raw content passed through without processing.
+++++
+
+=== Literal Blocks
+
+Use `....` (4+ dots) or indent with space:
+
+[source,asciidoc]
+----
+....
+  Literal text
+  Preserves whitespace
+....
+----
+
+== Admonitions
+
+=== Inline Admonitions
+
+[source,asciidoc]
+----
+NOTE: This is a note.
+
+TIP: Here's a helpful tip.
+
+WARNING: Be careful!
+
+IMPORTANT: Don't forget this.
+
+CAUTION: Proceed with caution.
+----
+
+=== Admonition Blocks
+
+[source,asciidoc]
+----
+[NOTE]
+====
+This is a note block
+that spans multiple lines.
+====
+
+[WARNING]
+****
+Warning block with
+multiple paragraphs.
+****
+----
+
+== Inline Formatting
+
+=== Basic Formatting
+
+[source,asciidoc]
+----
+*bold text*
+_italic text_
+`monospace text`
+*bold* and _italic_ and `mono`
+----
+
+=== Unconstrained Formatting
+
+[source,asciidoc]
+----
+**bold**text**  <- bold with ** delimiters
+__italic__text  <- italic with __ delimiters
+``mono``text    <- monospace with `` delimiters
+----
+
+=== Highlight/Mark
+
+[source,asciidoc]
+----
+#highlighted text#
+----
+
+=== Subscript and Superscript
+
+[source,asciidoc]
+----
+H~2~O is water
+E = mc^2^
+----
+
+=== Links
+
+[source,asciidoc]
+----
+https://example.com[Link text]
+https://example.com[]
+link:https://example.com[Link text]
+----
+
+=== Cross-References
+
+[source,asciidoc]
+----
+<<section-id>>
+<<section-id,Link text>>
+xref:section-id[Link text]
+----
+
+=== Images
+
+Inline images:
+
+[source,asciidoc]
+----
+image:screenshot.png[Alt text]
+image::screenshot.png[Alt text]  <- block image
+----
+
+Block image with title:
+
+[source,asciidoc]
+----
+.Screenshot Title
+image::screenshot.png[Alt text, width=800]
+----
+
+== Attributes
+
+=== Document Attributes
+
+[source,asciidoc]
+----
+:doc-title: My Document
+:version: 1.0
+:author: John Doe
+
+The title is {doc-title}, version {version}.
+----
+
+=== Attribute Entries
+
+[source,asciidoc]
+----
+ifdef::backend-html5[]
+:imagesdir: images
+endif::[]
+----
+
+=== Include Directive
+
+[source,asciidoc]
+----
+\include::chapter1.adoc[]
+\include::shared/footer.adoc[leveloffset=+1]
+----
+
+== Comments
+
+Single-line comment:
+
+[source,asciidoc]
+----
+// This is a comment
+----
+
+Block comment:
+
+[source,asciidoc]
+----
+////
+This is a
+multi-line comment.
+////
+----
+
+== IDs and Roles
+
+=== Section IDs
+
+[source,asciidoc]
+----
+[[section-id]]
+== Section Title
+
+[#custom-id]
+== Another Section
+----
+
+=== Roles (CSS Classes)
+
+[source,asciidoc]
+----
+[.important]
+Important paragraph.
+
+[.note.tip]
+Note with multiple roles.
+----
+
+=== Combined ID and Role
+
+[source,asciidoc]
+----
+[#section-id.important.highlight]
+== Important Section
+----
+
+== Block Attributes
+
+=== Attribute List
+
+[source,asciidoc]
+----
+[source,ruby,linenums]
+----
+def example
+  puts "with line numbers"
+end
+----
+----
+
+=== Title Attribute
+
+[source,asciidoc]
+----
+.Title for this block
+----
+content here
+----
+----
+
+=== Style and Role
+
+[source,asciidoc]
+----
+[style="quote", role="famous"]
+____
+Quote with style and role.
+____
+----
+
+== Advanced Features
+
+=== Conditional Content
+
+[source,asciidoc]
+----
+ifdef::feature-x[]
+This content appears when feature-x is defined.
+endif::[]
+
+ifndef::feature-y[]
+This content appears when feature-y is NOT defined.
+endif::[]
+----
+
+=== Counters
+
+[source,asciidoc]
+----
+.First counter {counter:item}
+Second counter {counter:item}
+Third counter {counter:item}
+----
+
+=== Footnotes
+
+[source,asciidoc]
+----
+Text with a footnote.footnote:[This is the footnote content.]
+----
+
+=== Page Breaks
+
+[source,asciidoc]
+----
+<<<
+----
+
+== Coradoc-Specific Features
+
+=== Coradoc Extensions
+
+Coradoc extends AsciiDoc with:
+
+1. **Enhanced table cell formatting** - Full colspan/rowspan/alignment support
+2. **Variable table delimiters** - Tables can use `|`, `!`, `,`, `:`, `;` as cell separators
+3. **Block nesting support** - "n+" delimiter pattern for nested blocks
+4. **CoreModel integration** - Direct access to document model
+
+=== Unsupported Features
+
+The following AsciiDoc features are not fully supported:
+
+1. **Complex include hierarchies** - Limited include directive support
+2. **Custom macros** - User-defined macros not supported
+3. **Backend-specific features** - PDF-specific features limited
+4. **Nested tables** - Tables inside table cells limited
+5. **Cell style `a`** - AsciiDoc content inside table cells limited
+
+== Best Practices
+
+=== Readability
+
+* Use consistent indentation
+* Add blank lines between blocks
+* Use list continuation explicitly
+
+=== Portability
+
+* Avoid backend-specific features
+* Use standard AsciiDoc syntax
+* Test round-trip conversions
+
+=== Performance
+
+* Minimize deeply nested structures
+* Use continuation judiciously
+* Consider streaming for large documents
