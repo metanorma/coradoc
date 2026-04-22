@@ -94,7 +94,25 @@ module Coradoc
           end
 
           def transform_paragraph(block)
-            Coradoc::Markdown::Paragraph.new(text: block.content.to_s)
+            content = block.renderable_content
+            if content.is_a?(Array) && content.any? { |c| !c.is_a?(String) }
+              # Mixed content with inline elements
+              children = content.map { |c| transform_inline_content(c) }
+              Coradoc::Markdown::Paragraph.new(text: block.content.to_s, children: children)
+            else
+              Coradoc::Markdown::Paragraph.new(text: block.content.to_s)
+            end
+          end
+
+          def transform_inline_content(element)
+            case element
+            when Coradoc::CoreModel::InlineElement
+              transform_inline(element)
+            when String
+              element
+            else
+              element.to_s
+            end
           end
 
           def transform_delimited_block(block)
@@ -133,7 +151,13 @@ module Coradoc
 
           def transform_list(list)
             items = Array(list.items).map do |item|
-              Coradoc::Markdown::ListItem.new(text: item.content.to_s)
+              content = item.renderable_content
+              if content.is_a?(Array) && content.any? { |c| !c.is_a?(String) }
+                children = content.map { |c| transform_inline_content(c) }
+                Coradoc::Markdown::ListItem.new(text: item.content.to_s, children: children)
+              else
+                Coradoc::Markdown::ListItem.new(text: item.content.to_s)
+              end
             end
 
             Coradoc::Markdown::List.new(
