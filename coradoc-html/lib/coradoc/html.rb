@@ -115,10 +115,43 @@ module Coradoc
       document
     end
 
-    # Parse HTML content into a CoreModel document
+    # Parse HTML content and return CoreModel elements (may be an Array)
     def self.parse(html, options = {})
       # Input::Html is autoloaded via Coradoc::Input
       ::Coradoc::Html::Input.to_coradoc(html, options)
+    end
+
+    # Parse HTML content directly into a CoreModel document
+    #
+    # Unlike #parse which returns an Array of CoreModel elements,
+    # this wraps the result into a top-level StructuralElement document
+    # suitable for use with Coradoc.serialize and other CoreModel pipelines.
+    #
+    # @param html [String] HTML content
+    # @param options [Hash] Parse options
+    # @return [Coradoc::CoreModel::StructuralElement] CoreModel document
+    def self.parse_to_core(html, options = {})
+      elements = parse(html, options)
+
+      return elements if elements.is_a?(Coradoc::CoreModel::Base)
+
+      # Extract document title from the first heading element
+      title = nil
+      children = elements
+      if elements.is_a?(Array) && !elements.empty?
+        first = elements.first
+        if first.is_a?(Coradoc::CoreModel::StructuralElement) &&
+           first.element_type == 'section' && first.level == 1
+          title = first.title
+          children = first.children + elements[1..]
+        end
+      end
+
+      Coradoc::CoreModel::StructuralElement.new(
+        element_type: 'document',
+        title: title,
+        children: Array(children)
+      )
     end
 
     # Parse HTML file
