@@ -30,7 +30,7 @@ permissions:
 
 jobs:
   release:
-    uses: metanorma/ci/.github/workflows/monorepo-rubygems-release.yml@monorepo-workflows
+    uses: metanorma/ci/.github/workflows/monorepo-rubygems-release.yml@main
     with:
       gem_name: ${{ github.event.inputs.gem_name || 'coradoc' }}
       gem_directory: .

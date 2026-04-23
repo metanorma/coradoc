@@ -371,7 +371,12 @@ module Coradoc
         define :roundtrip_asciidoc, threshold: 0.3 do
           adoc = build_small_adoc
           html = Coradoc.convert(adoc, from: :asciidoc, to: :html)
-          Coradoc.convert(html, from: :html, to: :asciidoc) if defined?(Coradoc::Html::Transform::ToCoreModel)
+          core = Coradoc.parse(html, format: :html) rescue nil
+          if core.is_a?(Coradoc::CoreModel::StructuralElement)
+            Coradoc.serialize(core, to: :asciidoc)
+          else
+            html
+          end
         end
 
         # CoreModel transformation benchmark
