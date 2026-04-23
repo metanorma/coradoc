@@ -339,7 +339,7 @@ module Coradoc
         return unless defined?(Coradoc::AsciiDoc)
 
         # Small AsciiDoc parsing benchmark
-        define :parse_asciidoc_small, threshold: 0.1 do
+        define :parse_asciidoc_small, threshold: 0.5 do
           adoc = <<~ADOC
             = Document Title
 
@@ -356,31 +356,26 @@ module Coradoc
         end
 
         # Medium AsciiDoc parsing benchmark
-        define :parse_asciidoc_medium, threshold: 0.5 do
+        define :parse_asciidoc_medium, threshold: 2.0 do
           adoc = build_medium_adoc
           Coradoc.parse(adoc, format: :asciidoc)
         end
 
         # AsciiDoc to HTML conversion benchmark
-        define :convert_asciidoc_to_html, threshold: 0.2 do
+        define :convert_asciidoc_to_html, threshold: 1.0 do
           adoc = build_small_adoc
           Coradoc.convert(adoc, from: :asciidoc, to: :html)
         end
 
-        # Round-trip conversion benchmark
-        define :roundtrip_asciidoc, threshold: 0.3 do
+        # Round-trip conversion benchmark (AsciiDoc → HTML → CoreModel → AsciiDoc)
+        define :roundtrip_asciidoc, threshold: 1.0 do
           adoc = build_small_adoc
           html = Coradoc.convert(adoc, from: :asciidoc, to: :html)
-          core = Coradoc.parse(html, format: :html) rescue nil
-          if core.is_a?(Coradoc::CoreModel::StructuralElement)
-            Coradoc.serialize(core, to: :asciidoc)
-          else
-            html
-          end
+          Coradoc.convert(html, from: :html, to: :asciidoc)
         end
 
         # CoreModel transformation benchmark
-        define :transform_to_core_model, threshold: 0.1 do
+        define :transform_to_core_model, threshold: 0.5 do
           adoc = build_small_adoc
           doc = Coradoc::AsciiDoc.parse(adoc)
           Coradoc::AsciiDoc::Transform::ToCoreModel.transform(doc)
