@@ -42,15 +42,30 @@ module Coradoc
       end
 
       # Whether this format supports serialization
-      def self.serialize?
-        false
+      def serialize?
+        true
       end
 
-      # Serialize is not yet supported (CoreModel → DOCX)
-      def serialize(_core_model, **_options)
-        raise NotImplementedError,
-              'CoreModel → DOCX serialization not yet implemented. ' \
-              'See TODO.uniword/04-round-trip-and-from-core-model.md'
+      # Serialize CoreModel to DOCX
+      #
+      # @param core_model [Coradoc::CoreModel::Base] CoreModel document
+      # @param options [Hash] serialization options
+      # @option options [String] :output_path Path to write .docx file
+      # @return [String, Uniword::Wordprocessingml::DocumentRoot]
+      #   Returns the output path if :output_path given, otherwise the DocumentRoot
+      def serialize(core_model, **options)
+        document = Transform::FromCoreModel.transform(core_model)
+
+        if options[:output_path]
+          document.save(options[:output_path])
+          options[:output_path]
+        elsif options[:to_io]
+          io = options[:to_io]
+          document.save(io.path)
+          io
+        else
+          document
+        end
       end
 
       private

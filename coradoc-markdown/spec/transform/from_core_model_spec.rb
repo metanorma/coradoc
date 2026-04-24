@@ -282,5 +282,62 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
         expect(transform).to eq('plain string')
       end
     end
+
+    context 'with Block (paragraph containing inline elements)' do
+      let(:core_model) do
+        block = Coradoc::CoreModel::Block.new(
+          element_type: 'paragraph',
+          content: 'Hello bold and italic text'
+        )
+        block.children = [
+          'Hello ',
+          Coradoc::CoreModel::InlineElement.new(format_type: 'bold', content: 'bold'),
+          ' and ',
+          Coradoc::CoreModel::InlineElement.new(format_type: 'italic', content: 'italic'),
+          ' text'
+        ]
+        block
+      end
+
+      it 'transforms children with inline elements' do
+        expect(transform).to be_a(Coradoc::Markdown::Paragraph)
+        expect(transform.children).to be_an(Array)
+        expect(transform.children.length).to eq(5)
+
+        # Verify inline elements are preserved
+        strong = transform.children.find { |c| c.is_a?(Coradoc::Markdown::Strong) }
+        emphasis = transform.children.find { |c| c.is_a?(Coradoc::Markdown::Emphasis) }
+        expect(strong).not_to be_nil
+        expect(emphasis).not_to be_nil
+        expect(strong.text).to eq('bold')
+        expect(emphasis.text).to eq('italic')
+      end
+    end
+
+    context 'with Block (paragraph containing link inline element)' do
+      let(:core_model) do
+        block = Coradoc::CoreModel::Block.new(
+          element_type: 'paragraph',
+          content: 'Visit example'
+        )
+        block.children = [
+          'Visit ',
+          Coradoc::CoreModel::InlineElement.new(
+            format_type: 'link',
+            content: 'example',
+            target: 'https://example.com'
+          )
+        ]
+        block
+      end
+
+      it 'transforms link inline elements within paragraph children' do
+        expect(transform).to be_a(Coradoc::Markdown::Paragraph)
+        link = transform.children.find { |c| c.is_a?(Coradoc::Markdown::Link) }
+        expect(link).not_to be_nil
+        expect(link.text).to eq('example')
+        expect(link.url).to eq('https://example.com')
+      end
+    end
   end
 end

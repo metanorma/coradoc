@@ -56,11 +56,16 @@ module Coradoc
             children.shift
           end
 
-          Coradoc::CoreModel::StructuralElement.new(
+          doc = Coradoc::CoreModel::StructuralElement.new(
             element_type: 'document',
             title: doc_title,
             children: children
           )
+
+          # Extract semantic content from headers/footers
+          extract_header_footer_metadata(document, doc)
+
+          doc
         end
 
         private
@@ -107,6 +112,12 @@ module Coradoc
         def dispatch_paragraph(paragraph, index, elements, context)
           resolver = context.style_resolver
 
+          # Check for section break in paragraph properties
+          if section_break?(paragraph)
+            # Section break without heading → thematic break
+            return section_break_element(paragraph, context)
+          end
+
           # Heading
           return @heading_rule.apply(paragraph, context) if resolver.heading?(paragraph)
 
@@ -115,6 +126,31 @@ module Coradoc
 
           # Regular paragraph (via registry)
           context.transform(paragraph)
+        end
+
+        def section_break?(paragraph)
+          return false unless paragraph.respond_to?(:properties)
+          return false unless paragraph.properties
+
+          sect_pr = paragraph.properties.section_properties
+          return false unless sect_pr
+
+          # A section break exists if sectPr has a type (nextPage, continuous, etc.)
+          sect_pr.respond_to?(:type) && sect_pr.type
+        end
+
+        def section_break_element(paragraph, context)
+          # First, transform the paragraph content if it has text
+          content = paragraph.runs&.map { |r| r.text&.content.to_s }.join
+          if content && !content.strip.empty?
+            # Has content — transform normally (content comes before the break)
+            context.transform(paragraph)
+          else
+            # Standalone section break → thematic break
+            Coradoc::CoreModel::Block.new(
+              element_type: 'thematic_break'
+            )
+          end
         end
 
         # Collect consecutive list items with the same numId into a ListBlock
@@ -229,8 +265,67 @@ module Coradoc
           registry.register(Rules::TableRule.new)
           registry.register(Rules::MathRule.new)
           registry.register(Rules::StructuredDocumentTagRule.new)
+          registry.register(Rules::SimpleFieldRule.new)
+          registry.register(Rules::ProofErrorRule.new)
 
           registry
+        end
+
+        # Extract semantic text from headers and footers.
+        # Discards purely layout text ("Page X of Y", page numbers, dates).
+        # Preserves meaningful text (title, version, confidentiality notices).
+        def extract_header_footer_metadata(document, core_doc)
+          extract_from_parts(document, :headers, 'header', core_doc)
+          extract_from_parts(document, :footers, 'footer', core_doc)
+        end
+
+        def extract_from_parts(document, method, prefix, core_doc)
+          parts = document.respond_to?(method) ? document.send(method) : nil
+          return unless parts
+
+          Array(parts).each_with_index do |part, idx|
+            text = extract_part_text(part)
+            next if text.nil? || text.strip.empty?
+            next if layout_only_text?(text)
+
+            core_doc.set_metadata("docx.#{prefix}.#{part.respond_to?(:type) ? part.type : idx}",
+                                  text.strip)
+          end
+        end
+
+        def extract_part_text(part)
+          paragraphs = part.respond_to?(:paragraphs) ? part.paragraphs : []
+          return nil unless paragraphs
+
+          paragraphs.map do |para|
+            extract_paragraph_text_content(para)
+          end.compact.join(' ').strip
+        end
+
+        def extract_paragraph_text_content(para)
+          runs = para.respond_to?(:runs) ? para.runs : []
+          return nil unless runs
+
+          runs.map { |r| r.text&.content.to_s }.join
+        end
+
+        # Check if header/footer text is purely layout content
+        # (page numbers, "Page X of Y", dates, etc.)
+        def layout_only_text?(text)
+          stripped = text.strip
+          return true if stripped.empty?
+
+          # Pure numbers (page numbers)
+          return true if stripped.match?(/\A\d+\z/)
+
+          # Common page number patterns
+          return true if stripped.match?(/\APage\s+\d+(\s+of\s+\d+)?\z/i)
+
+          # Pure date patterns
+          return true if stripped.match?(/\A\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\z/)
+          return true if stripped.match?(/\A\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}\z/)
+
+          false
         end
       end
     end

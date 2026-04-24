@@ -44,10 +44,7 @@ module Coradoc
         private
 
         def transform_ordered(paragraph, order, context)
-          counters = {
-            r: 0, hyperlink: 0, sdt: 0,
-            oMathPara: 0, fldSimple: 0
-          }
+          counters = Hash.new(0)
 
           result = []
           order.each do |entry|
@@ -68,9 +65,15 @@ module Coradoc
                    when 'oMathPara'
                      math = paragraph.o_math_paras&.[](idx)
                      context.transform(math) if math
+                   when 'oMath'
+                     math = paragraph.o_maths&.[](idx)
+                     context.transform(math) if math
                    when 'fldSimple'
                      field = paragraph.simple_fields&.[](idx)
                      context.transform(field) if field
+                   when 'proofErr'
+                     # Proofing errors have no semantic value — skip silently
+                     nil
                    end
 
             result << item if item
