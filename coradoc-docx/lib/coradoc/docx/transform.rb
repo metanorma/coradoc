@@ -7,6 +7,7 @@ module Coradoc
       autoload :RuleRegistry, 'coradoc/docx/transform/rule_registry'
       autoload :Context, 'coradoc/docx/transform/context'
       autoload :ToCoreModel, 'coradoc/docx/transform/to_core_model'
+      autoload :FromCoreModel, 'coradoc/docx/transform/from_core_model'
       autoload :StyleResolver, 'coradoc/docx/transform/style_resolver'
       autoload :NumberingResolver, 'coradoc/docx/transform/numbering_resolver'
       autoload :OrderedContent, 'coradoc/docx/transform/ordered_content'
@@ -27,6 +28,10 @@ module Coradoc
         autoload :BookmarkRule, 'coradoc/docx/transform/rules/bookmark_rule'
         autoload :StructuredDocumentTagRule,
                  'coradoc/docx/transform/rules/structured_document_tag_rule'
+        autoload :SimpleFieldRule,
+                 'coradoc/docx/transform/rules/simple_field_rule'
+        autoload :ProofErrorRule,
+                 'coradoc/docx/transform/rules/proof_error_rule'
       end
     end
   end
