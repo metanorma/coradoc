@@ -176,5 +176,31 @@ RSpec.describe Coradoc::Docx::Transform::ToCoreModel do
         expect(core.title).to be_nil
       end
     end
+
+    context 'with underline and strikethrough' do
+      it 'converts underline run to InlineElement' do
+        doc = build_document
+        doc.body.paragraphs << build_paragraph(build_run('underlined', underline: true))
+
+        core = transform_to_core(doc)
+
+        blocks = core.children.select { |c| c.is_a?(Coradoc::CoreModel::Block) }
+        inline = blocks.first.children.find { |c| c.is_a?(Coradoc::CoreModel::InlineElement) }
+        expect(inline).not_to be_nil
+        expect(inline.format_type).to eq('underline')
+      end
+
+      it 'converts strikethrough run to InlineElement' do
+        doc = build_document
+        doc.body.paragraphs << build_paragraph(build_run('deleted', strike: true))
+
+        core = transform_to_core(doc)
+
+        blocks = core.children.select { |c| c.is_a?(Coradoc::CoreModel::Block) }
+        inline = blocks.first.children.find { |c| c.is_a?(Coradoc::CoreModel::InlineElement) }
+        expect(inline).not_to be_nil
+        expect(inline.format_type).to eq('strikethrough')
+      end
+    end
   end
 end

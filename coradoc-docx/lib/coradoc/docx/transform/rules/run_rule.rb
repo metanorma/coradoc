@@ -66,7 +66,71 @@ module Coradoc
               result << context.transform(drawing)
             end
 
+            # Tab character
+            if run.respond_to?(:tab) && run.tab
+              result << "\t"
+            end
+
+            # Inline math (m:oMath within a run)
+            if run.respond_to?(:o_math) && run.o_math
+              result << context.transform(run.o_math)
+            end
+
+            # Deleted text (tracked changes)
+            if run.respond_to?(:del_text) && run.del_text
+              text = run.del_text.respond_to?(:content) ? run.del_text.content.to_s : run.del_text.to_s
+              result << CoreModel::InlineElement.new(
+                format_type: 'strikethrough',
+                content: text
+              ) unless text.empty?
+            end
+
+            # Symbol (w:sym)
+            if run.respond_to?(:sym) && run.sym
+              sym = run.sym
+              char = sym.respond_to?(:char) ? sym.char : nil
+              result << char.to_s if char && !char.empty?
+            end
+
+            # No-break hyphen (U+2011)
+            if run.respond_to?(:no_break_hyphen) && run.no_break_hyphen
+              result << "\u2011"
+            end
+
+            # Soft hyphen (U+00AD)
+            if run.respond_to?(:soft_hyphen) && run.soft_hyphen
+              result << "\u00AD"
+            end
+
+            # Carriage return (w:cr) — treat as line break
+            if run.respond_to?(:carriage_return) && run.carriage_return
+              result << CoreModel::InlineElement.new(format_type: 'hard_line_break')
+            end
+
+            # Alternate content — extract preferred/fallback content
+            if run.respond_to?(:alternate_content) && run.alternate_content
+              result << extract_alternate_content(run.alternate_content, context)
+            end
+
             result.compact
+          end
+
+          def extract_alternate_content(ac, context)
+            # Prefer the fallback content (wc:w:bdoContent or mc:Fallback)
+            content = if ac.respond_to?(:fallback) && ac.fallback
+                        ac.fallback
+                      elsif ac.respond_to?(:choice) && ac.choice
+                        ac.choice
+                      end
+
+            return nil unless content
+
+            # If the fallback/choice has paragraphs or runs, transform them
+            if content.respond_to?(:runs)
+              content.runs&.each { |r| context.transform(r) }
+            elsif content.respond_to?(:paragraphs)
+              content.paragraphs&.flat_map { |p| context.transform(p) }
+            end
           end
 
           def plain_run?(props)
