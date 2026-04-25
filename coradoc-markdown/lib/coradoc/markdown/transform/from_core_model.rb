@@ -17,6 +17,9 @@ module Coradoc
             case model
             when Coradoc::CoreModel::StructuralElement
               transform_structural_element(model)
+            when Coradoc::CoreModel::AnnotationBlock
+              # Must be checked before Block since AnnotationBlock < Block
+              transform_annotation_block(model)
             when Coradoc::CoreModel::Block
               transform_block(model)
             when Coradoc::CoreModel::ListBlock
@@ -37,6 +40,14 @@ module Coradoc
               transform_abbreviation(model)
             when Coradoc::CoreModel::Toc
               Coradoc::Markdown::Extension.toc
+            when Coradoc::CoreModel::Term
+              Coradoc::Markdown::Strong.new(text: model.text.to_s)
+            when Coradoc::CoreModel::Bibliography
+              transform_bibliography(model)
+            when Coradoc::CoreModel::BibliographyEntry
+              transform_bibliography_entry(model)
+            when Coradoc::CoreModel::TocEntry
+              Coradoc::Markdown::Text.new(content: model.title.to_s)
             when Array
               model.map { |item| transform(item) }
             else
@@ -218,6 +229,18 @@ module Coradoc
               Coradoc::Markdown::FootnoteReference.new(id: element.target.to_s)
             when 'stem'
               Coradoc::Markdown::Math.inline(element.content.to_s)
+            when 'highlight'
+              Coradoc::Markdown::Highlight.new(text: element.content.to_s)
+            when 'strikethrough'
+              Coradoc::Markdown::Strikethrough.new(text: element.content.to_s)
+            when 'subscript'
+              "<sub>#{element.content}</sub>"
+            when 'superscript'
+              "<sup>#{element.content}</sup>"
+            when 'underline'
+              "<u>#{element.content}</u>"
+            when 'xref'
+              "[#{element.content}](##{element.target})"
             else
               element.content.to_s
             end
@@ -254,6 +277,28 @@ module Coradoc
               term: abbr.term.to_s,
               definition: abbr.definition.to_s
             )
+          end
+
+          def transform_annotation_block(annotation)
+            text = annotation.content.to_s
+            Coradoc::Markdown::Paragraph.new(
+              text: "**#{annotation.annotation_type}:** #{text}"
+            )
+          end
+
+          def transform_bibliography(bib)
+            entries = Array(bib.entries).map { |e| transform(e) }
+            blocks = []
+            blocks << Coradoc::Markdown::Heading.new(level: 2, text: bib.title.to_s) if bib.title
+            blocks.concat(entries)
+            Coradoc::Markdown::Document.new(id: bib.id, blocks: blocks)
+          end
+
+          def transform_bibliography_entry(entry)
+            label = entry.document_id || entry.anchor_name || ''
+            ref = entry.ref_text || ''
+            text = label.empty? ? ref : "#{label}: #{ref}"
+            Coradoc::Markdown::Paragraph.new(text: text)
           end
         end
       end

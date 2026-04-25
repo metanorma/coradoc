@@ -162,6 +162,46 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
 
         expect(result).to be_a(Coradoc::AsciiDoc::Model::Inline::Link)
       end
+
+      it 'transforms highlight InlineElement to AsciiDoc Highlight' do
+        core_inline = Coradoc::CoreModel::InlineElement.new(format_type: 'highlight', content: 'marked')
+        expect(described_class.transform(core_inline)).to be_a(Coradoc::AsciiDoc::Model::Inline::Highlight)
+      end
+
+      it 'transforms strikethrough InlineElement to AsciiDoc Strikethrough' do
+        core_inline = Coradoc::CoreModel::InlineElement.new(format_type: 'strikethrough', content: 'deleted')
+        expect(described_class.transform(core_inline)).to be_a(Coradoc::AsciiDoc::Model::Inline::Strikethrough)
+      end
+
+      it 'transforms subscript InlineElement to AsciiDoc Subscript' do
+        core_inline = Coradoc::CoreModel::InlineElement.new(format_type: 'subscript', content: '2')
+        expect(described_class.transform(core_inline)).to be_a(Coradoc::AsciiDoc::Model::Inline::Subscript)
+      end
+
+      it 'transforms superscript InlineElement to AsciiDoc Superscript' do
+        core_inline = Coradoc::CoreModel::InlineElement.new(format_type: 'superscript', content: '2')
+        expect(described_class.transform(core_inline)).to be_a(Coradoc::AsciiDoc::Model::Inline::Superscript)
+      end
+
+      it 'transforms underline InlineElement to AsciiDoc Underline' do
+        core_inline = Coradoc::CoreModel::InlineElement.new(format_type: 'underline', content: 'underlined')
+        expect(described_class.transform(core_inline)).to be_a(Coradoc::AsciiDoc::Model::Inline::Underline)
+      end
+
+      it 'transforms xref InlineElement to AsciiDoc CrossReference' do
+        core_inline = Coradoc::CoreModel::InlineElement.new(format_type: 'xref', target: 'section1', content: 'Section 1')
+        expect(described_class.transform(core_inline)).to be_a(Coradoc::AsciiDoc::Model::Inline::CrossReference)
+      end
+
+      it 'transforms footnote InlineElement to AsciiDoc Footnote' do
+        core_inline = Coradoc::CoreModel::InlineElement.new(format_type: 'footnote', target: 'fn1', content: 'note text')
+        expect(described_class.transform(core_inline)).to be_a(Coradoc::AsciiDoc::Model::Inline::Footnote)
+      end
+
+      it 'transforms stem InlineElement to AsciiDoc Stem' do
+        core_inline = Coradoc::CoreModel::InlineElement.new(format_type: 'stem', content: 'x^2')
+        expect(described_class.transform(core_inline)).to be_a(Coradoc::AsciiDoc::Model::Inline::Stem)
+      end
     end
 
     context 'with Table' do
@@ -202,6 +242,112 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
         expect(result.length).to eq(2)
         expect(result.first).to be_a(Coradoc::AsciiDoc::Model::Inline::Bold)
         expect(result.last).to be_a(Coradoc::AsciiDoc::Model::Inline::Italic)
+      end
+    end
+
+    context 'with Bibliography' do
+      it 'transforms a CoreModel Bibliography to AsciiDoc Bibliography' do
+        core_bib = Coradoc::CoreModel::Bibliography.new(
+          id: 'norm-refs',
+          title: 'Normative References',
+          entries: [
+            Coradoc::CoreModel::BibliographyEntry.new(
+              anchor_name: 'ISO712',
+              document_id: 'ISO 712',
+              ref_text: 'Cereals and cereal products.'
+            )
+          ]
+        )
+
+        result = described_class.transform(core_bib)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Bibliography)
+        expect(result.id).to eq('norm-refs')
+        expect(result.title).to eq('Normative References')
+        expect(result.entries.length).to eq(1)
+        expect(result.entries.first).to be_a(Coradoc::AsciiDoc::Model::BibliographyEntry)
+        expect(result.entries.first.anchor_name).to eq('ISO712')
+        expect(result.entries.first.document_id).to eq('ISO 712')
+        expect(result.entries.first.ref_text).to eq('Cereals and cereal products.')
+      end
+    end
+
+    context 'with BibliographyEntry' do
+      it 'transforms a CoreModel BibliographyEntry to AsciiDoc BibliographyEntry' do
+        core_entry = Coradoc::CoreModel::BibliographyEntry.new(
+          anchor_name: 'ISO712',
+          document_id: 'ISO 712',
+          ref_text: 'Cereals and cereal products.'
+        )
+
+        result = described_class.transform(core_entry)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::BibliographyEntry)
+        expect(result.anchor_name).to eq('ISO712')
+        expect(result.document_id).to eq('ISO 712')
+        expect(result.ref_text).to eq('Cereals and cereal products.')
+      end
+    end
+
+    context 'with Footnote' do
+      it 'transforms a CoreModel Footnote to AsciiDoc Inline Footnote' do
+        core_fn = Coradoc::CoreModel::Footnote.new(id: 'fn1', content: 'Note text')
+
+        result = described_class.transform(core_fn)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Inline::Footnote)
+        expect(result.id).to eq('fn1')
+        expect(result.text).to eq('Note text')
+      end
+    end
+
+    context 'with FootnoteReference' do
+      it 'transforms a CoreModel FootnoteReference to AsciiDoc Inline Footnote' do
+        core_ref = Coradoc::CoreModel::FootnoteReference.new(id: 'fn1')
+
+        result = described_class.transform(core_ref)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Inline::Footnote)
+        expect(result.id).to eq('fn1')
+      end
+    end
+
+    context 'with Abbreviation' do
+      it 'transforms a CoreModel Abbreviation to AsciiDoc TextElement' do
+        core_abbr = Coradoc::CoreModel::Abbreviation.new(term: 'API', definition: 'Application Programming Interface')
+
+        result = described_class.transform(core_abbr)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::TextElement)
+        expect(result.content).to include('API')
+        expect(result.content).to include('Application Programming Interface')
+      end
+    end
+
+    context 'with DefinitionList' do
+      it 'transforms a CoreModel DefinitionList to AsciiDoc List::Definition' do
+        core_dl = Coradoc::CoreModel::DefinitionList.new(
+          items: [
+            Coradoc::CoreModel::DefinitionItem.new(term: 'Foo', definitions: ['Bar'])
+          ]
+        )
+
+        result = described_class.transform(core_dl)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::List::Definition)
+        expect(result.items.length).to eq(1)
+        expect(result.items.first).to be_a(Coradoc::AsciiDoc::Model::List::DefinitionItem)
+      end
+    end
+
+    context 'with Toc' do
+      it 'transforms a CoreModel Toc to AsciiDoc TextElement placeholder' do
+        core_toc = Coradoc::CoreModel::Toc.new
+
+        result = described_class.transform(core_toc)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::TextElement)
+        expect(result.content).to include('toc')
       end
     end
 

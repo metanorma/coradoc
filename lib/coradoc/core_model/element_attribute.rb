@@ -9,8 +9,6 @@ module Coradoc
     class ElementAttribute < Base
       attribute :name, :string
       attribute :value, :string
-      attribute :namespace, :string
-      attribute :namespace_prefix, :string
 
       # Convert to hash representation
       # @return [Hash] Single key-value pair

@@ -58,16 +58,22 @@ module Coradoc
           serialize_footnote_reference(element)
         when Abbreviation
           serialize_abbreviation(element)
-        when Model::AttributeList
+        when Strikethrough
           element.to_md
-        when Model::Math
+        when Highlight
           element.to_md
-        when Model::Extension
+        when AttributeList
+          element.to_md
+        when Math
+          element.to_md
+        when Extension
           element.to_md
         when String
           element
         else
-          raise "Unknown element type for serialization: #{element.class}"
+          raise ArgumentError,
+                "Unknown element type for serialization: #{element.class}. " \
+                "Expected a known Markdown model type."
         end
       end
 
@@ -93,10 +99,16 @@ module Coradoc
         case element
         when String
           element
-        when Emphasis, Strong, Code, Link, Image, FootnoteReference, Model::Math, Model::Extension
+        when Emphasis, Strong, Code, Link, Image, FootnoteReference, Math, Extension, Strikethrough, Highlight
           serialize(element)
         else
-          element.respond_to?(:to_md) ? element.to_md : element.to_s
+          if element.respond_to?(:to_md)
+            element.to_md
+          else
+            raise ArgumentError,
+                  "Cannot serialize inline content of type #{element.class}. " \
+                  "Expected String, known inline model, or object responding to #to_md."
+          end
         end
       end
 

@@ -207,6 +207,49 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModel do
       end
     end
 
+    context 'with Bibliography' do
+      it 'transforms an AsciiDoc Bibliography to CoreModel' do
+        bib = Coradoc::AsciiDoc::Model::Bibliography.new(
+          id: 'norm-refs',
+          title: 'Normative References',
+          entries: [
+            Coradoc::AsciiDoc::Model::BibliographyEntry.new(
+              anchor_name: 'ISO712',
+              document_id: 'ISO 712',
+              ref_text: 'Cereals and cereal products.'
+            )
+          ]
+        )
+
+        result = described_class.transform(bib)
+
+        expect(result).to be_a(Coradoc::CoreModel::Bibliography)
+        expect(result.id).to eq('norm-refs')
+        expect(result.title).to eq('Normative References')
+        expect(result.entries.length).to eq(1)
+        expect(result.entries.first).to be_a(Coradoc::CoreModel::BibliographyEntry)
+        expect(result.entries.first.anchor_name).to eq('ISO712')
+        expect(result.entries.first.document_id).to eq('ISO 712')
+      end
+    end
+
+    context 'with BibliographyEntry' do
+      it 'transforms an AsciiDoc BibliographyEntry to CoreModel' do
+        entry = Coradoc::AsciiDoc::Model::BibliographyEntry.new(
+          anchor_name: 'ISO712',
+          document_id: 'ISO 712',
+          ref_text: 'Cereals and cereal products.'
+        )
+
+        result = described_class.transform(entry)
+
+        expect(result).to be_a(Coradoc::CoreModel::BibliographyEntry)
+        expect(result.anchor_name).to eq('ISO712')
+        expect(result.document_id).to eq('ISO 712')
+        expect(result.ref_text).to eq('Cereals and cereal products.')
+      end
+    end
+
     context 'with unknown type' do
       it 'returns the object unchanged for unknown types' do
         unknown = Object.new

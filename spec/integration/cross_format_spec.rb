@@ -181,6 +181,12 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       expect(Coradoc.registered_formats).to include(:markdown)
     end
 
+    it 'registers docx gem when available' do
+      skip 'DOCX gem not loaded' unless defined?(Coradoc::Docx)
+
+      expect(Coradoc.registered_formats).to include(:docx)
+    end
+
     it 'provides format module access' do
       expect(Coradoc.get_format(:asciidoc)).to eq(Coradoc::AsciiDoc)
       expect(Coradoc.get_format(:html)).to eq(Coradoc::Html)
@@ -611,6 +617,171 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
         )
         expect(stem.to_adoc).to eq('stem:[x + y]')
       end
+    end
+  end
+
+  # Missing format pair tests (TODO 04)
+  describe 'DOCX → CoreModel → Markdown flow' do
+    let(:docx_doc) do
+      doc = Uniword::Wordprocessingml::DocumentRoot.new
+      doc.body.paragraphs << Uniword::Wordprocessingml::Paragraph.new.tap do |p|
+        p.properties = Uniword::Wordprocessingml::ParagraphProperties.new
+        p.properties.style = Uniword::Properties::StyleReference.new(value: 'Heading1')
+        run = Uniword::Wordprocessingml::Run.new
+        run.text = Uniword::Wordprocessingml::Text.new(content: 'Title')
+        p.runs << run
+      end
+      doc.body.paragraphs << Uniword::Wordprocessingml::Paragraph.new.tap do |p|
+        run = Uniword::Wordprocessingml::Run.new
+        run.text = Uniword::Wordprocessingml::Text.new(content: 'Hello World')
+        p.runs << run
+      end
+      doc
+    end
+
+    it 'transforms DOCX to CoreModel to Markdown' do
+      skip 'DOCX gem not loaded' unless defined?(Coradoc::Docx)
+
+      core = Coradoc::Docx.parse_to_core(docx_doc)
+      expect(core).to be_a(Coradoc::CoreModel::StructuralElement)
+      expect(core.element_type).to eq('document')
+
+      md_doc = Coradoc::Markdown.from_core_model(core)
+      expect(md_doc).to be_a(Coradoc::Markdown::Document)
+      md_text = md_doc.to_md
+      expect(md_text).to include('Hello World')
+    end
+  end
+
+  describe 'DOCX → CoreModel → HTML flow' do
+    let(:docx_doc) do
+      doc = Uniword::Wordprocessingml::DocumentRoot.new
+      doc.body.paragraphs << Uniword::Wordprocessingml::Paragraph.new.tap do |p|
+        run = Uniword::Wordprocessingml::Run.new
+        run.text = Uniword::Wordprocessingml::Text.new(content: 'DOCX paragraph')
+        p.runs << run
+      end
+      doc
+    end
+
+    it 'transforms DOCX to CoreModel to HTML' do
+      skip 'DOCX gem not loaded' unless defined?(Coradoc::Docx)
+
+      core = Coradoc::Docx.parse_to_core(docx_doc)
+      html = Coradoc::Html.serialize_static(core)
+
+      expect(html).to include('<!DOCTYPE html>')
+      expect(html).to include('DOCX paragraph')
+    end
+  end
+
+  describe 'Markdown → CoreModel → DOCX flow' do
+    let(:md_content) do
+      <<~MD
+        # Title
+
+        This is a paragraph.
+      MD
+    end
+
+    it 'transforms Markdown to CoreModel to DOCX model' do
+      skip 'DOCX gem not loaded' unless defined?(Coradoc::Docx)
+
+      md_doc = Coradoc::Markdown.parse(md_content)
+      core = Coradoc::Markdown.to_core_model(md_doc)
+
+      expect(core).to be_a(Coradoc::CoreModel::StructuralElement)
+      expect(core.element_type).to eq('document')
+
+      docx_model = Coradoc::Docx::Transform::FromCoreModel.transform(core)
+      expect(docx_model).not_to be_nil
+    end
+  end
+
+  describe 'AsciiDoc → CoreModel → DOCX flow' do
+    let(:adoc_content) do
+      <<~ADOC
+        = Document Title
+
+        == Section
+
+        A paragraph with *bold* text.
+      ADOC
+    end
+
+    it 'transforms AsciiDoc to CoreModel to DOCX model' do
+      skip 'AsciiDoc parser required' unless defined?(Coradoc::AsciiDoc::Parser::Base)
+      skip 'DOCX gem not loaded' unless defined?(Coradoc::Docx)
+
+      ast = Coradoc::AsciiDoc::Parser::Base.parse(adoc_content)
+      adoc_doc = Coradoc::AsciiDoc::Transformer.transform(ast)
+      core = Coradoc::AsciiDoc::Transform::ToCoreModel.transform(adoc_doc)
+
+      expect(core).to be_a(Coradoc::CoreModel::StructuralElement)
+
+      docx_model = Coradoc::Docx::Transform::FromCoreModel.transform(core)
+      expect(docx_model).not_to be_nil
+    end
+  end
+
+  describe 'HTML → CoreModel → Markdown flow' do
+    let(:html_content) do
+      <<~HTML
+        <html>
+          <body>
+            <h1>Title</h1>
+            <p>A paragraph.</p>
+            <ul>
+              <li>Item 1</li>
+              <li>Item 2</li>
+            </ul>
+          </body>
+        </html>
+      HTML
+    end
+
+    it 'transforms HTML to CoreModel to Markdown' do
+      html_models = Coradoc::Input::Html.to_coradoc(html_content, {})
+      expect(html_models).not_to be_nil
+
+      core_doc = Coradoc::CoreModel::StructuralElement.new(
+        element_type: 'document',
+        title: 'Title',
+        children: html_models.map { |m| Coradoc::AsciiDoc::Transform::ToCoreModel.transform(m) }.compact
+      )
+
+      md_doc = Coradoc::Markdown.from_core_model(core_doc)
+      expect(md_doc).to be_a(Coradoc::Markdown::Document)
+
+      md_text = md_doc.to_md
+      expect(md_text).to include('A paragraph.')
+    end
+  end
+
+  describe 'HTML → CoreModel → DOCX flow' do
+    let(:html_content) do
+      <<~HTML
+        <html>
+          <body>
+            <h1>Title</h1>
+            <p>HTML paragraph.</p>
+          </body>
+        </html>
+      HTML
+    end
+
+    it 'transforms HTML to CoreModel to DOCX model' do
+      skip 'DOCX gem not loaded' unless defined?(Coradoc::Docx)
+
+      html_models = Coradoc::Input::Html.to_coradoc(html_content, {})
+      core_doc = Coradoc::CoreModel::StructuralElement.new(
+        element_type: 'document',
+        title: 'Title',
+        children: html_models.map { |m| Coradoc::AsciiDoc::Transform::ToCoreModel.transform(m) }.compact
+      )
+
+      docx_model = Coradoc::Docx::Transform::FromCoreModel.transform(core_doc)
+      expect(docx_model).not_to be_nil
     end
   end
 end

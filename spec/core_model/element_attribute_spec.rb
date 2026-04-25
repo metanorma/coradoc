@@ -11,18 +11,6 @@ RSpec.describe Coradoc::CoreModel::ElementAttribute do
       expect(attr.value).to eq('note')
     end
 
-    it 'creates an attribute with namespace' do
-      attr = described_class.new(
-        name: 'lang',
-        value: 'en',
-        namespace: 'xml',
-        namespace_prefix: 'xml'
-      )
-
-      expect(attr.namespace).to eq('xml')
-      expect(attr.namespace_prefix).to eq('xml')
-    end
-
     it 'allows nil values' do
       attr = described_class.new(name: 'disabled', value: nil)
 
