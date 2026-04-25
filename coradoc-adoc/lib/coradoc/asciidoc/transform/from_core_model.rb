@@ -285,14 +285,39 @@ module Coradoc
               Coradoc::AsciiDoc::Model::Inline::Highlight.new(
                 content: inline.content
               )
+            when 'strikethrough'
+              Coradoc::AsciiDoc::Model::Inline::Strikethrough.new(
+                content: inline.content
+              )
+            when 'subscript'
+              Coradoc::AsciiDoc::Model::Inline::Subscript.new(
+                content: inline.content
+              )
+            when 'superscript'
+              Coradoc::AsciiDoc::Model::Inline::Superscript.new(
+                content: inline.content
+              )
+            when 'underline'
+              Coradoc::AsciiDoc::Model::Inline::Underline.new(
+                text: inline.content
+              )
             when 'link'
               Coradoc::AsciiDoc::Model::Inline::Link.new(
                 path: inline.target,
                 name: inline.content
               )
+            when 'xref'
+              Coradoc::AsciiDoc::Model::Inline::CrossReference.new(
+                href: inline.target
+              )
+            when 'footnote'
+              Coradoc::AsciiDoc::Model::Inline::Footnote.new(
+                id: inline.target,
+                text: inline.content
+              )
             when 'stem'
               Coradoc::AsciiDoc::Model::Inline::Stem.new(
-                type: 'latexmath',
+                type: inline.stem_type || 'latexmath',
                 content: inline.content
               )
             else
