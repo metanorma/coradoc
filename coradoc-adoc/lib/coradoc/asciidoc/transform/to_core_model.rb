@@ -383,8 +383,8 @@ module Coradoc
           def transform_term(term)
             Coradoc::CoreModel::Term.new(
               text: term.term.to_s,
-              term_type: term.type&.to_s || 'preferred',
-              language: term.lang&.to_s || 'en'
+              type: term.type&.to_s || 'preferred',
+              lang: term.lang&.to_s || 'en'
             )
           end
 

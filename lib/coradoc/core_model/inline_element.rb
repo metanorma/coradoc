@@ -66,6 +66,10 @@ module Coradoc
       #   @return [String, nil] target URL or reference (for links, xrefs)
       attribute :target, :string
 
+      # @!attribute stem_type
+      #   @return [String, nil] stem notation type (e.g., 'latexmath', 'asciimath', 'stem')
+      attribute :stem_type, :string
+
       # Mixed content (strings and InlineElement objects)
       # @return [Array] mixed content array
       attr_reader :children
@@ -98,7 +102,7 @@ module Coradoc
       #
       # @return [Array<Symbol>] list of comparable attributes
       def comparable_attributes
-        %i[format_type constrained content nested_elements]
+        %i[format_type constrained content nested_elements stem_type]
       end
     end
   end
