@@ -50,23 +50,23 @@ module Coradoc
 
       # @!attribute bgcolor
       #   @return [String, nil] background color (CSS color value)
+      #   @note Populated by HTML converter only
       attribute :bgcolor, :string
 
       # @!attribute color
       #   @return [String, nil] text color (CSS color value)
+      #   @note Populated by HTML converter only
       attribute :color, :string
 
       # @!attribute width
       #   @return [String, nil] cell width (CSS width value)
+      #   @note Populated by HTML converter only
       attribute :width, :string
 
       # @!attribute height
       #   @return [String, nil] cell height (CSS height value)
+      #   @note Populated by HTML converter only
       attribute :height, :string
-
-      # @!attribute repeat
-      #   @return [Boolean] whether to repeat last cell
-      attribute :repeat, :boolean, default: -> { false }
 
       # Mixed content (strings and InlineElement objects)
       # @return [Array] mixed content array
@@ -106,7 +106,7 @@ module Coradoc
       private
 
       def comparable_attributes
-        %i[content alignment vertical_alignment colspan rowspan header style bgcolor color width height repeat]
+        %i[content alignment vertical_alignment colspan rowspan header style bgcolor color width height]
       end
     end
 
@@ -178,40 +178,26 @@ module Coradoc
 
       # @!attribute frame
       #   @return [String, nil] table frame style ('all', 'topbot', 'sides', 'none')
+      #   @note Populated by HTML converter only
       attribute :frame, :string
 
       # @!attribute grid
       #   @return [String, nil] table grid style ('all', 'cols', 'rows', 'none')
+      #   @note Not yet wired by any transformer; reserved for future use
       attribute :grid, :string
 
       # @!attribute width
       #   @return [String, nil] table width (e.g., '100%', '500px')
       attribute :width, :string
 
-      # @!attribute float
-      #   @return [String, nil] table float position ('left', 'right', 'center')
-      attribute :float, :string
-
       # @!attribute cols
       #   @return [Array<String>, nil] column width specifications (e.g., ["1", "2", "3"])
       attribute :cols, :string, collection: true
 
-      # @!attribute col_alignments
-      #   @return [Array<String>, nil] column alignment ('left', 'center', 'right')
-      attribute :col_alignments, :string, collection: true
-
-      # @!attribute col_styles
-      #   @return [Array<String>, nil] column styles ('default', 'strong', 'emphasis', 'monospace')
-      attribute :col_styles, :string, collection: true
-
-      # @!attribute bgcolor
-      #   @return [String, nil] table background color
-      attribute :bgcolor, :string
-
       private
 
       def comparable_attributes
-        super + %i[rows frame grid width cols col_alignments col_styles bgcolor]
+        super + %i[rows frame grid width cols]
       end
     end
   end
