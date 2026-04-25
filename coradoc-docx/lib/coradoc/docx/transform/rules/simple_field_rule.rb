@@ -72,7 +72,7 @@ module Coradoc
           end
 
           def field_instruction(field)
-            instr = field.respond_to?(:instruction) ? field.instruction : nil
+            instr = field.respond_to?(:instr) ? field.instr : nil
             instr.to_s
           end
 

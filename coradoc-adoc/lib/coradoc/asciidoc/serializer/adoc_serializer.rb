@@ -32,12 +32,14 @@ module Coradoc
               if model.respond_to?(:to_adoc)
                 model.to_adoc
               else
-                # Return empty string instead of Ruby object dump
-                ''
+                raise ArgumentError,
+                      "Cannot serialize #{model.class.name} to AsciiDoc. " \
+                      "Expected a model with #to_adoc or a registered serializer."
               end
             else
-              # For unknown types, return empty string to avoid Ruby object dumps
-              model.respond_to?(:to_str) ? model.to_s : ''
+              raise ArgumentError,
+                    "Unknown element type for AsciiDoc serialization: #{model.class}. " \
+                    "Expected String, Array, or Coradoc::AsciiDoc::Model::Base."
             end
           end
 

@@ -54,6 +54,24 @@ module Coradoc
             transform_image(core)
           when Coradoc::CoreModel::InlineElement
             transform_inline(core)
+          when Coradoc::CoreModel::FootnoteReference
+            build_ooxml_footnote_reference(core)
+          when Coradoc::CoreModel::Footnote
+            build_ooxml_footnote(core)
+          when Coradoc::CoreModel::DefinitionList
+            build_ooxml_definition_list(core)
+          when Coradoc::CoreModel::Toc
+            build_ooxml_toc(core)
+          when Coradoc::CoreModel::Term
+            build_ooxml_term(core)
+          when Coradoc::CoreModel::Abbreviation
+            build_ooxml_abbreviation(core)
+          when Coradoc::CoreModel::Bibliography
+            build_ooxml_bibliography(core)
+          when Coradoc::CoreModel::BibliographyEntry
+            build_ooxml_bibliography_entry(core)
+          when Coradoc::CoreModel::TocEntry
+            build_ooxml_toc_entry(core)
           when Array
             transform_array(core)
           else
@@ -308,6 +326,14 @@ module Coradoc
             # Links need to be at the paragraph level (w:hyperlink)
             # Return the run; caller should wrap in Hyperlink
             return run
+          when 'highlight'
+            hl = Uniword::Properties::Highlight.new
+            hl.value = 'yellow'
+            props.highlight = hl
+          when 'xref'
+            return run
+          when 'stem'
+            return run
           end
 
           run.properties = props unless plain_properties?(props)
@@ -361,13 +387,22 @@ module Coradoc
         end
 
         def build_ooxml_image(image)
-          para = Uniword::Wordprocessingml::Paragraph.new
-          run = Uniword::Wordprocessingml::Run.new
-          run.text = Uniword::Wordprocessingml::Text.new(
-            content: "[Image: #{image.alt || image.src}]"
-          )
-          para.runs << run
-          para
+          if image.src && File.exist?(image.src)
+            run = Uniword::Builder::ImageBuilder.create_run(
+              nil, image.src, alt_text: image.alt
+            )
+            para = Uniword::Wordprocessingml::Paragraph.new
+            para.runs << run
+            para
+          else
+            para = Uniword::Wordprocessingml::Paragraph.new
+            run = Uniword::Wordprocessingml::Run.new
+            run.text = Uniword::Wordprocessingml::Text.new(
+              content: "[Image: #{image.alt || image.src}]"
+            )
+            para.runs << run
+            para
+          end
         end
 
         def build_page_break
@@ -388,6 +423,7 @@ module Coradoc
           when 'italic'  then formatting[:italic] = true
           when 'underline' then formatting[:underline] = true
           when 'strikethrough' then formatting[:strike] = true
+          when 'highlight' then formatting[:highlight] = true
           end
 
           if formatting.any?
@@ -402,7 +438,121 @@ module Coradoc
             props.italic.nil? &&
             props.underline.nil? &&
             props.strike.nil? &&
-            props.vertical_align.nil?
+            props.vertical_align.nil? &&
+            props.highlight.nil?
+        end
+
+        # Build OOXML footnote reference (w:footnoteReference)
+        def build_ooxml_footnote_reference(footnote_ref)
+          ref = Uniword::Wordprocessingml::FootnoteReference.new
+          ref.id = footnote_ref.id.to_s
+
+          run = Uniword::Wordprocessingml::Run.new
+          run.footnote_reference = ref
+          run
+        end
+
+        # Build OOXML footnote content as a paragraph placeholder
+        def build_ooxml_footnote(footnote)
+          para = Uniword::Wordprocessingml::Paragraph.new
+          run = Uniword::Wordprocessingml::Run.new
+          run.text = Uniword::Wordprocessingml::Text.new(content: footnote.content.to_s)
+          para.runs << run
+          para
+        end
+
+        # Build OOXML definition list as a two-column table
+        def build_ooxml_definition_list(dl)
+          tbl = Uniword::Wordprocessingml::Table.new
+
+          Array(dl.items).each do |item|
+            row = Uniword::Wordprocessingml::TableRow.new
+
+            term_cell = Uniword::Wordprocessingml::TableCell.new
+            term_para = Uniword::Wordprocessingml::Paragraph.new
+            term_run = Uniword::Wordprocessingml::Run.new
+            term_run.text = Uniword::Wordprocessingml::Text.new(content: item.term.to_s)
+            term_props = Uniword::Wordprocessingml::RunProperties.new
+            term_props.bold = Uniword::Properties::Bold.new
+            term_run.properties = term_props
+            term_para.runs << term_run
+            term_cell.paragraphs << term_para
+
+            def_cell = Uniword::Wordprocessingml::TableCell.new
+            def_text = Array(item.definitions).map(&:to_s).join('; ')
+            def_para = Uniword::Wordprocessingml::Paragraph.new
+            def_run = Uniword::Wordprocessingml::Run.new
+            def_run.text = Uniword::Wordprocessingml::Text.new(content: def_text)
+            def_para.runs << def_run
+            def_cell.paragraphs << def_para
+
+            row.cells << term_cell
+            row.cells << def_cell
+            tbl.rows << row
+          end
+
+          tbl
+        end
+
+        # Build OOXML TOC as a text placeholder
+        def build_ooxml_toc(_toc)
+          para = Uniword::Wordprocessingml::Paragraph.new
+          run = Uniword::Wordprocessingml::Run.new
+          run.text = Uniword::Wordprocessingml::Text.new(content: '[Table of Contents]')
+          para.runs << run
+          para
+        end
+
+        # Build OOXML term as a bold paragraph
+        def build_ooxml_term(term)
+          para = Uniword::Wordprocessingml::Paragraph.new
+          run = Uniword::Wordprocessingml::Run.new
+          run.text = Uniword::Wordprocessingml::Text.new(content: term.text.to_s)
+          run_props = Uniword::Wordprocessingml::RunProperties.new
+          run_props.bold = Uniword::Properties::Bold.new
+          run.properties = run_props
+          para.runs << run
+          para
+        end
+
+        def build_ooxml_abbreviation(abbr)
+          para = Uniword::Wordprocessingml::Paragraph.new
+          run = Uniword::Wordprocessingml::Run.new
+          text = abbr.term.to_s
+          text += " (#{abbr.definition})" if abbr.definition
+          run.text = Uniword::Wordprocessingml::Text.new(content: text)
+          para.runs << run
+          para
+        end
+
+        def build_ooxml_bibliography(bib)
+          entries = Array(bib.entries).map { |e| build_ooxml_bibliography_entry(e) }
+
+          result = []
+          if bib.title
+            result << build_heading(bib.title, level: bib.level || 2)
+          end
+          result.concat(entries)
+          result
+        end
+
+        def build_ooxml_bibliography_entry(entry)
+          para = Uniword::Wordprocessingml::Paragraph.new
+          label = entry.document_id || entry.anchor_name || ''
+          ref = entry.ref_text || ''
+          text = label.empty? ? ref : "#{label}: #{ref}"
+          run = Uniword::Wordprocessingml::Run.new
+          run.text = Uniword::Wordprocessingml::Text.new(content: text)
+          para.runs << run
+          para
+        end
+
+        def build_ooxml_toc_entry(entry)
+          para = Uniword::Wordprocessingml::Paragraph.new
+          run = Uniword::Wordprocessingml::Run.new
+          run.text = Uniword::Wordprocessingml::Text.new(content: entry.title.to_s)
+          para.runs << run
+          para
         end
       end
     end

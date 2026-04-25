@@ -32,6 +32,7 @@ module Coradoc
 
       # @!attribute caption
       #   @return [String, nil] caption text for the image
+      #   @note Populated by HTML converter only
       attribute :caption, :string
 
       # @!attribute width
@@ -44,6 +45,7 @@ module Coradoc
 
       # @!attribute link
       #   @return [String, nil] URL to link to when image is clicked
+      #   @note Not yet wired by any transformer; reserved for future use
       attribute :link, :string
 
       # @!attribute inline
@@ -52,6 +54,7 @@ module Coradoc
 
       # @!attribute float
       #   @return [String, nil] float position ('left', 'right')
+      #   @note Not yet wired by any transformer; reserved for future use
       attribute :float, :string
 
       private

@@ -52,6 +52,8 @@ module Coradoc
     autoload :AttributeList, 'coradoc/markdown/model/attribute_list'
     autoload :Math, 'coradoc/markdown/model/math'
     autoload :Extension, 'coradoc/markdown/model/extension'
+    autoload :Strikethrough, 'coradoc/markdown/model/strikethrough'
+    autoload :Highlight, 'coradoc/markdown/model/highlight'
 
     # Serializer
     autoload :Serializer, 'coradoc/markdown/serializer'

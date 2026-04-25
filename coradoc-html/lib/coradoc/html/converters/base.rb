@@ -93,6 +93,10 @@ module Coradoc
 
             return render_core_toc_entry(content, state) if content.is_a?(Coradoc::CoreModel::TocEntry)
 
+            return render_core_bibliography(content, state) if content.is_a?(Coradoc::CoreModel::Bibliography)
+
+            return render_core_bibliography_entry(content, state) if content.is_a?(Coradoc::CoreModel::BibliographyEntry)
+
             # Handle unknown types gracefully
             handle_unknown_content(content, state)
           end
@@ -386,14 +390,42 @@ module Coradoc
             "<li>#{item_html}#{children_html}</li>"
           end
 
+          def render_core_bibliography(bib, state = {})
+            attrs = %( class="bibliography")
+            attrs += %( id="#{escape_attribute(bib.id)}") if bib.id
+
+            title_html = if bib.title && !bib.title.to_s.empty?
+                           %(<h2 class="bibliography-title">#{escape_html(bib.title)}</h2>)
+                         end
+
+            entries_html = Array(bib.entries).map { |e| convert_content_to_html(e, state) }.join("\n")
+
+            inner = ''
+            inner += "#{title_html}\n" if title_html
+            inner += "<div class=\"bibliography-entries\">\n#{entries_html}\n</div>" unless entries_html.empty?
+
+            "<section#{attrs}>\n#{inner}\n</section>"
+          end
+
+          def render_core_bibliography_entry(entry, state = {})
+            entry_id = entry.anchor_name || entry.document_id
+            anchor_html = entry_id ? %(<a id="#{escape_attribute(entry_id)}" class="bibliography-anchor"></a>) : ''
+            label = entry.document_id || ''
+            ref_text = entry.ref_text || ''
+            label_html = label.empty? ? '' : %(<span class="bibliography-label">#{escape_html(label)}</span> )
+
+            "<div class=\"bibliography-entry\">#{anchor_html}#{label_html}#{escape_html(ref_text)}</div>"
+          end
+
           # Handle unknown content types
           def handle_unknown_content(content, _state = {})
-            # Handle Lutaml::Model::Serializable objects
-            if defined?(Lutaml::Model::Serializable) && content.is_a?(Lutaml::Model::Serializable)
-              # Try to extract text content
-              return extract_text_fallback(content)
+            if content.is_a?(Coradoc::CoreModel::Base)
+              raise ArgumentError,
+                    "Unknown CoreModel type for HTML conversion: #{content.class}. " \
+                    "Expected a recognized CoreModel type."
             end
 
+            # Handle non-CoreModel types (strings from mixed content, etc.)
             escape_html(content.to_s)
           end
 

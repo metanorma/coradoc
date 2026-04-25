@@ -59,7 +59,13 @@ module Coradoc
         when nil
           ''
         else
-          content.respond_to?(:to_md) ? content.to_md : content.to_s
+          if content.respond_to?(:to_md)
+            content.to_md
+          else
+            raise ArgumentError,
+                  "Cannot serialize #{content.class.name} to Markdown. " \
+                  "Expected String or object responding to #to_md."
+          end
         end
       end
 

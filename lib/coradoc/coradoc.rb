@@ -228,22 +228,23 @@ module Coradoc
       end
     end
   end
+
+  autoload :Version, "#{__dir__}/version"
+  autoload :Logger, "#{__dir__}/logger"
+  autoload :Hooks, "#{__dir__}/hooks"
+  autoload :PluginDiscovery, "#{__dir__}/plugin_discovery"
+  autoload :Extensions, "#{__dir__}/extensions"
+  autoload :PerformanceRegression, "#{__dir__}/performance_regression"
+  autoload :Query, "#{__dir__}/query"
+  autoload :Validation, "#{__dir__}/validation"
+  autoload :Streaming, "#{__dir__}/streaming"
+  autoload :Memory, "#{__dir__}/memory"
+  autoload :Lazy, "#{__dir__}/lazy"
+  autoload :Configurable, "#{__dir__}/configurable"
+  autoload :TransformationCache, "#{__dir__}/transformation_cache"
+  autoload :Normalize, "#{__dir__}/normalize"
 end
 
-require_relative 'version'
-require_relative 'logger'
-require_relative 'hooks'
-require_relative 'plugin_discovery'
-require_relative 'extensions'
-require_relative 'performance_regression'
-require_relative 'query'
-require_relative 'validation'
-require_relative 'streaming'
-require_relative 'memory'
-require_relative 'lazy'
-require_relative 'configurable'
-require_relative 'transformation_cache'
-require_relative 'normalize'
 require_relative 'core_model'
 require_relative 'registry'
 require_relative 'transform'

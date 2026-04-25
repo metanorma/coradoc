@@ -99,6 +99,10 @@ module Coradoc
                 element_type: 'comment',
                 content: model.text.to_s
               )
+            when Coradoc::AsciiDoc::Model::Bibliography
+              transform_bibliography(model)
+            when Coradoc::AsciiDoc::Model::BibliographyEntry
+              transform_bibliography_entry(model)
             when Coradoc::AsciiDoc::Model::Image::BlockImage
               transform_image(model)
             when Coradoc::AsciiDoc::Model::TextElement
@@ -454,6 +458,27 @@ module Coradoc
               format_type: 'stem',
               content: stem.content,
               stem_type: stem.type || 'stem'
+            )
+          end
+
+          def transform_bibliography(bib)
+            entries = Array(bib.entries).map do |entry|
+              transform_bibliography_entry(entry)
+            end
+
+            Coradoc::CoreModel::Bibliography.new(
+              id: bib.id,
+              title: bib.title.to_s,
+              level: bib.respond_to?(:level) ? bib.level : nil,
+              entries: entries
+            )
+          end
+
+          def transform_bibliography_entry(entry)
+            Coradoc::CoreModel::BibliographyEntry.new(
+              anchor_name: entry.anchor_name,
+              document_id: entry.document_id,
+              ref_text: entry.ref_text.to_s
             )
           end
 

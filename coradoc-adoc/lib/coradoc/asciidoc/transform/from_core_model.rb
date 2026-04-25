@@ -60,6 +60,24 @@ module Coradoc
               transform_inline(model)
             when Coradoc::CoreModel::Image
               transform_image(model)
+            when Coradoc::CoreModel::Footnote
+              transform_footnote(model)
+            when Coradoc::CoreModel::FootnoteReference
+              transform_footnote_reference(model)
+            when Coradoc::CoreModel::Abbreviation
+              transform_abbreviation(model)
+            when Coradoc::CoreModel::DefinitionList
+              transform_definition_list(model)
+            when Coradoc::CoreModel::DefinitionItem
+              transform_definition_item(model)
+            when Coradoc::CoreModel::Toc
+              transform_toc(model)
+            when Coradoc::CoreModel::TocEntry
+              transform_toc_entry(model)
+            when Coradoc::CoreModel::Bibliography
+              transform_bibliography(model)
+            when Coradoc::CoreModel::BibliographyEntry
+              transform_bibliography_entry(model)
             when Array
               model.map { |item| transform(item) }
             else
@@ -332,6 +350,76 @@ module Coradoc
               src: image.src,
               title: image.alt,
               attributes: build_image_attributes(image)
+            )
+          end
+
+          def transform_bibliography(bib)
+            entries = Array(bib.entries).map do |entry|
+              transform_bibliography_entry(entry)
+            end
+
+            Coradoc::AsciiDoc::Model::Bibliography.new(
+              id: bib.id,
+              title: bib.title,
+              entries: entries
+            )
+          end
+
+          def transform_bibliography_entry(entry)
+            Coradoc::AsciiDoc::Model::BibliographyEntry.new(
+              anchor_name: entry.anchor_name,
+              document_id: entry.document_id,
+              ref_text: entry.ref_text
+            )
+          end
+
+          def transform_footnote(footnote)
+            Coradoc::AsciiDoc::Model::Inline::Footnote.new(
+              id: footnote.id,
+              text: footnote.content.to_s
+            )
+          end
+
+          def transform_footnote_reference(footnote_ref)
+            Coradoc::AsciiDoc::Model::Inline::Footnote.new(
+              id: footnote_ref.id
+            )
+          end
+
+          def transform_abbreviation(abbreviation)
+            Coradoc::AsciiDoc::Model::TextElement.new(
+              content: abbreviation.term.to_s +
+                       (abbreviation.definition ? " (#{abbreviation.definition})" : '')
+            )
+          end
+
+          def transform_definition_list(dl)
+            items = Array(dl.items).map do |item|
+              transform_definition_item(item)
+            end
+            Coradoc::AsciiDoc::Model::List::Definition.new(items: items)
+          end
+
+          def transform_definition_item(item)
+            term = Coradoc::AsciiDoc::Model::Term.new(term: item.term.to_s)
+            contents = Array(item.definitions).map do |defn|
+              Coradoc::AsciiDoc::Model::TextElement.new(content: defn.to_s)
+            end
+            Coradoc::AsciiDoc::Model::List::DefinitionItem.new(
+              terms: [term],
+              contents: contents
+            )
+          end
+
+          def transform_toc(_toc)
+            Coradoc::AsciiDoc::Model::TextElement.new(
+              content: 'toc::[]'
+            )
+          end
+
+          def transform_toc_entry(entry)
+            Coradoc::AsciiDoc::Model::TextElement.new(
+              content: entry.title.to_s
             )
           end
 

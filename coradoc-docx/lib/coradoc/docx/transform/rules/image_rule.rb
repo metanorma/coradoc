@@ -55,7 +55,7 @@ module Coradoc
 
           def extract_inline_ref(inline)
             extent = inline.extent
-            doc_pr = inline.doc_pr
+            doc_pr = inline.doc_properties
             graphic = inline.graphic
 
             {
@@ -69,7 +69,7 @@ module Coradoc
 
           def extract_anchor_ref(anchor)
             extent = anchor.extent
-            doc_pr = anchor.doc_pr
+            doc_pr = anchor.doc_properties
             graphic = anchor.graphic
 
             {
@@ -92,10 +92,15 @@ module Coradoc
             graphic_data = graphic.graphic_data
             return nil unless graphic_data
 
-            # Try to get r:embed from the blip reference
-            # The actual reference is in the a:blip element within
-            # graphic_data's children.
-            graphic_data.respond_to?(:embed) ? graphic_data.embed : nil
+            # Navigate: GraphicData → Picture → BlipFill → Blip → embed
+            picture = graphic_data.picture
+            return nil unless picture
+
+            blip_fill = picture.blip_fill
+            return nil unless blip_fill
+
+            blip = blip_fill.blip
+            blip&.embed
           end
 
           # OOXML uses EMU (English Metric Units): 1 inch = 914400 EMU

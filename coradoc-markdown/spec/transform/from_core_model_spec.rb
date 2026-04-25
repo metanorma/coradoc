@@ -253,6 +253,87 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
       end
     end
 
+    context 'with InlineElement (highlight)' do
+      let(:core_model) do
+        Coradoc::CoreModel::InlineElement.new(
+          format_type: 'highlight',
+          content: 'highlighted'
+        )
+      end
+
+      it 'transforms to Markdown::Highlight' do
+        expect(transform).to be_a(Coradoc::Markdown::Highlight)
+        expect(transform.text).to eq('highlighted')
+      end
+    end
+
+    context 'with InlineElement (strikethrough)' do
+      let(:core_model) do
+        Coradoc::CoreModel::InlineElement.new(
+          format_type: 'strikethrough',
+          content: 'deleted'
+        )
+      end
+
+      it 'transforms to Markdown::Strikethrough' do
+        expect(transform).to be_a(Coradoc::Markdown::Strikethrough)
+        expect(transform.text).to eq('deleted')
+      end
+    end
+
+    context 'with InlineElement (subscript)' do
+      let(:core_model) do
+        Coradoc::CoreModel::InlineElement.new(
+          format_type: 'subscript',
+          content: '2'
+        )
+      end
+
+      it 'uses HTML fallback' do
+        expect(transform).to eq('<sub>2</sub>')
+      end
+    end
+
+    context 'with InlineElement (superscript)' do
+      let(:core_model) do
+        Coradoc::CoreModel::InlineElement.new(
+          format_type: 'superscript',
+          content: '2'
+        )
+      end
+
+      it 'uses HTML fallback' do
+        expect(transform).to eq('<sup>2</sup>')
+      end
+    end
+
+    context 'with InlineElement (underline)' do
+      let(:core_model) do
+        Coradoc::CoreModel::InlineElement.new(
+          format_type: 'underline',
+          content: 'underlined'
+        )
+      end
+
+      it 'uses HTML fallback' do
+        expect(transform).to eq('<u>underlined</u>')
+      end
+    end
+
+    context 'with InlineElement (xref)' do
+      let(:core_model) do
+        Coradoc::CoreModel::InlineElement.new(
+          format_type: 'xref',
+          content: 'Section 1',
+          target: 'section_1'
+        )
+      end
+
+      it 'uses markdown link syntax' do
+        expect(transform).to eq('[Section 1](#section_1)')
+      end
+    end
+
     context 'with Array' do
       let(:core_model) do
         [
@@ -280,6 +361,65 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
 
       it 'returns the value unchanged' do
         expect(transform).to eq('plain string')
+      end
+    end
+
+    context 'with AnnotationBlock' do
+      let(:core_model) { Coradoc::CoreModel::AnnotationBlock.new(annotation_type: 'NOTE', content: 'Be careful') }
+
+      it 'produces a Paragraph with annotation prefix' do
+        expect(transform).to be_a(Coradoc::Markdown::Paragraph)
+        expect(transform.text).to include('NOTE')
+        expect(transform.text).to include('Be careful')
+      end
+    end
+
+    context 'with Term' do
+      let(:core_model) { Coradoc::CoreModel::Term.new(text: 'API', type: 'acronym') }
+
+      it 'produces a Strong element' do
+        expect(transform).to be_a(Coradoc::Markdown::Strong)
+        expect(transform.text).to eq('API')
+      end
+    end
+
+    context 'with Bibliography' do
+      let(:core_model) do
+        Coradoc::CoreModel::Bibliography.new(
+          title: 'References',
+          entries: [
+            Coradoc::CoreModel::BibliographyEntry.new(
+              anchor_name: 'ISO712', document_id: 'ISO 712',
+              ref_text: 'Cereals.'
+            )
+          ]
+        )
+      end
+
+      it 'produces a Document with heading and entries' do
+        expect(transform).to be_a(Coradoc::Markdown::Document)
+      end
+    end
+
+    context 'with BibliographyEntry' do
+      let(:core_model) do
+        Coradoc::CoreModel::BibliographyEntry.new(
+          document_id: 'ISO 712', ref_text: 'Cereals.'
+        )
+      end
+
+      it 'produces a Paragraph with label and text' do
+        expect(transform).to be_a(Coradoc::Markdown::Paragraph)
+        expect(transform.text).to include('ISO 712')
+      end
+    end
+
+    context 'with TocEntry' do
+      let(:core_model) { Coradoc::CoreModel::TocEntry.new(title: 'Section 1', level: 1) }
+
+      it 'produces a Text element with title' do
+        expect(transform).to be_a(Coradoc::Markdown::Text)
+        expect(transform.content).to eq('Section 1')
       end
     end
 
