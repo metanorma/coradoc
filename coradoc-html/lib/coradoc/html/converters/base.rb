@@ -394,9 +394,7 @@ module Coradoc
             attrs = %( class="bibliography")
             attrs += %( id="#{escape_attribute(bib.id)}") if bib.id
 
-            title_html = if bib.title && !bib.title.to_s.empty?
-                           %(<h2 class="bibliography-title">#{escape_html(bib.title)}</h2>)
-                         end
+            title_html = (%(<h2 class="bibliography-title">#{escape_html(bib.title)}</h2>) if bib.title && !bib.title.to_s.empty?)
 
             entries_html = Array(bib.entries).map { |e| convert_content_to_html(e, state) }.join("\n")
 
@@ -407,7 +405,7 @@ module Coradoc
             "<section#{attrs}>\n#{inner}\n</section>"
           end
 
-          def render_core_bibliography_entry(entry, state = {})
+          def render_core_bibliography_entry(entry, _state = {})
             entry_id = entry.anchor_name || entry.document_id
             anchor_html = entry_id ? %(<a id="#{escape_attribute(entry_id)}" class="bibliography-anchor"></a>) : ''
             label = entry.document_id || ''
@@ -422,7 +420,7 @@ module Coradoc
             if content.is_a?(Coradoc::CoreModel::Base)
               raise ArgumentError,
                     "Unknown CoreModel type for HTML conversion: #{content.class}. " \
-                    "Expected a recognized CoreModel type."
+                    'Expected a recognized CoreModel type.'
             end
 
             # Handle non-CoreModel types (strings from mixed content, etc.)

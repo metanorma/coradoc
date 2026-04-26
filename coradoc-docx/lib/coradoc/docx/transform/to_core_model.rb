@@ -141,7 +141,7 @@ module Coradoc
 
         def section_break_element(paragraph, context)
           # First, transform the paragraph content if it has text
-          content = paragraph.runs&.map { |r| r.text&.content.to_s }.join
+          content = paragraph.runs&.map { |r| r.text&.content.to_s }&.join
           if content && !content.strip.empty?
             # Has content — transform normally (content comes before the break)
             context.transform(paragraph)
@@ -322,8 +322,8 @@ module Coradoc
           return true if stripped.match?(/\APage\s+\d+(\s+of\s+\d+)?\z/i)
 
           # Pure date patterns
-          return true if stripped.match?(/\A\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\z/)
-          return true if stripped.match?(/\A\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}\z/)
+          return true if stripped.match?(%r{\A\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\z})
+          return true if stripped.match?(%r{\A\d{4}[/-]\d{1,2}[/-]\d{1,2}\z})
 
           false
         end

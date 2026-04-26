@@ -67,22 +67,20 @@ module Coradoc
             end
 
             # Tab character
-            if run.respond_to?(:tab) && run.tab
-              result << "\t"
-            end
+            result << "\t" if run.respond_to?(:tab) && run.tab
 
             # Inline math (m:oMath within a run)
-            if run.respond_to?(:o_math) && run.o_math
-              result << context.transform(run.o_math)
-            end
+            result << context.transform(run.o_math) if run.respond_to?(:o_math) && run.o_math
 
             # Deleted text (tracked changes)
             if run.respond_to?(:del_text) && run.del_text
               text = run.del_text.respond_to?(:content) ? run.del_text.content.to_s : run.del_text.to_s
-              result << CoreModel::InlineElement.new(
-                format_type: 'strikethrough',
-                content: text
-              ) unless text.empty?
+              unless text.empty?
+                result << CoreModel::InlineElement.new(
+                  format_type: 'strikethrough',
+                  content: text
+                )
+              end
             end
 
             # Symbol (w:sym)
@@ -93,24 +91,16 @@ module Coradoc
             end
 
             # No-break hyphen (U+2011)
-            if run.respond_to?(:no_break_hyphen) && run.no_break_hyphen
-              result << "\u2011"
-            end
+            result << "\u2011" if run.respond_to?(:no_break_hyphen) && run.no_break_hyphen
 
             # Soft hyphen (U+00AD)
-            if run.respond_to?(:soft_hyphen) && run.soft_hyphen
-              result << "\u00AD"
-            end
+            result << "\u00AD" if run.respond_to?(:soft_hyphen) && run.soft_hyphen
 
             # Carriage return (w:cr) — treat as line break
-            if run.respond_to?(:carriage_return) && run.carriage_return
-              result << CoreModel::InlineElement.new(format_type: 'hard_line_break')
-            end
+            result << CoreModel::InlineElement.new(format_type: 'hard_line_break') if run.respond_to?(:carriage_return) && run.carriage_return
 
             # Alternate content — extract preferred/fallback content
-            if run.respond_to?(:alternate_content) && run.alternate_content
-              result << extract_alternate_content(run.alternate_content, context)
-            end
+            result << extract_alternate_content(run.alternate_content, context) if run.respond_to?(:alternate_content) && run.alternate_content
 
             result.compact
           end

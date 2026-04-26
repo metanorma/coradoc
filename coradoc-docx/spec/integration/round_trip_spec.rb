@@ -102,7 +102,7 @@ RSpec.describe 'DOCX round-trip', type: :integration do
 
         expect(result).to eq(path)
         expect(File.exist?(path)).to be true
-        expect(File.size(path)).to be > 0
+        expect(File.size(path)).to be > 0 # rubocop:disable Style/NumericPredicate
       end
     end
 
