@@ -10,6 +10,8 @@ RSpec.describe Coradoc::Transform::Base do
         case document
         when Coradoc::CoreModel::StructuralElement
           transform_structural_element(document)
+        when Coradoc::CoreModel::AnnotationBlock
+          transform_block(document)
         when Coradoc::CoreModel::Block
           transform_block(document)
         when Array
