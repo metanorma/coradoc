@@ -45,4 +45,9 @@ output/
 # Work in progress files
 user_templates/
 
+# Scratch files
+sample.oscal.*
+/x
+/x.yaml
+
 coverage/

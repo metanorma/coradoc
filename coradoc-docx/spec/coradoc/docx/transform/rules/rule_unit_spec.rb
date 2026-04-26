@@ -395,7 +395,7 @@ RSpec.describe Coradoc::Docx::Transform::Rules::ProofErrorRule do
 
   describe '#matches?' do
     it 'does not match when ProofError class is not defined' do
-      expect(rule.matches?(Object.new)).to be_falsey
+      expect(rule).not_to be_matches(Object.new)
     end
   end
 
@@ -453,10 +453,9 @@ RSpec.describe Coradoc::Docx::Transform::Rules::StructuredDocumentTagRule do
 
     it 'unwraps SDT content and delegates to paragraph rules' do
       sdt = Uniword::Wordprocessingml::StructuredDocumentTag.new
-      content = instance_double('content')
-      allow(sdt).to receive(:content).and_return(content)
-      allow(content).to receive(:paragraphs).and_return([build_paragraph('SDT content')])
-      allow(content).to receive(:tables).and_return([])
+      sdt_content = instance_double(Uniword::Wordprocessingml::StructuredDocumentTag::Content)
+      allow(sdt).to receive(:content).and_return(sdt_content)
+      allow(sdt_content).to receive_messages(paragraphs: [build_paragraph('SDT content')], tables: [])
 
       result = rule.apply(sdt, context)
       expect(result).to be_a(Coradoc::CoreModel::Block)
@@ -490,8 +489,7 @@ RSpec.describe Coradoc::Docx::Transform::Rules::ImageRule do
 
     it 'produces an Image with nil src for drawing without embed' do
       drawing = Uniword::Wordprocessingml::Drawing.new
-      allow(drawing).to receive(:inline).and_return(nil)
-      allow(drawing).to receive(:anchor).and_return(nil)
+      allow(drawing).to receive_messages(inline: nil, anchor: nil)
 
       result = rule.apply(drawing, context)
       expect(result).to be_a(Coradoc::CoreModel::Image)

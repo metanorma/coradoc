@@ -64,7 +64,7 @@ module Coradoc
           else
             raise ArgumentError,
                   "Cannot serialize #{content.class.name} to Markdown. " \
-                  "Expected String or object responding to #to_md."
+                  'Expected String or object responding to #to_md.'
           end
         end
       end
