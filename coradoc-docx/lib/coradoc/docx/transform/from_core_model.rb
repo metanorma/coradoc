@@ -110,6 +110,8 @@ module Coradoc
             case child
             when Coradoc::CoreModel::StructuralElement
               paragraphs << transform_section(child)
+            when Coradoc::CoreModel::AnnotationBlock
+              paragraphs << transform_annotation_block(child)
             when Coradoc::CoreModel::Block
               paragraphs << build_ooxml_paragraph(child)
             when Coradoc::CoreModel::ListBlock
@@ -182,6 +184,8 @@ module Coradoc
             case child
             when Coradoc::CoreModel::StructuralElement
               add_section_to_builder(child, builder)
+            when Coradoc::CoreModel::AnnotationBlock
+              add_annotation_to_builder(child, builder)
             when Coradoc::CoreModel::Block
               add_block_to_builder(child, builder)
             when Coradoc::CoreModel::ListBlock
@@ -207,6 +211,13 @@ module Coradoc
             builder.page_break
           else
             add_paragraph_to_builder(block, builder)
+          end
+        end
+
+        def add_annotation_to_builder(annotation, builder)
+          text = "#{annotation.annotation_type}: #{annotation.flat_text}"
+          builder.paragraph do |p|
+            p << Uniword::Builder.text(text, bold: true)
           end
         end
 
