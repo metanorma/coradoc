@@ -22,6 +22,8 @@ module Coradoc
     #     children: [attached_block]
     #   )
     class ListItem < Base
+      include ChildrenContent
+
       # @!attribute marker
       #   @return [String] the list marker (*, -, 1., etc.)
       attribute :marker, :string
@@ -31,16 +33,14 @@ module Coradoc
       attribute :content, :string
 
       # @!attribute children
-      #   @return [Array] array of attached blocks/elements (mixed content)
-      attr_reader :children
+      #   @return [Array] array of attached blocks/elements (mixed content, via ChildrenContent)
 
       # Initialize with optional nested structure support
       # @param args [Hash] initialization arguments
       def initialize(args = {})
-        @children = args.delete(:children) || []
         # Support :nested as alias for :nested_list
         args[:nested_list] = args.delete(:nested) if args.key?(:nested)
-        super(args)
+        super
       end
 
       # Delegate nested to nested_list (lutaml attribute added by list_block.rb)
@@ -52,30 +52,6 @@ module Coradoc
       # @param value [ListBlock, nil] nested list block
       def nested=(value)
         self.nested_list = value if respond_to?(:nested_list=)
-      end
-
-      # Set children array
-      # @param value [Array] mixed content array
-      def children=(value)
-        @children = value || []
-      end
-
-      # Get content for rendering, preferring children over content
-      # When children are all plain strings, use the content attribute instead
-      # since it already has proper spacing between lines.
-      # @return [Array, String, nil] content to render
-      def renderable_content
-        return content if children.nil? || children.none?
-        return content if content && children.all?(String)
-
-        children
-      end
-
-      # Override to include raw Ruby children attribute in hash output
-      def to_hash
-        super.tap do |h|
-          h['children'] = serialize_children(children) if children&.any?
-        end
       end
 
       # Convert to hash representation

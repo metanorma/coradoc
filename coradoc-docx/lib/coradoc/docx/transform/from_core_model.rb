@@ -146,10 +146,8 @@ module Coradoc
           type_run.properties = Uniword::Wordprocessingml::RunProperties.new
           type_run.properties.bold = Uniword::Properties::Bold.new
 
-          content = annotation.renderable_content
-          text = content.is_a?(Array) ? content.map(&:to_s).join : content.to_s
           text_run = Uniword::Wordprocessingml::Run.new
-          text_run.text = Uniword::Wordprocessingml::Text.new(content: text)
+          text_run.text = Uniword::Wordprocessingml::Text.new(content: annotation.flat_text)
 
           para.runs << type_run
           para.runs << text_run
@@ -237,13 +235,7 @@ module Coradoc
 
           builder.send(method) do |list|
             list_block.items.each do |item|
-              content = item.renderable_content
-              text = if content.is_a?(Array)
-                       content.map { |c| c.is_a?(String) ? c : c.content.to_s }.join
-                     else
-                       content.to_s
-                     end
-              list.item(text)
+              list.item(item.flat_text)
             end
           end
         end
@@ -359,14 +351,9 @@ module Coradoc
             para.properties.num_id = 1
             para.properties.ilvl = (list_block.marker_level || 1) - 1
 
-            content = item.renderable_content
-            text = if content.is_a?(Array)
-                     content.map { |c| c.is_a?(String) ? c : c.content.to_s }.join
-                   else
-                     content.to_s
-                   end
+            content = item.flat_text
             run = Uniword::Wordprocessingml::Run.new
-            run.text = Uniword::Wordprocessingml::Text.new(content: text)
+            run.text = Uniword::Wordprocessingml::Text.new(content: content)
             para.runs << run
             para
           end
