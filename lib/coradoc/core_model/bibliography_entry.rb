@@ -31,6 +31,18 @@ module Coradoc
       attribute :document_id, :string
       attribute :ref_text, :string
       attribute :url, :string
+
+      # Returns a formatted display string combining label and reference text.
+      #
+      # Uses document_id or anchor_name as the label, falling back to ref_text
+      # alone when no label is available.
+      #
+      # @return [String] formatted citation text
+      def display_text
+        label = document_id || anchor_name || ''
+        ref = ref_text || ''
+        label.empty? ? ref : "#{label}: #{ref}"
+      end
     end
   end
 end

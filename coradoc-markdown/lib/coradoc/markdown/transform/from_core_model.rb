@@ -295,10 +295,7 @@ module Coradoc
           end
 
           def transform_bibliography_entry(entry)
-            label = entry.document_id || entry.anchor_name || ''
-            ref = entry.ref_text || ''
-            text = label.empty? ? ref : "#{label}: #{ref}"
-            Coradoc::Markdown::Paragraph.new(text: text)
+            Coradoc::Markdown::Paragraph.new(text: entry.display_text)
           end
         end
       end
