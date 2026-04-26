@@ -43,6 +43,10 @@ module Coradoc
               transform_inline(model, 'bold')
             when Coradoc::Markdown::Code
               transform_inline(model, 'monospace')
+            when Coradoc::Markdown::Highlight
+              transform_inline(model, 'highlight')
+            when Coradoc::Markdown::Strikethrough
+              transform_inline(model, 'strikethrough')
             when Coradoc::Markdown::Footnote
               transform_footnote(model)
             when Coradoc::Markdown::FootnoteReference

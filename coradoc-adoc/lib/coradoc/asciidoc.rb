@@ -112,7 +112,6 @@ module Coradoc
     # Module aliases for mixins
     Anchorable = Model::Anchorable
     Attached = Model::Attached
-    Validatable = Model::Validatable
     Spacing = Model::Spacing
   end
 end

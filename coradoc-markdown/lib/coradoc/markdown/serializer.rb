@@ -73,7 +73,7 @@ module Coradoc
         else
           raise ArgumentError,
                 "Unknown element type for serialization: #{element.class}. " \
-                "Expected a known Markdown model type."
+                'Expected a known Markdown model type.'
         end
       end
 
@@ -107,7 +107,7 @@ module Coradoc
           else
             raise ArgumentError,
                   "Cannot serialize inline content of type #{element.class}. " \
-                  "Expected String, known inline model, or object responding to #to_md."
+                  'Expected String, known inline model, or object responding to #to_md.'
           end
         end
       end
