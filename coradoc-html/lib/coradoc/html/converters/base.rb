@@ -41,10 +41,13 @@ module Coradoc
             end
 
             # Handle CoreModel types
-            # NOTE: We use is_a? directly instead of defined?() because CoreModel uses autoload.
+            # NOTE: AnnotationBlock must be checked before Block since AnnotationBlock < Block.
+            # We use is_a? directly instead of defined?() because CoreModel uses autoload.
             # The defined?() check doesn't trigger autoload, so it returns nil even when
             # the class is available via autoload. Using is_a? triggers the autoload.
             return render_core_inline_element(content, state) if content.is_a?(Coradoc::CoreModel::InlineElement)
+
+            return render_core_annotation_block(content, state) if content.is_a?(Coradoc::CoreModel::AnnotationBlock)
 
             return render_core_block(content, state) if content.is_a?(Coradoc::CoreModel::Block)
 
@@ -58,8 +61,6 @@ module Coradoc
             return render_core_list_block(content, state) if content.is_a?(Coradoc::CoreModel::ListBlock)
 
             return render_core_list_item(content, state) if content.is_a?(Coradoc::CoreModel::ListItem)
-
-            return render_core_annotation_block(content, state) if content.is_a?(Coradoc::CoreModel::AnnotationBlock)
 
             return Coradoc::Html::Converters::Table.to_html(content, state) if content.is_a?(Coradoc::CoreModel::Table)
 
