@@ -19,6 +19,8 @@ module Coradoc
     #     bgcolor: "#ffff00"
     #   )
     class TableCell < Base
+      include ChildrenContent
+
       # @!attribute content
       #   @return [String, nil] text content of the cell
       attribute :content, :string
@@ -69,39 +71,7 @@ module Coradoc
       attribute :height, :string
 
       # Mixed content (strings and InlineElement objects)
-      # @return [Array] mixed content array
-      attr_reader :children
-
-      # Initialize cell with optional children support
-      # @param args [Hash] initialization arguments
-      def initialize(args = {})
-        @children = args.delete(:children) || []
-        super(args)
-      end
-
-      # Set children array
-      # @param value [Array] mixed content array
-      def children=(value)
-        @children = value || []
-      end
-
-      # Get content for rendering, preferring children over content
-      # When children are all plain strings, use the content attribute instead
-      # since it already has proper spacing between lines.
-      # @return [Array, String, nil] content to render
-      def renderable_content
-        return content if children.nil? || children.none?
-        return content if content && children.all?(String)
-
-        children
-      end
-
-      # Override to include raw Ruby children attribute in hash output
-      def to_hash
-        super.tap do |h|
-          h['children'] = serialize_children(children) if children&.any?
-        end
-      end
+      # @return [Array] mixed content array (via ChildrenContent)
 
       private
 
