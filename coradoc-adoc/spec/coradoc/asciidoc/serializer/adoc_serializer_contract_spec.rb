@@ -30,7 +30,7 @@ RSpec.describe Coradoc::AsciiDoc::Serializer::AdocSerializer do
       end
 
       it 'serializes arrays' do
-        expect(described_class.serialize(['a', 'b'])).to eq('ab')
+        expect(described_class.serialize(%w[a b])).to eq('ab')
       end
     end
   end

@@ -178,7 +178,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
       it 'produces an array of Paragraphs' do
         expect(result).to be_an(Array)
         expect(result.length).to eq(2)
-        result.each { |p| expect(p).to be_a(Uniword::Wordprocessingml::Paragraph) }
+        expect(result).to all(be_a(Uniword::Wordprocessingml::Paragraph))
       end
     end
 

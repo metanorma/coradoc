@@ -116,7 +116,7 @@ RSpec.describe 'DOCX real-file integration', type: :integration do
 
       docx_path = File.join(@tmpdir, 'image_test.docx')
       doc.build.save(docx_path)
-      expect(File.size(docx_path)).to be > 0
+      expect(File.size(docx_path)).to be > 0 # rubocop:disable Style/NumericPredicate
 
       loaded = Uniword.load(docx_path)
       core = Coradoc::Docx.parse_to_core(loaded)
@@ -189,7 +189,7 @@ RSpec.describe 'DOCX real-file integration', type: :integration do
       output_path = File.join(@tmpdir, 'complex_output.docx')
       result.save(output_path)
       expect(File.exist?(output_path)).to be true
-      expect(File.size(output_path)).to be > 0
+      expect(File.size(output_path)).to be > 0 # rubocop:disable Style/NumericPredicate
     end
   end
 
@@ -216,7 +216,7 @@ RSpec.describe 'DOCX real-file integration', type: :integration do
 
       expect(result).to eq(output_path)
       expect(File.exist?(output_path)).to be true
-      expect(File.size(output_path)).to be > 0
+      expect(File.size(output_path)).to be > 0 # rubocop:disable Style/NumericPredicate
 
       # Verify the written file is parseable
       loaded = Uniword.load(output_path)
@@ -239,7 +239,7 @@ RSpec.describe 'DOCX real-file integration', type: :integration do
 
       expect(result).to eq(output_path)
       expect(File.exist?(output_path)).to be true
-      expect(File.size(output_path)).to be > 0
+      expect(File.size(output_path)).to be > 0 # rubocop:disable Style/NumericPredicate
 
       # Verify the written file is parseable
       loaded = Uniword.load(output_path)

@@ -24,7 +24,7 @@ module Coradoc
               element.is_a?(Uniword::Wordprocessingml::SimpleField)
           end
 
-          def apply(field, context)
+          def apply(field, _context)
             # Try to get the resolved text content first
             text = field_text(field)
             return nil if text.nil? || text.empty?
@@ -63,9 +63,7 @@ module Coradoc
 
           def field_text(field)
             # SimpleField may have runs with resolved text
-            if field.respond_to?(:runs) && field.runs && !field.runs.empty?
-              return field.runs.map { |r| r.text&.content.to_s }.join
-            end
+            return field.runs.map { |r| r.text&.content.to_s }.join if field.respond_to?(:runs) && field.runs && !field.runs.empty?
 
             # Fall back to text attribute
             field.respond_to?(:text) ? field.text.to_s : nil

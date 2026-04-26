@@ -193,6 +193,30 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
       end
     end
 
+    context 'with Highlight' do
+      let(:markdown_model) do
+        Coradoc::Markdown::Highlight.new(text: 'marked text')
+      end
+
+      it 'transforms to CoreModel::InlineElement with highlight type' do
+        expect(transform).to be_a(Coradoc::CoreModel::InlineElement)
+        expect(transform.format_type).to eq('highlight')
+        expect(transform.content).to eq('marked text')
+      end
+    end
+
+    context 'with Strikethrough' do
+      let(:markdown_model) do
+        Coradoc::Markdown::Strikethrough.new(text: 'deleted text')
+      end
+
+      it 'transforms to CoreModel::InlineElement with strikethrough type' do
+        expect(transform).to be_a(Coradoc::CoreModel::InlineElement)
+        expect(transform.format_type).to eq('strikethrough')
+        expect(transform.content).to eq('deleted text')
+      end
+    end
+
     context 'with HorizontalRule' do
       let(:markdown_model) do
         Coradoc::Markdown::HorizontalRule.new

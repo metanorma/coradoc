@@ -12,7 +12,6 @@ module Coradoc
       # Layer 0: Mixins (no dependencies)
       autoload :Anchorable, "#{__dir__}/model/anchorable"
       autoload :Attached, "#{__dir__}/model/attached"
-      autoload :Validatable, "#{__dir__}/model/validatable"
       autoload :Spacing, "#{__dir__}/model/spacing"
 
       # Layer 1: Simple types (only depend on Layer 0)

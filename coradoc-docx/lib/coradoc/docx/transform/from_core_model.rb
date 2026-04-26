@@ -104,9 +104,7 @@ module Coradoc
         def transform_section(element)
           paragraphs = []
 
-          if element.title
-            paragraphs << build_heading(element.title, level: element.level || 1)
-          end
+          paragraphs << build_heading(element.title, level: element.level || 1) if element.title
 
           element.children&.each do |child|
             case child
@@ -185,9 +183,7 @@ module Coradoc
 
         def add_section_to_builder(element, builder)
           level = element.level || 1
-          if element.title
-            builder.heading(element.title, level: level)
-          end
+          builder.heading(element.title, level: level) if element.title
 
           transform_children(element.children, builder)
         end
@@ -392,17 +388,15 @@ module Coradoc
               nil, image.src, alt_text: image.alt
             )
             para = Uniword::Wordprocessingml::Paragraph.new
-            para.runs << run
-            para
           else
             para = Uniword::Wordprocessingml::Paragraph.new
             run = Uniword::Wordprocessingml::Run.new
             run.text = Uniword::Wordprocessingml::Text.new(
               content: "[Image: #{image.alt || image.src}]"
             )
-            para.runs << run
-            para
           end
+          para.runs << run
+          para
         end
 
         def build_page_break
@@ -529,9 +523,7 @@ module Coradoc
           entries = Array(bib.entries).map { |e| build_ooxml_bibliography_entry(e) }
 
           result = []
-          if bib.title
-            result << build_heading(bib.title, level: bib.level || 2)
-          end
+          result << build_heading(bib.title, level: bib.level || 2) if bib.title
           result.concat(entries)
           result
         end

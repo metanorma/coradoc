@@ -50,7 +50,7 @@ RSpec.describe Coradoc::Markdown::Serializer do
 
       it 'serializes arrays by joining' do
         base = Coradoc::Markdown::Base.new
-        expect(base.serialize_content(['a', 'b'])).to eq('ab')
+        expect(base.serialize_content(%w[a b])).to eq('ab')
       end
     end
   end

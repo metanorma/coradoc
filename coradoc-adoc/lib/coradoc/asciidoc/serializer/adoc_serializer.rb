@@ -34,12 +34,12 @@ module Coradoc
               else
                 raise ArgumentError,
                       "Cannot serialize #{model.class.name} to AsciiDoc. " \
-                      "Expected a model with #to_adoc or a registered serializer."
+                      'Expected a model with #to_adoc or a registered serializer.'
               end
             else
               raise ArgumentError,
                     "Unknown element type for AsciiDoc serialization: #{model.class}. " \
-                    "Expected String, Array, or Coradoc::AsciiDoc::Model::Base."
+                    'Expected String, Array, or Coradoc::AsciiDoc::Model::Base.'
             end
           end
 
