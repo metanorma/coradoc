@@ -305,6 +305,8 @@ module Coradoc
               model.items.map do |item|
                 item.is_a?(Coradoc::CoreModel::ListItem) ? "* #{item.content}" : item.to_s
               end.join("\n")
+            when Coradoc::CoreModel::AnnotationBlock
+              "#{model.annotation_type}: #{model.content}"
             when Coradoc::CoreModel::Block
               model.content.to_s
             when Coradoc::CoreModel::Image
