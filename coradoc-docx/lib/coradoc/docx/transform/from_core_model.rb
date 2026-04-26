@@ -137,8 +137,23 @@ module Coradoc
           end
         end
 
-        def transform_annotation_block(block)
-          build_ooxml_paragraph(block)
+        def transform_annotation_block(annotation)
+          para = Uniword::Wordprocessingml::Paragraph.new
+          type_run = Uniword::Wordprocessingml::Run.new
+          type_run.text = Uniword::Wordprocessingml::Text.new(
+            content: "#{annotation.annotation_type}: "
+          )
+          type_run.properties = Uniword::Wordprocessingml::RunProperties.new
+          type_run.properties.bold = Uniword::Properties::Bold.new
+
+          content = annotation.renderable_content
+          text = content.is_a?(Array) ? content.map(&:to_s).join : content.to_s
+          text_run = Uniword::Wordprocessingml::Run.new
+          text_run.text = Uniword::Wordprocessingml::Text.new(content: text)
+
+          para.runs << type_run
+          para.runs << text_run
+          para
         end
 
         def transform_list(list_block)
@@ -530,11 +545,8 @@ module Coradoc
 
         def build_ooxml_bibliography_entry(entry)
           para = Uniword::Wordprocessingml::Paragraph.new
-          label = entry.document_id || entry.anchor_name || ''
-          ref = entry.ref_text || ''
-          text = label.empty? ? ref : "#{label}: #{ref}"
           run = Uniword::Wordprocessingml::Run.new
-          run.text = Uniword::Wordprocessingml::Text.new(content: text)
+          run.text = Uniword::Wordprocessingml::Text.new(content: entry.display_text)
           para.runs << run
           para
         end
