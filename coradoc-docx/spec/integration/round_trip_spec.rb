@@ -77,6 +77,20 @@ RSpec.describe 'DOCX round-trip', type: :integration do
       item_texts = paragraphs.select { |p| p.properties&.num_id }.map { |p| p.runs.first.text.content }
       expect(item_texts).to contain_exactly('Item 1', 'Item 2')
     end
+
+    it 'round-trips annotation block content' do
+      annotation = Coradoc::CoreModel::AnnotationBlock.new(
+        annotation_type: 'NOTE',
+        content: 'Important detail'
+      )
+
+      result = Coradoc::Docx::Transform::FromCoreModel.transform(annotation)
+
+      expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
+      texts = result.runs.map { |r| r.text.content }
+      expect(texts.join).to include('NOTE')
+      expect(texts.join).to include('Important detail')
+    end
   end
 
   describe 'serialize' do
