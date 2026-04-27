@@ -164,7 +164,7 @@ module Coradoc
             attrs = build_html_attributes(block.id, block.title)
 
             # Get renderable content (children if present, otherwise content)
-            renderable = block.respond_to?(:renderable_content) ? block.renderable_content : block.content
+            renderable = block.renderable_content
 
             # Check element_type first for paragraph handling
             case block.element_type
@@ -240,7 +240,7 @@ module Coradoc
           # Render CoreModel list item
           def render_core_list_item(item, state = {})
             # Use renderable_content to get children if present
-            renderable = item.respond_to?(:renderable_content) ? item.renderable_content : item.content
+            renderable = item.renderable_content
             content = convert_content_to_html(renderable, state)
 
             # Handle nested list
@@ -280,7 +280,7 @@ module Coradoc
             attrs += " style=\"text-align: #{escape_html(cell.alignment)}\"" if cell.alignment
 
             # Use renderable_content to get children if present, otherwise content
-            renderable = cell.respond_to?(:renderable_content) ? cell.renderable_content : (cell.content || cell.text)
+            renderable = cell.renderable_content
             content = convert_content_to_html(renderable, state)
             "<#{tag}#{attrs}>#{content}</#{tag}>"
           end
