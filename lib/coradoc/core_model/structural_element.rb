@@ -54,6 +54,13 @@ module Coradoc
       #   @return [Array<Base>, nil] child elements (sections, blocks, etc.)
       attribute :children, Base, collection: true
 
+      # Heading level with sensible default
+      #
+      # @return [Integer] level, defaulting to 1 when unset
+      def heading_level
+        level || 1
+      end
+
       private
 
       # Attributes to compare for semantic equivalence

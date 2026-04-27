@@ -104,7 +104,7 @@ module Coradoc
         def transform_section(element)
           paragraphs = []
 
-          paragraphs << build_heading(element.title, level: element.level || 1) if element.title
+          paragraphs << build_heading(element.title, level: element.heading_level) if element.title
 
           element.children&.each do |child|
             case child
@@ -199,7 +199,7 @@ module Coradoc
         end
 
         def add_section_to_builder(element, builder)
-          level = element.level || 1
+          level = element.heading_level
           builder.heading(element.title, level: level) if element.title
 
           transform_children(element.children, builder)
