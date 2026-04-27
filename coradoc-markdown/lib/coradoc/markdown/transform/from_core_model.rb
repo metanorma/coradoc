@@ -280,7 +280,7 @@ module Coradoc
           end
 
           def transform_annotation_block(annotation)
-            text = annotation.content.to_s
+            text = annotation.flat_text
             Coradoc::Markdown::Paragraph.new(
               text: "**#{annotation.annotation_type}:** #{text}"
             )
