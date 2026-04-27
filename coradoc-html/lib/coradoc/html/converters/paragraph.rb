@@ -32,7 +32,7 @@ module Coradoc
           # @return [String] HTML string
           def to_html(model, state = {})
             # Use renderable_content to handle both content and children
-            content_to_render = model.respond_to?(:renderable_content) ? model.renderable_content : model.content
+            content_to_render = model.renderable_content
             content = convert_content_to_html(content_to_render, state)
             # Strip trailing whitespace from content to avoid issues with line breaks
             content = content.rstrip
