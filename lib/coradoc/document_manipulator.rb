@@ -201,7 +201,7 @@ module Coradoc
         matches = true
 
         if level
-          element_level = element.level || 1
+          element_level = element.heading_level
           case level
           when Range
             matches = false unless level.include?(element_level)
