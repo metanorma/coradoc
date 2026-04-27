@@ -256,7 +256,7 @@ module Coradoc
             table.rows.each do |row|
               t.row do |r|
                 row.cells.each do |cell|
-                  r.cell(text: cell.content.to_s)
+                  r.cell(text: cell.flat_text)
                 end
               end
             end
@@ -380,7 +380,7 @@ module Coradoc
 
               para = Uniword::Wordprocessingml::Paragraph.new
               run = Uniword::Wordprocessingml::Run.new
-              run.text = Uniword::Wordprocessingml::Text.new(content: cell.content.to_s)
+              run.text = Uniword::Wordprocessingml::Text.new(content: cell.flat_text)
               para.runs << run
               tc.paragraphs << para
 
