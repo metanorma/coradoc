@@ -211,7 +211,7 @@ module Coradoc
             when 'header'
               "<header#{attrs}>#{children_html}</header>"
             when 'section'
-              level = element.level || 1
+              level = element.heading_level
               level = [level, 6].min
               title_html = element.title ? "<h#{level}>#{escape_html(element.title)}</h#{level}>" : ''
               "<section#{attrs}>#{title_html}#{children_html}</section>"
