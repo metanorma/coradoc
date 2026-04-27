@@ -76,8 +76,8 @@ module Coradoc
           Array(element.children).each do |child|
             next unless child.is_a?(CoreModel::StructuralElement)
 
-            if child.element_type == 'section'
-              level = child.level || 1
+            if child.section?
+              level = child.heading_level
               sections << { element: child, level: level } if level >= min_level && level <= max_level
 
               # Also search nested sections

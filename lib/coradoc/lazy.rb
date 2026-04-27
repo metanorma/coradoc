@@ -163,7 +163,7 @@ module Coradoc
 
         element.children.lazy.select do |child|
           child.is_a?(Coradoc::CoreModel::StructuralElement) &&
-            child.element_type == 'section'
+            child.section?
         end
       end
 
@@ -180,7 +180,7 @@ module Coradoc
       def section_like?(element)
         case element
         when Coradoc::CoreModel::StructuralElement
-          element.element_type == 'section'
+          element.section?
         else
           element.class.name&.include?('Section')
         end

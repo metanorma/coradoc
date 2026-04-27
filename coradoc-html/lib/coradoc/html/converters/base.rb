@@ -53,7 +53,7 @@ module Coradoc
 
             if content.is_a?(Coradoc::CoreModel::StructuralElement)
               # Use Section converter for sections
-              return Coradoc::Html::Converters::Section.to_html(content, state) if content.element_type == 'section'
+              return Coradoc::Html::Converters::Section.to_html(content, state) if content.section?
 
               return render_core_structural_element(content, state)
             end
