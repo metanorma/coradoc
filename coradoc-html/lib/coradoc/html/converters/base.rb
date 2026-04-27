@@ -180,23 +180,23 @@ module Coradoc
             when '----', 'source'
               lang = block.language || block.metadata&.dig(:language)
               lang_attr = lang ? " data-lang=\"#{escape_attribute(lang)}\"" : ''
-              "<pre#{attrs}><code#{lang_attr}>#{escape_html(block.content)}</code></pre>"
+              "<pre#{attrs}><code#{lang_attr}>#{escape_html(block.flat_text)}</code></pre>"
             when '____'
-              "<blockquote#{attrs}>#{convert_content_to_html(block.content, state)}</blockquote>"
+              "<blockquote#{attrs}>#{convert_content_to_html(renderable, state)}</blockquote>"
             when '===='
-              "<div class=\"example\"#{attrs}>#{convert_content_to_html(block.content, state)}</div>"
+              "<div class=\"example\"#{attrs}>#{convert_content_to_html(renderable, state)}</div>"
             when '****'
-              "<aside class=\"sidebar\"#{attrs}>#{convert_content_to_html(block.content, state)}</aside>"
+              "<aside class=\"sidebar\"#{attrs}>#{convert_content_to_html(renderable, state)}</aside>"
             when '....'
-              "<pre class=\"literal\"#{attrs}>#{escape_html(block.content)}</pre>"
+              "<pre class=\"literal\"#{attrs}>#{escape_html(block.flat_text)}</pre>"
             when '++++'
-              block.content.to_s # Pass through
+              block.flat_text # Pass through
             when 'comment'
               '' # Skip comments in output
             when '***', '---', '___'
               "<hr#{attrs}>"
             else
-              "<div#{attrs}>#{convert_content_to_html(block.content, state)}</div>"
+              "<div#{attrs}>#{convert_content_to_html(renderable, state)}</div>"
             end
           end
 

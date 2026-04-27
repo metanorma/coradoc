@@ -230,7 +230,7 @@ module Coradoc
             rows = Array(table.rows).map do |row|
               columns = Array(row.cells).map do |cell|
                 Coradoc::AsciiDoc::Model::TableCell.new(
-                  content: cell.content
+                  content: cell.flat_text
                 )
               end
               Coradoc::AsciiDoc::Model::TableRow.new(
@@ -248,7 +248,7 @@ module Coradoc
           def transform_list(list)
             items = Array(list.items).map do |item|
               Coradoc::AsciiDoc::Model::List::Item.new(
-                content: item.content,
+                content: item.flat_text,
                 marker: item.marker || default_marker(list.marker_type)
               )
             end
@@ -265,7 +265,7 @@ module Coradoc
 
           def transform_list_item(item)
             Coradoc::AsciiDoc::Model::List::Item.new(
-              content: item.content,
+              content: item.flat_text,
               marker: item.marker
             )
           end
