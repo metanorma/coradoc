@@ -29,13 +29,14 @@ module Coradoc
 
         # Flatten children array to plain text string.
         #
-        # @param children [Array] mixed content (Strings, InlineElements)
+        # @param children [Array] mixed content (Strings, InlineElements, Blocks)
         # @return [String]
         def extract_plain_text(children)
           children.map do |c|
             case c
             when String then c
             when CoreModel::InlineElement then c.content.to_s
+            when CoreModel::Block then c.content.to_s
             else c.to_s
             end
           end.join
