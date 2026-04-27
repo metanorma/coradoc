@@ -303,12 +303,12 @@ module Coradoc
             case model
             when Coradoc::CoreModel::ListBlock
               model.items.map do |item|
-                item.is_a?(Coradoc::CoreModel::ListItem) ? "* #{item.content}" : item.to_s
+                item.is_a?(Coradoc::CoreModel::ListItem) ? "* #{item.flat_text}" : item.to_s
               end.join("\n")
             when Coradoc::CoreModel::AnnotationBlock
               "#{model.annotation_type}: #{model.flat_text}"
             when Coradoc::CoreModel::Block
-              model.content.to_s
+              model.flat_text
             when Coradoc::CoreModel::Image
               # Image should be rendered as empty text - actual rendering handled by HTML converter
               model.alt || ''

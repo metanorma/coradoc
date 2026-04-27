@@ -109,9 +109,9 @@ module Coradoc
             if content.is_a?(Array) && content.any? { |c| !c.is_a?(String) }
               # Mixed content with inline elements
               children = content.map { |c| transform_inline_content(c) }
-              Coradoc::Markdown::Paragraph.new(text: block.content.to_s, children: children)
+              Coradoc::Markdown::Paragraph.new(text: block.flat_text, children: children)
             else
-              Coradoc::Markdown::Paragraph.new(text: block.content.to_s)
+              Coradoc::Markdown::Paragraph.new(text: block.flat_text)
             end
           end
 
@@ -151,7 +151,7 @@ module Coradoc
           end
 
           def transform_blockquote(block)
-            content = block.content.to_s
+            content = block.flat_text
 
             Coradoc::Markdown::Blockquote.new(content: content)
           end
@@ -165,9 +165,9 @@ module Coradoc
               content = item.renderable_content
               if content.is_a?(Array) && content.any? { |c| !c.is_a?(String) }
                 children = content.map { |c| transform_inline_content(c) }
-                Coradoc::Markdown::ListItem.new(text: item.content.to_s, children: children)
+                Coradoc::Markdown::ListItem.new(text: item.flat_text, children: children)
               else
-                Coradoc::Markdown::ListItem.new(text: item.content.to_s)
+                Coradoc::Markdown::ListItem.new(text: item.flat_text)
               end
             end
 
