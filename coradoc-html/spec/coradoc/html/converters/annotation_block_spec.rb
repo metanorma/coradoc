@@ -71,5 +71,20 @@ RSpec.describe 'AnnotationBlock HTML conversion' do
 
       expect(html).to include('id="helpful-tip"')
     end
+
+    it 'renders annotation with inline element children' do
+      bold = Coradoc::CoreModel::InlineElement.new(format_type: 'bold', content: 'critical')
+      annotation = Coradoc::CoreModel::AnnotationBlock.new(
+        annotation_type: 'warning',
+        content: 'This is critical',
+        children: ['This is ', bold]
+      )
+
+      html = Coradoc::Html::Converters::Base.convert_content_to_html(annotation)
+
+      expect(html).to include('admonition warning')
+      expect(html).to include('<strong>critical</strong>')
+      expect(html).to include('This is ')
+    end
   end
 end

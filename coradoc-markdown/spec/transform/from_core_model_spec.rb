@@ -374,6 +374,23 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
       end
     end
 
+    context 'with AnnotationBlock containing inline children' do
+      let(:core_model) do
+        bold = Coradoc::CoreModel::InlineElement.new(format_type: 'bold', content: 'important')
+        Coradoc::CoreModel::AnnotationBlock.new(
+          annotation_type: 'WARNING',
+          content: 'This is important',
+          children: ['This is ', bold]
+        )
+      end
+
+      it 'flattens inline children to plain text in annotation output' do
+        expect(transform).to be_a(Coradoc::Markdown::Paragraph)
+        expect(transform.text).to include('WARNING')
+        expect(transform.text).to include('This is important')
+      end
+    end
+
     context 'with Term' do
       let(:core_model) { Coradoc::CoreModel::Term.new(text: 'API', type: 'acronym') }
 

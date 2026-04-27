@@ -257,7 +257,8 @@ module Coradoc
 
             html = "<div class=\"admonition#{type_class}\"#{attrs}>"
             html += "<div class=\"admonition-label\">#{escape_html(label)}</div>" if label
-            html += convert_content_to_html(block.content, state)
+            renderable = block.renderable_content
+            html += convert_content_to_html(renderable, state)
             html += '</div>'
             html
           end

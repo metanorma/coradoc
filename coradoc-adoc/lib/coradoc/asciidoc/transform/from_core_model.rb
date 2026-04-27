@@ -281,7 +281,7 @@ module Coradoc
           def transform_annotation(annotation)
             Coradoc::AsciiDoc::Model::Admonition.new(
               type: annotation.annotation_type.to_s.upcase,
-              content: create_text_elements(annotation.content)
+              content: create_text_elements(annotation.renderable_content)
             )
           end
 

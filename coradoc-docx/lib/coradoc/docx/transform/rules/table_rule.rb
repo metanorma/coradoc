@@ -14,6 +14,8 @@ module Coradoc
         # Print-layout properties (frame, grid, width) are NOT mapped — CoreModel
         # is a semantic model, not a print layout language.
         class TableRule < Rule
+          include OrderedContent
+
           def matches?(element)
             defined?(Uniword::Wordprocessingml::Table) &&
               element.is_a?(Uniword::Wordprocessingml::Table)
@@ -78,16 +80,6 @@ module Coradoc
             vm.respond_to?(:value) ? vm.value.to_s == 'restart' : false
           end
 
-          def extract_plain_text(children)
-            children.map do |c|
-              case c
-              when String then c
-              when CoreModel::InlineElement then c.content.to_s
-              when CoreModel::Block then c.content.to_s
-              else c.to_s
-              end
-            end.join
-          end
         end
       end
     end
