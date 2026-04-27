@@ -196,7 +196,7 @@ module Coradoc
     def filter_sections(element, level: nil, title: nil)
       return element unless element.respond_to?(:children)
 
-      if element.is_a?(Coradoc::CoreModel::StructuralElement) && (element.element_type == 'section')
+      if element.is_a?(Coradoc::CoreModel::StructuralElement) && element.section?
         # Check if this section matches criteria
         matches = true
 
@@ -278,7 +278,7 @@ module Coradoc
 
       element.children.each do |child|
         next unless child.is_a?(Coradoc::CoreModel::StructuralElement) &&
-                    child.element_type == 'section' && (current_level <= max_level)
+                    child.section? && (current_level <= max_level)
 
         sections << {
           id: child.id,

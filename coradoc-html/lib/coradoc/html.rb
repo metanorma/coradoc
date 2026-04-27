@@ -141,7 +141,7 @@ module Coradoc
       if elements.is_a?(Array) && !elements.empty?
         first = elements.first
         if first.is_a?(Coradoc::CoreModel::StructuralElement) &&
-           first.element_type == 'section' && first.level == 1
+           first.section? && first.level == 1
           title = first.title
           children = first.children + elements[1..]
         end

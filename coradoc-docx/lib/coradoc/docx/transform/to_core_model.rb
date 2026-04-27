@@ -50,7 +50,7 @@ module Coradoc
           # If the first child is an H1 matching the doc title, skip the
           # duplicate — the document title already captures it
           if doc_title && children.first.is_a?(Coradoc::CoreModel::StructuralElement) &&
-             children.first.element_type == 'section' &&
+             children.first.section? &&
              children.first.title == doc_title &&
              children.first.level == 1
             children.shift
