@@ -61,6 +61,14 @@ module Coradoc
         level || 1
       end
 
+      def section?
+        element_type == 'section'
+      end
+
+      def document?
+        element_type == 'document'
+      end
+
       private
 
       # Attributes to compare for semantic equivalence
