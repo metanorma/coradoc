@@ -70,4 +70,48 @@ RSpec.describe Coradoc::CoreModel::InlineElement do
       expect(described_class.superclass).to eq(Coradoc::CoreModel::Base)
     end
   end
+
+  describe 'ChildrenContent integration' do
+    it 'has children array' do
+      element = described_class.new(format_type: 'bold', content: 'text', children: ['a'])
+      expect(element.children).to eq(['a'])
+    end
+
+    it 'returns content via renderable_content when no children' do
+      element = described_class.new(format_type: 'bold', content: 'bold text')
+      expect(element.renderable_content).to eq('bold text')
+    end
+
+    it 'returns children via renderable_content when children have InlineElements' do
+      inner = described_class.new(format_type: 'italic', content: 'inner')
+      element = described_class.new(
+        format_type: 'bold',
+        content: 'outer',
+        children: ['prefix ', inner]
+      )
+      expect(element.renderable_content).to eq(['prefix ', inner])
+    end
+
+    it 'flattens children to plain text via flat_text' do
+      inner = described_class.new(format_type: 'italic', content: 'world')
+      element = described_class.new(
+        format_type: 'bold',
+        children: ['hello ', inner]
+      )
+      expect(element.flat_text).to eq('hello world')
+    end
+  end
+
+  describe 'FORMAT_TYPES' do
+    it 'includes all core format types' do
+      %w[bold italic monospace underline strikethrough subscript superscript
+         highlight link xref stem footnote hard_line_break].each do |type|
+        expect(described_class::FORMAT_TYPES).to include(type)
+      end
+    end
+
+    it 'is frozen' do
+      expect(described_class::FORMAT_TYPES).to be_frozen
+    end
+  end
 end
