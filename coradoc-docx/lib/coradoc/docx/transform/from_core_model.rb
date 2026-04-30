@@ -426,17 +426,23 @@ module Coradoc
         def build_inline_text(inline)
           text = inline.content.to_s
 
-          formatting = {}
           case inline.format_type
-          when 'bold'    then formatting[:bold] = true
-          when 'italic'  then formatting[:italic] = true
-          when 'underline' then formatting[:underline] = true
-          when 'strikethrough' then formatting[:strike] = true
-          when 'highlight' then formatting[:highlight] = true
-          end
-
-          if formatting.any?
-            Uniword::Builder.text(text, **formatting)
+          when 'bold'    then Uniword::Builder.text(text, bold: true)
+          when 'italic'  then Uniword::Builder.text(text, italic: true)
+          when 'underline' then Uniword::Builder.text(text, underline: true)
+          when 'strikethrough' then Uniword::Builder.text(text, strike: true)
+          when 'highlight' then Uniword::Builder.text(text, highlight: 'yellow')
+          when 'monospace' then Uniword::Builder.text(text, font: 'Courier New')
+          when 'subscript', 'superscript'
+            run = Uniword::Wordprocessingml::Run.new(text: text)
+            props = Uniword::Wordprocessingml::RunProperties.new
+            va = Uniword::Wordprocessingml::VerticalAlign.new
+            va.value = inline.format_type
+            props.vertical_align = va
+            run.properties = props
+            run
+          when 'link'
+            Uniword::Builder.hyperlink(inline.target.to_s, text)
           else
             text
           end
