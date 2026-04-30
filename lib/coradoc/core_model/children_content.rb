@@ -5,7 +5,7 @@ module Coradoc
     # Shared module for models that carry mixed content (strings + InlineElements)
     # as a children array alongside a string content attribute.
     #
-    # Included by Block, ListItem, and TableCell to provide:
+    # Included by Block, ListItem, TableCell, and InlineElement to provide:
     # - children array management (reader, writer, initialize)
     # - renderable_content: prefers children when they contain non-string objects,
     #   falls back to the content attribute otherwise

@@ -44,6 +44,17 @@ module Coradoc
     #     content: "word"
     #   )
     class InlineElement < Base
+      include ChildrenContent
+
+      # Canonical set of format_type values produced by ToCoreModel transformers.
+      # Extended types (text, span, break, etc.) are produced only by HTML input converters.
+      FORMAT_TYPES = %w[
+        bold italic monospace underline strikethrough
+        subscript superscript highlight
+        link xref stem footnote
+        hard_line_break
+      ].freeze
+
       # @!attribute format_type
       #   @return [String, nil] type of inline formatting
       #     (e.g., 'bold', 'italic', 'monospace', 'link', 'xref')
@@ -69,28 +80,6 @@ module Coradoc
       # @!attribute stem_type
       #   @return [String, nil] stem notation type (e.g., 'latexmath', 'asciimath', 'stem')
       attribute :stem_type, :string
-
-      # Mixed content (strings and InlineElement objects)
-      # @return [Array] mixed content array
-      attr_reader :children
-
-      # Initialize with optional children support
-      def initialize(args = {})
-        @children = args.delete(:children) || []
-        super(args)
-      end
-
-      # Set children array
-      def children=(value)
-        @children = value || []
-      end
-
-      # Override to include raw Ruby children attribute in hash output
-      def to_hash
-        super.tap do |h|
-          h['children'] = serialize_children(children) if children&.any?
-        end
-      end
 
       private
 
