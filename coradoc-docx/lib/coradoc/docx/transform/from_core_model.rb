@@ -348,6 +348,8 @@ module Coradoc
             return run
           when 'stem'
             return run
+          else
+            return run
           end
 
           run.properties = props unless plain_properties?(props)
