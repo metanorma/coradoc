@@ -104,8 +104,7 @@ module Coradoc
       def core_model?(object)
         return false if object.nil?
 
-        object.class.name&.start_with?('Coradoc::CoreModel::') ||
-          (defined?(CoreModel::Base) && object.is_a?(CoreModel::Base))
+        object.is_a?(CoreModel::Base)
       end
 
       # Check if an object is an inline element type
