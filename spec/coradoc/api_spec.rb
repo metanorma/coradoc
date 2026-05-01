@@ -115,6 +115,10 @@ RSpec.describe 'Coradoc API' do
 
       expect { Coradoc.parse_file(file, format: :nonexistent) }.to raise_error(Coradoc::UnsupportedFormatError)
     end
+
+    it 'raises FileNotFoundError for missing file' do
+      expect { Coradoc.parse_file('/nonexistent/file.md') }.to raise_error(Coradoc::FileNotFoundError)
+    end
   end
 
   describe '.convert_file' do
@@ -232,6 +236,75 @@ RSpec.describe 'Coradoc API' do
 
     it 'returns false for unregistered format' do
       expect(Coradoc.serialize_format?(:nonexistent)).to be false
+    end
+  end
+
+  describe '.parse_format?' do
+    it 'returns true for :markdown' do
+      expect(Coradoc.parse_format?(:markdown)).to be true
+    end
+
+    it 'returns true for :html' do
+      expect(Coradoc.parse_format?(:html)).to be true
+    end
+
+    it 'returns true for :asciidoc' do
+      expect(Coradoc.parse_format?(:asciidoc)).to be true
+    end
+
+    it 'returns true for :docx' do
+      expect(Coradoc.parse_format?(:docx)).to be true
+    end
+
+    it 'returns false for unregistered format' do
+      expect(Coradoc.parse_format?(:nonexistent)).to be false
+    end
+  end
+
+  describe '.resolve_output_format' do
+    it 'detects format from output filename' do
+      expect(Coradoc.resolve_output_format('output.html')).to eq(:html)
+    end
+
+    it 'detects markdown from output filename' do
+      expect(Coradoc.resolve_output_format('out.md')).to eq(:markdown)
+    end
+
+    it 'defaults to :html when no output file given' do
+      expect(Coradoc.resolve_output_format(nil)).to eq(:html)
+    end
+
+    it 'defaults to :html for unknown extension' do
+      expect(Coradoc.resolve_output_format('output.xyz')).to eq(:html)
+    end
+  end
+
+  describe '.file_info' do
+    let(:temp_dir) { Dir.mktmpdir('coradoc_file_info_spec') }
+
+    after do
+      FileUtils.remove_entry(temp_dir) if File.directory?(temp_dir)
+    end
+
+    it 'returns file size and format for text files' do
+      file = File.join(temp_dir, 'doc.md')
+      File.write(file, "# Title\n\nContent")
+
+      info = Coradoc.file_info(file)
+
+      expect(info[:format]).to eq(:markdown)
+      expect(info[:size]).to be > 0
+      expect(info[:lines]).to eq(3)
+    end
+
+    it 'omits lines for binary formats' do
+      file = File.join(temp_dir, 'doc.docx')
+      File.write(file, 'binary content')
+
+      info = Coradoc.file_info(file)
+
+      expect(info[:format]).to eq(:docx)
+      expect(info).not_to have_key(:lines)
     end
   end
 

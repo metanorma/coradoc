@@ -238,6 +238,8 @@ module Coradoc
     #   doc = Coradoc.parse_file("document.adoc")
     #   doc = Coradoc.parse_file("report.docx", format: :docx)
     def parse_file(path, format: nil)
+      raise FileNotFoundError, path unless File.exist?(path)
+
       source_format = format || detect_format(path)
       raise UnsupportedFormatError, "Could not detect format for: #{path}" unless source_format
 
@@ -308,6 +310,37 @@ module Coradoc
       return mod.serialize? if mod.respond_to?(:serialize?)
 
       true
+    end
+
+    # Check if a format supports parsing (reading input)
+    #
+    # @param format [Symbol] the format to check
+    # @return [Boolean] true if the format can parse
+    def parse_format?(format)
+      mod = get_format(format)
+      mod&.respond_to?(:parse_to_core) || mod&.respond_to?(:parse) || false
+    end
+
+    # Resolve the output format from a filename, with a default
+    #
+    # @param output_file [String, nil] output filename to detect from
+    # @param default [Symbol] default format when detection fails (default: :html)
+    # @return [Symbol] the resolved format
+    def resolve_output_format(output_file, default: :html)
+      return default unless output_file
+
+      detect_format(output_file) || default
+    end
+
+    # Get file metadata for display
+    #
+    # @param path [String] path to the file
+    # @return [Hash] metadata including :size, :format, and :lines (for text formats)
+    def file_info(path)
+      fmt = detect_format(path)
+      info = { size: File.size(path), format: fmt }
+      info[:lines] = File.read(path).lines.count unless binary_format?(fmt)
+      info
     end
 
     # Validate a document file
