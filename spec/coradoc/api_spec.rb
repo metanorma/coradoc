@@ -151,54 +151,43 @@ RSpec.describe 'Coradoc API' do
     end
   end
 
-  describe 'EXTENSION_FORMATS' do
-    it 'maps all supported extensions' do
-      expect(Coradoc::EXTENSION_FORMATS).to include(
-        '.adoc' => :asciidoc,
-        '.asciidoc' => :asciidoc,
-        '.docx' => :docx,
-        '.html' => :html,
-        '.htm' => :html,
-        '.md' => :markdown,
-        '.markdown' => :markdown,
-        '.mdown' => :markdown
-      )
+  describe '.detect_format (driven by registration options)' do
+    it 'detects AsciiDoc from .adoc extension' do
+      expect(Coradoc.detect_format('document.adoc')).to eq(:asciidoc)
+    end
+
+    it 'detects HTML from .htm extension' do
+      expect(Coradoc.detect_format('page.htm')).to eq(:html)
+    end
+
+    it 'detects Markdown from .mdown extension' do
+      expect(Coradoc.detect_format('doc.mdown')).to eq(:markdown)
+    end
+
+    it 'returns nil for unknown extensions' do
+      expect(Coradoc.detect_format('file.txt')).to be_nil
     end
   end
 
-  describe 'BINARY_FORMATS' do
-    it 'includes docx' do
-      expect(Coradoc::BINARY_FORMATS).to include(:docx)
+  describe '.binary_format? (driven by registration options)' do
+    it 'returns true for :docx' do
+      expect(Coradoc.binary_format?(:docx)).to be true
     end
 
-    it 'is frozen' do
-      expect(Coradoc::BINARY_FORMATS).to be_frozen
-    end
-  end
-
-  describe 'FORMAT_ALIASES' do
-    it 'maps adoc to asciidoc' do
-      expect(Coradoc::FORMAT_ALIASES['adoc']).to eq(:asciidoc)
+    it 'returns false for :asciidoc' do
+      expect(Coradoc.binary_format?(:asciidoc)).to be false
     end
 
-    it 'maps md to markdown' do
-      expect(Coradoc::FORMAT_ALIASES['md']).to eq(:markdown)
+    it 'returns false for :html' do
+      expect(Coradoc.binary_format?(:html)).to be false
     end
 
-    it 'maps html to html' do
-      expect(Coradoc::FORMAT_ALIASES['html']).to eq(:html)
-    end
-
-    it 'maps docx to docx' do
-      expect(Coradoc::FORMAT_ALIASES['docx']).to eq(:docx)
-    end
-
-    it 'is frozen' do
-      expect(Coradoc::FORMAT_ALIASES).to be_frozen
+    it 'returns false for :markdown' do
+      expect(Coradoc.binary_format?(:markdown)).to be false
     end
   end
 
-  describe '.normalize_format' do
+  describe '.normalize_format (driven by registration aliases)' do
     it 'normalizes adoc to :asciidoc' do
       expect(Coradoc.normalize_format('adoc')).to eq(:asciidoc)
     end
@@ -352,6 +341,32 @@ RSpec.describe 'Coradoc API' do
 
     it 'returns to_s for non-CoreModel objects' do
       expect(Coradoc.describe_element('plain string')).to eq('plain string')
+    end
+  end
+
+  describe '.strip_unicode' do
+    it 'strips unicode whitespace from both ends' do
+      expect(Coradoc.strip_unicode("\u00A0hello\u00A0")).to eq('hello')
+    end
+
+    it 'strips only from beginning when only: :begin' do
+      expect(Coradoc.strip_unicode("\u00A0hello\u00A0", only: :begin)).to eq("hello\u00A0")
+    end
+
+    it 'strips only from end when only: :end' do
+      expect(Coradoc.strip_unicode("\u00A0hello\u00A0", only: :end)).to eq("\u00A0hello")
+    end
+
+    it 'returns nil for nil input' do
+      expect(Coradoc.strip_unicode(nil)).to be_nil
+    end
+
+    it 'strips regular spaces too (\\p{Zs} includes ASCII space)' do
+      expect(Coradoc.strip_unicode(' hello ')).to eq('hello')
+    end
+
+    it 'preserves internal whitespace' do
+      expect(Coradoc.strip_unicode("\u00A0hello world\u00A0")).to eq('hello world')
     end
   end
 end

@@ -222,27 +222,24 @@ RSpec.describe Coradoc::CLI do
     end
   end
 
-  describe 'FORMAT_ALIASES (delegated to Coradoc)' do
+  describe 'format detection (delegated to Coradoc)' do
     it 'maps common aliases to format names' do
       expect(Coradoc.normalize_format('adoc')).to eq(:asciidoc)
       expect(Coradoc.normalize_format('md')).to eq(:markdown)
       expect(Coradoc.normalize_format('html')).to eq(:html)
       expect(Coradoc.normalize_format('docx')).to eq(:docx)
     end
-  end
 
-  describe 'EXTENSION_FORMATS' do
-    it 'maps file extensions to formats via Coradoc API' do
-      expect(Coradoc::EXTENSION_FORMATS['.md']).to eq(:markdown)
-      expect(Coradoc::EXTENSION_FORMATS['.html']).to eq(:html)
-      expect(Coradoc::EXTENSION_FORMATS['.adoc']).to eq(:asciidoc)
-      expect(Coradoc::EXTENSION_FORMATS['.docx']).to eq(:docx)
+    it 'maps file extensions to formats' do
+      expect(Coradoc.detect_format('file.md')).to eq(:markdown)
+      expect(Coradoc.detect_format('file.html')).to eq(:html)
+      expect(Coradoc.detect_format('file.adoc')).to eq(:asciidoc)
+      expect(Coradoc.detect_format('file.docx')).to eq(:docx)
     end
-  end
 
-  describe 'BINARY_FORMATS' do
-    it 'includes docx via Coradoc API' do
-      expect(Coradoc::BINARY_FORMATS).to include(:docx)
+    it 'identifies binary formats' do
+      expect(Coradoc.binary_format?(:docx)).to be true
+      expect(Coradoc.binary_format?(:html)).to be false
     end
   end
 

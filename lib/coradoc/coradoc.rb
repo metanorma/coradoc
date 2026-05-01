@@ -60,31 +60,6 @@ module Coradoc
   # @see Coradoc::TransformationError Model transformation errors
   # @see Coradoc::UnsupportedFormatError Unsupported format errors
 
-  # Short name aliases for format names
-  FORMAT_ALIASES = {
-    'adoc' => :asciidoc,
-    'asciidoc' => :asciidoc,
-    'docx' => :docx,
-    'html' => :html,
-    'md' => :markdown,
-    'markdown' => :markdown
-  }.freeze
-
-  # Extension to format mapping for auto-detection
-  EXTENSION_FORMATS = {
-    '.adoc' => :asciidoc,
-    '.asciidoc' => :asciidoc,
-    '.docx' => :docx,
-    '.html' => :html,
-    '.htm' => :html,
-    '.md' => :markdown,
-    '.markdown' => :markdown,
-    '.mdown' => :markdown
-  }.freeze
-
-  # Formats that require file path input (not text content)
-  BINARY_FORMATS = %i[docx].freeze
-
   class << self
     # Get the format registry
     #
@@ -242,7 +217,11 @@ module Coradoc
     #   Coradoc.detect_format("file.md")        # => :markdown
     def detect_format(filename)
       ext = File.extname(filename).downcase
-      EXTENSION_FORMATS[ext]
+      registry.each do |name, _mod|
+        opts = registry.options_for(name)
+        return name if opts[:extensions]&.include?(ext)
+      end
+      nil
     end
 
     # Parse a document from a file path
@@ -297,7 +276,8 @@ module Coradoc
     # @param format [Symbol] the format to check
     # @return [Boolean] true if the format is binary
     def binary_format?(format)
-      BINARY_FORMATS.include?(format)
+      opts = registry.options_for(format)
+      opts&.fetch(:binary, false) == true
     end
 
     # Normalize a format name string to a symbol
@@ -309,7 +289,12 @@ module Coradoc
     def normalize_format(name)
       return nil unless name
 
-      FORMAT_ALIASES[name.to_s.downcase] || name.to_sym
+      key = name.to_s.downcase
+      registry.each do |fmt_name, _mod|
+        opts = registry.options_for(fmt_name)
+        return fmt_name if opts[:aliases]&.include?(key)
+      end
+      key.to_sym
     end
 
     # Check if a format supports serialization (writing output)
