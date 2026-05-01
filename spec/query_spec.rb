@@ -226,4 +226,30 @@ RSpec.describe Coradoc::Query do
       expect(result).to be_a(Coradoc::Query::ResultSet)
     end
   end
+
+  describe '.get_children' do
+    it 'returns empty array for nil' do
+      expect(described_class.get_children(nil)).to eq([])
+    end
+
+    it 'returns children from elements with children attribute' do
+      child = Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'text')
+      parent = Coradoc::CoreModel::StructuralElement.new(
+        element_type: 'section',
+        children: [child]
+      )
+
+      expect(described_class.get_children(parent)).to eq([child])
+    end
+
+    it 'returns empty array for element with empty children' do
+      element = Coradoc::CoreModel::Block.new(element_type: 'paragraph')
+      expect(described_class.get_children(element)).to eq([])
+    end
+
+    it 'returns empty array for plain string content' do
+      element = Coradoc::CoreModel::InlineElement.new(content: 'plain text')
+      expect(described_class.get_children(element)).to eq([])
+    end
+  end
 end
