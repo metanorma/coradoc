@@ -273,6 +273,16 @@ module Coradoc
     end
   end
 
+  # Error raised when a file is not found
+  class FileNotFoundError < Error
+    attr_reader :path
+
+    def initialize(path)
+      @path = path
+      super("File not found: #{path}")
+    end
+  end
+
   # Error raised when a requested format is not supported
   #
   # @example
