@@ -1,111 +1,158 @@
 # frozen_string_literal: true
 
 module Coradoc
-  # Registry for format-specific modules
+  # General-purpose named-item registry.
   #
-  # The Registry provides a central location for format gems to register
-  # themselves. This enables the hub-and-spoke architecture where format
-  # gems can discover each other through the registry.
+  # Used by the format registry (Coradoc.registry), Input processors,
+  # and Output processors. Each instance stores items keyed by symbol
+  # name, with optional per-item options.
   #
-  # @example Registering a format
-  #   Coradoc.registry.register(:asciidoc, Coradoc::AsciiDoc)
+  # @example Format registry
+  #   registry = Registry.new
+  #   registry.register(:html, Coradoc::Html)
+  #   registry.get(:html)  # => Coradoc::Html
   #
-  # @example Getting a registered format
-  #   asciidoc = Coradoc.registry.get(:asciidoc)
+  # @example Processor registry (self-identifying items)
+  #   registry = Registry.new(error_label: "input processor")
+  #   registry.define(MyProcessor)  # uses MyProcessor.processor_id
+  #   registry.for_file("doc.html") # checks processor_match? on each item
   #
-  # @example Listing all formats
-  #   formats = Coradoc.registry.list
-  #   # => [:asciidoc, :html, :markdown]
   class Registry
-    # Initialize a new registry
-    def initialize
-      @formats = {}
+    attr_reader :error_label
+
+    # @param error_label [String, nil] label for error messages in #process
+    def initialize(error_label: nil)
+      @items = {}
       @options = {}
+      @error_label = error_label
     end
 
-    # Register a format module
+    # Register an item by explicit name
     #
-    # @param name [Symbol] the format name
-    # @param format_module [Module] the format module
-    # @param options [Hash] optional configuration (e.g., extensions: [])
-    # @return [void]
+    # @param name [Symbol] the item name
+    # @param item [Object] the item to register
+    # @param opts [Hash] optional per-item configuration
     # @raise [ArgumentError] if name is not a Symbol
-    def register(name, format_module, options = {})
-      raise ArgumentError, "Format name must be a Symbol, got #{name.class}" unless name.is_a?(Symbol)
+    def register(name, item, opts = {})
+      raise ArgumentError, "Name must be a Symbol, got #{name.class}" unless name.is_a?(Symbol)
 
-      @formats[name] = format_module
-      @options[name] = options
+      @items[name] = item
+      @options[name] = opts
     end
 
-    # Get a registered format module
+    # Register a self-identifying item (extracts name via processor_id)
     #
-    # @param name [Symbol] the format name
-    # @return [Module, nil] the format module or nil if not found
+    # @param item [Object] item that responds to #processor_id
+    # @param options [Hash] optional per-item configuration
+    # @return [void]
+    def define(item, **opts)
+      return unless item.respond_to?(:processor_id)
+
+      register(item.processor_id, item, opts)
+    end
+
+    # Get a registered item by name
+    #
+    # @param name [Symbol, String] the item name (strings are coerced to symbols)
+    # @return [Object, nil]
     def get(name)
-      @formats[name]
+      @items[name.to_sym]
     end
     alias [] get
 
-    # Get options for a registered format
+    # Get options for a registered item
     #
-    # @param name [Symbol] the format name
-    # @return [Hash, nil] the options hash or nil if not found
+    # @param name [Symbol]
+    # @return [Hash, nil]
     def options_for(name)
       @options[name]
     end
 
-    # Check if a format is registered
+    # Check if an item is registered
     #
-    # @param name [Symbol] the format name
-    # @return [Boolean] true if registered, false otherwise
+    # @param name [Symbol]
+    # @return [Boolean]
     def registered?(name)
-      @formats.key?(name)
+      @items.key?(name)
     end
 
-    # List all registered format names
+    # List all registered item names
     #
-    # @return [Array<Symbol>] list of format names
+    # @return [Array<Symbol>]
     def list
-      @formats.keys
+      @items.keys
     end
 
-    # Get the number of registered formats
+    # Direct access to the items hash (for backward compatibility)
+    # @return [Hash<Symbol, Object>]
+    def items
+      @items
+    end
+
+    # Number of registered items
     #
-    # @return [Integer] the count of registered formats
+    # @return [Integer]
     def size
-      @formats.size
+      @items.size
     end
 
-    # Clear all registered formats
-    #
-    # @return [void]
+    # Remove all registered items
     def clear
-      @formats.clear
+      @items.clear
       @options.clear
     end
 
-    # Iterate over all registered formats
+    # Iterate over all items
     #
-    # @yield [Symbol, Module] the format name and module
-    # @return [Enumerator] if no block given
+    # @yield [Symbol, Object] name and item
+    # @return [Enumerator]
     def each(&block)
-      @formats.each(&block)
+      @items.each(&block)
     end
 
-    # Iterate over all registered format modules
+    # Iterate over item values
     #
-    # @yield [Module] the format module
-    # @return [Enumerator] if no block given
+    # @yield [Object]
+    # @return [Enumerator]
     def each_value(&block)
-      @formats.each_value(&block)
+      @items.each_value(&block)
     end
 
-    # Iterate over all registered format names
+    # Iterate over item names
     #
-    # @yield [Symbol] the format name
-    # @return [Enumerator] if no block given
+    # @yield [Symbol]
+    # @return [Enumerator]
     def each_key(&block)
-      @formats.each_key(&block)
+      @items.each_key(&block)
+    end
+
+    # Find an item whose processor_match? returns true for the given filename
+    #
+    # @param filename [String]
+    # @return [Object, nil]
+    def for_file(filename)
+      @items.values.find do |item|
+        item.respond_to?(:processor_match?) && item.processor_match?(filename)
+      end
+    end
+
+    # Resolve and execute: find item by format or filename, call processor_execute
+    #
+    # @param content [Object] content to process
+    # @param options [Hash] :format or :filename for resolution
+    # @return [Object] result of processor_execute
+    # @raise [ArgumentError] if no matching item found
+    def process(content, options = {})
+      item = if options[:format]
+               get(options[:format])
+             elsif options[:filename]
+               for_file(options[:filename])
+             end
+
+      label = @error_label || "processor"
+      raise ArgumentError, "No #{label} found for: #{options}" unless item
+
+      item.processor_execute(content, options)
     end
   end
 end
