@@ -239,6 +239,16 @@ module Coradoc
       Transform::ToCoreModel.transform(document)
     end
 
+    # Check if this format can transform the given model to CoreModel
+    #
+    # HTML produces CoreModel directly, so it only handles already-CoreModel objects.
+    #
+    # @param model [Object] The model to check
+    # @return [Boolean] true if the model is already CoreModel
+    def self.handles_model?(model)
+      model.is_a?(Coradoc::CoreModel::Base)
+    end
+
     def self.to_core(document)
       to_core_model(document)
     end

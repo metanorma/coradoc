@@ -147,6 +147,14 @@ module Coradoc
         Serializer.serialize(document, options)
       end
 
+      # Check if this format can transform the given model to CoreModel
+      #
+      # @param model [Object] The model to check
+      # @return [Boolean] true if this format handles the model type
+      def handles_model?(model)
+        model.is_a?(Coradoc::Markdown::Base)
+      end
+
       # Transform Markdown model to CoreModel
       #
       # @param document [Coradoc::Markdown::Document] The Markdown document
