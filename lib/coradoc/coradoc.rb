@@ -76,6 +76,7 @@ module Coradoc
     # @return [void]
     def register_format(format_name, format_module, **options)
       registry.register(format_name, format_module, options)
+      FormatModule.validate!(format_module, format_name)
     end
 
     # Get a registered format
@@ -117,17 +118,7 @@ module Coradoc
               "Available formats: #{registered_formats.join(', ')}"
       end
 
-      # Check if format module responds to parse_to_core (preferred)
-      if format_module.respond_to?(:parse_to_core)
-        format_module.parse_to_core(text)
-      elsif format_module.respond_to?(:parse)
-        # Fall back to parse method, then transform to CoreModel
-        doc = format_module.parse(text)
-        to_core(doc)
-      else
-        raise UnsupportedFormatError,
-              "Format module #{format_module} does not implement parse or parse_to_core"
-      end
+      format_module.parse_to_core(text)
     end
 
     # Convert document text from one format to another
@@ -162,10 +153,8 @@ module Coradoc
     def to_core(model)
       return model if model.is_a?(CoreModel::Base)
 
-      # Try to find a transformer via registered formats
       registry.each_value do |format_module|
         next unless format_module.respond_to?(:handles_model?) && format_module.handles_model?(model)
-        next unless format_module.respond_to?(:to_core)
 
         return format_module.to_core(model)
       end
@@ -182,12 +171,6 @@ module Coradoc
     def serialize(model, to:, **options)
       format_module = get_format(to)
       raise UnsupportedFormatError, "Format '#{to}' is not registered" unless format_module
-
-      # Check if format module has serialize method
-      unless format_module.respond_to?(:serialize)
-        raise UnsupportedFormatError,
-              "Format module #{format_module} does not implement serialize"
-      end
 
       format_module.serialize(model, **options)
     end
@@ -246,7 +229,7 @@ module Coradoc
       format_module = get_format(source_format)
       raise UnsupportedFormatError, "Format '#{source_format}' is not registered" unless format_module
 
-      if format_module.respond_to?(:parse_to_core) && binary_format?(source_format)
+      if binary_format?(source_format)
         format_module.parse_to_core(path)
       else
         content = File.read(path)
@@ -305,7 +288,7 @@ module Coradoc
     # @return [Boolean] true if the format can serialize
     def serialize_format?(format)
       mod = get_format(format)
-      return false unless mod&.respond_to?(:serialize)
+      return false unless mod
 
       return mod.serialize? if mod.respond_to?(:serialize?)
 
@@ -447,6 +430,7 @@ module Coradoc
   autoload :Query, "#{__dir__}/query"
   autoload :Validation, "#{__dir__}/validation"
   autoload :Configurable, "#{__dir__}/configurable"
+  autoload :FormatModule, "#{__dir__}/format_module"
 end
 
 require_relative 'core_model'
