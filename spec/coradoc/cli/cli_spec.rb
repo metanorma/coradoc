@@ -222,12 +222,12 @@ RSpec.describe Coradoc::CLI do
     end
   end
 
-  describe 'FORMAT_ALIASES' do
+  describe 'FORMAT_ALIASES (delegated to Coradoc)' do
     it 'maps common aliases to format names' do
-      expect(described_class::FORMAT_ALIASES['adoc']).to eq(:asciidoc)
-      expect(described_class::FORMAT_ALIASES['md']).to eq(:markdown)
-      expect(described_class::FORMAT_ALIASES['html']).to eq(:html)
-      expect(described_class::FORMAT_ALIASES['docx']).to eq(:docx)
+      expect(Coradoc.normalize_format('adoc')).to eq(:asciidoc)
+      expect(Coradoc.normalize_format('md')).to eq(:markdown)
+      expect(Coradoc.normalize_format('html')).to eq(:html)
+      expect(Coradoc.normalize_format('docx')).to eq(:docx)
     end
   end
 

@@ -19,16 +19,6 @@ module Coradoc
   class CLI < Thor
     package_name 'Coradoc'
 
-    # Map common shortcuts to format names
-    FORMAT_ALIASES = {
-      'adoc' => :asciidoc,
-      'asciidoc' => :asciidoc,
-      'docx' => :docx,
-      'html' => :html,
-      'md' => :markdown,
-      'markdown' => :markdown
-    }.freeze
-
     def self.exit_on_failure?
       true
     end
@@ -56,8 +46,7 @@ module Coradoc
       end
 
       # Reject unsupported target formats (e.g., docx is parse-only)
-      target_mod = Coradoc.get_format(target_format)
-      if target_mod.respond_to?(:serialize?) && !target_mod.serialize?
+      unless Coradoc.serialize_format?(target_format)
         error "Error: Converting to #{target_format} is not yet supported."
         exit 1
       end
@@ -87,11 +76,11 @@ module Coradoc
     desc 'formats', 'List supported formats'
     def formats
       formats_info = Coradoc.registered_formats.map do |format|
-        mod = Coradoc.get_format(format)
         {
           name: format,
-          can_parse: mod.respond_to?(:parse_to_core) || mod.respond_to?(:parse),
-          can_serialize: format_serialize?(mod)
+          can_parse: Coradoc.get_format(format)&.respond_to?(:parse_to_core) ||
+                     Coradoc.get_format(format)&.respond_to?(:parse),
+          can_serialize: Coradoc.serialize_format?(format)
         }
       end
 
@@ -130,28 +119,20 @@ module Coradoc
 
       verbose_log "Validating #{file} (#{source_format})"
 
-      # Parse the document
-      doc = parse_from_file(file, source_format)
+      result = Coradoc.validate_file(file, format: source_format)
 
-      # Validate using the Validation framework
-      if defined?(Coradoc::Validation::SchemaGenerator)
-        schema = Coradoc::Validation::SchemaGenerator.generate(doc.class)
-        if schema
-          result = schema.validate(doc)
-          if result.valid?
-            puts '✓ Document is valid'
-          else
-            error '✗ Document has validation errors:'
-            result.errors.each do |err|
-              error "  - #{err.path}: #{err.message}"
-            end
-            exit 1
-          end
+      if result.valid?
+        if result.errors.empty? && result.warnings.empty?
+          puts '✓ Document parsed successfully'
         else
-          puts '✓ Document parsed successfully (no schema generated)'
+          puts '✓ Document is valid'
         end
       else
-        puts '✓ Document parsed successfully'
+        error '✗ Document has validation errors:'
+        result.errors.each do |err|
+          error "  - #{err.path}: #{err.message}"
+        end
+        exit 1
       end
     rescue Coradoc::ParseError => e
       error "Parse error: #{e.message}"
@@ -222,32 +203,26 @@ module Coradoc
 
       verbose_log "Analyzing #{file} (#{source_format})"
 
-      # Parse the document
       doc = parse_from_file(file, source_format)
+      stats = Coradoc.document_stats(doc)
 
-      # Gather statistics
+      # Display
       puts 'Document Information'
       puts '=' * 40
       puts "Format: #{source_format}"
       puts "File size: #{File.size(file)} bytes"
       unless binary_format?(source_format)
-        content = File.read(file)
-        puts "Line count: #{content.lines.count}"
+        puts "Line count: #{File.read(file).lines.count}"
       end
 
-      puts "Title: #{doc.title}" if doc.respond_to?(:title) && doc.title
+      puts "Title: #{stats[:title]}" if stats[:title]
+      puts "Child elements: #{stats[:child_count]}" if stats[:child_count]
 
-      puts "Child elements: #{count_elements(doc)}" if doc.respond_to?(:children)
-
-      # Count element types
-      if defined?(Coradoc::Query)
-        element_counts = count_element_types(doc)
-        unless element_counts.empty?
-          puts ''
-          puts 'Element Counts:'
-          element_counts.each do |type, count|
-            puts "  #{type}: #{count}"
-          end
+      if stats[:element_counts]&.any?
+        puts ''
+        puts 'Element Counts:'
+        stats[:element_counts].each do |type, count|
+          puts "  #{type}: #{count}"
         end
       end
     rescue StandardError => e
@@ -276,9 +251,7 @@ module Coradoc
 
     # Normalize format name (handle aliases)
     def normalize_format(format)
-      return nil unless format
-
-      FORMAT_ALIASES[format.to_s.downcase] || format.to_sym
+      Coradoc.normalize_format(format)
     end
 
     # Get list of registered formats
@@ -332,43 +305,7 @@ module Coradoc
 
     # Describe an element for display
     def describe_element(elem)
-      return elem.to_s unless elem.is_a?(Coradoc::CoreModel::Base)
-
-      type = elem.class.name.split('::').last
-      if elem.respond_to?(:title) && elem.title
-        "#{type}: #{elem.title}"
-      elsif elem.respond_to?(:content) && elem.content
-        content_preview = elem.content.to_s[0..50]
-        content_preview += '...' if elem.content.to_s.length > 50
-        "#{type}: #{content_preview}"
-      else
-        type
-      end
-    end
-
-    # Count total elements in a document
-    def count_elements(doc)
-      return 0 unless doc.respond_to?(:children)
-
-      result = 0
-      doc.children.each do |child|
-        result += 1
-        result += count_elements(child) if child.respond_to?(:children)
-      end
-      result
-    end
-
-    # Count elements by type
-    def count_element_types(doc)
-      return {} unless defined?(Coradoc::Query)
-
-      types = %w[section paragraph block list_block table image inline_element]
-      types.each_with_object({}) do |type, counts|
-        results = Coradoc::Query.query(doc, type)
-        counts[type] = results.length if results.length.positive?
-      rescue StandardError
-        # Skip types that can't be queried
-      end
+      Coradoc.describe_element(elem)
     end
 
     # Check if a format requires binary (file path) input
@@ -385,14 +322,6 @@ module Coradoc
     def convert_binary(file_path, source_format, target_format, options)
       conversion_options = build_options(options, target_format)
       Coradoc.convert_file(file_path, from: source_format, to: target_format, **conversion_options)
-    end
-
-    # Check if a format module supports serialization
-    def format_serialize?(mod)
-      return false unless mod.respond_to?(:serialize)
-      return mod.serialize? if mod.respond_to?(:serialize?)
-
-      true
     end
   end
 end
