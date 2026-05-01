@@ -232,17 +232,17 @@ RSpec.describe Coradoc::CLI do
   end
 
   describe 'EXTENSION_FORMATS' do
-    it 'maps file extensions to formats' do
-      expect(described_class::EXTENSION_FORMATS['.md']).to eq(:markdown)
-      expect(described_class::EXTENSION_FORMATS['.html']).to eq(:html)
-      expect(described_class::EXTENSION_FORMATS['.adoc']).to eq(:asciidoc)
-      expect(described_class::EXTENSION_FORMATS['.docx']).to eq(:docx)
+    it 'maps file extensions to formats via Coradoc API' do
+      expect(Coradoc::EXTENSION_FORMATS['.md']).to eq(:markdown)
+      expect(Coradoc::EXTENSION_FORMATS['.html']).to eq(:html)
+      expect(Coradoc::EXTENSION_FORMATS['.adoc']).to eq(:asciidoc)
+      expect(Coradoc::EXTENSION_FORMATS['.docx']).to eq(:docx)
     end
   end
 
   describe 'BINARY_FORMATS' do
-    it 'includes docx' do
-      expect(described_class::BINARY_FORMATS).to include(:docx)
+    it 'includes docx via Coradoc API' do
+      expect(Coradoc::BINARY_FORMATS).to include(:docx)
     end
   end
 

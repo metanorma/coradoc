@@ -60,6 +60,21 @@ module Coradoc
   # @see Coradoc::TransformationError Model transformation errors
   # @see Coradoc::UnsupportedFormatError Unsupported format errors
 
+  # Extension to format mapping for auto-detection
+  EXTENSION_FORMATS = {
+    '.adoc' => :asciidoc,
+    '.asciidoc' => :asciidoc,
+    '.docx' => :docx,
+    '.html' => :html,
+    '.htm' => :html,
+    '.md' => :markdown,
+    '.markdown' => :markdown,
+    '.mdown' => :markdown
+  }.freeze
+
+  # Formats that require file path input (not text content)
+  BINARY_FORMATS = %i[docx].freeze
+
   class << self
     # Get the format registry
     #
@@ -162,9 +177,6 @@ module Coradoc
     def to_core(model)
       return model if model.is_a?(CoreModel::Base)
 
-      # Check if model is an AsciiDoc model
-      return Coradoc::AsciiDoc::Transform::ToCoreModel.transform(model) if defined?(Coradoc::AsciiDoc::Model::Base) && model.is_a?(Coradoc::AsciiDoc::Model::Base)
-
       # Try to find a transformer via registered formats
       registry.each_value do |format_module|
         next unless format_module.respond_to?(:to_core)
@@ -208,6 +220,74 @@ module Coradoc
     def manipulate(document)
       require_relative 'document_manipulator'
       DocumentManipulator.new(document)
+    end
+
+    # Detect format from a file extension
+    #
+    # @param filename [String] Filename or extension to detect
+    # @return [Symbol, nil] the detected format symbol
+    #
+    # @example
+    #   Coradoc.detect_format("document.adoc")  # => :asciidoc
+    #   Coradoc.detect_format("file.md")        # => :markdown
+    def detect_format(filename)
+      ext = File.extname(filename).downcase
+      EXTENSION_FORMATS[ext]
+    end
+
+    # Parse a document from a file path
+    #
+    # Handles both text formats (reads file content) and binary formats
+    # (passes file path directly to the format module).
+    #
+    # @param path [String] path to the document file
+    # @param format [Symbol, nil] source format (auto-detected if nil)
+    # @return [Coradoc::CoreModel::Base] the parsed CoreModel document
+    # @raise [UnsupportedFormatError] if format is not detected or registered
+    #
+    # @example
+    #   doc = Coradoc.parse_file("document.adoc")
+    #   doc = Coradoc.parse_file("report.docx", format: :docx)
+    def parse_file(path, format: nil)
+      source_format = format || detect_format(path)
+      raise UnsupportedFormatError, "Could not detect format for: #{path}" unless source_format
+
+      format_module = get_format(source_format)
+      raise UnsupportedFormatError, "Format '#{source_format}' is not registered" unless format_module
+
+      if format_module.respond_to?(:parse_to_core) && binary_format?(source_format)
+        format_module.parse_to_core(path)
+      else
+        content = File.read(path)
+        parse(content, format: source_format)
+      end
+    end
+
+    # Convert a file from one format to another
+    #
+    # @param path [String] path to the source document file
+    # @param from [Symbol, nil] source format (auto-detected if nil)
+    # @param to [Symbol] target format
+    # @param options [Hash] additional options
+    # @return [String] the converted document text
+    #
+    # @example
+    #   html = Coradoc.convert_file("document.adoc", to: :html)
+    #   adoc = Coradoc.convert_file("report.docx", to: :asciidoc)
+    def convert_file(path, from: nil, to:, **options)
+      source_format = from || detect_format(path)
+      raise UnsupportedFormatError, "Could not detect format for: #{path}" unless source_format
+
+      core = parse_file(path, format: source_format)
+      serialize(core, to: to, **options)
+    end
+
+    # Check if a format requires binary (file path) input
+    #
+    # @param format [Symbol] the format to check
+    # @return [Boolean] true if the format is binary
+    def binary_format?(format)
+      BINARY_FORMATS.include?(format)
     end
 
     # Strip unicode whitespace from a string

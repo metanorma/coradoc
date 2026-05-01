@@ -532,22 +532,7 @@ module Coradoc
       end
 
       def get_children(element)
-        return [] unless element
-
-        case element
-        when Coradoc::CoreModel::StructuralElement
-          element.children || []
-        when Coradoc::CoreModel::Block
-          Array(element.content).select { |c| c.is_a?(Coradoc::CoreModel::Base) }
-        else
-          if element.respond_to?(:children)
-            Array(element.children)
-          elsif element.respond_to?(:content)
-            Array(element.content).select { |c| c.is_a?(Coradoc::CoreModel::Base) }
-          else
-            []
-          end
-        end
+        Query.get_children(element)
       end
     end
 
@@ -583,6 +568,24 @@ module Coradoc
         ResultSet.new(results)
       end
 
+      # Get navigable children from an element.
+      # Uses ChildrenContent#children when available, falls back to content.
+      #
+      # @param element [Object] Element to get children from
+      # @return [Array] Navigable child elements
+      def get_children(element)
+        return [] unless element
+
+        children = if element.respond_to?(:children) && element.children&.any?
+                     element.children
+                   elsif element.respond_to?(:content) && element.content
+                     Array(element.content).select { |c| c.is_a?(CoreModel::Base) }
+                   else
+                     []
+                   end
+        Array(children)
+      end
+
       private
 
       def traverse_children(element, siblings: [], index: 0, &block)
@@ -590,25 +593,6 @@ module Coradoc
         children.each_with_index do |child, i|
           yield(child, children, i)
           traverse_children(child, &block)
-        end
-      end
-
-      def get_children(element)
-        return [] unless element
-
-        case element
-        when Coradoc::CoreModel::StructuralElement
-          element.children || []
-        when Coradoc::CoreModel::Block
-          Array(element.content).select { |c| c.is_a?(Coradoc::CoreModel::Base) }
-        else
-          if element.respond_to?(:children)
-            Array(element.children)
-          elsif element.respond_to?(:content)
-            Array(element.content).select { |c| c.is_a?(Coradoc::CoreModel::Base) }
-          else
-            []
-          end
         end
       end
     end

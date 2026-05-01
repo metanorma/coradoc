@@ -270,5 +270,28 @@ RSpec.describe Coradoc::Visitor do
 
       expect(visited).to include(admonition)
     end
+
+    it 'dispatches AnnotationBlock to visit_annotation_block, not visit_block' do
+      dispatch_log = []
+      visitor = Class.new(Coradoc::Visitor::Base) do
+        define_method(:visit_annotation_block) { |el| dispatch_log << :annotation_block; super(el) }
+        define_method(:visit_block) { |el| dispatch_log << :block; super(el) }
+      end.new
+
+      admonition.accept(visitor)
+
+      expect(dispatch_log).to eq([:annotation_block])
+    end
+
+    it 'does not dispatch AnnotationBlock to visit_block' do
+      block_visits = 0
+      visitor = Class.new(Coradoc::Visitor::Base) do
+        define_method(:visit_block) { |el| block_visits += 1; super(el) }
+      end.new
+
+      admonition.accept(visitor)
+
+      expect(block_visits).to eq(0)
+    end
   end
 end
