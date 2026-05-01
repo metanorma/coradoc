@@ -89,6 +89,12 @@ module Coradoc
           visit_toc(element)
         when CoreModel::TocEntry
           visit_toc_entry(element)
+        when CoreModel::Metadata
+          visit_metadata(element)
+        when CoreModel::MetadataEntry
+          visit_metadata_entry(element)
+        when CoreModel::ElementAttribute
+          visit_element_attribute(element)
         when Array
           visit_array(element)
         else
@@ -216,6 +222,21 @@ module Coradoc
       # Visit a TOC entry
       def visit_toc_entry(element)
         visit_children(element.children) if element.respond_to?(:children)
+      end
+
+      # Visit metadata
+      def visit_metadata(element)
+        visit_children(element.entries) if element.respond_to?(:entries)
+      end
+
+      # Visit a metadata entry
+      def visit_metadata_entry(element)
+        # MetadataEntry is a leaf node
+      end
+
+      # Visit an element attribute
+      def visit_element_attribute(element)
+        # ElementAttribute is a leaf node
       end
 
       # Visit an array of elements

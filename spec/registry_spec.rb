@@ -127,6 +127,44 @@ RSpec.describe Coradoc::Registry do
     end
   end
 
+  describe '#each_value' do
+    it 'iterates over item values' do
+      mod1 = Module.new
+      mod2 = Module.new
+      registry.register(:a, mod1)
+      registry.register(:b, mod2)
+
+      values = []
+      registry.each_value { |v| values << v }
+
+      expect(values).to contain_exactly(mod1, mod2)
+    end
+  end
+
+  describe '#each_key' do
+    it 'iterates over item names' do
+      registry.register(:x, Module.new)
+      registry.register(:y, Module.new)
+
+      keys = []
+      registry.each_key { |k| keys << k }
+
+      expect(keys).to contain_exactly(:x, :y)
+    end
+  end
+
+  describe '#options_for' do
+    it 'returns options for a registered item' do
+      registry.register(:fmt, Module.new, extensions: ['.txt'])
+
+      expect(registry.options_for(:fmt)).to eq(extensions: ['.txt'])
+    end
+
+    it 'returns nil for unregistered item' do
+      expect(registry.options_for(:missing)).to be_nil
+    end
+  end
+
   describe '#define' do
     it 'registers a self-identifying item via processor_id' do
       processor = Module.new do
