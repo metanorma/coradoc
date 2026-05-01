@@ -164,21 +164,20 @@ RSpec.describe Coradoc::Transform::Helpers do
       expect(helper.core_model?(123)).to be false
     end
 
-    context 'with CoreModel classes' do
-      before do
-        # Define a test CoreModel class
-        module Coradoc
-          module CoreModel
-            class TestBase; end
-          end
-        end
-      end
+    it 'returns true for CoreModel::Base instances' do
+      block = Coradoc::CoreModel::Block.new(content: 'test')
+      expect(helper.core_model?(block)).to be true
+    end
 
-      it 'returns true for CoreModel objects' do
-        obj = Coradoc::CoreModel::TestBase.new
+    it 'returns true for CoreModel::StructuralElement instances' do
+      element = Coradoc::CoreModel::StructuralElement.new(element_type: 'section')
+      expect(helper.core_model?(element)).to be true
+    end
 
-        expect(helper.core_model?(obj)).to be true
-      end
+    it 'returns false for objects in Coradoc::CoreModel namespace that are not Base' do
+      plain = Object.new
+      allow(plain).to receive(:class).and_return(Class.new.tap { |c| c.define_singleton_method(:name) { 'Coradoc::CoreModel::Fake' } })
+      expect(helper.core_model?(plain)).to be false
     end
   end
 
