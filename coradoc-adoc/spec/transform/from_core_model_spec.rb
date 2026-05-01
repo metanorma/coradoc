@@ -120,6 +120,79 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
         expect(result).to be_a(Coradoc::AsciiDoc::Model::Admonition)
         expect(result.type).to eq('NOTE')
       end
+
+      it 'distinguishes AnnotationBlock from Block (AnnotationBlock < Block)' do
+        annotation = Coradoc::CoreModel::AnnotationBlock.new(
+          annotation_type: 'warning',
+          content: 'Danger'
+        )
+
+        result = transformer.transform(annotation)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Admonition)
+        expect(result.type).to eq('WARNING')
+      end
+    end
+
+    context 'when transforming inline elements' do
+      it 'transforms bold to Inline::Bold' do
+        inline = Coradoc::CoreModel::InlineElement.new(format_type: 'bold', content: 'bold text')
+
+        result = transformer.transform(inline)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Inline::Bold)
+      end
+
+      it 'transforms italic to Inline::Italic' do
+        inline = Coradoc::CoreModel::InlineElement.new(format_type: 'italic', content: 'italic text')
+
+        result = transformer.transform(inline)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Inline::Italic)
+      end
+
+      it 'transforms monospace to Inline::Monospace' do
+        inline = Coradoc::CoreModel::InlineElement.new(format_type: 'monospace', content: 'code')
+
+        result = transformer.transform(inline)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Inline::Monospace)
+      end
+
+      it 'transforms link to Inline::CrossReference for xref' do
+        inline = Coradoc::CoreModel::InlineElement.new(
+          format_type: 'xref', content: 'Section', target: 'section_1'
+        )
+
+        result = transformer.transform(inline)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Inline::CrossReference)
+      end
+    end
+
+    context 'when transforming a footnote' do
+      it 'transforms a CoreModel footnote to AsciiDoc' do
+        footnote = Coradoc::CoreModel::Footnote.new(id: '1', content: 'A footnote')
+
+        result = transformer.transform(footnote)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Inline::Footnote)
+      end
+    end
+
+    context 'when transforming a definition list' do
+      it 'transforms a CoreModel definition list to AsciiDoc' do
+        dl = Coradoc::CoreModel::DefinitionList.new(
+          items: [
+            Coradoc::CoreModel::DefinitionItem.new(term: 'Term 1', definitions: ['Definition 1'])
+          ]
+        )
+
+        result = transformer.transform(dl)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::List::Definition)
+        expect(result.items.count).to eq(1)
+      end
     end
 
     context 'when transforming an array' do
