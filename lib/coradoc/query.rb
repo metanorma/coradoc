@@ -191,21 +191,25 @@ module Coradoc
       def type_matches?(element)
         return true if @element_type == '*'
 
-        # First check the element_type attribute if present (for StructuralElement)
-        return true if element.respond_to?(:element_type) && element.element_type && (element.element_type.to_s.downcase == @element_type.downcase)
+        # First check the element_type attribute if present (for StructuralElement/Block)
+        if element.respond_to?(:element_type) && element.element_type
+          return element.element_type.to_s.downcase == @element_type.downcase
+        end
 
-        # Then check the class name
-        element_type = element.class.name
-                              .to_s
-                              .split('::')
-                              .last
-                              .gsub(/([A-Z])/) { "_#{::Regexp.last_match(1).downcase}" }
-                              .sub(/^_/, '')
-                              .downcase
+        # Then check the class-derived snake_case name (exact match only)
+        class_name = class_to_query_name(element.class)
 
-        element_type == @element_type ||
-          element_type.include?(@element_type) ||
-          element_type.delete('_').include?(@element_type.delete('_'))
+        class_name == @element_type
+      end
+
+      def class_to_query_name(klass)
+        klass.name
+             .to_s
+             .split('::')
+             .last
+             .gsub(/([A-Z])/) { "_#{::Regexp.last_match(1).downcase}" }
+             .sub(/^_/, '')
+             .downcase
       end
 
       def element_id(element)

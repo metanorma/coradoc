@@ -70,6 +70,33 @@ RSpec.describe Coradoc::Query do
         expect(selector.matches?(section)).to be true
       end
 
+      it 'matches class-derived name exactly' do
+        selector = described_class.parse('list_block')
+        list = Coradoc::CoreModel::ListBlock.new(marker_type: 'unordered')
+        expect(selector.matches?(list)).to be true
+      end
+
+      it 'does not match by substring' do
+        selector = described_class.parse('section')
+        reflection = Coradoc::CoreModel::StructuralElement.new(
+          element_type: 'reflection'
+        )
+        expect(selector.matches?(reflection)).to be false
+      end
+
+      it 'does not match partial class names' do
+        selector = described_class.parse('block')
+        # "block" should NOT match ListBlock via substring
+        list = Coradoc::CoreModel::ListBlock.new(marker_type: 'unordered')
+        expect(selector.matches?(list)).to be false
+      end
+
+      it 'matches image by class name' do
+        selector = described_class.parse('image')
+        img = Coradoc::CoreModel::Image.new(src: 'test.png')
+        expect(selector.matches?(img)).to be true
+      end
+
       it 'matches ID' do
         selector = described_class.parse('#intro')
         el = element.new(id: 'intro')
