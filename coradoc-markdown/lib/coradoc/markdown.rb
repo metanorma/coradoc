@@ -66,6 +66,7 @@ module Coradoc
 
     # CoreModel transformers
     module Transform
+      autoload :TextExtraction, 'coradoc/markdown/transform/text_extraction'
       autoload :ToCoreModel, 'coradoc/markdown/transform/to_core_model'
       autoload :FromCoreModel, 'coradoc/markdown/transform/from_core_model'
     end

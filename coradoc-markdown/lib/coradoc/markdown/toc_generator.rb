@@ -24,6 +24,8 @@ module Coradoc
     #   )
     #
     class TocGenerator
+      include Transform::TextExtraction
+
       # Default options for TOC generation
       DEFAULT_OPTIONS = {
         min_level: 1,
@@ -206,13 +208,6 @@ module Coradoc
           parts << counters[l] if counters[l]&.positive?
         end
         parts.join('.')
-      end
-
-      def extract_text(text)
-        return '' if text.nil?
-        return text.content.to_s if text.is_a?(Coradoc::Markdown::Text)
-
-        text.to_s
       end
     end
   end

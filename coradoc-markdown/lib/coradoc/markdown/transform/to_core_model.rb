@@ -11,6 +11,7 @@ module Coradoc
       # to the canonical CoreModel representation.
       class ToCoreModel
         class << self
+          include TextExtraction
           # Transform a Markdown model to CoreModel
           #
           # @param model [Coradoc::Markdown::Base] Markdown model to transform
@@ -274,13 +275,6 @@ module Coradoc
               element_type: 'attribute_list',
               children: attrs
             )
-          end
-
-          def extract_text(text)
-            return '' if text.nil?
-            return text.to_s unless text.is_a?(Coradoc::Markdown::Text)
-
-            text.content.to_s
           end
 
           def extract_title(doc)
