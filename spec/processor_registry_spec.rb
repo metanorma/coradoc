@@ -90,4 +90,15 @@ RSpec.describe Coradoc::ProcessorRegistry do
         .to raise_error(ArgumentError, /No test processor found/)
     end
   end
+
+  describe '#registry' do
+    it 'returns a Registry instance' do
+      expect(test_registry.registry).to be_a(Coradoc::Registry)
+    end
+
+    it 'shares state between define and registry' do
+      test_registry.define(sample_processor)
+      expect(test_registry.registry.get(:test)).to eq(sample_processor)
+    end
+  end
 end

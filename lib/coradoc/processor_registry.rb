@@ -1,84 +1,52 @@
 # frozen_string_literal: true
 
+require_relative 'registry'
+
 module Coradoc
-  # Shared registry for input/output processors.
+  # Module adapter that gives a module Registry-backed processor methods.
   #
-  # Both Input and Output modules use the same registration pattern:
-  # define/get/registered?/for_file/process. This module extracts the
-  # common logic to avoid duplication.
+  # Both Input and Output extend this module to get processor registration,
+  # lookup, and dispatch methods. All state is stored in a Registry instance.
   #
   # @api private
   #
-  # @example Including in a module
-  #   module MyRegistry
+  # @example
+  #   module Input
   #     extend ProcessorRegistry
-  #     self.error_label = "my processor"
+  #     self.error_label = "input processor"
   #   end
   module ProcessorRegistry
-    # @return [String] label used in error messages
-    attr_reader :error_label
-
-    # Set the error label for "No ... processor found" messages
-    # @param label [String]
     def error_label=(label)
       @error_label = label
     end
 
-    # Get all registered processors
-    # @return [Hash<Symbol, Module>]
-    def processors
-      @processors ||= {}
+    def registry
+      @registry ||= Registry.new(error_label: @error_label)
     end
 
-    # Register a processor
-    # @param processor [Module] Processor module to register
-    # @return [void]
-    def define(processor)
-      return unless processor.respond_to?(:processor_id)
-
-      processors[processor.processor_id] = processor
+    def define(processor, **options)
+      registry.define(processor, **options)
     end
 
-    # Get a processor by ID
-    # @param id [Symbol] Processor ID
-    # @return [Module, nil]
     def get(id)
-      processors[id.to_sym]
+      registry.get(id)
     end
     alias [] get
 
-    # Check if a processor is registered
-    # @param id [Symbol]
-    # @return [Boolean]
     def registered?(id)
-      processors.key?(id.to_sym)
+      registry.registered?(id)
     end
 
-    # Find processor matching a filename
-    # @param filename [String]
-    # @return [Module, nil]
+    def processors
+      registry.items
+    end
+
     def for_file(filename)
-      processors.values.find do |processor|
-        processor.respond_to?(:processor_match?) &&
-          processor.processor_match?(filename)
-      end
+      registry.for_file(filename)
     end
 
-    # Process with the appropriate processor
-    # @param content [Object] Content to process
-    # @param options [Hash]
-    # @return [Object]
     def process(content, options = {})
-      processor = if options[:format]
-                    get(options[:format])
-                  elsif options[:filename]
-                    for_file(options[:filename])
-                  end
-
-      label = error_label || "processor"
-      raise ArgumentError, "No #{label} found for: #{options}" unless processor
-
-      processor.processor_execute(content, options)
+      registry.process(content, options)
     end
   end
 end
