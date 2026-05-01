@@ -51,6 +51,8 @@ module Coradoc
         case element
         when CoreModel::StructuralElement
           visit_structural_element(element)
+        when CoreModel::AnnotationBlock
+          visit_annotation_block(element)
         when CoreModel::Block
           visit_block(element)
         when CoreModel::InlineElement
@@ -69,8 +71,6 @@ module Coradoc
           visit_image(element)
         when CoreModel::Term
           visit_term(element)
-        when CoreModel::AnnotationBlock
-          visit_annotation_block(element)
         when Array
           visit_array(element)
         else

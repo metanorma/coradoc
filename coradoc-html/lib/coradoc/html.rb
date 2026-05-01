@@ -239,6 +239,10 @@ module Coradoc
       Transform::ToCoreModel.transform(document)
     end
 
+    def self.to_core(document)
+      to_core_model(document)
+    end
+
     # Transform CoreModel to HTML-ready structure
     #
     # @param core_document [Coradoc::CoreModel::Base] CoreModel document

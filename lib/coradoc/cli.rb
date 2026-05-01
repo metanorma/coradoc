@@ -29,21 +29,6 @@ module Coradoc
       'markdown' => :markdown
     }.freeze
 
-    # Extension to format mapping for auto-detection
-    EXTENSION_FORMATS = {
-      '.adoc' => :asciidoc,
-      '.asciidoc' => :asciidoc,
-      '.docx' => :docx,
-      '.html' => :html,
-      '.htm' => :html,
-      '.md' => :markdown,
-      '.markdown' => :markdown,
-      '.mdown' => :markdown
-    }.freeze
-
-    # Formats that require file path input (not text content)
-    BINARY_FORMATS = %i[docx].freeze
-
     def self.exit_on_failure?
       true
     end
@@ -279,16 +264,14 @@ module Coradoc
     def detect_format(file, format_option)
       return normalize_format(format_option) if format_option
 
-      ext = File.extname(file).downcase
-      EXTENSION_FORMATS[ext]
+      Coradoc.detect_format(file)
     end
 
     # Detect output format from output file extension
     def detect_output_format(output_file)
       return :html unless output_file
 
-      ext = File.extname(output_file).downcase
-      EXTENSION_FORMATS[ext] || :html
+      Coradoc.detect_format(output_file) || :html
     end
 
     # Normalize format name (handle aliases)
@@ -365,73 +348,43 @@ module Coradoc
 
     # Count total elements in a document
     def count_elements(doc)
-      count = 0
-      return count unless doc.respond_to?(:children)
+      return 0 unless doc.respond_to?(:children)
 
+      result = 0
       doc.children.each do |child|
-        count += 1
-        count += count_elements(child) if child.respond_to?(:children)
+        result += 1
+        result += count_elements(child) if child.respond_to?(:children)
       end
-      count
+      result
     end
 
     # Count elements by type
     def count_element_types(doc)
-      counts = Hash.new(0)
-      return counts unless defined?(Coradoc::Query)
+      return {} unless defined?(Coradoc::Query)
 
-      # Common element types to count
       types = %w[section paragraph block list_block table image inline_element]
-
-      types.each do |type|
+      types.each_with_object({}) do |type, counts|
         results = Coradoc::Query.query(doc, type)
         counts[type] = results.length if results.length.positive?
       rescue StandardError
         # Skip types that can't be queried
       end
-
-      counts
     end
 
     # Check if a format requires binary (file path) input
     def binary_format?(format)
-      BINARY_FORMATS.include?(format)
+      Coradoc.binary_format?(format)
     end
 
     # Parse a document from file, handling both text and binary formats
     def parse_from_file(file, source_format)
-      if binary_format?(source_format)
-        format_module = Coradoc.get_format(source_format)
-        unless format_module.respond_to?(:parse_to_core)
-          raise Coradoc::UnsupportedFormatError,
-                "Format '#{source_format}' does not support parsing"
-        end
-        format_module.parse_to_core(file)
-      else
-        content = File.read(file)
-        Coradoc.parse(content, format: source_format)
-      end
+      Coradoc.parse_file(file, format: source_format)
     end
 
     # Convert from a binary format source
     def convert_binary(file_path, source_format, target_format, options)
-      format_module = Coradoc.get_format(source_format)
-      unless format_module
-        raise Coradoc::UnsupportedFormatError,
-              "Format '#{source_format}' is not registered. " \
-              "Available formats: #{Coradoc.registered_formats.join(', ')}"
-      end
-
-      unless format_module.respond_to?(:parse_to_core)
-        raise Coradoc::UnsupportedFormatError,
-              "Format module #{format_module} does not implement parse_to_core"
-      end
-
-      verbose_log "Reading binary file: #{file_path}"
-      core = format_module.parse_to_core(file_path)
-
       conversion_options = build_options(options, target_format)
-      Coradoc.serialize(core, to: target_format, **conversion_options)
+      Coradoc.convert_file(file_path, from: source_format, to: target_format, **conversion_options)
     end
 
     # Check if a format module supports serialization
