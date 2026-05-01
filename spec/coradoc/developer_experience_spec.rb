@@ -92,6 +92,18 @@ RSpec.describe Coradoc do
 
       expect(result).to eq(core)
     end
+
+    it 'raises TransformationError for unrecognised model types' do
+      expect { described_class.to_core('just a string') }.to raise_error(Coradoc::TransformationError)
+    end
+
+    it 'uses handles_model? to select the correct transformer' do
+      md_doc = Coradoc::Markdown.parse("# Title\n\nContent")
+
+      expect(Coradoc::AsciiDoc).to respond_to(:handles_model?)
+      expect(Coradoc::AsciiDoc.handles_model?(md_doc)).to be false
+      expect(Coradoc::Markdown.handles_model?(md_doc)).to be true
+    end
   end
 
   describe '.serialize' do

@@ -60,6 +60,16 @@ module Coradoc
   # @see Coradoc::TransformationError Model transformation errors
   # @see Coradoc::UnsupportedFormatError Unsupported format errors
 
+  # Short name aliases for format names
+  FORMAT_ALIASES = {
+    'adoc' => :asciidoc,
+    'asciidoc' => :asciidoc,
+    'docx' => :docx,
+    'html' => :html,
+    'md' => :markdown,
+    'markdown' => :markdown
+  }.freeze
+
   # Extension to format mapping for auto-detection
   EXTENSION_FORMATS = {
     '.adoc' => :asciidoc,
@@ -179,10 +189,10 @@ module Coradoc
 
       # Try to find a transformer via registered formats
       registry.each_value do |format_module|
+        next unless format_module.respond_to?(:handles_model?) && format_module.handles_model?(model)
         next unless format_module.respond_to?(:to_core)
 
-        result = format_module.to_core(model)
-        return result if result
+        return format_module.to_core(model)
       end
 
       raise TransformationError, "No transformer found for #{model.class}"
@@ -290,6 +300,89 @@ module Coradoc
       BINARY_FORMATS.include?(format)
     end
 
+    # Normalize a format name string to a symbol
+    #
+    # Handles common aliases like "adoc" → :asciidoc, "md" → :markdown.
+    #
+    # @param name [String, Symbol, nil] the format name to normalize
+    # @return [Symbol, nil] the normalized format symbol, or nil
+    def normalize_format(name)
+      return nil unless name
+
+      FORMAT_ALIASES[name.to_s.downcase] || name.to_sym
+    end
+
+    # Check if a format supports serialization (writing output)
+    #
+    # @param format [Symbol] the format to check
+    # @return [Boolean] true if the format can serialize
+    def serialize_format?(format)
+      mod = get_format(format)
+      return false unless mod&.respond_to?(:serialize)
+
+      return mod.serialize? if mod.respond_to?(:serialize?)
+
+      true
+    end
+
+    # Validate a document file
+    #
+    # Parses the file and validates against auto-generated schema.
+    # Returns a Coradoc::Validation::Result.
+    #
+    # @param path [String] path to the document file
+    # @param format [Symbol, nil] source format (auto-detected if nil)
+    # @return [Coradoc::Validation::Result] validation result
+    # @raise [UnsupportedFormatError] if format is not detected or registered
+    def validate_file(path, format: nil)
+      doc = parse_file(path, format: format)
+
+      schema = if defined?(Validation::SchemaGenerator)
+                 Validation::SchemaGenerator.generate(doc.class)
+               end
+
+      return schema.validate(doc) if schema
+
+      # No schema available — return a passing result since parsing succeeded
+      Validation::Result.new
+    end
+
+    # Gather statistics about a parsed document
+    #
+    # @param doc [CoreModel::Base] parsed document
+    # @return [Hash] statistics including element counts, title, etc.
+    def document_stats(doc)
+      stats = {}
+
+      stats[:title] = doc.title if doc.respond_to?(:title) && doc.title
+
+      if doc.respond_to?(:children)
+        stats[:child_count] = count_elements(doc)
+        stats[:element_counts] = count_element_types(doc)
+      end
+
+      stats
+    end
+
+    # Describe an element for display
+    #
+    # @param elem [Object] element to describe
+    # @return [String] human-readable description
+    def describe_element(elem)
+      return elem.to_s unless elem.is_a?(CoreModel::Base)
+
+      type = elem.class.name.split('::').last
+      if elem.respond_to?(:title) && elem.title
+        "#{type}: #{elem.title}"
+      elsif elem.respond_to?(:content) && elem.content
+        preview = elem.content.to_s[0..50]
+        preview += '...' if elem.content.to_s.length > 50
+        "#{type}: #{preview}"
+      else
+        type
+      end
+    end
+
     # Strip unicode whitespace from a string
     #
     # @param string [String] the string to strip
@@ -307,22 +400,35 @@ module Coradoc
         string.sub(/^\p{Zs}+/, '').sub(/\p{Zs}+$/, '')
       end
     end
+
+    private
+
+    def count_elements(doc)
+      return 0 unless doc.respond_to?(:children)
+
+      doc.children.sum do |child|
+        1 + (child.respond_to?(:children) ? count_elements(child) : 0)
+      end
+    end
+
+    def count_element_types(doc)
+      return {} unless defined?(Query)
+
+      %w[section paragraph block list_block table image inline_element].each_with_object({}) do |type, counts|
+        results = Query.query(doc, type)
+        counts[type] = results.length if results.length.positive?
+      rescue StandardError
+        nil
+      end
+    end
   end
 
   autoload :Version, "#{__dir__}/version"
   autoload :Logger, "#{__dir__}/logger"
   autoload :Hooks, "#{__dir__}/hooks"
-  autoload :PluginDiscovery, "#{__dir__}/plugin_discovery"
-  autoload :Extensions, "#{__dir__}/extensions"
-  autoload :PerformanceRegression, "#{__dir__}/performance_regression"
   autoload :Query, "#{__dir__}/query"
   autoload :Validation, "#{__dir__}/validation"
-  autoload :Streaming, "#{__dir__}/streaming"
-  autoload :Memory, "#{__dir__}/memory"
-  autoload :Lazy, "#{__dir__}/lazy"
   autoload :Configurable, "#{__dir__}/configurable"
-  autoload :TransformationCache, "#{__dir__}/transformation_cache"
-  autoload :Normalize, "#{__dir__}/normalize"
 end
 
 require_relative 'core_model'
@@ -332,15 +438,7 @@ require_relative 'transform/asciidoc_to_core_model'
 require_relative 'input'
 require_relative 'output'
 
-# Auto-register any format modules that were loaded before coradoc
-# This handles the case where format gems are required before the core gem
-if defined?(Coradoc::AsciiDoc) && !Coradoc.registered_formats.include?(:asciidoc)
-  Coradoc.register_format(:asciidoc,
-                          Coradoc::AsciiDoc)
-end
-Coradoc.register_format(:html, Coradoc::Html) if defined?(Coradoc::Html) && !Coradoc.registered_formats.include?(:html)
-if defined?(Coradoc::Markdown) && !Coradoc.registered_formats.include?(:markdown)
-  Coradoc.register_format(:markdown,
-                          Coradoc::Markdown)
-end
-Coradoc.register_format(:docx, Coradoc::Docx) if defined?(Coradoc::Docx) && !Coradoc.registered_formats.include?(:docx)
+# Format gems self-register via Coradoc.register_format when they are required.
+# No hardcoded registration needed here — each gem's entry file handles its own
+# registration (e.g., coradoc-adoc/lib/coradoc/asciidoc.rb calls
+# Coradoc.register_format(:asciidoc, Coradoc::AsciiDoc)).
