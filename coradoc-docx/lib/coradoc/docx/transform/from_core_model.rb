@@ -326,11 +326,11 @@ module Coradoc
           when 'strikethrough'
             props.strike = Uniword::Properties::Strike.new
           when 'subscript'
-            va = Uniword::Wordprocessingml::VerticalAlign.new
+            va = Uniword::Properties::VerticalAlign.new
             va.value = 'subscript'
             props.vertical_align = va
           when 'superscript'
-            va = Uniword::Wordprocessingml::VerticalAlign.new
+            va = Uniword::Properties::VerticalAlign.new
             va.value = 'superscript'
             props.vertical_align = va
           when 'monospace'
@@ -436,7 +436,7 @@ module Coradoc
           when 'subscript', 'superscript'
             run = Uniword::Wordprocessingml::Run.new(text: text)
             props = Uniword::Wordprocessingml::RunProperties.new
-            va = Uniword::Wordprocessingml::VerticalAlign.new
+            va = Uniword::Properties::VerticalAlign.new
             va.value = inline.format_type
             props.vertical_align = va
             run.properties = props

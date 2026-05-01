@@ -301,5 +301,73 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
         expect(result.properties.underline).not_to be_nil
       end
     end
+
+    context 'with InlineElement strikethrough' do
+      let(:core_model) { Coradoc::CoreModel::InlineElement.new(format_type: 'strikethrough', content: 'deleted') }
+
+      it 'produces a Run with strike property' do
+        expect(result).to be_a(Uniword::Wordprocessingml::Run)
+        expect(result.properties.strike).not_to be_nil
+      end
+    end
+
+    context 'with InlineElement subscript' do
+      let(:core_model) { Coradoc::CoreModel::InlineElement.new(format_type: 'subscript', content: '2') }
+
+      it 'produces a Run with subscript vertical align' do
+        expect(result).to be_a(Uniword::Wordprocessingml::Run)
+        expect(result.properties.vertical_align).not_to be_nil
+        expect(result.properties.vertical_align.value).to eq('subscript')
+      end
+    end
+
+    context 'with InlineElement superscript' do
+      let(:core_model) { Coradoc::CoreModel::InlineElement.new(format_type: 'superscript', content: '2') }
+
+      it 'produces a Run with superscript vertical align' do
+        expect(result).to be_a(Uniword::Wordprocessingml::Run)
+        expect(result.properties.vertical_align).not_to be_nil
+        expect(result.properties.vertical_align.value).to eq('superscript')
+      end
+    end
+
+    context 'with InlineElement monospace' do
+      let(:core_model) { Coradoc::CoreModel::InlineElement.new(format_type: 'monospace', content: 'code') }
+
+      it 'produces a Run with content' do
+        expect(result).to be_a(Uniword::Wordprocessingml::Run)
+        expect(result.text.content).to eq('code')
+      end
+    end
+
+    context 'with InlineElement link' do
+      let(:core_model) do
+        Coradoc::CoreModel::InlineElement.new(format_type: 'link', content: 'click', target: 'https://example.com')
+      end
+
+      it 'produces a Run with content' do
+        expect(result).to be_a(Uniword::Wordprocessingml::Run)
+        expect(result.text.content).to eq('click')
+      end
+    end
+
+    context 'with InlineElement stem' do
+      let(:core_model) { Coradoc::CoreModel::InlineElement.new(format_type: 'stem', content: 'x^2') }
+
+      it 'produces a Run with content' do
+        expect(result).to be_a(Uniword::Wordprocessingml::Run)
+        expect(result.text.content).to eq('x^2')
+      end
+    end
+
+    context 'with InlineElement unknown format_type' do
+      let(:core_model) { Coradoc::CoreModel::InlineElement.new(format_type: 'unknown', content: 'text') }
+
+      it 'produces a Run with content and no special properties' do
+        expect(result).to be_a(Uniword::Wordprocessingml::Run)
+        expect(result.text.content).to eq('text')
+        expect(result.properties).to be_nil
+      end
+    end
   end
 end
