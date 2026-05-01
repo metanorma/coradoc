@@ -294,4 +294,80 @@ RSpec.describe Coradoc::Visitor do
       expect(block_visits).to eq(0)
     end
   end
+
+  describe 'dispatch for all CoreModel types' do
+    def dispatches_to?(element, expected_method)
+      log = []
+      visitor = Class.new(Coradoc::Visitor::Base) do
+        define_method(expected_method) { |el| log << expected_method; super(el) }
+      end.new
+      element.accept(visitor)
+      log == [expected_method]
+    end
+
+    it 'dispatches Footnote to visit_footnote' do
+      footnote = Coradoc::CoreModel::Footnote.new(content: 'A footnote')
+      expect(dispatches_to?(footnote, :visit_footnote)).to be true
+    end
+
+    it 'dispatches FootnoteReference to visit_footnote_reference' do
+      ref = Coradoc::CoreModel::FootnoteReference.new(target: 'fn1')
+      expect(dispatches_to?(ref, :visit_footnote_reference)).to be true
+    end
+
+    it 'dispatches DefinitionList to visit_definition_list' do
+      dl = Coradoc::CoreModel::DefinitionList.new(
+        items: [Coradoc::CoreModel::DefinitionItem.new(term: 'API', definitions: ['Application Programming Interface'])]
+      )
+      expect(dispatches_to?(dl, :visit_definition_list)).to be true
+    end
+
+    it 'dispatches DefinitionItem to visit_definition_item' do
+      di = Coradoc::CoreModel::DefinitionItem.new(term: 'API', definitions: ['Application Programming Interface'])
+      expect(dispatches_to?(di, :visit_definition_item)).to be true
+    end
+
+    it 'dispatches Bibliography to visit_bibliography' do
+      bib = Coradoc::CoreModel::Bibliography.new
+      expect(dispatches_to?(bib, :visit_bibliography)).to be true
+    end
+
+    it 'dispatches BibliographyEntry to visit_bibliography_entry' do
+      entry = Coradoc::CoreModel::BibliographyEntry.new(ref: 'ISO123')
+      expect(dispatches_to?(entry, :visit_bibliography_entry)).to be true
+    end
+
+    it 'dispatches Toc to visit_toc' do
+      toc = Coradoc::CoreModel::Toc.new
+      expect(dispatches_to?(toc, :visit_toc)).to be true
+    end
+
+    it 'dispatches TocEntry to visit_toc_entry' do
+      entry = Coradoc::CoreModel::TocEntry.new(title: 'Section 1')
+      expect(dispatches_to?(entry, :visit_toc_entry)).to be true
+    end
+
+    it 'visits bibliography entries' do
+      entry1 = Coradoc::CoreModel::BibliographyEntry.new(ref: 'ISO1')
+      entry2 = Coradoc::CoreModel::BibliographyEntry.new(ref: 'ISO2')
+      bib = Coradoc::CoreModel::Bibliography.new(entries: [entry1, entry2])
+
+      visited = []
+      visitor = Coradoc::Visitor::Collector.new(Coradoc::CoreModel::BibliographyEntry)
+      bib.accept(visitor)
+
+      expect(visitor.items).to contain_exactly(entry1, entry2)
+    end
+
+    it 'visits definition list items' do
+      item1 = Coradoc::CoreModel::DefinitionItem.new(term: 'A')
+      item2 = Coradoc::CoreModel::DefinitionItem.new(term: 'B')
+      dl = Coradoc::CoreModel::DefinitionList.new(items: [item1, item2])
+
+      visitor = Coradoc::Visitor::Collector.new(Coradoc::CoreModel::DefinitionItem)
+      dl.accept(visitor)
+
+      expect(visitor.items).to contain_exactly(item1, item2)
+    end
+  end
 end

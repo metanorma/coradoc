@@ -71,6 +71,24 @@ module Coradoc
           visit_image(element)
         when CoreModel::Term
           visit_term(element)
+        when CoreModel::Footnote
+          visit_footnote(element)
+        when CoreModel::FootnoteReference
+          visit_footnote_reference(element)
+        when CoreModel::Abbreviation
+          visit_abbreviation(element)
+        when CoreModel::DefinitionList
+          visit_definition_list(element)
+        when CoreModel::DefinitionItem
+          visit_definition_item(element)
+        when CoreModel::Bibliography
+          visit_bibliography(element)
+        when CoreModel::BibliographyEntry
+          visit_bibliography_entry(element)
+        when CoreModel::Toc
+          visit_toc(element)
+        when CoreModel::TocEntry
+          visit_toc_entry(element)
         when Array
           visit_array(element)
         else
@@ -153,6 +171,51 @@ module Coradoc
       # @return [void]
       def visit_annotation_block(block)
         visit_children(block.children) if block.respond_to?(:children)
+      end
+
+      # Visit a footnote
+      def visit_footnote(element)
+        # Footnote is typically a leaf node
+      end
+
+      # Visit a footnote reference
+      def visit_footnote_reference(element)
+        # FootnoteReference is typically a leaf node
+      end
+
+      # Visit an abbreviation
+      def visit_abbreviation(element)
+        # Abbreviation is typically a leaf node
+      end
+
+      # Visit a definition list
+      def visit_definition_list(element)
+        visit_children(element.items) if element.respond_to?(:items)
+      end
+
+      # Visit a definition item
+      def visit_definition_item(element)
+        # DefinitionItem is typically a leaf node
+      end
+
+      # Visit a bibliography
+      def visit_bibliography(element)
+        visit_children(element.entries) if element.respond_to?(:entries)
+      end
+
+      # Visit a bibliography entry
+      def visit_bibliography_entry(element)
+        # BibliographyEntry is typically a leaf node
+      end
+
+      # Visit a table of contents
+      def visit_toc(element)
+        visit_children(element.entries) if element.respond_to?(:entries)
+      end
+
+      # Visit a TOC entry
+      def visit_toc_entry(element)
+        visit_children(element.children) if element.respond_to?(:children)
       end
 
       # Visit an array of elements
