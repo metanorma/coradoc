@@ -126,6 +126,97 @@ RSpec.describe Coradoc::Registry do
       expect(registry.each).to be_an(Enumerator)
     end
   end
+
+  describe '#define' do
+    it 'registers a self-identifying item via processor_id' do
+      processor = Module.new do
+        def self.processor_id
+          :auto_format
+        end
+      end
+
+      registry.define(processor)
+
+      expect(registry.get(:auto_format)).to eq(processor)
+      expect(registry.registered?(:auto_format)).to be true
+    end
+
+    it 'silently ignores items without processor_id' do
+      registry.define(Module.new)
+      expect(registry.size).to eq(0)
+    end
+  end
+
+  describe '#for_file' do
+    it 'finds item whose processor_match? returns true' do
+      processor = Module.new do
+        def self.processor_match?(filename)
+          filename.end_with?('.html')
+        end
+      end
+      registry.register(:html, processor)
+
+      expect(registry.for_file('page.html')).to eq(processor)
+    end
+
+    it 'returns nil when no item matches' do
+      registry.register(:text, Module.new)
+      expect(registry.for_file('page.html')).to be_nil
+    end
+
+    it 'returns nil when no items registered' do
+      expect(registry.for_file('page.html')).to be_nil
+    end
+  end
+
+  describe '#process' do
+    let(:processor) do
+      Module.new do
+        def self.processor_id
+          :proc_test
+        end
+
+        def self.processor_match?(filename)
+          filename.end_with?('.test')
+        end
+
+        def self.processor_execute(content, _options)
+          "processed: #{content}"
+        end
+      end
+    end
+
+    before do
+      registry.define(processor)
+    end
+
+    it 'finds and executes by format' do
+      result = registry.process('input', format: :proc_test)
+      expect(result).to eq('processed: input')
+    end
+
+    it 'finds and executes by filename' do
+      result = registry.process('input', filename: 'doc.test')
+      expect(result).to eq('processed: input')
+    end
+
+    it 'raises ArgumentError when no item matches' do
+      expect { registry.process('x', format: :missing) }.to raise_error(ArgumentError, /No processor found/)
+    end
+
+    it 'uses custom error_label' do
+      custom = described_class.new(error_label: "my handler")
+      expect { custom.process('x', format: :missing) }.to raise_error(ArgumentError, /No my handler found/)
+    end
+  end
+
+  describe '#items' do
+    it 'returns the internal items hash' do
+      mod = Module.new
+      registry.register(:test, mod)
+      expect(registry.items).to eq(test: mod)
+    end
+  end
 end
 
 RSpec.describe Coradoc do
