@@ -369,5 +369,31 @@ RSpec.describe Coradoc::Visitor do
 
       expect(visitor.items).to contain_exactly(item1, item2)
     end
+
+    it 'dispatches Metadata to visit_metadata' do
+      meta = Coradoc::CoreModel::Metadata.new
+      expect(dispatches_to?(meta, :visit_metadata)).to be true
+    end
+
+    it 'dispatches MetadataEntry to visit_metadata_entry' do
+      entry = Coradoc::CoreModel::MetadataEntry.new(key: 'author', value: 'Test')
+      expect(dispatches_to?(entry, :visit_metadata_entry)).to be true
+    end
+
+    it 'dispatches ElementAttribute to visit_element_attribute' do
+      attr = Coradoc::CoreModel::ElementAttribute.new(name: 'role', value: 'note')
+      expect(dispatches_to?(attr, :visit_element_attribute)).to be true
+    end
+
+    it 'visits metadata entries' do
+      entry1 = Coradoc::CoreModel::MetadataEntry.new(key: 'a', value: '1')
+      entry2 = Coradoc::CoreModel::MetadataEntry.new(key: 'b', value: '2')
+      meta = Coradoc::CoreModel::Metadata.new(entries: [entry1, entry2])
+
+      visitor = Coradoc::Visitor::Collector.new(Coradoc::CoreModel::MetadataEntry)
+      meta.accept(visitor)
+
+      expect(visitor.items).to contain_exactly(entry1, entry2)
+    end
   end
 end

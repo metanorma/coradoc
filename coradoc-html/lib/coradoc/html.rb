@@ -12,7 +12,9 @@ module Coradoc
       return if @registered
 
       # Register with the main coradoc registry
-      Coradoc.register_format(:html, self) if Coradoc.respond_to?(:register_format)
+      Coradoc.register_format(:html, self,
+                              aliases: %w[html htm],
+                              extensions: %w[.html .htm]) if Coradoc.respond_to?(:register_format)
 
       @registered = true
     end
