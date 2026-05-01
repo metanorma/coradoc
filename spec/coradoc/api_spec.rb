@@ -175,4 +175,183 @@ RSpec.describe 'Coradoc API' do
       expect(Coradoc::BINARY_FORMATS).to be_frozen
     end
   end
+
+  describe 'FORMAT_ALIASES' do
+    it 'maps adoc to asciidoc' do
+      expect(Coradoc::FORMAT_ALIASES['adoc']).to eq(:asciidoc)
+    end
+
+    it 'maps md to markdown' do
+      expect(Coradoc::FORMAT_ALIASES['md']).to eq(:markdown)
+    end
+
+    it 'maps html to html' do
+      expect(Coradoc::FORMAT_ALIASES['html']).to eq(:html)
+    end
+
+    it 'maps docx to docx' do
+      expect(Coradoc::FORMAT_ALIASES['docx']).to eq(:docx)
+    end
+
+    it 'is frozen' do
+      expect(Coradoc::FORMAT_ALIASES).to be_frozen
+    end
+  end
+
+  describe '.normalize_format' do
+    it 'normalizes adoc to :asciidoc' do
+      expect(Coradoc.normalize_format('adoc')).to eq(:asciidoc)
+    end
+
+    it 'normalizes md to :markdown' do
+      expect(Coradoc.normalize_format('md')).to eq(:markdown)
+    end
+
+    it 'passes through unknown formats as symbols' do
+      expect(Coradoc.normalize_format('custom')).to eq(:custom)
+    end
+
+    it 'returns nil for nil' do
+      expect(Coradoc.normalize_format(nil)).to be_nil
+    end
+
+    it 'handles symbols' do
+      expect(Coradoc.normalize_format(:adoc)).to eq(:asciidoc)
+    end
+
+    it 'is case-insensitive' do
+      expect(Coradoc.normalize_format('ADOC')).to eq(:asciidoc)
+    end
+  end
+
+  describe '.serialize_format?' do
+    it 'returns true for :html' do
+      expect(Coradoc.serialize_format?(:html)).to be true
+    end
+
+    it 'returns true for :markdown' do
+      expect(Coradoc.serialize_format?(:markdown)).to be true
+    end
+
+    it 'returns true for :asciidoc' do
+      expect(Coradoc.serialize_format?(:asciidoc)).to be true
+    end
+
+    it 'returns true for :docx (supports serialization)' do
+      expect(Coradoc.serialize_format?(:docx)).to be true
+    end
+
+    it 'returns false for unregistered format' do
+      expect(Coradoc.serialize_format?(:nonexistent)).to be false
+    end
+  end
+
+  describe '.validate_file' do
+    let(:temp_dir) { Dir.mktmpdir('coradoc_validate_spec') }
+
+    after do
+      FileUtils.remove_entry(temp_dir) if File.directory?(temp_dir)
+    end
+
+    it 'returns a Validation::Result for a parseable document' do
+      file = File.join(temp_dir, 'doc.md')
+      File.write(file, "# Title\n\nContent")
+
+      result = Coradoc.validate_file(file)
+
+      expect(result).to be_a(Coradoc::Validation::Result)
+    end
+
+    it 'raises UnsupportedFormatError for unknown extension' do
+      file = File.join(temp_dir, 'doc.xyz')
+      File.write(file, 'content')
+
+      expect { Coradoc.validate_file(file) }.to raise_error(Coradoc::UnsupportedFormatError)
+    end
+
+    it 'accepts explicit format option' do
+      file = File.join(temp_dir, 'doc.txt')
+      File.write(file, "# Title\n\nParagraph")
+
+      result = Coradoc.validate_file(file, format: :markdown)
+
+      expect(result).to be_a(Coradoc::Validation::Result)
+    end
+  end
+
+  describe '.document_stats' do
+    it 'returns title for documents with title' do
+      doc = Coradoc::CoreModel::StructuralElement.new(
+        element_type: 'document',
+        title: 'My Doc',
+        children: []
+      )
+
+      stats = Coradoc.document_stats(doc)
+
+      expect(stats[:title]).to eq('My Doc')
+    end
+
+    it 'returns child_count for documents with children' do
+      doc = Coradoc::CoreModel::StructuralElement.new(
+        element_type: 'document',
+        children: [
+          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'A'),
+          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'B')
+        ]
+      )
+
+      stats = Coradoc.document_stats(doc)
+
+      expect(stats[:child_count]).to eq(2)
+    end
+
+    it 'returns empty hash for elements without children' do
+      doc = Coradoc::CoreModel::Image.new(src: 'test.png')
+
+      stats = Coradoc.document_stats(doc)
+
+      expect(stats).to eq({})
+    end
+  end
+
+  describe '.describe_element' do
+    it 'describes elements with title' do
+      elem = Coradoc::CoreModel::StructuralElement.new(
+        element_type: 'document',
+        title: 'My Doc'
+      )
+
+      expect(Coradoc.describe_element(elem)).to eq('StructuralElement: My Doc')
+    end
+
+    it 'describes elements with content' do
+      elem = Coradoc::CoreModel::Block.new(
+        element_type: 'paragraph',
+        content: 'Some text here'
+      )
+
+      expect(Coradoc.describe_element(elem)).to eq('Block: Some text here')
+    end
+
+    it 'truncates long content' do
+      long_text = 'A' * 60
+      elem = Coradoc::CoreModel::Block.new(
+        element_type: 'paragraph',
+        content: long_text
+      )
+
+      expect(Coradoc.describe_element(elem)).to eq("Block: #{'A' * 51}...")
+    end
+
+    it 'describes elements without title or content' do
+      elem = Coradoc::CoreModel::Image.new(src: 'test.png')
+
+      expect(Coradoc.describe_element(elem)).to eq('Image')
+    end
+
+    it 'returns to_s for non-CoreModel objects' do
+      expect(Coradoc.describe_element('plain string')).to eq('plain string')
+    end
+  end
 end
