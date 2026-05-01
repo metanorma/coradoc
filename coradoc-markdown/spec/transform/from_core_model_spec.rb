@@ -167,6 +167,30 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
       end
     end
 
+    context 'with Table containing inline elements in cells' do
+      let(:core_model) do
+        Coradoc::CoreModel::Table.new(
+          rows: [
+            Coradoc::CoreModel::TableRow.new(
+              cells: [
+                Coradoc::CoreModel::TableCell.new(
+                  content: 'bold cell',
+                  children: [
+                    Coradoc::CoreModel::InlineElement.new(format_type: 'bold', content: 'bold cell')
+                  ]
+                )
+              ]
+            )
+          ]
+        )
+      end
+
+      it 'uses flat_text for cell content' do
+        expect(transform).to be_a(Coradoc::Markdown::Table)
+        expect(transform.rows.first).to eq('bold cell')
+      end
+    end
+
     context 'with Image' do
       let(:core_model) do
         Coradoc::CoreModel::Image.new(
