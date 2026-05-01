@@ -242,6 +242,9 @@ module Coradoc
         element.content = yield(element.content) if element.content.is_a?(String)
       when Coradoc::CoreModel::Block
         element.content = yield(element.content) if element.content.is_a?(String)
+        element.children.each do |child|
+          child.content = yield(child.content) if child.is_a?(String)
+        end
       end
 
       # Recurse into children
