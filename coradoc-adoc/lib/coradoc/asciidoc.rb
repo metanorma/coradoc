@@ -52,14 +52,20 @@ module Coradoc
         Coradoc::AsciiDoc::Transform::ToCoreModel.transform(doc)
       end
 
+      # Check if this format can transform the given model to CoreModel
+      #
+      # @param model [Object] The model to check
+      # @return [Boolean] true if this format handles the model type
+      def handles_model?(model)
+        model.is_a?(Coradoc::AsciiDoc::Model::Base)
+      end
+
       # Transform an AsciiDoc model to CoreModel
       #
       # @param document [Coradoc::AsciiDoc::Model::Base] AsciiDoc document model
-      # @return [Coradoc::CoreModel::Base, nil] CoreModel or nil if untransformable
+      # @return [Coradoc::CoreModel::Base] CoreModel
       def to_core(document)
         Transform::ToCoreModel.transform(document)
-      rescue StandardError
-        nil
       end
 
       # Serialize a document model to AsciiDoc string
