@@ -241,22 +241,7 @@ module Coradoc
             callback.call(result)
           end
         else
-          # We have kwargs to pass
-          case arity
-          when 0
-            # Block takes no args but we have kwargs - just call it
-            callback.call
-          when 1
-            # Proc with **kwargs has arity 1, but needs kwargs passed
-            # Also handles single-arg blocks that don't use kwargs
-            callback.call(result, **kwargs)
-          when 2
-            # Block takes two positional args
-            callback.call(result, kwargs)
-          else
-            # Lambda with **kwargs (arity -2) or other variable arity
-            callback.call(result, **kwargs)
-          end
+          callback.call(result, **kwargs)
         end
       rescue StandardError => e
         # Don't let a single hook failure break the pipeline
