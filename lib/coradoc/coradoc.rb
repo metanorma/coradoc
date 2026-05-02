@@ -40,17 +40,9 @@ require_relative 'errors'
 #     content
 #   end
 #
-# @example Registering custom element types
-#   Coradoc::Extensions.register_element(
-#     :callout,
-#     model_class: MyCalloutElement,
-#     transformers: { html: MyCalloutHtmlTransformer }
-#   )
-#
 # @see Coradoc::CoreModel The canonical document model
 # @see Coradoc::Hooks Plugin lifecycle hooks system
-# @see Coradoc::Extensions Custom element type registration
-# @see Coradoc::PluginDiscovery Automatic format gem detection
+# @see Coradoc::FormatModule Interface contract for format modules
 #
 module Coradoc
   # Base error class - defined in errors.rb
@@ -303,6 +295,21 @@ module Coradoc
       mod&.respond_to?(:parse_to_core) || mod&.respond_to?(:parse) || false
     end
 
+    # Get capability summary for all registered formats
+    #
+    # Returns a hash mapping each format name to its capabilities
+    # (parse: bool, serialize: bool). Useful for CLI display and introspection.
+    #
+    # @return [Hash<Symbol, Hash<Symbol, Boolean>>]
+    def format_capabilities
+      registered_formats.each_with_object({}) do |name, caps|
+        caps[name] = {
+          parse: parse_format?(name),
+          serialize: serialize_format?(name)
+        }
+      end
+    end
+
     # Resolve the output format from a filename, with a default
     #
     # @param output_file [String, nil] output filename to detect from
@@ -337,13 +344,9 @@ module Coradoc
     def validate_file(path, format: nil)
       doc = parse_file(path, format: format)
 
-      schema = if defined?(Validation::SchemaGenerator)
-                 Validation::SchemaGenerator.generate(doc.class)
-               end
-
+      schema = Validation::SchemaGenerator.generate(doc.class)
       return schema.validate(doc) if schema
 
-      # No schema available — return a passing result since parsing succeeded
       Validation::Result.new
     end
 
@@ -417,8 +420,6 @@ module Coradoc
       %w[section paragraph block list_block table image inline_element].each_with_object({}) do |type, counts|
         results = Query.query(doc, type)
         counts[type] = results.length if results.length.positive?
-      rescue StandardError
-        nil
       end
     end
   end
