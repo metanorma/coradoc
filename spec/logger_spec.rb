@@ -42,11 +42,10 @@ RSpec.describe Coradoc::Logger do
     end
   end
 
-  describe '#call' do
+  describe '.log' do
     it 'formats and outputs the message' do
-      logger = described_class.new
       expect(Warning).to receive(:warn).with(a_string_including('[Coradoc]'))
-      logger.call('Test message', :info)
+      described_class.send(:log, 'Test message', :info)
     end
   end
 
