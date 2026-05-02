@@ -140,6 +140,17 @@ module Coradoc
         @warnings.concat(other.warnings)
       end
 
+      # Format errors as a human-readable string
+      #
+      # @return [String]
+      def to_s
+        return 'Valid' if valid?
+
+        lines = ["#{error_count} validation error(s):"]
+        @errors.each { |err| lines << "  - #{err.path}: #{err.message}" }
+        lines.join("\n")
+      end
+
       # Get errors for a specific path
       #
       # @param path [String] The path to filter by
