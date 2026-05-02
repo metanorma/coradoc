@@ -4,26 +4,35 @@
 #
 # Coradoc provides a hub-and-spoke architecture for document transformations.
 # The CoreModel serves as the canonical, format-agnostic representation,
-# enabling transformations between AsciiDoc, HTML, Markdown, and more.
+# enabling transformations between AsciiDoc, HTML, Markdown, DOCX, and more.
 #
-# @example Basic usage with AsciiDoc
+# @example Converting between formats
 #   require 'coradoc'
-#   require 'coradoc/asciidoc'
+#   html = Coradoc.convert("# Hello", from: :markdown, to: :html)
 #
-#   doc = Coradoc::AsciiDoc.parse_file('document.adoc')
-#   core = Coradoc::AsciiDoc::Transform::ToCoreModel.transform(doc)
+# @example Parsing and serializing
+#   doc = Coradoc.parse("# Title\n\nContent", format: :markdown)
+#   html = Coradoc.serialize(doc, to: :html)
 #
-# @example Output to HTML
-#   require 'coradoc/html'
+# @example File-based conversion
+#   doc = Coradoc.parse_file("input.md")
+#   html = Coradoc.convert_file("input.md", to: :html)
 #
-#   html = Coradoc::Html::Transform::FromCoreModel.transform(core)
-#   puts html.to_html
+# @example Manipulating documents
+#   doc = Coradoc.parse(text, format: :asciidoc)
+#   html = Coradoc.manipulate(doc)
+#              .transform_text(&:upcase)
+#              .add_toc
+#              .to_html
 #
-# @example Command-line conversion
-#   coradoc convert document.md -o output.html
-#
-# @example Using the developer API
-#   html = Coradoc.convert(markdown_text, from: :markdown, to: :html)
+# @example Building documents programmatically
+#   doc = Coradoc.build do
+#     title "My Document"
+#     section "Intro" do
+#       paragraph "Hello world"
+#     end
+#   end.to_core
+#   Coradoc.serialize(doc, to: :html)
 
 require_relative 'coradoc/coradoc'
 

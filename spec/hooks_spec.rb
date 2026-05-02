@@ -223,3 +223,94 @@ RSpec.describe Coradoc::Hooks do
     end
   end
 end
+
+RSpec.describe 'Hooks pipeline integration' do
+  after { Coradoc::Hooks.clear_all }
+
+  describe 'Coradoc.parse hooks' do
+    it 'invokes before_parse hook before parsing' do
+      received_text = nil
+      Coradoc::Hooks.register(:before_parse) do |text, **kwargs|
+        received_text = text
+        text
+      end
+
+      Coradoc.parse("# Hello\n\nWorld", format: :markdown)
+
+      expect(received_text).to eq("# Hello\n\nWorld")
+    end
+
+    it 'invokes after_parse hook after parsing' do
+      received_model = nil
+      Coradoc::Hooks.register(:after_parse) do |model, **kwargs|
+        received_model = model
+        model
+      end
+
+      Coradoc.parse("# Hello\n\nWorld", format: :markdown)
+
+      expect(received_model).to be_a(Coradoc::CoreModel::Base)
+    end
+
+    it 'allows before_parse to modify text' do
+      Coradoc::Hooks.register(:before_parse) { |text, **| text.upcase }
+
+      doc = Coradoc.parse("# hello", format: :markdown)
+      expect(doc.title).to eq('HELLO')
+    end
+
+    it 'passes format kwarg to hooks' do
+      received_format = nil
+      Coradoc::Hooks.register(:before_parse) do |text, format:|
+        received_format = format
+        text
+      end
+
+      Coradoc.parse("# Test", format: :markdown)
+
+      expect(received_format).to eq(:markdown)
+    end
+  end
+
+  describe 'Coradoc.serialize hooks' do
+    it 'invokes before_serialize hook before serializing' do
+      received_model = nil
+      Coradoc::Hooks.register(:before_serialize) do |model, **kwargs|
+        received_model = model
+        model
+      end
+
+      doc = Coradoc::CoreModel::StructuralElement.new(element_type: 'document', title: 'Test')
+      Coradoc.serialize(doc, to: :html)
+
+      expect(received_model).to eq(doc)
+    end
+
+    it 'invokes after_serialize hook after serializing' do
+      received_output = nil
+      Coradoc::Hooks.register(:after_serialize) do |output, **kwargs|
+        received_output = output
+        output
+      end
+
+      doc = Coradoc::CoreModel::StructuralElement.new(element_type: 'document', title: 'Test')
+      Coradoc.serialize(doc, to: :html)
+
+      expect(received_output).to include('Test')
+    end
+  end
+
+  describe 'Coradoc.convert hooks' do
+    it 'fires both parse and serialize hooks during conversion' do
+      hook_log = []
+      Coradoc::Hooks.register(:before_parse) { |t, **| hook_log << :before_parse; t }
+      Coradoc::Hooks.register(:after_parse) { |m, **| hook_log << :after_parse; m }
+      Coradoc::Hooks.register(:before_serialize) { |m, **| hook_log << :before_serialize; m }
+      Coradoc::Hooks.register(:after_serialize) { |o, **| hook_log << :after_serialize; o }
+
+      Coradoc.convert("# Hello", from: :markdown, to: :html)
+
+      expect(hook_log).to eq(%i[before_parse after_parse before_serialize after_serialize])
+    end
+  end
+end
