@@ -45,7 +45,6 @@ module Coradoc
       # @param options [Hash] Configuration options
       def initialize(options = {})
         @options = symbolize_keys(options)
-        after_initialize if respond_to?(:after_initialize)
       end
 
       # Get a configuration value
@@ -80,9 +79,7 @@ module Coradoc
       #
       # @return [Hash]
       def to_h
-        @options.transform_values do |v|
-          v.is_a?(ConfigSection) ? v.to_h : v
-        end
+        @options.dup
       end
 
       private
@@ -95,7 +92,7 @@ module Coradoc
       # Override in subclasses for custom handling
       def apply_options(options)
         options.each do |key, value|
-          instance_variable_set("@#{key}", value) if respond_to?("#{key}=")
+          instance_variable_set("@#{key}", value)
         end
       end
     end
@@ -302,18 +299,15 @@ module Coradoc
       # @param other [Configuration, Hash] Configuration to merge
       # @return [void]
       def merge!(other)
-        case other
-        when Configuration
-          @environment = other.environment if other.environment != detect_environment
-          @cache.merge!(other.cache)
-          @parser.merge!(other.parser)
-          @transformer.merge!(other.transformer)
-          @output.merge!(other.output)
-          @logging.merge!(other.logging)
-          @custom.merge!(other.custom)
-        when Hash
-          merge_hash(other)
-        end
+        return unless other.is_a?(Configuration)
+
+        @environment = other.environment if other.environment != detect_environment
+        @cache.merge!(other.cache)
+        @parser.merge!(other.parser)
+        @transformer.merge!(other.transformer)
+        @output.merge!(other.output)
+        @logging.merge!(other.logging)
+        @custom.merge!(other.custom)
       end
 
       # Create a copy of this configuration
@@ -432,18 +426,6 @@ module Coradoc
 
       def symbolize_keys(hash)
         ConfigSection.symbolize_keys(hash)
-      end
-
-      def merge_hash(hash)
-        hash = symbolize_keys(hash)
-
-        @environment = hash[:environment] if hash.key?(:environment)
-        @cache.merge!(hash[:cache]) if hash.key?(:cache)
-        @parser.merge!(hash[:parser]) if hash.key?(:parser)
-        @transformer.merge!(hash[:transformer]) if hash.key?(:transformer)
-        @output.merge!(hash[:output]) if hash.key?(:output)
-        @logging.merge!(hash[:logging]) if hash.key?(:logging)
-        @custom.merge!(symbolize_keys(hash[:custom] || {}))
       end
 
       def self.parse_env_value(value)

@@ -195,7 +195,7 @@ module Coradoc
     #   Coradoc.detect_format("file.md")        # => :markdown
     def detect_format(filename)
       ext = File.extname(filename).downcase
-      registry.each do |name, _mod|
+      registry.each_key do |name|
         opts = registry.options_for(name)
         return name if opts[:extensions]&.include?(ext)
       end
@@ -243,7 +243,7 @@ module Coradoc
     # @example
     #   html = Coradoc.convert_file("document.adoc", to: :html)
     #   adoc = Coradoc.convert_file("report.docx", to: :asciidoc)
-    def convert_file(path, from: nil, to:, **options)
+    def convert_file(path, to:, from: nil, **options)
       source_format = from || detect_format(path)
       raise UnsupportedFormatError, "Could not detect format for: #{path}" unless source_format
 
@@ -270,7 +270,7 @@ module Coradoc
       return nil unless name
 
       key = name.to_s.downcase
-      registry.each do |fmt_name, _mod|
+      registry.each_key do |fmt_name|
         opts = registry.options_for(fmt_name)
         return fmt_name if opts[:aliases]&.include?(key)
       end
@@ -296,7 +296,7 @@ module Coradoc
     # @return [Boolean] true if the format can parse
     def parse_format?(format)
       mod = get_format(format)
-      mod&.respond_to?(:parse_to_core) || mod&.respond_to?(:parse) || false
+      mod.respond_to?(:parse_to_core) || mod.respond_to?(:parse) || false
     end
 
     # Get capability summary for all registered formats
@@ -354,6 +354,28 @@ module Coradoc
       Validation::Result.new
     end
 
+    # Get comprehensive document information
+    #
+    # Combines file metadata with parsed document statistics.
+    # The CLI info command formats this data for display.
+    #
+    # @param path [String] path to the document file
+    # @param format [Symbol, nil] source format (auto-detected if nil)
+    # @return [Hash] document information including :format, :size, :lines,
+    #   :title, :child_count, :element_counts
+    # @raise [UnsupportedFormatError] if format is not detected or registered
+    # @raise [FileNotFoundError] if file does not exist
+    def document_info(path, format: nil)
+      source_format = format || detect_format(path)
+      raise UnsupportedFormatError, "Could not detect format for: #{path}" unless source_format
+
+      doc = parse_file(path, format: source_format)
+      fi = file_info(path)
+      stats = document_stats(doc)
+
+      { format: source_format, size: fi[:size], lines: fi[:lines] }.merge(stats)
+    end
+
     # Gather statistics about a parsed document
     #
     # @param doc [CoreModel::Base] parsed document
@@ -361,9 +383,9 @@ module Coradoc
     def document_stats(doc)
       stats = {}
 
-      stats[:title] = doc.title if doc.respond_to?(:title) && doc.title
+      stats[:title] = doc.title if doc.title
 
-      if doc.respond_to?(:children)
+      if doc.respond_to?(:children) && doc.children
         stats[:child_count] = count_elements(doc)
         stats[:element_counts] = count_element_types(doc)
       end
@@ -379,7 +401,7 @@ module Coradoc
       return elem.to_s unless elem.is_a?(CoreModel::Base)
 
       type = elem.class.name.split('::').last
-      if elem.respond_to?(:title) && elem.title
+      if elem.title
         "#{type}: #{elem.title}"
       elsif elem.respond_to?(:content) && elem.content
         preview = elem.content.to_s[0..50]
@@ -411,32 +433,18 @@ module Coradoc
     private
 
     def count_elements(doc)
-      return 0 unless doc.respond_to?(:children)
+      children = doc.respond_to?(:children) && doc.children
+      return 0 unless children
 
-      doc.children.sum do |child|
-        1 + (child.respond_to?(:children) ? count_elements(child) : 0)
+      children.sum do |child|
+        1 + count_elements(child)
       end
     end
 
     def count_element_types(doc)
-      counts = Hash.new(0)
-      visitor = Class.new(Visitor::Base) do
-        define_method(:visit) do |element|
-          if element.is_a?(CoreModel::Base)
-            type_key = if element.respond_to?(:element_type) && element.element_type
-                         element.element_type
-                       else
-                         element.class.name.split('::').last
-                                   .gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '')
-                       end
-            counts[type_key] += 1
-          end
-          super(element)
-        end
-      end.new
-      visitor.visit(doc)
-      counts.reject! { |_, v| v.zero? }
-      counts
+      counter = Visitor::ElementCounter.new
+      counter.visit(doc)
+      counter.to_h
     end
   end
 

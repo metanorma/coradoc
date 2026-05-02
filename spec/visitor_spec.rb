@@ -405,21 +405,10 @@ RSpec.describe Coradoc::Visitor do
       end
     end
 
-    it 'allows external registration for new types' do
+    it 'raises on registration after freeze' do
       custom_class = Class.new(Coradoc::CoreModel::Base)
-      Coradoc::Visitor.register_visitor(custom_class, :visit_custom)
-
-      visited = false
-      visitor = Class.new(Coradoc::Visitor::Base) do
-        define_method(:visit_custom) { |_el| visited = true }
-      end.new
-
-      instance = custom_class.new
-      visitor.visit(instance)
-
-      expect(visited).to be true
-
-      Coradoc::Visitor::DISPATCH_TABLE.delete(custom_class)
+      expect { Coradoc::Visitor.register_visitor(custom_class, :visit_custom) }
+        .to raise_error(RuntimeError, /DISPATCH_TABLE is frozen/)
     end
 
     it 'falls back to visit_unknown for unregistered types' do

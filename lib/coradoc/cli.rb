@@ -136,30 +136,20 @@ module Coradoc
     desc 'info FILE', 'Display document metadata and statistics'
     option :format, aliases: '-f', desc: 'Source format (auto-detected from extension)', type: :string
     def info(file)
-      source_format = resolve_format(file)
-      unless source_format
-        error 'Error: Could not determine format. Use --format option.'
-        exit 1
-      end
-
-      verbose_log "Analyzing #{file} (#{source_format})"
-
-      doc = Coradoc.parse_file(file, format: source_format)
-      stats = Coradoc.document_stats(doc)
-      fi = Coradoc.file_info(file)
+      info = Coradoc.document_info(file, format: resolve_format(file))
 
       puts 'Document Information'
       puts '=' * 40
-      puts "Format: #{source_format}"
-      puts "File size: #{fi[:size]} bytes"
-      puts "Line count: #{fi[:lines]}" if fi[:lines]
-      puts "Title: #{stats[:title]}" if stats[:title]
-      puts "Child elements: #{stats[:child_count]}" if stats[:child_count]
+      puts "Format: #{info[:format]}"
+      puts "File size: #{info[:size]} bytes"
+      puts "Line count: #{info[:lines]}" if info[:lines]
+      puts "Title: #{info[:title]}" if info[:title]
+      puts "Child elements: #{info[:child_count]}" if info[:child_count]
 
-      if stats[:element_counts]&.any?
+      if info[:element_counts]&.any?
         puts ''
         puts 'Element Counts:'
-        stats[:element_counts].each { |type, count| puts "  #{type}: #{count}" }
+        info[:element_counts].each { |type, count| puts "  #{type}: #{count}" }
       end
     rescue Coradoc::Error => e
       error "Error: #{e.message}"

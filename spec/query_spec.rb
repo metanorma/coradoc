@@ -279,4 +279,100 @@ RSpec.describe Coradoc::Query do
       expect(described_class.get_children(element)).to eq([])
     end
   end
+
+  describe Coradoc::Query::Selector do
+    describe 'attribute selectors' do
+      let(:element) do
+        Coradoc::CoreModel::StructuralElement.new(
+          element_type: 'section',
+          id: 'intro',
+          level: 2
+        )
+      end
+
+      it 'matches presence attribute selector' do
+        selector = described_class.parse('[id]')
+        expect(selector.matches?(element)).to be true
+      end
+
+      it 'rejects presence when attribute missing' do
+        selector = described_class.parse('[missing]')
+        expect(selector.matches?(element)).to be false
+      end
+
+      it 'matches ^= (starts with)' do
+        selector = described_class.parse('[id^=in]')
+        expect(selector.matches?(element)).to be true
+      end
+
+      it 'matches $= (ends with)' do
+        selector = described_class.parse('[id$=tro]')
+        expect(selector.matches?(element)).to be true
+      end
+
+      it 'matches *= (contains)' do
+        selector = described_class.parse('[id*=ntr]')
+        expect(selector.matches?(element)).to be true
+      end
+
+      it 'matches ~= (includes word)' do
+        element_with_multi = Coradoc::CoreModel::StructuralElement.new(
+          element_type: 'section',
+          id: 'important highlighted'
+        )
+        selector = described_class.parse('[id~=highlighted]')
+        expect(selector.matches?(element_with_multi)).to be true
+      end
+    end
+  end
+
+  describe Coradoc::Query::ResultSet do
+    let(:elements) do
+      [
+        Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'A'),
+        Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'B'),
+        Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'C')
+      ]
+    end
+
+    let(:result_set) { described_class.new(elements) }
+
+    it 'returns length' do
+      expect(result_set.length).to eq(3)
+    end
+
+    it 'returns first and last' do
+      expect(result_set.first.content).to eq('A')
+      expect(result_set.last.content).to eq('C')
+    end
+
+    it 'supports index access' do
+      expect(result_set[1].content).to eq('B')
+    end
+
+    it 'detects empty' do
+      expect(described_class.new).to be_empty
+      expect(result_set).not_to be_empty
+    end
+
+    it 'supports select' do
+      filtered = result_set.select { |e| e.content == 'B' }
+      expect(filtered.length).to eq(1)
+    end
+
+    it 'supports reject' do
+      filtered = result_set.reject { |e| e.content == 'B' }
+      expect(filtered.length).to eq(2)
+    end
+
+    it 'converts to array' do
+      arr = result_set.to_a
+      expect(arr).to be_a(Array)
+      expect(arr.length).to eq(3)
+    end
+
+    it 'inspects with count' do
+      expect(result_set.inspect).to include('count=3')
+    end
+  end
 end

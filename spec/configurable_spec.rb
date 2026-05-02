@@ -87,14 +87,11 @@ RSpec.describe Coradoc::Configurable do
         expect(config.cache.max_size).to eq(500)
       end
 
-      it 'merges a hash' do
-        config.merge!(
-          environment: 'staging',
-          custom: { key: 'value' }
-        )
+      it 'ignores non-Configuration arguments' do
+        config.merge!(environment: 'staging', custom: { key: 'value' })
 
-        expect(config.environment).to eq('staging')
-        expect(config[:key]).to eq('value')
+        expect(config.environment).to eq('development')
+        expect(config[:key]).to be_nil
       end
     end
 
