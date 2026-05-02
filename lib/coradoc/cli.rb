@@ -50,17 +50,15 @@ module Coradoc
 
     desc 'formats', 'List supported formats'
     def formats
+      caps = Coradoc.format_capabilities
+
       puts 'Supported formats:'
       puts ''
       puts '  Source formats (can read):'
-      Coradoc.registered_formats.each do |format|
-        puts "    - #{format}" if Coradoc.parse_format?(format)
-      end
+      caps.each { |name, c| puts "    - #{name}" if c[:parse] }
       puts ''
       puts '  Target formats (can write):'
-      Coradoc.registered_formats.each do |format|
-        puts "    - #{format}" if Coradoc.serialize_format?(format)
-      end
+      caps.each { |name, c| puts "    - #{name}" if c[:serialize] }
     end
 
     desc 'version', 'Display Coradoc version'
