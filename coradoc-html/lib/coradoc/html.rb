@@ -106,8 +106,7 @@ module Coradoc
     def self.validate_core_model!(document)
       return document if document.nil?
 
-      unless defined?(Coradoc::CoreModel::Base) &&
-             document.is_a?(Coradoc::CoreModel::Base)
+      unless document.is_a?(Coradoc::CoreModel::Base)
         raise ArgumentError,
               'coradoc-html only accepts CoreModel types. ' \
               "Got: #{document.class}. " \
