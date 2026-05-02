@@ -415,8 +415,6 @@ module Coradoc
     end
 
     def count_element_types(doc)
-      return {} unless defined?(Query)
-
       %w[section paragraph block list_block table image inline_element].each_with_object({}) do |type, counts|
         results = Query.query(doc, type)
         counts[type] = results.length if results.length.positive?
