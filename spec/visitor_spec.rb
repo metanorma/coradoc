@@ -396,4 +396,41 @@ RSpec.describe Coradoc::Visitor do
       expect(visitor.items).to contain_exactly(entry1, entry2)
     end
   end
+
+  describe 'DISPATCH_TABLE registry' do
+    it 'maps every registered CoreModel type to a visit method' do
+      Coradoc::Visitor::DISPATCH_TABLE.each do |klass, method_name|
+        expect(Coradoc::Visitor::Base.instance_methods(false)).to include(method_name),
+          "#{klass} maps to #{method_name}, but no such method on Base"
+      end
+    end
+
+    it 'allows external registration for new types' do
+      custom_class = Class.new(Coradoc::CoreModel::Base)
+      Coradoc::Visitor.register_visitor(custom_class, :visit_custom)
+
+      visited = false
+      visitor = Class.new(Coradoc::Visitor::Base) do
+        define_method(:visit_custom) { |_el| visited = true }
+      end.new
+
+      instance = custom_class.new
+      visitor.visit(instance)
+
+      expect(visited).to be true
+
+      Coradoc::Visitor::DISPATCH_TABLE.delete(custom_class)
+    end
+
+    it 'falls back to visit_unknown for unregistered types' do
+      unknown = Object.new
+      visited = false
+      visitor = Class.new(Coradoc::Visitor::Base) do
+        define_method(:visit_unknown) { |_el| visited = true }
+      end.new
+
+      visitor.visit(unknown)
+      expect(visited).to be true
+    end
+  end
 end

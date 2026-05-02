@@ -28,15 +28,17 @@ module Coradoc
   #   document.accept(counter)
   #   puts counter.count
   #
-  # @example Transforming visitor
-  #   class UppercaseTransformer < Coradoc::Visitor::Base
-  #     def visit_block(block)
-  #       block.content = block.content.upcase if block.content.is_a?(String)
-  #       super
-  #     end
-  #   end
-  #
   module Visitor
+    # Registry mapping CoreModel classes to visitor method names.
+    # CoreModel types self-register via register_visitor on load.
+    DISPATCH_TABLE = {}
+
+    # Register a CoreModel class to a visitor method name.
+    # Called during CoreModel type definition.
+    def self.register_visitor(klass, method_name)
+      DISPATCH_TABLE[klass] = method_name
+    end
+
     # Base class for document visitors.
     #
     # Provides default traversal behavior for all CoreModel types.
@@ -48,54 +50,10 @@ module Coradoc
       def visit(element)
         return if element.nil?
 
-        case element
-        when CoreModel::StructuralElement
-          visit_structural_element(element)
-        when CoreModel::AnnotationBlock
-          visit_annotation_block(element)
-        when CoreModel::Block
-          visit_block(element)
-        when CoreModel::InlineElement
-          visit_inline_element(element)
-        when CoreModel::ListBlock
-          visit_list_block(element)
-        when CoreModel::ListItem
-          visit_list_item(element)
-        when CoreModel::Table
-          visit_table(element)
-        when CoreModel::TableRow
-          visit_table_row(element)
-        when CoreModel::TableCell
-          visit_table_cell(element)
-        when CoreModel::Image
-          visit_image(element)
-        when CoreModel::Term
-          visit_term(element)
-        when CoreModel::Footnote
-          visit_footnote(element)
-        when CoreModel::FootnoteReference
-          visit_footnote_reference(element)
-        when CoreModel::Abbreviation
-          visit_abbreviation(element)
-        when CoreModel::DefinitionList
-          visit_definition_list(element)
-        when CoreModel::DefinitionItem
-          visit_definition_item(element)
-        when CoreModel::Bibliography
-          visit_bibliography(element)
-        when CoreModel::BibliographyEntry
-          visit_bibliography_entry(element)
-        when CoreModel::Toc
-          visit_toc(element)
-        when CoreModel::TocEntry
-          visit_toc_entry(element)
-        when CoreModel::Metadata
-          visit_metadata(element)
-        when CoreModel::MetadataEntry
-          visit_metadata_entry(element)
-        when CoreModel::ElementAttribute
-          visit_element_attribute(element)
-        when Array
+        method_name = DISPATCH_TABLE[element.class]
+        if method_name
+          send(method_name, element)
+        elsif element.is_a?(Array)
           visit_array(element)
         else
           visit_unknown(element)
@@ -103,78 +61,56 @@ module Coradoc
       end
 
       # Visit a structural element (document, section)
-      # @param element [CoreModel::StructuralElement] Element to visit
-      # @return [void]
       def visit_structural_element(element)
         visit_children(element.children)
       end
 
       # Visit a block element
-      # @param block [CoreModel::Block] Block to visit
-      # @return [void]
       def visit_block(block)
         visit_children(block.children)
       end
 
       # Visit an inline element
-      # @param element [CoreModel::InlineElement] Element to visit
-      # @return [void]
       def visit_inline_element(element)
         visit_children(element.nested_elements)
       end
 
       # Visit a list block
-      # @param list [CoreModel::ListBlock] List to visit
-      # @return [void]
       def visit_list_block(list)
         visit_children(list.items)
       end
 
       # Visit a list item
-      # @param item [CoreModel::ListItem] Item to visit
-      # @return [void]
       def visit_list_item(item)
         visit_children(item.children)
       end
 
       # Visit a table
-      # @param table [CoreModel::Table] Table to visit
-      # @return [void]
       def visit_table(table)
         visit_children(table.rows)
       end
 
       # Visit a table row
-      # @param row [CoreModel::TableRow] Row to visit
-      # @return [void]
       def visit_table_row(row)
         visit_children(row.cells)
       end
 
       # Visit a table cell
-      # @param cell [CoreModel::TableCell] Cell to visit
-      # @return [void]
       def visit_table_cell(cell)
         # TableCell typically contains text or nested elements
       end
 
       # Visit an image
-      # @param image [CoreModel::Image] Image to visit
-      # @return [void]
       def visit_image(image)
         # Image is typically a leaf node
       end
 
       # Visit a term (definition list term)
-      # @param term [CoreModel::Term] Term to visit
-      # @return [void]
       def visit_term(term)
         # Term is typically a leaf node
       end
 
       # Visit an annotation block (admonition)
-      # @param block [CoreModel::AnnotationBlock] Block to visit
-      # @return [void]
       def visit_annotation_block(block)
         visit_children(block.children)
       end
@@ -240,15 +176,11 @@ module Coradoc
       end
 
       # Visit an array of elements
-      # @param array [Array] Array to visit
-      # @return [void]
       def visit_array(array)
         array.each { |element| visit(element) }
       end
 
       # Visit an unknown element type
-      # @param element [Object] Unknown element
-      # @return [void]
       def visit_unknown(element)
         # Override to handle unknown types
       end
@@ -256,40 +188,26 @@ module Coradoc
       private
 
       # Visit children elements
-      # @param children [Array, nil] Children to visit
-      # @return [void]
       def visit_children(children)
         children&.each { |child| visit(child) }
       end
     end
 
     # Visitor that collects matching elements
-    #
-    # @example Collect all paragraphs
-    #   collector = Visitor::Collector.new(CoreModel::Block)
-    #   document.accept(collector)
-    #   paragraphs = collector.items.select { |b| b.element_type == "paragraph" }
-    #
     class Collector < Base
-      # @return [Array<CoreModel::Base>] Collected items
       attr_reader :items
 
-      # @param types [Array<Class>, Class] Types to collect (optional, collects all if not specified)
       def initialize(*types)
         @types = types.flatten
         @items = []
       end
 
-      # Check if element should be collected
-      # @param element [CoreModel::Base] Element to check
-      # @return [Boolean]
       def match?(element)
         return true if @types.empty?
 
         @types.any? { |type| element.is_a?(type) }
       end
 
-      # Override to collect matching elements
       def visit(element)
         @items << element if match?(element)
         super
@@ -297,25 +215,13 @@ module Coradoc
     end
 
     # Visitor that transforms elements
-    #
-    # @example Transform all blocks
-    #   transformer = Visitor::Transformer.new do |element|
-    #     if element.is_a?(CoreModel::Block) && element.content.is_a?(String)
-    #       element.content = element.content.upcase
-    #     end
-    #   end
-    #   document.accept(transformer)
-    #
     class Transformer < Base
-      # @return [Proc] Transformation block
       attr_reader :transformer
 
-      # @param block [Proc] Block to apply to each element
       def initialize(&block)
         @transformer = block
       end
 
-      # Apply transformation to element before traversal
       def visit(element)
         transformer&.call(element)
         super
@@ -323,39 +229,51 @@ module Coradoc
     end
 
     # Visitor that searches for elements matching criteria
-    #
-    # @example Find element by ID
-    #   finder = Visitor::Finder.new { |e| e.id == "section-1" }
-    #   document.accept(finder)
-    #   section = finder.first
-    #
     class Finder < Base
-      # @return [Array<CoreModel::Base>] Found items
       attr_reader :results
 
-      # @param block [Proc] Predicate block for matching
       def initialize(&block)
         @predicate = block
         @results = []
       end
 
-      # Check if element matches and collect it
       def visit(element)
         @results << element if @predicate&.call(element)
         super
       end
 
-      # Get first matching result
-      # @return [CoreModel::Base, nil]
       def first
         @results.first
       end
 
-      # Get all matching results
-      # @return [Array<CoreModel::Base>]
       def all
         @results
       end
     end
+
+    # Self-register all CoreModel types
+    register_visitor CoreModel::StructuralElement, :visit_structural_element
+    register_visitor CoreModel::AnnotationBlock, :visit_annotation_block
+    register_visitor CoreModel::Block, :visit_block
+    register_visitor CoreModel::InlineElement, :visit_inline_element
+    register_visitor CoreModel::ListBlock, :visit_list_block
+    register_visitor CoreModel::ListItem, :visit_list_item
+    register_visitor CoreModel::Table, :visit_table
+    register_visitor CoreModel::TableRow, :visit_table_row
+    register_visitor CoreModel::TableCell, :visit_table_cell
+    register_visitor CoreModel::Image, :visit_image
+    register_visitor CoreModel::Term, :visit_term
+    register_visitor CoreModel::Footnote, :visit_footnote
+    register_visitor CoreModel::FootnoteReference, :visit_footnote_reference
+    register_visitor CoreModel::Abbreviation, :visit_abbreviation
+    register_visitor CoreModel::DefinitionList, :visit_definition_list
+    register_visitor CoreModel::DefinitionItem, :visit_definition_item
+    register_visitor CoreModel::Bibliography, :visit_bibliography
+    register_visitor CoreModel::BibliographyEntry, :visit_bibliography_entry
+    register_visitor CoreModel::Toc, :visit_toc
+    register_visitor CoreModel::TocEntry, :visit_toc_entry
+    register_visitor CoreModel::Metadata, :visit_metadata
+    register_visitor CoreModel::MetadataEntry, :visit_metadata_entry
+    register_visitor CoreModel::ElementAttribute, :visit_element_attribute
   end
 end
