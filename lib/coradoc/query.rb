@@ -498,9 +498,8 @@ module Coradoc
         parsed = Selector.parse(part[:selector])
         results = []
 
-        get_children(parent).each_with_index do |child, index|
-          siblings = get_children(parent)
-
+        siblings = get_children(parent)
+        siblings.each_with_index do |child, index|
           case part[:combinator]
           when :child
             results.concat(find_matching_descendants(child, remaining)) if parsed.matches?(child) && pseudo_matches?(
