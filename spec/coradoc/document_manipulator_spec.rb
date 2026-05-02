@@ -134,6 +134,63 @@ RSpec.describe Coradoc::DocumentManipulator do
     end
   end
 
+  describe '#remove_elements' do
+    let(:doc_with_comments) do
+      Coradoc::CoreModel::StructuralElement.new(
+        element_type: 'document',
+        children: [
+          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Keep this'),
+          Coradoc::CoreModel::Block.new(element_type: 'comment', content: 'Remove this'),
+          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Keep this too')
+        ]
+      )
+    end
+
+    it 'removes elements by type' do
+      m = described_class.new(doc_with_comments)
+      m.remove_elements(:comment)
+
+      types = doc_with_comments.children.map(&:element_type)
+      expect(types).not_to include('comment')
+      expect(types).to include('paragraph')
+    end
+
+    it 'returns self for chaining' do
+      m = described_class.new(doc_with_comments)
+      expect(m.remove_elements(:comment)).to eq(m)
+    end
+  end
+
+  describe '#select_sections' do
+    it 'filters sections by level' do
+      filtered = manipulator.select_sections(level: 1)
+      sections = filtered.document.children
+      expect(sections.length).to eq(1)
+      expect(sections.first.title).to eq('Introduction')
+    end
+
+    it 'filters sections by title' do
+      filtered = manipulator.select_sections(title: 'Background')
+      sections = filtered.document.children
+      expect(sections.length).to eq(1)
+      expect(sections.first.title).to eq('Background')
+    end
+  end
+
+  describe '#to_html' do
+    it 'serializes to HTML' do
+      html = manipulator.to_html
+      expect(html).to include('Test Document')
+    end
+  end
+
+  describe '#to' do
+    it 'serializes to specified format' do
+      html = manipulator.to(:html)
+      expect(html).to include('Test Document')
+    end
+  end
+
   describe 'chaining' do
     it 'supports method chaining' do
       result = manipulator

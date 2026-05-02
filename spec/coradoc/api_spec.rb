@@ -155,6 +155,63 @@ RSpec.describe 'Coradoc API' do
     end
   end
 
+  describe '.convert' do
+    it 'converts Markdown text to HTML' do
+      html = Coradoc.convert("# Hello\n\nWorld", from: :markdown, to: :html)
+      expect(html).to include('<!DOCTYPE html>')
+      expect(html).to include('Hello')
+    end
+
+    it 'raises UnsupportedFormatError for unregistered source' do
+      expect { Coradoc.convert('text', from: :nonexistent, to: :html) }.to raise_error(Coradoc::UnsupportedFormatError)
+    end
+
+    it 'raises UnsupportedFormatError for unregistered target' do
+      expect { Coradoc.convert('text', from: :markdown, to: :nonexistent) }.to raise_error(Coradoc::UnsupportedFormatError)
+    end
+  end
+
+  describe '.parse' do
+    it 'parses Markdown text to CoreModel' do
+      doc = Coradoc.parse("# Title\n\nContent", format: :markdown)
+      expect(doc).to be_a(Coradoc::CoreModel::Base)
+    end
+
+    it 'raises UnsupportedFormatError for unregistered format' do
+      expect { Coradoc.parse('text', format: :nonexistent) }.to raise_error(Coradoc::UnsupportedFormatError)
+    end
+  end
+
+  describe '.serialize' do
+    it 'serializes CoreModel to HTML' do
+      doc = Coradoc.parse("# Title\n\nParagraph", format: :markdown)
+      html = Coradoc.serialize(doc, to: :html)
+      expect(html).to include('<!DOCTYPE html>')
+    end
+
+    it 'raises UnsupportedFormatError for unregistered format' do
+      doc = Coradoc::CoreModel::StructuralElement.new(element_type: 'document')
+      expect { Coradoc.serialize(doc, to: :nonexistent) }.to raise_error(Coradoc::UnsupportedFormatError)
+    end
+  end
+
+  describe '.to_core' do
+    it 'returns CoreModel as-is' do
+      doc = Coradoc::CoreModel::StructuralElement.new(element_type: 'document')
+      expect(Coradoc.to_core(doc)).to eq(doc)
+    end
+
+    it 'transforms Markdown model via handles_model? dispatch' do
+      md_doc = Coradoc::Markdown.parse("# Title\n\nContent")
+      core = Coradoc.to_core(md_doc)
+      expect(core).to be_a(Coradoc::CoreModel::Base)
+    end
+
+    it 'raises TransformationError for unknown model type' do
+      expect { Coradoc.to_core(Object.new) }.to raise_error(Coradoc::TransformationError)
+    end
+  end
+
   describe '.detect_format (driven by registration options)' do
     it 'detects AsciiDoc from .adoc extension' do
       expect(Coradoc.detect_format('document.adoc')).to eq(:asciidoc)
