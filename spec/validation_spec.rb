@@ -152,6 +152,24 @@ RSpec.describe Coradoc::Validation do
         expect(hash[:warnings]).to be_an(Array)
       end
     end
+
+    describe '#to_s' do
+      it 'returns Valid when no errors' do
+        result = described_class.new
+        expect(result.to_s).to eq('Valid')
+      end
+
+      it 'formats errors with path and message' do
+        result = described_class.new(errors: [
+          Coradoc::Validation::Error.new('Missing title', path: 'title'),
+          Coradoc::Validation::Error.new('Empty section', path: 'body')
+        ])
+        text = result.to_s
+        expect(text).to include('2 validation error(s)')
+        expect(text).to include('title: Missing title')
+        expect(text).to include('body: Empty section')
+      end
+    end
   end
 
   describe Coradoc::Validation::Schema do

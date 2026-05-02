@@ -83,8 +83,7 @@ module Coradoc
       if result.valid?
         puts '✓ Document is valid'
       else
-        error '✗ Document has validation errors:'
-        result.errors.each { |err| error "  - #{err.path}: #{err.message}" }
+        error "✗ #{result}"
         exit 1
       end
     rescue Coradoc::Error => e
