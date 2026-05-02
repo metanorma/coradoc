@@ -110,7 +110,9 @@ module Coradoc
               "Available formats: #{registered_formats.join(', ')}"
       end
 
-      format_module.parse_to_core(text)
+      text = Hooks.invoke(:before_parse, text, format: format)
+      result = format_module.parse_to_core(text)
+      Hooks.invoke(:after_parse, result, format: format)
     end
 
     # Convert document text from one format to another
@@ -164,7 +166,9 @@ module Coradoc
       format_module = get_format(to)
       raise UnsupportedFormatError, "Format '#{to}' is not registered" unless format_module
 
-      format_module.serialize(model, **options)
+      model = Hooks.invoke(:before_serialize, model, format: to)
+      result = format_module.serialize(model, **options)
+      Hooks.invoke(:after_serialize, result, format: to)
     end
 
     # Create a DocumentManipulator for chainable operations
