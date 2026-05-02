@@ -128,14 +128,14 @@ module Coradoc
     end
 
     def filter_sections(element, level: nil, title: nil)
-      if element.is_a?(CoreModel::StructuralElement) && element.section?
-        return nil unless section_matches?(element, level: level, title: title)
-      end
-
       if element.respond_to?(:children) && element.children
         element.children = element.children
                                   .map { |child| filter_sections(child, level: level, title: title) }
                                   .compact
+      end
+
+      if element.is_a?(CoreModel::StructuralElement) && element.section? && !element.document?
+        return nil unless section_matches?(element, level: level, title: title)
       end
 
       element
