@@ -499,4 +499,40 @@ RSpec.describe 'Coradoc API' do
       expect(Coradoc.strip_unicode("\u00A0hello world\u00A0")).to eq('hello world')
     end
   end
+
+  describe '.format_capabilities' do
+    it 'returns a hash keyed by format name' do
+      caps = Coradoc.format_capabilities
+
+      expect(caps).to be_a(Hash)
+      expect(caps.keys).to include(:asciidoc, :html, :markdown, :docx)
+    end
+
+    it 'each value has parse and serialize booleans' do
+      caps = Coradoc.format_capabilities
+
+      caps.each do |name, cap|
+        expect(cap).to have_key(:parse), "Expected #{name} to have :parse key"
+        expect(cap).to have_key(:serialize), "Expected #{name} to have :serialize key"
+        expect([true, false]).to include(cap[:parse])
+        expect([true, false]).to include(cap[:serialize])
+      end
+    end
+
+    it 'all registered formats support parse' do
+      caps = Coradoc.format_capabilities
+
+      caps.each do |name, cap|
+        expect(cap[:parse]).to be(true), "Expected #{name} to support parsing"
+      end
+    end
+
+    it 'all registered formats support serialize' do
+      caps = Coradoc.format_capabilities
+
+      caps.each do |name, cap|
+        expect(cap[:serialize]).to be(true), "Expected #{name} to support serialization"
+      end
+    end
+  end
 end
