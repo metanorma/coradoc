@@ -34,6 +34,12 @@ module Coradoc
       # @return [Hash] Raw configuration values
       attr_reader :options
 
+      def self.symbolize_keys(hash)
+        return {} unless hash.is_a?(Hash)
+
+        hash.transform_keys(&:to_sym)
+      end
+
       # Create a configuration section
       #
       # @param options [Hash] Configuration options
@@ -82,9 +88,7 @@ module Coradoc
       private
 
       def symbolize_keys(hash)
-        return {} unless hash.is_a?(Hash)
-
-        hash.transform_keys(&:to_sym)
+        self.class.symbolize_keys(hash)
       end
 
       # Apply options to instance variables
@@ -427,9 +431,7 @@ module Coradoc
       end
 
       def symbolize_keys(hash)
-        return {} unless hash.is_a?(Hash)
-
-        hash.transform_keys(&:to_sym)
+        ConfigSection.symbolize_keys(hash)
       end
 
       def merge_hash(hash)
@@ -458,6 +460,7 @@ module Coradoc
           value
         end
       end
+      private_class_method :parse_env_value
     end
 
     class << self
