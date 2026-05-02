@@ -18,7 +18,7 @@ module Coradoc
     option :verbose, desc: 'Enable verbose output', type: :boolean, default: false
     option :"asset-delivery", desc: 'Asset delivery mode (embedded, external)', type: :string, default: 'embedded'
     def convert(file)
-      source_format = options[:from] ? Coradoc.normalize_format(options[:from]) : Coradoc.detect_format(file)
+      source_format = resolve_format(file, :from)
       target_format = options[:to] ? Coradoc.normalize_format(options[:to]) : Coradoc.resolve_output_format(options[:output])
 
       unless source_format && target_format
@@ -70,7 +70,7 @@ module Coradoc
     option :format, aliases: '-f', desc: 'Source format (auto-detected from extension)', type: :string
     option :strict, desc: 'Enable strict validation mode', type: :boolean, default: false
     def validate(file)
-      source_format = options[:format] ? Coradoc.normalize_format(options[:format]) : Coradoc.detect_format(file)
+      source_format = resolve_format(file)
       unless source_format
         error 'Error: Could not determine format. Use --format option.'
         exit 1
@@ -100,7 +100,7 @@ module Coradoc
     option :format, aliases: '-f', desc: 'Source format (auto-detected from extension)', type: :string
     option :output, aliases: '-o', desc: 'Output format (text, json)', type: :string, default: 'text'
     def query(file, selector)
-      source_format = options[:format] ? Coradoc.normalize_format(options[:format]) : Coradoc.detect_format(file)
+      source_format = resolve_format(file)
       unless source_format
         error 'Error: Could not determine format. Use --format option.'
         exit 1
@@ -137,7 +137,7 @@ module Coradoc
     desc 'info FILE', 'Display document metadata and statistics'
     option :format, aliases: '-f', desc: 'Source format (auto-detected from extension)', type: :string
     def info(file)
-      source_format = options[:format] ? Coradoc.normalize_format(options[:format]) : Coradoc.detect_format(file)
+      source_format = resolve_format(file)
       unless source_format
         error 'Error: Could not determine format. Use --format option.'
         exit 1
@@ -174,6 +174,11 @@ module Coradoc
     map '-v' => :version, '--version' => :version
 
     private
+
+    def resolve_format(file, option_key = :format)
+      raw = options[option_key]
+      raw ? Coradoc.normalize_format(raw) : Coradoc.detect_format(file)
+    end
 
     def write_output(content, output_file)
       if output_file
