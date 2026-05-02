@@ -432,6 +432,24 @@ RSpec.describe 'Coradoc API' do
 
       expect(stats).to eq({})
     end
+
+    it 'counts all element types dynamically' do
+      doc = Coradoc::CoreModel::StructuralElement.new(
+        element_type: 'document',
+        children: [
+          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'A'),
+          Coradoc::CoreModel::AnnotationBlock.new(annotation_type: 'note', content: 'B'),
+          Coradoc::CoreModel::ListBlock.new(marker_type: 'unordered')
+        ]
+      )
+
+      stats = Coradoc.document_stats(doc)
+      counts = stats[:element_counts]
+
+      expect(counts['paragraph']).to eq(1)
+      expect(counts['annotation_block']).to eq(1)
+      expect(counts['list_block']).to eq(1)
+    end
   end
 
   describe '.describe_element' do
