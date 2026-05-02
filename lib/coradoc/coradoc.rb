@@ -186,7 +186,6 @@ module Coradoc
     #     .add_toc
     #     .to_html
     def manipulate(document)
-      require_relative 'document_manipulator'
       DocumentManipulator.new(document)
     end
 
@@ -436,7 +435,6 @@ end
 require_relative 'core_model'
 require_relative 'registry'
 require_relative 'transform'
-require_relative 'transform/asciidoc_to_core_model'
 require_relative 'input'
 require_relative 'output'
 

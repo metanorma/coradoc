@@ -106,49 +106,49 @@ module Coradoc
       # @param element [CoreModel::StructuralElement] Element to visit
       # @return [void]
       def visit_structural_element(element)
-        visit_children(element.children) if element.respond_to?(:children)
+        visit_children(element.children)
       end
 
       # Visit a block element
       # @param block [CoreModel::Block] Block to visit
       # @return [void]
       def visit_block(block)
-        visit_children(block.children) if block.respond_to?(:children)
+        visit_children(block.children)
       end
 
       # Visit an inline element
       # @param element [CoreModel::InlineElement] Element to visit
       # @return [void]
       def visit_inline_element(element)
-        visit_children(element.nested_elements) if element.respond_to?(:nested_elements)
+        visit_children(element.nested_elements)
       end
 
       # Visit a list block
       # @param list [CoreModel::ListBlock] List to visit
       # @return [void]
       def visit_list_block(list)
-        visit_children(list.items) if list.respond_to?(:items)
+        visit_children(list.items)
       end
 
       # Visit a list item
       # @param item [CoreModel::ListItem] Item to visit
       # @return [void]
       def visit_list_item(item)
-        visit_children(item.children) if item.respond_to?(:children)
+        visit_children(item.children)
       end
 
       # Visit a table
       # @param table [CoreModel::Table] Table to visit
       # @return [void]
       def visit_table(table)
-        visit_children(table.rows) if table.respond_to?(:rows)
+        visit_children(table.rows)
       end
 
       # Visit a table row
       # @param row [CoreModel::TableRow] Row to visit
       # @return [void]
       def visit_table_row(row)
-        visit_children(row.cells) if row.respond_to?(:cells)
+        visit_children(row.cells)
       end
 
       # Visit a table cell
@@ -176,7 +176,7 @@ module Coradoc
       # @param block [CoreModel::AnnotationBlock] Block to visit
       # @return [void]
       def visit_annotation_block(block)
-        visit_children(block.children) if block.respond_to?(:children)
+        visit_children(block.children)
       end
 
       # Visit a footnote
@@ -196,7 +196,7 @@ module Coradoc
 
       # Visit a definition list
       def visit_definition_list(element)
-        visit_children(element.items) if element.respond_to?(:items)
+        visit_children(element.items)
       end
 
       # Visit a definition item
@@ -206,7 +206,7 @@ module Coradoc
 
       # Visit a bibliography
       def visit_bibliography(element)
-        visit_children(element.entries) if element.respond_to?(:entries)
+        visit_children(element.entries)
       end
 
       # Visit a bibliography entry
@@ -216,17 +216,17 @@ module Coradoc
 
       # Visit a table of contents
       def visit_toc(element)
-        visit_children(element.entries) if element.respond_to?(:entries)
+        visit_children(element.entries)
       end
 
       # Visit a TOC entry
       def visit_toc_entry(element)
-        visit_children(element.children) if element.respond_to?(:children)
+        visit_children(element.children)
       end
 
       # Visit metadata
       def visit_metadata(element)
-        visit_children(element.entries) if element.respond_to?(:entries)
+        visit_children(element.entries)
       end
 
       # Visit a metadata entry
@@ -259,9 +259,7 @@ module Coradoc
       # @param children [Array, nil] Children to visit
       # @return [void]
       def visit_children(children)
-        return if children.nil?
-
-        children.each { |child| visit(child) }
+        children&.each { |child| visit(child) }
       end
     end
 
