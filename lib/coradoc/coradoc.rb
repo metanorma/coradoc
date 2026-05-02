@@ -419,10 +419,24 @@ module Coradoc
     end
 
     def count_element_types(doc)
-      %w[section paragraph block list_block table image inline_element].each_with_object({}) do |type, counts|
-        results = Query.query(doc, type)
-        counts[type] = results.length if results.length.positive?
-      end
+      counts = Hash.new(0)
+      visitor = Class.new(Visitor::Base) do
+        define_method(:visit) do |element|
+          if element.is_a?(CoreModel::Base)
+            type_key = if element.respond_to?(:element_type) && element.element_type
+                         element.element_type
+                       else
+                         element.class.name.split('::').last
+                                   .gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '')
+                       end
+            counts[type_key] += 1
+          end
+          super(element)
+        end
+      end.new
+      visitor.visit(doc)
+      counts.reject! { |_, v| v.zero? }
+      counts
     end
   end
 
