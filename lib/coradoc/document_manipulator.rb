@@ -1,36 +1,9 @@
 # frozen_string_literal: true
 
 module Coradoc
-  # Document Manipulator for chainable document operations
-  #
-  # Provides a fluent API for manipulating CoreModel documents:
-  # - Query and filter elements
-  # - Transform content
-  # - Add/modify/remove elements
-  # - Serialize to various formats
-  #
-  # @example Basic usage
-  #   doc = Coradoc.parse(text, format: :asciidoc)
-  #   html = Coradoc::DocumentManipulator.new(doc)
-  #     .select_sections(level: 1..2)
-  #     .transform_text(&:upcase)
-  #     .add_toc
-  #     .to_html
-  #
-  # @example Chaining operations
-  #   manipulator = Coradoc::DocumentManipulator.new(document)
-  #     .remove_elements(:comment_line)
-  #     .transform_headings { |h| h.upcase }
-  #     .add_metadata("processed_at" => Time.now.iso8601)
-  #
   class DocumentManipulator
-    # @return [Coradoc::CoreModel::StructuralElement] the wrapped document
     attr_reader :document
 
-    # Create a new document manipulator
-    #
-    # @param document [Coradoc::CoreModel::Base] the document to manipulate
-    # @raise [ArgumentError] if document is not a CoreModel::Base
     def initialize(document)
       unless document.is_a?(Coradoc::CoreModel::Base)
         raise ArgumentError,
@@ -40,80 +13,66 @@ module Coradoc
       @document = document
     end
 
-    # Query elements using CSS-like selectors
-    #
-    # @param selector [String] CSS-like selector
-    # @return [Array<Coradoc::CoreModel::Base>] matching elements
     def query(selector)
       Coradoc::Query.query(@document, selector).to_a
     end
 
-    # Select sections by criteria
-    #
-    # @param level [Range, Integer, nil] section level filter
-    # @param title [String, Regexp, nil] title filter
-    # @return [DocumentManipulator] self for chaining
     def select_sections(level: nil, title: nil)
-      # This is a filter operation that returns a new manipulator
-      # with the filtered document
       filtered = filter_sections(@document, level: level, title: title)
       DocumentManipulator.new(filtered)
     end
 
-    # Transform all text content
-    #
-    # @yield [String] text content to transform
-    # @return [DocumentManipulator] self for chaining
     def transform_text(&block)
       return self unless block_given?
 
-      transform_text_in_element(@document, &block)
+      Visitor::Transformer.new do |element|
+        case element
+        when CoreModel::InlineElement
+          element.content = yield(element.content) if element.content.is_a?(String)
+        when CoreModel::Block
+          element.content = yield(element.content) if element.content.is_a?(String)
+        end
+      end.visit(@document)
       self
     end
 
-    # Transform all headings/titles
-    #
-    # @yield [String] heading text to transform
-    # @return [DocumentManipulator] self for chaining
     def transform_headings(&block)
       return self unless block_given?
 
-      transform_headings_in_element(@document, &block)
+      Visitor::Transformer.new do |element|
+        if element.is_a?(CoreModel::StructuralElement) && element.title.is_a?(String)
+          element.title = yield(element.title)
+        end
+      end.visit(@document)
       self
     end
 
-    # Add table of contents
-    #
-    # @param options [Hash] TOC options
-    # @option options [Integer] :levels number of levels to include
-    # @option options [Symbol] :position (:top, :bottom) where to place TOC
-    # @return [DocumentManipulator] self for chaining
     def add_toc(levels: 3, position: :top)
-      toc = generate_toc(levels: levels)
+      sections = collect_sections(@document, max_level: levels)
+      toc = CoreModel::TocGenerator.generate(sections)
 
+      toc_element = CoreModel::Block.new(element_type: 'toc', content: toc)
       case position
       when :top
-        insert_toc_at_top(toc)
+        @document.children = [toc_element] + @document.children
       when :bottom
-        insert_toc_at_bottom(toc)
+        @document.children = @document.children + [toc_element]
       end
 
       self
     end
 
-    # Remove elements by type
-    #
-    # @param element_type [Symbol] type of elements to remove
-    # @return [DocumentManipulator] self for chaining
     def remove_elements(element_type)
-      remove_elements_by_type(@document, element_type)
+      Visitor::Transformer.new do |element|
+        next unless element.respond_to?(:children) && element.children
+
+        element.children.reject! do |child|
+          match_element_type?(child, element_type)
+        end
+      end.visit(@document)
       self
     end
 
-    # Add metadata to document
-    #
-    # @param metadata [Hash] metadata key-value pairs
-    # @return [DocumentManipulator] self for chaining
     def add_metadata(metadata)
       metadata.each do |key, value|
         @document.set_metadata(key.to_s, value.to_s)
@@ -121,164 +80,93 @@ module Coradoc
       self
     end
 
-    # Set document title
-    #
-    # @param title [String] new title
-    # @return [DocumentManipulator] self for chaining
     def set_title(title)
       @document.title = title
       self
     end
 
-    # Set document ID
-    #
-    # @param id [String] new ID
-    # @return [DocumentManipulator] self for chaining
     def set_id(id)
       @document.id = id
       self
     end
 
-    # Serialize to HTML
-    #
-    # @param options [Hash] serialization options
-    # @return [String] HTML output
     def to_html(**options)
       Coradoc.serialize(@document, to: :html, **options)
     end
 
-    # Serialize to Markdown
-    #
-    # @param options [Hash] serialization options
-    # @return [String] Markdown output
     def to_markdown(**options)
       Coradoc.serialize(@document, to: :markdown, **options)
     end
 
-    # Serialize to AsciiDoc
-    #
-    # @param options [Hash] serialization options
-    # @return [String] AsciiDoc output
     def to_asciidoc(**options)
       Coradoc.serialize(@document, to: :asciidoc, **options)
     end
 
-    # Serialize to specified format
-    #
-    # @param format [Symbol] target format (:html, :markdown, :asciidoc)
-    # @param options [Hash] serialization options
-    # @return [String] serialized output
     def to(format, **options)
       Coradoc.serialize(@document, to: format, **options)
     end
 
-    # Get the underlying CoreModel document
-    #
-    # @return [Coradoc::CoreModel::Base] the document
     def to_core
       @document
     end
 
-    # Clone this manipulator with a copy of the document
-    #
-    # @return [DocumentManipulator] new manipulator with cloned document
     def clone
-      # Deep clone the document
-      cloned_doc = deep_clone(@document)
-      DocumentManipulator.new(cloned_doc)
+      DocumentManipulator.new(deep_clone(@document))
     end
 
     private
 
-    # Filter sections by criteria
+    def match_element_type?(child, element_type)
+      return false unless child.is_a?(CoreModel::Block)
+
+      case element_type
+      when :comment_line, :comment_block
+        child.element_type&.to_s&.include?('comment')
+      else
+        child.element_type&.to_s == element_type.to_s
+      end
+    end
+
     def filter_sections(element, level: nil, title: nil)
-      return element unless element.respond_to?(:children)
-
-      if element.is_a?(Coradoc::CoreModel::StructuralElement) && element.section?
-        # Check if this section matches criteria
-        matches = true
-
-        if level
-          element_level = element.heading_level
-          case level
-          when Range
-            matches = false unless level.include?(element_level)
-          when Integer
-            matches = false unless element_level == level
-          end
-        end
-
-        if title && matches
-          element_title = element.title || ''
-          case title
-          when String
-            matches = element_title.include?(title)
-          when Regexp
-            matches = element_title =~ title
-          end
-        end
-
-        return nil unless matches
+      if element.is_a?(CoreModel::StructuralElement) && element.section?
+        return nil unless section_matches?(element, level: level, title: title)
       end
 
-      # Recursively filter children
       if element.respond_to?(:children) && element.children
-        filtered_children = element.children.map do |child|
-          filter_sections(child, level: level, title: title)
-        end.compact
-
-        element.children = filtered_children if element.respond_to?(:children=)
+        element.children = element.children
+                                  .map { |child| filter_sections(child, level: level, title: title) }
+                                  .compact
       end
 
       element
     end
 
-    # Transform text content in an element
-    def transform_text_in_element(element, &block)
-      case element
-      when Coradoc::CoreModel::InlineElement
-        element.content = yield(element.content) if element.content.is_a?(String)
-      when Coradoc::CoreModel::Block
-        element.content = yield(element.content) if element.content.is_a?(String)
-        element.children.each do |child|
-          child.content = yield(child.content) if child.is_a?(String)
+    def section_matches?(section, level: nil, title: nil)
+      if level
+        element_level = section.heading_level
+        case level
+        when Range then return false unless level.include?(element_level)
+        when Integer then return false unless element_level == level
         end
       end
 
-      # Recurse into children
-      return unless element.respond_to?(:children) && element.children
-
-      element.children.each do |child|
-        transform_text_in_element(child, &block)
+      if title
+        element_title = section.title || ''
+        case title
+        when String then return false unless element_title.include?(title)
+        when Regexp then return false unless element_title =~ title
+        end
       end
+
+      true
     end
 
-    # Transform headings in an element
-    def transform_headings_in_element(element, &block)
-      element.title = yield(element.title) if element.is_a?(Coradoc::CoreModel::StructuralElement) && element.title.is_a?(String)
-
-      # Recurse into children
-      return unless element.respond_to?(:children) && element.children
-
-      element.children.each do |child|
-        transform_headings_in_element(child, &block)
-      end
-    end
-
-    # Generate table of contents
-    def generate_toc(levels: 3)
-      sections = collect_sections(@document, max_level: levels)
-      Coradoc::CoreModel::TocGenerator.generate(sections)
-    end
-
-    # Collect sections up to max_level
     def collect_sections(element, max_level: 3, current_level: 1)
       sections = []
-
       return sections unless element.respond_to?(:children)
 
       element.children.each do |child|
-        next unless child.is_a?(Coradoc::CoreModel::StructuralElement) &&
+        next unless child.is_a?(CoreModel::StructuralElement) &&
                     child.section? && (current_level <= max_level)
 
         sections << {
@@ -293,61 +181,12 @@ module Coradoc
       sections
     end
 
-    # Insert TOC at top of document
-    def insert_toc_at_top(toc)
-      return unless @document.respond_to?(:children=) && @document.respond_to?(:children)
-
-      toc_element = Coradoc::CoreModel::Block.new(
-        element_type: 'toc',
-        content: toc
-      )
-      @document.children = [toc_element] + @document.children
-    end
-
-    # Insert TOC at bottom of document
-    def insert_toc_at_bottom(toc)
-      return unless @document.respond_to?(:children=) && @document.respond_to?(:children)
-
-      toc_element = Coradoc::CoreModel::Block.new(
-        element_type: 'toc',
-        content: toc
-      )
-      @document.children = @document.children + [toc_element]
-    end
-
-    # Remove elements by type
-    def remove_elements_by_type(element, element_type)
-      return unless element.respond_to?(:children) && element.children
-
-      element.children.reject! do |child|
-        case element_type
-        when :comment_line, :comment_block
-          child.is_a?(Coradoc::CoreModel::Block) &&
-            child.element_type&.to_s&.include?('comment')
-        when :line_break
-          child.is_a?(Coradoc::CoreModel::Block) &&
-            child.element_type == 'line_break'
-        else
-          child.is_a?(Coradoc::CoreModel::Block) &&
-            child.element_type&.to_s == element_type.to_s
-        end
-      end
-
-      # Recurse into remaining children
-      element.children.each do |child|
-        remove_elements_by_type(child, element_type)
-      end
-    end
-
-    # Deep clone an element
     def deep_clone(element)
       case element
-      when Coradoc::CoreModel::Base
-        # Use lutaml-model's duplication
+      when CoreModel::Base
         cloned = element.class.new
         element.class.attributes.each_key do |name|
-          value = element.send(name)
-          cloned.send("#{name}=", deep_clone(value))
+          cloned.send("#{name}=", deep_clone(element.send(name)))
         end
         cloned
       when Array
