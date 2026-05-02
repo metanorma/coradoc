@@ -45,9 +45,7 @@ module Coradoc
     # @param selector [String] CSS-like selector
     # @return [Array<Coradoc::CoreModel::Base>] matching elements
     def query(selector)
-      results = []
-      query_elements(@document, selector, results)
-      results
+      Coradoc::Query.query(@document, selector).to_a
     end
 
     # Select sections by criteria
@@ -362,22 +360,6 @@ module Coradoc
         rescue StandardError
           element
         end
-      end
-    end
-
-    # Query elements matching a selector
-    def query_elements(element, selector, results)
-      # Simple selector matching by element_type
-      if element.respond_to?(:element_type)
-        type_match = selector.gsub(/[#.\[].*/, '').downcase
-        results << element if type_match.empty? || element.element_type&.downcase == type_match
-      end
-
-      # Recurse into children
-      return unless element.respond_to?(:children) && element.children
-
-      element.children.each do |child|
-        query_elements(child, selector, results)
       end
     end
   end
