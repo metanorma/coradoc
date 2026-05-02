@@ -184,6 +184,45 @@ RSpec.describe Coradoc::DocumentManipulator do
     end
   end
 
+  describe '#to_markdown' do
+    it 'delegates to Coradoc.serialize with :markdown' do
+      expect(Coradoc).to receive(:serialize).with(document, to: :markdown)
+      manipulator.to_markdown
+    end
+  end
+
+  describe '#to_asciidoc' do
+    it 'serializes to AsciiDoc' do
+      adoc = manipulator.to_asciidoc
+      expect(adoc).to include('Introduction')
+    end
+  end
+
+  describe '#add_toc' do
+    it 'adds a TOC element at the top by default' do
+      manipulator.add_toc
+      toc_element = document.children.first
+      expect(toc_element.element_type).to eq('toc')
+    end
+
+    it 'adds a TOC element at the bottom when position: :bottom' do
+      manipulator.add_toc(position: :bottom)
+      toc_element = document.children.last
+      expect(toc_element.element_type).to eq('toc')
+    end
+
+    it 'returns self for chaining' do
+      result = manipulator.add_toc
+      expect(result).to eq(manipulator)
+    end
+
+    it 'respects levels option' do
+      manipulator.add_toc(levels: 1)
+      toc_element = document.children.first
+      expect(toc_element.element_type).to eq('toc')
+    end
+  end
+
   describe '#to' do
     it 'serializes to specified format' do
       html = manipulator.to(:html)
