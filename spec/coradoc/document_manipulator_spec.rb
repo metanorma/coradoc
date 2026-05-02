@@ -175,6 +175,12 @@ RSpec.describe Coradoc::DocumentManipulator do
       expect(sections.length).to eq(1)
       expect(sections.first.title).to eq('Background')
     end
+
+    it 'returns empty document when no sections match' do
+      filtered = manipulator.select_sections(level: 99)
+      expect(filtered).to be_a(described_class)
+      expect(filtered.document.children).to be_empty
+    end
   end
 
   describe '#to_html' do
