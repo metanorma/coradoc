@@ -189,12 +189,14 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
       end
 
       it 'transforms xref InlineElement to AsciiDoc CrossReference' do
-        core_inline = Coradoc::CoreModel::InlineElement.new(format_type: 'xref', target: 'section1', content: 'Section 1')
+        core_inline = Coradoc::CoreModel::InlineElement.new(format_type: 'xref', target: 'section1',
+                                                            content: 'Section 1')
         expect(described_class.transform(core_inline)).to be_a(Coradoc::AsciiDoc::Model::Inline::CrossReference)
       end
 
       it 'transforms footnote InlineElement to AsciiDoc Footnote' do
-        core_inline = Coradoc::CoreModel::InlineElement.new(format_type: 'footnote', target: 'fn1', content: 'note text')
+        core_inline = Coradoc::CoreModel::InlineElement.new(format_type: 'footnote', target: 'fn1',
+                                                            content: 'note text')
         expect(described_class.transform(core_inline)).to be_a(Coradoc::AsciiDoc::Model::Inline::Footnote)
       end
 

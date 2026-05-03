@@ -158,7 +158,7 @@ module Coradoc
       end
 
       def within_level_range?(level)
-        level >= @min_level && level <= @max_level
+        level.between?(@min_level, @max_level)
       end
 
       # Build the hierarchical TOC tree

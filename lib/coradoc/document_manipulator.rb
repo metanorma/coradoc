@@ -22,28 +22,36 @@ module Coradoc
       DocumentManipulator.new(filtered)
     end
 
-    def transform_text(&block)
+    def transform_text(&)
       return self unless block_given?
 
-      Visitor::Transformer.new do |element|
-        case element
-        when CoreModel::InlineElement
+      visitor = Class.new(Visitor::Base) do
+        define_method(:visit_block) do |element|
           element.content = yield(element.content) if element.content.is_a?(String)
-        when CoreModel::Block
-          element.content = yield(element.content) if element.content.is_a?(String)
+          super(element)
         end
-      end.visit(@document)
+
+        define_method(:visit_inline_element) do |element|
+          element.content = yield(element.content) if element.content.is_a?(String)
+          super(element)
+        end
+      end.new
+
+      visitor.visit(@document, &)
       self
     end
 
-    def transform_headings(&block)
+    def transform_headings(&)
       return self unless block_given?
 
-      Visitor::Transformer.new do |element|
-        if element.is_a?(CoreModel::StructuralElement) && element.title.is_a?(String)
-          element.title = yield(element.title)
+      visitor = Class.new(Visitor::Base) do
+        define_method(:visit_structural_element) do |element|
+          element.title = yield(element.title) if element.title.is_a?(String)
+          super(element)
         end
-      end.visit(@document)
+      end.new
+
+      visitor.visit(@document, &)
       self
     end
 
@@ -63,13 +71,35 @@ module Coradoc
     end
 
     def remove_elements(element_type)
-      Visitor::Transformer.new do |element|
-        next unless element.respond_to?(:children) && element.children
-
-        element.children.reject! do |child|
-          match_element_type?(child, element_type)
+      visitor = Class.new(Visitor::Base) do
+        define_method(:visit_structural_element) do |element|
+          reject_matching(element, element_type)
+          super(element)
         end
-      end.visit(@document)
+
+        define_method(:visit_block) do |element|
+          reject_matching(element, element_type)
+          visit_children(element.children)
+        end
+
+        define_method(:reject_matching) do |element, type|
+          return unless element.respond_to?(:children) && element.children
+
+          element.children.reject! do |child|
+            next false unless child.is_a?(CoreModel::Block)
+
+            case type
+            when :comment_line, :comment_block
+              child.element_type&.include?('comment')
+            else
+              child.element_type&.to_s == type.to_s
+            end
+          end
+        end
+        private :reject_matching
+      end.new
+
+      visitor.visit(@document)
       self
     end
 
@@ -116,27 +146,16 @@ module Coradoc
 
     private
 
-    def match_element_type?(child, element_type)
-      return false unless child.is_a?(CoreModel::Block)
-
-      case element_type
-      when :comment_line, :comment_block
-        child.element_type&.to_s&.include?('comment')
-      else
-        child.element_type&.to_s == element_type.to_s
-      end
-    end
-
     def filter_sections(element, level: nil, title: nil)
       if element.respond_to?(:children) && element.children
         element.children = element.children
-                                  .map { |child| filter_sections(child, level: level, title: title) }
-                                  .compact
+                                  .filter_map { |child| filter_sections(child, level: level, title: title) }
+
       end
 
-      if element.is_a?(CoreModel::StructuralElement) && element.section? && !element.document?
-        return nil unless section_matches?(element, level: level, title: title)
-      end
+      return nil if element.is_a?(CoreModel::StructuralElement) && element.section? && !element.document? && !section_matches?(
+        element, level: level, title: title
+      )
 
       element
     end
@@ -154,7 +173,7 @@ module Coradoc
         element_title = section.title || ''
         case title
         when String then return false unless element_title.include?(title)
-        when Regexp then return false unless element_title =~ title
+        when Regexp then return false unless element_title&.match?(title)
         end
       end
 

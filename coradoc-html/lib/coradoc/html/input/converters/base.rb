@@ -46,13 +46,13 @@ module Coradoc
             when String
               node.ancestors.map(&:name).include?(name)
             when Array
-              (node.ancestors.map(&:name) & name).any?
+              node.ancestors.map(&:name).intersect?(name)
             end
           end
 
           def textnode_before_end_with?(node, str)
-            return nil unless [String, Regexp].include?(str.class)
-            return nil if str.is_a?(String) && str.empty?
+            return false unless [String, Regexp].include?(str.class)
+            return false if str.is_a?(String) && str.empty?
 
             str = /#{Regexp.escape(str)}/ if str.is_a?(String)
             str = /(?:#{str})\z/
@@ -62,8 +62,8 @@ module Coradoc
           end
 
           def textnode_after_start_with?(node, str)
-            return nil unless [String, Regexp].include?(str.class)
-            return nil if str.is_a?(String) && str.empty?
+            return false unless [String, Regexp].include?(str.class)
+            return false if str.is_a?(String) && str.empty?
 
             str = /#{Regexp.escape(str)}/ if str.is_a?(String)
             str = /\A(?:#{str})/

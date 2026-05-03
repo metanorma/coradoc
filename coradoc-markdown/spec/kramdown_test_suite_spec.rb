@@ -25,7 +25,7 @@ PENDING_TESTS = %w[].freeze
 def find_test_files
   spec_dir = File.dirname(__FILE__)
   fixtures_dir = File.join(spec_dir, 'fixtures', 'kramdown')
-  Dir[File.join(fixtures_dir, '**', '*.text')].sort
+  Dir[File.join(fixtures_dir, '**', '*.text')]
 end
 
 def excluded?(test_path)

@@ -134,9 +134,11 @@ end
 
 # Register the AsciiDoc format with Coradoc after module is fully defined
 # Use conditional registration to handle load order issues
-Coradoc.register_format(:asciidoc, Coradoc::AsciiDoc,
-                        aliases: %w[adoc asciidoc],
-                        extensions: %w[.adoc .asciidoc]) if Coradoc.respond_to?(:register_format)
+if Coradoc.respond_to?(:register_format)
+  Coradoc.register_format(:asciidoc, Coradoc::AsciiDoc,
+                          aliases: %w[adoc asciidoc],
+                          extensions: %w[.adoc .asciidoc])
+end
 
 # Backward-compatibility: Coradoc::Model is now Coradoc::AsciiDoc::Model
 # This alias is provided for legacy code that hasn't been updated

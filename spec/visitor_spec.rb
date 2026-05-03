@@ -274,8 +274,14 @@ RSpec.describe Coradoc::Visitor do
     it 'dispatches AnnotationBlock to visit_annotation_block, not visit_block' do
       dispatch_log = []
       visitor = Class.new(Coradoc::Visitor::Base) do
-        define_method(:visit_annotation_block) { |el| dispatch_log << :annotation_block; super(el) }
-        define_method(:visit_block) { |el| dispatch_log << :block; super(el) }
+        define_method(:visit_annotation_block) do |el|
+          dispatch_log << :annotation_block
+          super(el)
+        end
+        define_method(:visit_block) do |el|
+          dispatch_log << :block
+          super(el)
+        end
       end.new
 
       admonition.accept(visitor)
@@ -286,7 +292,10 @@ RSpec.describe Coradoc::Visitor do
     it 'does not dispatch AnnotationBlock to visit_block' do
       block_visits = 0
       visitor = Class.new(Coradoc::Visitor::Base) do
-        define_method(:visit_block) { |el| block_visits += 1; super(el) }
+        define_method(:visit_block) do |el|
+          block_visits += 1
+          super(el)
+        end
       end.new
 
       admonition.accept(visitor)
@@ -299,7 +308,10 @@ RSpec.describe Coradoc::Visitor do
     def dispatches_to?(element, expected_method)
       log = []
       visitor = Class.new(Coradoc::Visitor::Base) do
-        define_method(expected_method) { |el| log << expected_method; super(el) }
+        define_method(expected_method) do |el|
+          log << expected_method
+          super(el)
+        end
       end.new
       element.accept(visitor)
       log == [expected_method]
@@ -351,8 +363,6 @@ RSpec.describe Coradoc::Visitor do
       entry1 = Coradoc::CoreModel::BibliographyEntry.new(ref: 'ISO1')
       entry2 = Coradoc::CoreModel::BibliographyEntry.new(ref: 'ISO2')
       bib = Coradoc::CoreModel::Bibliography.new(entries: [entry1, entry2])
-
-      visited = []
       visitor = Coradoc::Visitor::Collector.new(Coradoc::CoreModel::BibliographyEntry)
       bib.accept(visitor)
 
@@ -401,25 +411,14 @@ RSpec.describe Coradoc::Visitor do
     it 'maps every registered CoreModel type to a visit method' do
       Coradoc::Visitor::DISPATCH_TABLE.each do |klass, method_name|
         expect(Coradoc::Visitor::Base.instance_methods(false)).to include(method_name),
-          "#{klass} maps to #{method_name}, but no such method on Base"
+                                                                  "#{klass} maps to #{method_name}, but no such method on Base"
       end
     end
 
-    it 'allows external registration for new types' do
+    it 'raises on registration after freeze' do
       custom_class = Class.new(Coradoc::CoreModel::Base)
-      Coradoc::Visitor.register_visitor(custom_class, :visit_custom)
-
-      visited = false
-      visitor = Class.new(Coradoc::Visitor::Base) do
-        define_method(:visit_custom) { |_el| visited = true }
-      end.new
-
-      instance = custom_class.new
-      visitor.visit(instance)
-
-      expect(visited).to be true
-
-      Coradoc::Visitor::DISPATCH_TABLE.delete(custom_class)
+      expect { described_class.register_visitor(custom_class, :visit_custom) }
+        .to raise_error(RuntimeError, /DISPATCH_TABLE is frozen/)
     end
 
     it 'falls back to visit_unknown for unregistered types' do

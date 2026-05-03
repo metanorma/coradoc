@@ -147,7 +147,7 @@ module Coradoc
         # @return [Coradoc::Markdown::Document] The document model
         def transform_document(ast)
           @ald_registry = {}
-          blocks = Array(ast).map { |element| transform_element(element) }.compact
+          blocks = Array(ast).filter_map { |element| transform_element(element) }
           Document.new(blocks: blocks)
         end
 
@@ -196,7 +196,7 @@ module Coradoc
             end
           when Array
             # Transform each item
-            element.map { |e| transform_element(e) }.compact
+            element.filter_map { |e| transform_element(e) }
           when Parslet::Slice
             Text.new(content: element.to_s)
           else

@@ -96,11 +96,11 @@ module Coradoc
 
         def self.extract_content(nodes)
           # Extract and convert content nodes
-          nodes.map do |node|
+          nodes.filter_map do |node|
             if node.text?
             end
             node.text
-          end.compact.join
+          end.join
         end
       end
     end

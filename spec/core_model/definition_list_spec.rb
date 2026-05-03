@@ -32,14 +32,17 @@ RSpec.describe Coradoc::CoreModel::DefinitionList do
     it 'considers identical lists equivalent' do
       items = [Coradoc::CoreModel::DefinitionItem.new(term: 'API', definitions: ['Application Programming Interface'])]
       list1 = described_class.new(items: items)
-      list2 = described_class.new(items: [Coradoc::CoreModel::DefinitionItem.new(term: 'API', definitions: ['Application Programming Interface'])])
+      list2 = described_class.new(items: [Coradoc::CoreModel::DefinitionItem.new(term: 'API',
+                                                                                 definitions: ['Application Programming Interface'])])
 
       expect(list1.semantically_equivalent?(list2)).to be true
     end
 
     it 'considers different lists not equivalent' do
-      list1 = described_class.new(items: [Coradoc::CoreModel::DefinitionItem.new(term: 'API', definitions: ['Application Programming Interface'])])
-      list2 = described_class.new(items: [Coradoc::CoreModel::DefinitionItem.new(term: 'REST', definitions: ['Representational State Transfer'])])
+      list1 = described_class.new(items: [Coradoc::CoreModel::DefinitionItem.new(term: 'API',
+                                                                                 definitions: ['Application Programming Interface'])])
+      list2 = described_class.new(items: [Coradoc::CoreModel::DefinitionItem.new(term: 'REST',
+                                                                                 definitions: ['Representational State Transfer'])])
 
       expect(list1.semantically_equivalent?(list2)).to be false
     end

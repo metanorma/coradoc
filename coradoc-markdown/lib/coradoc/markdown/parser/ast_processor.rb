@@ -390,7 +390,7 @@ module Coradoc
 
             # Pattern to match HTML tags with markdown attribute
             # Captures: tag name, markdown value, content, closing tag
-            pattern = %r{<(#{HTML_TAG_PATTERN})\s+([^>]*?)markdown\s*=\s*["']([^"']+)["']([^>]*)>(.*?)</\1>}im
+            pattern = %r{<(#{HTML_TAG_PATTERN})\s+([^>]*?)markdown\s*=\s*["']([^"']+)["']([^>]*)>(.*?)</\1>}imo
 
             text.gsub(pattern) do |_match|
               tag_name = ::Regexp.last_match(1)

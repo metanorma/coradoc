@@ -17,6 +17,6 @@ module Coradoc
   #
   module Input
     extend ProcessorRegistry
-    self.error_label = "input processor"
+    self.error_label = 'input processor'
   end
 end

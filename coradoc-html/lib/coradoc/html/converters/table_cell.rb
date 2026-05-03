@@ -148,14 +148,14 @@ module Coradoc
             children.first.text
           else
             # Complex content with nested elements
-            children.map do |child|
+            children.filter_map do |child|
               if child.text?
                 child.text
               else
                 # Convert HTML element to CoreModel
                 convert_node_to_core(child, {})
               end
-            end.compact
+            end
           end
         end
 

@@ -96,7 +96,7 @@ module Coradoc
 
         def self.extract_content(nodes)
           # Extract and convert content nodes
-          nodes.map do |node|
+          nodes.filter_map do |node|
             if node.text? && !node.text.strip.empty?
               node.text.strip
             elsif node.element?
@@ -107,7 +107,7 @@ module Coradoc
                 node.text.strip
               end
             end
-          end.compact
+          end
         end
       end
     end

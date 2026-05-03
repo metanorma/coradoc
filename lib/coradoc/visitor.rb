@@ -31,12 +31,15 @@ module Coradoc
   module Visitor
     # Registry mapping CoreModel classes to visitor method names.
     # CoreModel types self-register via register_visitor on load.
-    DISPATCH_TABLE = {}
+    DISPATCH_TABLE = {} # rubocop:disable Style/MutableConstant
 
     # Register a CoreModel class to a visitor method name.
     # Called during CoreModel type definition.
     def self.register_visitor(klass, method_name)
       DISPATCH_TABLE[klass] = method_name
+    rescue FrozenError
+      raise "Cannot register visitor for #{klass}: DISPATCH_TABLE is frozen. " \
+            'Register before freeze or use a custom visitor subclass.'
     end
 
     # Base class for document visitors.
@@ -251,7 +254,40 @@ module Coradoc
       end
     end
 
-    # Self-register all CoreModel types
+    # Counts element types by element_type or class-derived key
+    class ElementCounter < Base
+      attr_reader :counts
+
+      def initialize
+        @counts = Hash.new(0)
+      end
+
+      def visit(element)
+        if element.is_a?(CoreModel::Base)
+          type_key = if element.respond_to?(:element_type) && element.element_type
+                       element.element_type
+                     else
+                       class_to_key(element.class)
+                     end
+          @counts[type_key] += 1
+        end
+        super
+      end
+
+      def to_h
+        @counts.reject { |_, v| v.zero? }
+      end
+
+      private
+
+      def class_to_key(klass)
+        klass.name.split('::').last
+             .gsub(/([A-Z])/) { "_#{::Regexp.last_match(1).downcase}" }
+             .sub(/^_/, '')
+      end
+    end
+
+    # Self-register all CoreModel types, then freeze the table
     register_visitor CoreModel::StructuralElement, :visit_structural_element
     register_visitor CoreModel::AnnotationBlock, :visit_annotation_block
     register_visitor CoreModel::Block, :visit_block
@@ -275,5 +311,6 @@ module Coradoc
     register_visitor CoreModel::Metadata, :visit_metadata
     register_visitor CoreModel::MetadataEntry, :visit_metadata_entry
     register_visitor CoreModel::ElementAttribute, :visit_element_attribute
+    DISPATCH_TABLE.freeze
   end
 end

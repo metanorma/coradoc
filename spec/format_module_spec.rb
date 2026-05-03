@@ -42,7 +42,9 @@ RSpec.describe Coradoc::FormatModule do
     it 'warns about all missing methods when neither parse nor serialize exist' do
       mod = Module.new {}
 
-      expect { described_class.validate!(mod, :empty) }.to output(/missing: parse_to_core or parse, serialize/).to_stderr
+      expect do
+        described_class.validate!(mod, :empty)
+      end.to output(/missing: parse_to_core or parse, serialize/).to_stderr
     end
   end
 

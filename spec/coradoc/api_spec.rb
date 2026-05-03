@@ -167,7 +167,9 @@ RSpec.describe 'Coradoc API' do
     end
 
     it 'raises UnsupportedFormatError for unregistered target' do
-      expect { Coradoc.convert('text', from: :markdown, to: :nonexistent) }.to raise_error(Coradoc::UnsupportedFormatError)
+      expect do
+        Coradoc.convert('text', from: :markdown, to: :nonexistent)
+      end.to raise_error(Coradoc::UnsupportedFormatError)
     end
   end
 

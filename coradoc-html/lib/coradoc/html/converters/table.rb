@@ -23,9 +23,9 @@ module Coradoc
         def self.to_coradoc(element, _options = {})
           return nil unless element.name == 'table'
 
-          rows = element.css('tr').map do |tr|
+          rows = element.css('tr').filter_map do |tr|
             TableRow.to_coradoc(tr)
-          end.compact
+          end
 
           # Extract caption if present
           caption_elem = element.at_css('caption')

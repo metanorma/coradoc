@@ -40,9 +40,9 @@ module Coradoc
     #
     # @yield Block containing document building commands
     # @return [DocumentBuilder] The builder instance
-    def self.build(&block)
+    def self.build(&)
       builder = new
-      builder.instance_eval(&block) if block_given?
+      builder.instance_eval(&) if block_given?
       builder
     end
 
@@ -137,11 +137,11 @@ module Coradoc
     # @param type [Symbol] List type (:ordered, :unordered, :definition)
     # @yield Block containing list items
     # @return [DocumentBuilder] self for chaining
-    def list(type = :unordered, &block)
+    def list(type = :unordered, &)
       @list_items = []
       @list_type = type
 
-      instance_eval(&block) if block_given?
+      instance_eval(&) if block_given?
 
       @current_context.children << CoreModel::ListBlock.new(
         marker_type: type.to_s,
@@ -160,16 +160,16 @@ module Coradoc
     #
     # @yield Block containing list items
     # @return [DocumentBuilder] self for chaining
-    def bulleted_list(&block)
-      list(:unordered, &block)
+    def bulleted_list(&)
+      list(:unordered, &)
     end
 
     # Add a numbered list (ordered)
     #
     # @yield Block containing list items
     # @return [DocumentBuilder] self for chaining
-    def numbered_list(&block)
-      list(:ordered, &block)
+    def numbered_list(&)
+      list(:ordered, &)
     end
 
     # Add a list item
@@ -310,7 +310,7 @@ module Coradoc
   #
   # @yield Block containing document building commands
   # @return [DocumentBuilder] The builder instance
-  def self.build(&block)
-    DocumentBuilder.build(&block)
+  def self.build(&)
+    DocumentBuilder.build(&)
   end
 end

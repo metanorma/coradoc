@@ -28,8 +28,8 @@ module Coradoc
       return true if has_parse && has_serialize
 
       missing = []
-      missing << "parse_to_core or parse" unless has_parse
-      missing << "serialize" unless has_serialize
+      missing << 'parse_to_core or parse' unless has_parse
+      missing << 'serialize' unless has_serialize
       warn "Coradoc: format :#{format_name} (#{format_module}) missing: #{missing.join(', ')}"
       false
     end

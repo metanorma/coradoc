@@ -17,6 +17,6 @@ module Coradoc
   #
   module Output
     extend ProcessorRegistry
-    self.error_label = "output processor"
+    self.error_label = 'output processor'
   end
 end

@@ -96,7 +96,10 @@ module Coradoc
 
             return render_core_bibliography(content, state) if content.is_a?(Coradoc::CoreModel::Bibliography)
 
-            return render_core_bibliography_entry(content, state) if content.is_a?(Coradoc::CoreModel::BibliographyEntry)
+            if content.is_a?(Coradoc::CoreModel::BibliographyEntry)
+              return render_core_bibliography_entry(content,
+                                                    state)
+            end
 
             # Handle unknown types gracefully
             handle_unknown_content(content, state)
@@ -505,7 +508,7 @@ module Coradoc
           def escape_attribute(value)
             return '' if value.nil?
 
-            value.to_s.gsub(/&/, '&amp;').gsub(/"/, '&quot;').gsub(/</, '&lt;').gsub(/>/, '&gt;')
+            value.to_s.gsub('&', '&amp;').gsub('"', '&quot;').gsub('<', '&lt;').gsub('>', '&gt;')
           end
 
           # Build HTML element

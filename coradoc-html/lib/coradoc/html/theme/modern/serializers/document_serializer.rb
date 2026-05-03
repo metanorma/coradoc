@@ -77,9 +77,9 @@ module Coradoc
               def serialize_core_model_children(children)
                 return [] unless children
 
-                children.map do |child|
+                children.filter_map do |child|
                   serialize_core_model_element(child)
-                end.compact
+                end
               end
 
               # Serialize individual CoreModel element
@@ -160,7 +160,7 @@ module Coradoc
 
                 case block.content
                 when Array
-                  block.content.map { |el| serialize_core_model_element(el) }.compact
+                  block.content.filter_map { |el| serialize_core_model_element(el) }
                 when Coradoc::CoreModel::InlineElement
                   [serialize_core_model_inline(block.content)]
                 else
@@ -198,7 +198,7 @@ module Coradoc
                 content = if item.content
                             case item.content
                             when Array
-                              item.content.map { |el| serialize_core_model_element(el) }.compact
+                              item.content.filter_map { |el| serialize_core_model_element(el) }
                             else
                               [{ type: 'text', content: item.content.to_s }]
                             end
@@ -250,7 +250,7 @@ module Coradoc
                 content = if cell.content
                             case cell.content
                             when Array
-                              cell.content.map { |el| serialize_core_model_element(el) }.compact
+                              cell.content.filter_map { |el| serialize_core_model_element(el) }
                             else
                               cell.content.to_s
                             end

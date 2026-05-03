@@ -105,12 +105,12 @@ module Coradoc
         def build_attributes(attributes)
           return '' if attributes.nil? || attributes.empty?
 
-          attributes.map do |key, value|
+          attributes.filter_map do |key, value|
             next if value.nil?
 
             escaped_value = escape_html(value.to_s)
             %(#{key}="#{escaped_value}")
-          end.compact.join(' ')
+          end.join(' ')
         end
 
         # Check if element is a void element (self-closing)

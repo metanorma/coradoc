@@ -6,7 +6,7 @@ RSpec.describe Coradoc::ProcessorRegistry do
   let(:test_registry) do
     mod = Module.new
     mod.extend(described_class)
-    mod.error_label = "test processor"
+    mod.error_label = 'test processor'
     mod
   end
 
@@ -81,12 +81,12 @@ RSpec.describe Coradoc::ProcessorRegistry do
   describe '#process' do
     it 'dispatches to the right processor' do
       test_registry.define(sample_processor)
-      result = test_registry.process("input", format: :test)
-      expect(result).to eq("processed: input")
+      result = test_registry.process('input', format: :test)
+      expect(result).to eq('processed: input')
     end
 
     it 'raises with custom error label' do
-      expect { test_registry.process("x", format: :missing) }
+      expect { test_registry.process('x', format: :missing) }
         .to raise_error(ArgumentError, /No test processor found/)
     end
   end

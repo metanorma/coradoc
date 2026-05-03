@@ -148,7 +148,10 @@ RSpec.describe Coradoc::Docx::Transform::Rules::ParagraphRule do
   end
 
   describe '#apply' do
-    let(:context) { build_context(registry: build_registry_with(described_class.new, Coradoc::Docx::Transform::Rules::RunRule.new, Coradoc::Docx::Transform::Rules::TextRule.new)) }
+    let(:context) do
+      build_context(registry: build_registry_with(described_class.new, Coradoc::Docx::Transform::Rules::RunRule.new,
+                                                  Coradoc::Docx::Transform::Rules::TextRule.new))
+    end
 
     it 'produces a Block paragraph with text content' do
       para = build_paragraph('Hello')
@@ -188,7 +191,10 @@ RSpec.describe Coradoc::Docx::Transform::Rules::TableRule do
   end
 
   describe '#apply' do
-    let(:context) { build_context(registry: build_registry_with(described_class.new, Coradoc::Docx::Transform::Rules::ParagraphRule.new, Coradoc::Docx::Transform::Rules::RunRule.new, Coradoc::Docx::Transform::Rules::TextRule.new)) }
+    let(:context) do
+      build_context(registry: build_registry_with(described_class.new, Coradoc::Docx::Transform::Rules::ParagraphRule.new,
+                                                  Coradoc::Docx::Transform::Rules::RunRule.new, Coradoc::Docx::Transform::Rules::TextRule.new))
+    end
 
     it 'produces a CoreModel::Table with rows and cells' do
       table = build_table([%w[A B], %w[C D]])
@@ -213,7 +219,10 @@ RSpec.describe Coradoc::Docx::Transform::Rules::ListItemRule do
   end
 
   describe '#apply' do
-    let(:context) { build_context(registry: build_registry_with(Coradoc::Docx::Transform::Rules::RunRule.new, Coradoc::Docx::Transform::Rules::TextRule.new)) }
+    let(:context) do
+      build_context(registry: build_registry_with(Coradoc::Docx::Transform::Rules::RunRule.new,
+                                                  Coradoc::Docx::Transform::Rules::TextRule.new))
+    end
 
     it 'produces a ListItem with content' do
       para = build_list_paragraph('Item 1', num_id: 1)
@@ -242,7 +251,10 @@ RSpec.describe Coradoc::Docx::Transform::Rules::HeadingRule do
   end
 
   describe '#apply' do
-    let(:context) { build_context(registry: build_registry_with(Coradoc::Docx::Transform::Rules::RunRule.new, Coradoc::Docx::Transform::Rules::TextRule.new)) }
+    let(:context) do
+      build_context(registry: build_registry_with(Coradoc::Docx::Transform::Rules::RunRule.new,
+                                                  Coradoc::Docx::Transform::Rules::TextRule.new))
+    end
 
     it 'produces a StructuralElement section with title and level' do
       para = build_heading('My Title', level: 2)
@@ -363,7 +375,9 @@ RSpec.describe Coradoc::Docx::Transform::Rules::HyperlinkRule do
 
   describe '#apply' do
     let(:run_rule) { Coradoc::Docx::Transform::Rules::RunRule.new }
-    let(:context) { build_context(registry: build_registry_with(run_rule, Coradoc::Docx::Transform::Rules::TextRule.new)) }
+    let(:context) do
+      build_context(registry: build_registry_with(run_rule, Coradoc::Docx::Transform::Rules::TextRule.new))
+    end
 
     it 'produces InlineElement link with external URL' do
       hl = build_hyperlink(
@@ -419,7 +433,10 @@ RSpec.describe Coradoc::Docx::Transform::Rules::SimpleFieldRule do
   end
 
   describe '#apply' do
-    let(:context) { build_context(registry: build_registry_with(Coradoc::Docx::Transform::Rules::RunRule.new, Coradoc::Docx::Transform::Rules::TextRule.new)) }
+    let(:context) do
+      build_context(registry: build_registry_with(Coradoc::Docx::Transform::Rules::RunRule.new,
+                                                  Coradoc::Docx::Transform::Rules::TextRule.new))
+    end
 
     it 'returns nil for PAGE field (print layout)' do
       field = Uniword::Wordprocessingml::SimpleField.new
@@ -449,7 +466,10 @@ RSpec.describe Coradoc::Docx::Transform::Rules::StructuredDocumentTagRule do
   end
 
   describe '#apply' do
-    let(:context) { build_context(registry: build_registry_with(Coradoc::Docx::Transform::Rules::ParagraphRule.new, Coradoc::Docx::Transform::Rules::RunRule.new, Coradoc::Docx::Transform::Rules::TextRule.new)) }
+    let(:context) do
+      build_context(registry: build_registry_with(Coradoc::Docx::Transform::Rules::ParagraphRule.new,
+                                                  Coradoc::Docx::Transform::Rules::RunRule.new, Coradoc::Docx::Transform::Rules::TextRule.new))
+    end
 
     it 'unwraps SDT content and delegates to paragraph rules' do
       sdt = Uniword::Wordprocessingml::StructuredDocumentTag.new

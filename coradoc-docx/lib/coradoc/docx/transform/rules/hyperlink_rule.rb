@@ -38,7 +38,7 @@ module Coradoc
           def extract_content(hyperlink, context)
             return [] if hyperlink.runs.nil?
 
-            hyperlink.runs.map { |r| context.transform(r) }.compact
+            hyperlink.runs.filter_map { |r| context.transform(r) }
           end
 
           def flatten_to_string(content)

@@ -131,6 +131,6 @@ end
 puts
 
 # Cleanup
-File.delete(temp_file) if File.exist?(temp_file)
+FileUtils.rm_f(temp_file)
 
 puts '=== All examples completed ==='

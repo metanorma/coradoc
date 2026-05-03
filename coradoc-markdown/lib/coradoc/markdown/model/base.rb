@@ -22,12 +22,12 @@ module Coradoc
       attribute :attributes, :hash, default: {}
 
       # Visit pattern for traversing the document tree
-      def self.visit(element, &block)
+      def self.visit(element, &)
         return element if element.nil?
 
         element = yield element, :pre
         element = if element.respond_to?(:visit)
-                    element.visit(&block)
+                    element.visit(&)
                   elsif element.is_a?(Array)
                     element.map { |child| visit(child, &block) }.flatten.compact
                   elsif element.is_a?(Hash)

@@ -270,4 +270,31 @@ RSpec.describe Coradoc::DocumentBuilder do
       expect(core.children.length).to eq(3)
     end
   end
+
+  describe '#hr' do
+    it 'creates a horizontal rule' do
+      builder = described_class.build { hr }
+
+      hr_elem = builder.document.children.first
+      expect(hr_elem.element_type).to eq('horizontal_rule')
+    end
+  end
+
+  describe '#text' do
+    it 'creates a raw text element' do
+      builder = described_class.build { text 'plain text' }
+
+      text_elem = builder.document.children.first
+      expect(text_elem.element_type).to eq('text')
+      expect(text_elem.content).to eq('plain text')
+    end
+  end
+
+  describe '#to_markdown' do
+    it 'delegates to Coradoc.serialize with :markdown' do
+      builder = described_class.build { title 'Test' }
+      expect(Coradoc).to receive(:serialize).with(builder.document, to: :markdown)
+      builder.to_markdown
+    end
+  end
 end
