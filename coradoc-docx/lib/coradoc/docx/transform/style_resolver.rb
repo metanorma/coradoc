@@ -96,6 +96,8 @@ module Coradoc
           return false unless paragraph.properties
 
           num_id = paragraph.properties.num_id
+          return false if num_id.nil? || !num_id.respond_to?(:to_i)
+
           num_id.to_i.positive?
         end
 

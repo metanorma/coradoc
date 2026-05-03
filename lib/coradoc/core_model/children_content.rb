@@ -18,7 +18,7 @@ module Coradoc
 
       def initialize(args = {})
         @children = args.delete(:children) || []
-        super(args)
+        super
       end
 
       def children=(value)

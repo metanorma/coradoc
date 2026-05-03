@@ -14,10 +14,10 @@ module Coradoc
             href = model.target.to_s
             # Create anchor link to internal reference
             # Format: <a href="#section-id">section-id</a> or with text from content
-            text = if model.content&.to_s&.strip != ''
-                     model.content.to_s
-                   else
+            text = if model.content&.to_s&.strip == ''
                      href
+                   else
+                     model.content.to_s
                    end
 
             # Ensure href starts with # for internal links

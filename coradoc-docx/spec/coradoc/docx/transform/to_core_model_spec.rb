@@ -221,7 +221,9 @@ RSpec.describe Coradoc::Docx::Transform::ToCoreModel do
         core = transform_to_core(doc)
 
         blocks = core.children.select { |c| c.is_a?(Coradoc::CoreModel::Block) }
-        inline = blocks.first.children.find { |c| c.is_a?(Coradoc::CoreModel::InlineElement) && c.format_type == 'subscript' }
+        inline = blocks.first.children.find do |c|
+          c.is_a?(Coradoc::CoreModel::InlineElement) && c.format_type == 'subscript'
+        end
         expect(inline).not_to be_nil
         expect(inline.content).to eq('2')
       end
@@ -241,7 +243,9 @@ RSpec.describe Coradoc::Docx::Transform::ToCoreModel do
         core = transform_to_core(doc)
 
         blocks = core.children.select { |c| c.is_a?(Coradoc::CoreModel::Block) }
-        inline = blocks.first.children.find { |c| c.is_a?(Coradoc::CoreModel::InlineElement) && c.format_type == 'superscript' }
+        inline = blocks.first.children.find do |c|
+          c.is_a?(Coradoc::CoreModel::InlineElement) && c.format_type == 'superscript'
+        end
         expect(inline).not_to be_nil
         expect(inline.content).to eq('2')
       end

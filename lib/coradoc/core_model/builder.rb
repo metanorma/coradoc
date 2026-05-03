@@ -77,7 +77,7 @@ module Coradoc
             build_document_elements(ast)
           end
         when Array
-          elements = ast.map { |element| build_element(element) }.compact
+          elements = ast.filter_map { |element| build_element(element) }
           group_document_elements(elements)
         else
           Coradoc::Logger.warn("Unexpected AST format: #{ast.class}")
@@ -228,7 +228,7 @@ module Coradoc
 
           attributes
         when Array
-          attr_ast.map { |attr| build_attribute(attr) }.compact
+          attr_ast.filter_map { |attr| build_attribute(attr) }
         else
           []
         end
@@ -262,7 +262,7 @@ module Coradoc
         # Extract sections
         if ast[:sections]
           elements.concat(
-            Array(ast[:sections]).map { |s| build_element(s) }.compact
+            Array(ast[:sections]).filter_map { |s| build_element(s) }
           )
         end
 

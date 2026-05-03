@@ -147,10 +147,10 @@ module Coradoc
             return false
           end
 
-          key = "#{format_type}_constrained".to_sym
+          key = :"#{format_type}_constrained"
           return true if ast.key?(key)
 
-          unconstrained_key = "#{format_type}_unconstrained".to_sym
+          unconstrained_key = :"#{format_type}_unconstrained"
           return false if ast.key?(unconstrained_key)
 
           true

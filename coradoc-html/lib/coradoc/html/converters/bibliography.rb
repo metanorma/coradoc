@@ -41,9 +41,9 @@ module Coradoc
           # Extract entries
           entries_container = element.at_css('.bibliography-entries')
           entries = if entries_container
-                      entries_container.css('.bibliography-entry').map do |entry_elem|
+                      entries_container.css('.bibliography-entry').filter_map do |entry_elem|
                         BibliographyEntry.to_coradoc(entry_elem)
-                      end.compact
+                      end
                     else
                       []
                     end

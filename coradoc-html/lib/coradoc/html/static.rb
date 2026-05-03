@@ -112,7 +112,7 @@ module Coradoc
         # @return [Configuration] New merged configuration
         def merge(other)
           other_hash = other.is_a?(Configuration) ? other.to_h : other.to_h.transform_keys(&:to_sym)
-          self.class.new(**to_h.merge(other_hash))
+          self.class.new(**to_h, **other_hash)
         end
 
         # Convert to hash
@@ -236,11 +236,7 @@ module Coradoc
         }
 
         # Handle JavaScript based on asset delivery
-        options[:linkjs] = if @config.embed_assets?
-                             false
-                           else
-                             true
-                           end
+        options[:linkjs] = !@config.embed_assets?
 
         options
       end

@@ -169,7 +169,7 @@ module Coradoc
         end
 
         def used_delims_to_text(elems)
-          elems.map do |elem|
+          elems.filter_map do |elem|
             if elem.key?(:char)
               next if elem[:length] < 1
 
@@ -177,7 +177,7 @@ module Coradoc
             else
               elem
             end
-          end.compact
+          end
         end
 
         def build_delim_stack(tree)
@@ -266,7 +266,7 @@ module Coradoc
         end
 
         def parse(io, options = {})
-          process_emphasis(super(io, options))
+          process_emphasis(super)
         end
       end
     end

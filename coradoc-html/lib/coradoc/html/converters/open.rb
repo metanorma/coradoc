@@ -23,7 +23,7 @@ module Coradoc
           return nil unless element.name == 'div'
 
           # Extract content
-          content = element.children.map do |node|
+          content = element.children.filter_map do |node|
             if node.text? && !node.text.strip.empty?
               node.text.strip
             elsif node.element?
@@ -34,7 +34,7 @@ module Coradoc
                 node.text.strip
               end
             end
-          end.compact
+          end
 
           # Extract ID if present
           id = element['id']

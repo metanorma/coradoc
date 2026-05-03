@@ -7,7 +7,7 @@ def ast_from(string)
 end
 
 def is_def?(arr)
-  return unless arr.is_a?(Array)
+  return false unless arr.is_a?(Array)
 
   if arr[0] == :def
     $defs << arr

@@ -581,8 +581,8 @@ module Coradoc
       #
       # @yield Schema definition block
       # @return [Schema] The defined schema
-      def define(&block)
-        Schema.define(&block)
+      def define(&)
+        Schema.define(&)
       end
 
       # Generate a validation schema from a CoreModel class

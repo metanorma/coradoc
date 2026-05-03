@@ -23,9 +23,9 @@ module Coradoc
 
         rule(:whitespace) { match[" \t"] }
         # NOTE: repeat(1) before EOF (any.absent?) because infinite loop otherwise
-        rule(:blank_line) { (whitespace.repeat(1) >> any.absent? | whitespace.repeat >> line_ending).ignore }
+        rule(:blank_line) { ((whitespace.repeat(1) >> any.absent?) | (whitespace.repeat >> line_ending)).ignore }
         rule(:blank_line_verbatim) do
-          whitespace.repeat(1).as(:ln) >> any.absent? | whitespace.repeat.as(:ln) >> line_ending
+          (whitespace.repeat(1).as(:ln) >> any.absent?) | (whitespace.repeat.as(:ln) >> line_ending)
         end
         rule(:line_char) { match["^\r\n"] }
         rule(:line_verbatim) { line_char.repeat(1).as(:ln) >> line_ending_or_eof }
@@ -222,7 +222,7 @@ module Coradoc
         end
 
         rule(:paragraph_line) do
-          line_char.repeat(1).as(:ln) >> any.absent? | line_char.repeat.as(:ln) >> line_ending
+          (line_char.repeat(1).as(:ln) >> any.absent?) | (line_char.repeat.as(:ln) >> line_ending)
         end
 
         rule(:paragraph_continued_line) do
@@ -286,8 +286,8 @@ module Coradoc
         rule(:ial_key_value) do
           match['\\w\\-'].repeat(1) >> str('=') >>
             (
-              str('"') >> match['^"'].repeat(0) >> str('"') |
-              str("'") >> match["^'"].repeat(0) >> str("'") |
+              (str('"') >> match['^"'].repeat(0) >> str('"')) |
+              (str("'") >> match["^'"].repeat(0) >> str("'")) |
               match['^\\s\\}'].repeat(1)
             )
         end
@@ -322,8 +322,8 @@ module Coradoc
         rule(:extension_option) do
           match['\\w\\-'].repeat(1) >> str('=') >>
             (
-              str('"') >> match['^"'].repeat(0) >> str('"') |
-              str("'") >> match["^'"].repeat(0) >> str("'") |
+              (str('"') >> match['^"'].repeat(0) >> str('"')) |
+              (str("'") >> match["^'"].repeat(0) >> str("'")) |
               match['^\\s/\\}'].repeat(1)
             )
         end
@@ -466,11 +466,11 @@ module Coradoc
         # List item continuation line (indented content that's not a block)
         # Excludes lines that look like nested list markers
         rule(:list_continuation_line) do
-          (str('    ') | str("\t")) >>
+          ((str('    ') | str("\t")) >>
             nested_list_marker.absent? >>
-            line_verbatim |
-            nested_list_marker.absent? >>
-            line_verbatim
+            line_verbatim) |
+            (nested_list_marker.absent? >>
+            line_verbatim)
         end
 
         # Nested list marker detection (for 4-space indented lists)
@@ -513,8 +513,8 @@ module Coradoc
 
         # Nested block (indented list, etc.)
         rule(:nested_block) do
-          (str('    ') | str("\t")) >> nested_unordered_list |
-            (str('    ') | str("\t")) >> nested_ordered_list
+          ((str('    ') | str("\t")) >> nested_unordered_list) |
+            ((str('    ') | str("\t")) >> nested_ordered_list)
         end
 
         # Nested unordered list (4-space indented)

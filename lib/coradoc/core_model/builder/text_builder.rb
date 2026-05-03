@@ -13,7 +13,7 @@ module Coradoc
         def build_paragraph_content(lines_ast)
           return [] unless lines_ast
 
-          Array(lines_ast).map { |line| build_text_element(line) }.compact
+          Array(lines_ast).filter_map { |line| build_text_element(line) }
         end
 
         # Build text element
@@ -64,8 +64,8 @@ module Coradoc
         def extract_inline_content(ast, format_type)
           content_key = format_type.to_sym
           content = ast[content_key] ||
-                    ast["#{format_type}_constrained".to_sym] ||
-                    ast["#{format_type}_unconstrained".to_sym]
+                    ast[:"#{format_type}_constrained"] ||
+                    ast[:"#{format_type}_unconstrained"]
 
           extract_text_content(content)
         end

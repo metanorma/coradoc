@@ -22,7 +22,7 @@ module Coradoc
       DocumentManipulator.new(filtered)
     end
 
-    def transform_text(&block)
+    def transform_text(&)
       return self unless block_given?
 
       visitor = Class.new(Visitor::Base) do
@@ -37,11 +37,11 @@ module Coradoc
         end
       end.new
 
-      visitor.visit(@document, &block)
+      visitor.visit(@document, &)
       self
     end
 
-    def transform_headings(&block)
+    def transform_headings(&)
       return self unless block_given?
 
       visitor = Class.new(Visitor::Base) do
@@ -51,7 +51,7 @@ module Coradoc
         end
       end.new
 
-      visitor.visit(@document, &block)
+      visitor.visit(@document, &)
       self
     end
 
@@ -149,11 +149,13 @@ module Coradoc
     def filter_sections(element, level: nil, title: nil)
       if element.respond_to?(:children) && element.children
         element.children = element.children
-                                  .map { |child| filter_sections(child, level: level, title: title) }
-                                  .compact
+                                  .filter_map { |child| filter_sections(child, level: level, title: title) }
+
       end
 
-      return nil if element.is_a?(CoreModel::StructuralElement) && element.section? && !element.document? && !section_matches?(element, level: level, title: title)
+      return nil if element.is_a?(CoreModel::StructuralElement) && element.section? && !element.document? && !section_matches?(
+        element, level: level, title: title
+      )
 
       element
     end

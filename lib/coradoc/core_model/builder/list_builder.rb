@@ -104,7 +104,7 @@ module Coradoc
         def build_item_children(attached_ast)
           return [] unless attached_ast
 
-          Array(attached_ast).map { |child| build_element(child) }.compact
+          Array(attached_ast).filter_map { |child| build_element(child) }
         end
 
         # Extract item content from various formats

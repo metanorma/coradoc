@@ -35,20 +35,20 @@ module Coradoc
       # Escape HTML entities
       def escape_html(input)
         input.to_s
-             .gsub(/&/, '&amp;')
-             .gsub(/</, '&lt;')
-             .gsub(/>/, '&gt;')
-             .gsub(/"/, '&quot;')
-             .gsub(/'/, '&#39;')
+             .gsub('&', '&amp;')
+             .gsub('<', '&lt;')
+             .gsub('>', '&gt;')
+             .gsub('"', '&quot;')
+             .gsub('\'', '&#39;')
       end
 
       # Escape HTML attribute values
       def escape_attr(input)
         input.to_s
-             .gsub(/&/, '&amp;')
-             .gsub(/"/, '&quot;')
-             .gsub(/</, '&lt;')
-             .gsub(/>/, '&gt;')
+             .gsub('&', '&amp;')
+             .gsub('"', '&quot;')
+             .gsub('<', '&lt;')
+             .gsub('>', '&gt;')
       end
     end
   end

@@ -189,13 +189,13 @@ module Coradoc
 
               # Check if first row has header cells
               if first_row_cells.any?(&:header)
-                headers = first_row_cells.map { |c| c.flat_text }
+                headers = first_row_cells.map(&:flat_text)
                 table_rows = table_rows[1..] || []
               end
 
               # Convert remaining rows to pipe-separated strings
               rows = table_rows.map do |row|
-                Array(row.cells).map { |c| c.flat_text }.join(' | ')
+                Array(row.cells).map(&:flat_text).join(' | ')
               end
             end
 

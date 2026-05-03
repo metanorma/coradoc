@@ -22,8 +22,7 @@ module Coradoc
             paragraphs = sdt.content.paragraphs || []
             tables = sdt.content.tables || []
 
-            results = []
-            paragraphs.each { |p| results << context.transform(p) }
+            results = paragraphs.map { |p| context.transform(p) }
             tables.each { |t| results << context.transform(t) }
 
             # Return single element or array

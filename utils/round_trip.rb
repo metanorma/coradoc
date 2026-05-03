@@ -30,8 +30,8 @@ adoc_files.each do |file_path|
   file_path_ast = "#{file_path}.ast"
   file_path_rt = "#{file_path}.roundtrip"
   file_path_diff = "#{file_path}.roundtrip.diff"
-  FileUtils.rm(file_path_rt) if File.exist?(file_path_rt)
-  FileUtils.rm(file_path_diff) if File.exist?(file_path_diff)
+  FileUtils.rm_f(file_path_rt)
+  FileUtils.rm_f(file_path_diff)
   # begin
   adoc_file = File.read(file_path)
   next if adoc_file.empty?

@@ -186,7 +186,7 @@ module Coradoc
               # Generic block - use delimiter directly (for ====. ----, etc.)
               # Compute delimiter_char and delimiter_len from delimiter_type
               delim = block.delimiter_type.to_s
-              delim_char = delim.chars.first
+              delim_char = delim[0]
               delim_len = delim.length
 
               Coradoc::AsciiDoc::Model::Block::Core.new(

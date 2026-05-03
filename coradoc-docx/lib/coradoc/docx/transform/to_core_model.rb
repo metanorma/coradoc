@@ -297,9 +297,9 @@ module Coradoc
           paragraphs = part.respond_to?(:paragraphs) ? part.paragraphs : []
           return nil unless paragraphs
 
-          paragraphs.map do |para|
+          paragraphs.filter_map do |para|
             extract_paragraph_text_content(para)
-          end.compact.join(' ').strip
+          end.join(' ').strip
         end
 
         def extract_paragraph_text_content(para)

@@ -499,7 +499,7 @@ module Coradoc
   #
   # @yield [Configuration]
   # @return [void]
-  def self.configure(&block)
-    Configurable.configure(&block) if block_given?
+  def self.configure(&)
+    Configurable.configure(&) if block_given?
   end
 end

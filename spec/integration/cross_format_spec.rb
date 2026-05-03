@@ -406,9 +406,9 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       core_doc = Coradoc::CoreModel::StructuralElement.new(
         element_type: 'document',
         title: 'Test Document',
-        children: html_models.map do |model|
+        children: html_models.filter_map do |model|
           Coradoc::AsciiDoc::Transform::ToCoreModel.transform(model)
-        end.compact
+        end
       )
       expect(core_doc).to be_a(Coradoc::CoreModel::StructuralElement)
 
@@ -747,7 +747,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       core_doc = Coradoc::CoreModel::StructuralElement.new(
         element_type: 'document',
         title: 'Title',
-        children: html_models.map { |m| Coradoc::AsciiDoc::Transform::ToCoreModel.transform(m) }.compact
+        children: html_models.filter_map { |m| Coradoc::AsciiDoc::Transform::ToCoreModel.transform(m) }
       )
 
       md_doc = Coradoc::Markdown.from_core_model(core_doc)
@@ -777,7 +777,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       core_doc = Coradoc::CoreModel::StructuralElement.new(
         element_type: 'document',
         title: 'Title',
-        children: html_models.map { |m| Coradoc::AsciiDoc::Transform::ToCoreModel.transform(m) }.compact
+        children: html_models.filter_map { |m| Coradoc::AsciiDoc::Transform::ToCoreModel.transform(m) }
       )
 
       docx_model = Coradoc::Docx::Transform::FromCoreModel.transform(core_doc)

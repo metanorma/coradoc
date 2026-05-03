@@ -16,7 +16,7 @@ module Coradoc
     option :from, aliases: '-f', desc: 'Source format (auto-detected from extension)', type: :string
     option :theme, desc: 'HTML theme (classic, modern)', type: :string, default: 'classic'
     option :verbose, desc: 'Enable verbose output', type: :boolean, default: false
-    option :"asset-delivery", desc: 'Asset delivery mode (embedded, external)', type: :string, default: 'embedded'
+    option :'asset-delivery', desc: 'Asset delivery mode (embedded, external)', type: :string, default: 'embedded'
     def convert(file)
       source_format = resolve_format(file, :from)
       target_format = options[:to] ? Coradoc.normalize_format(options[:to]) : Coradoc.resolve_output_format(options[:output])
@@ -35,7 +35,7 @@ module Coradoc
 
       opts = {}
       opts[:theme] = options[:theme].to_sym if options[:theme]
-      opts[:asset_delivery] = options[:"asset-delivery"].to_sym if options[:"asset-delivery"]
+      opts[:asset_delivery] = options[:'asset-delivery'].to_sym if options[:'asset-delivery']
 
       result = Coradoc.convert_file(file, from: source_format, to: target_format, **opts)
       write_output(result, options[:output])

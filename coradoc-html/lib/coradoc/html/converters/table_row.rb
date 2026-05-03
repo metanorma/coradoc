@@ -24,9 +24,9 @@ module Coradoc
           return nil unless element.name == 'tr'
 
           # Get all cells (both td and th)
-          cells = element.css('td, th').map do |cell_elem|
+          cells = element.css('td, th').filter_map do |cell_elem|
             TableCell.to_coradoc(cell_elem)
-          end.compact
+          end
 
           Coradoc::CoreModel::TableRow.new(cells: cells)
         end

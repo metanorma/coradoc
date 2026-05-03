@@ -118,7 +118,7 @@ module Coradoc
           def determine_block_type(delimiter)
             return 'unknown' if delimiter.nil? || delimiter.empty?
 
-            case delimiter.chars.first
+            case delimiter[0]
             when '-'
               'listing'
             when '='
@@ -599,7 +599,7 @@ module Coradoc
               transformed = transform_inline_content(content_array)
 
               # If we only got back strings with no inline elements, return the original text
-              if transformed.all? { |item| item.is_a?(String) }
+              if transformed.all?(String)
                 transformed.join
               else
                 transformed

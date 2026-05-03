@@ -91,7 +91,9 @@ module Coradoc
 end
 
 # Auto-register :docx format with Coradoc when both gems are loaded
-Coradoc.register_format(:docx, Coradoc::Docx,
-                        aliases: %w[docx],
-                        extensions: %w[.docx],
-                        binary: true) unless Coradoc.registered_formats.include?(:docx)
+unless Coradoc.registered_formats.include?(:docx)
+  Coradoc.register_format(:docx, Coradoc::Docx,
+                          aliases: %w[docx],
+                          extensions: %w[.docx],
+                          binary: true)
+end

@@ -12,9 +12,11 @@ module Coradoc
       return if @registered
 
       # Register with the main coradoc registry
-      Coradoc.register_format(:html, self,
-                              aliases: %w[html htm],
-                              extensions: %w[.html .htm]) if Coradoc.respond_to?(:register_format)
+      if Coradoc.respond_to?(:register_format)
+        Coradoc.register_format(:html, self,
+                                aliases: %w[html htm],
+                                extensions: %w[.html .htm])
+      end
 
       @registered = true
     end
@@ -228,7 +230,7 @@ module Coradoc
         serialize_spa(document, options)
       else
         raise ArgumentError, "Unknown output format: #{format}. " \
-          'Valid formats: :static, :spa'
+                             'Valid formats: :static, :spa'
       end
     end
 

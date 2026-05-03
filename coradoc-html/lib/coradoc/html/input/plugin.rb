@@ -11,9 +11,9 @@ module Coradoc
         #   def name = "Test"
         # end
 
-        def self.new(&block)
+        def self.new(&)
           if self == Plugin
-            Class.new(Plugin, &block)
+            Class.new(Plugin, &)
           else
             super
           end
@@ -131,7 +131,7 @@ module Coradoc
           end
         end
 
-        def html_tree_run_hooks(node, state, &_block)
+        def html_tree_run_hooks(node, state, &)
           hook_pre = @html_tree_hooks_pre[node]
           hook_post = @html_tree_hooks_post[node]
 

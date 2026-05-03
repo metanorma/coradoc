@@ -78,7 +78,7 @@ module Coradoc
 
             if child.section?
               level = child.heading_level
-              sections << { element: child, level: level } if level >= min_level && level <= max_level
+              sections << { element: child, level: level } if level.between?(min_level, max_level)
 
               # Also search nested sections
             else

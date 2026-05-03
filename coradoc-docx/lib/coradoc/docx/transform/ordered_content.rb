@@ -84,8 +84,7 @@ module Coradoc
         end
 
         def transform_sequential(paragraph, context)
-          content = []
-          (paragraph.runs || []).each { |r| content << context.transform(r) }
+          content = (paragraph.runs || []).map { |r| context.transform(r) }
           (paragraph.hyperlinks || []).each { |h| content << context.transform(h) }
           content.compact
         end

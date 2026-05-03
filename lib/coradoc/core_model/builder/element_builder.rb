@@ -41,14 +41,14 @@ module Coradoc
         def build_section_contents(contents_ast)
           return [] unless contents_ast
 
-          Array(contents_ast).map { |content| build_element(content) }.compact
+          Array(contents_ast).filter_map { |content| build_element(content) }
         end
 
         # Build subsections
         def build_subsections(sections_ast)
           return [] unless sections_ast
 
-          Array(sections_ast).map { |section| build_element(section) }.compact
+          Array(sections_ast).filter_map { |section| build_element(section) }
         end
 
         # Build line break element
