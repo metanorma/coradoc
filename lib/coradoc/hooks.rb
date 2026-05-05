@@ -3,36 +3,7 @@
 require 'securerandom'
 
 module Coradoc
-  # Plugin lifecycle hooks system for extending the document processing pipeline.
-  #
-  # This module provides a registry for hook callbacks that can be invoked
-  # at various points in the document processing lifecycle:
-  #
-  # - before_parse / after_parse: Around text parsing
-  # - before_transform / after_transform: Around model transformation
-  # - before_serialize / after_serialize: Around serialization
-  # - on_error: When errors occur
-  #
-  # @example Registering a hook
-  #   Coradoc::Hooks.register(:before_parse) do |content, format:, **options|
-  #     puts "Parsing #{content.length} characters of #{format} content"
-  #     content
-  #   end
-  #
-  # @example Registering a logging hook
-  #   Coradoc::Hooks.register(:after_transform) do |model, direction:|
-  #     Logger.info("Transformed model: #{model.class}")
-  #     model
-  #   end
-  #
-  # @example Error handling hook
-  #   Coradoc::Hooks.register(:on_error) do |error, context|
-  #     Coradoc::Logger.error("Error in #{context[:phase]}: #{error.message}")
-  #     nil # Return nil to not modify error handling
-  #   end
-  #
   module Hooks
-    # Hook point definitions with descriptions
     HOOK_POINTS = {
       before_parse: 'Called before parsing text content. Receives (content, format:, **options). Should return modified content.',
       after_parse: 'Called after parsing. Receives (model, format:, **options). Should return modified model.',
@@ -44,21 +15,8 @@ module Coradoc
     }.freeze
 
     class << self
-      # Register a callback for a hook point.
-      #
-      # @param hook_point [Symbol] The hook point name (e.g., :before_parse)
-      # @param priority [Integer] Execution priority (lower = earlier). Default: 100
-      # @param name [String, nil] Optional name for the hook (for removal)
-      # @yield The callback block
-      # @yieldparam args Variable arguments depending on hook point
-      # @return [String] Hook ID for later removal
-      #
-      # @example Register with priority
-      #   Coradoc::Hooks.register(:before_parse, priority: 50) do |content, **|
-      #     # High priority - runs early
-      #     content
-      #   end
-      #
+      attr_accessor :strict_mode
+
       def register(hook_point, priority: 100, name: nil, &block)
         validate_hook_point!(hook_point)
         validate_block!(block, hook_point)
@@ -75,12 +33,6 @@ module Coradoc
         hook_id
       end
 
-      # Remove a registered hook by ID.
-      #
-      # @param hook_point [Symbol] The hook point name
-      # @param hook_id [String] The hook ID returned from #register
-      # @return [Boolean] true if hook was found and removed
-      #
       def remove(hook_point, hook_id)
         validate_hook_point!(hook_point)
         return false unless registry[hook_point]
@@ -90,11 +42,6 @@ module Coradoc
         registry[hook_point].size < original_size
       end
 
-      # Remove all hooks for a hook point.
-      #
-      # @param hook_point [Symbol] The hook point name
-      # @return [Integer] Number of hooks removed
-      #
       def clear(hook_point)
         validate_hook_point!(hook_point)
         removed = registry[hook_point]&.size || 0
@@ -102,10 +49,6 @@ module Coradoc
         removed
       end
 
-      # Remove all hooks from all hook points.
-      #
-      # @return [Integer] Total number of hooks removed
-      #
       def clear_all
         total = registry.values.sum(&:size)
         @registry = {}
@@ -113,21 +56,11 @@ module Coradoc
         total
       end
 
-      # Check if any hooks are registered for a hook point.
-      #
-      # @param hook_point [Symbol] The hook point name
-      # @return [Boolean]
-      #
       def registered?(hook_point)
         validate_hook_point!(hook_point)
         registry[hook_point]&.any? || false
       end
 
-      # List all registered hooks.
-      #
-      # @param hook_point [Symbol, nil] Filter by hook point, or nil for all
-      # @return [Array<Hash>] Array of hook information
-      #
       def list(hook_point = nil)
         if hook_point
           validate_hook_point!(hook_point)
@@ -139,15 +72,6 @@ module Coradoc
         end
       end
 
-      # Invoke all hooks for a hook point.
-      #
-      # @param hook_point [Symbol] The hook point name
-      # @param args [Array] Arguments to pass to hooks
-      # @return [Object] The (potentially modified) result from the last hook
-      #
-      # @example Invoke before_parse hooks
-      #   content = Coradoc::Hooks.invoke(:before_parse, content, format: :asciidoc)
-      #
       def invoke(hook_point, *args, **kwargs)
         validate_hook_point!(hook_point)
         return args.first if args.one? && !registry[hook_point]&.any?
@@ -159,34 +83,20 @@ module Coradoc
         result
       end
 
-      # Invoke hooks with error handling.
-      #
-      # @param hook_point [Symbol] The hook point name
-      # @param args [Array] Arguments to pass to hooks
-      # @yield Block to execute with hook context
-      # @return [Object] Result from the block or error handling
-      #
       def with_hooks(hook_point, *args, **kwargs)
         validate_hook_point!(hook_point)
 
         modified_args = invoke(hook_point, *args, **kwargs)
         result = yield(*modified_args)
 
-        # Invoke after_* hooks if applicable
         after_point = "after_#{hook_point.to_s.sub('before_', '')}".to_sym
         result = invoke(after_point, result, **kwargs) if HOOK_POINTS.key?(after_point)
 
         result
       rescue StandardError => e
-        # Invoke on_error hooks
         invoke_error_hooks(e, hook_point, args, kwargs)
       end
 
-      # Get hook point documentation.
-      #
-      # @param hook_point [Symbol, nil] The hook point name, or nil for all
-      # @return [String, Hash] Documentation string or hash of all
-      #
       def documentation(hook_point = nil)
         if hook_point
           validate_hook_point!(hook_point)
@@ -228,12 +138,7 @@ module Coradoc
       def invoke_hook(callback, result, _args, kwargs)
         arity = callback.arity
 
-        # For procs with **kwargs, arity is 1, but they still accept kwargs
-        # For lambdas with **kwargs, arity is -2
-        # We need to always try passing kwargs if present
-
         if kwargs.empty?
-          # No kwargs to pass, just pass result
           case arity
           when 0
             callback.call
@@ -244,8 +149,8 @@ module Coradoc
           callback.call(result, **kwargs)
         end
       rescue StandardError => e
-        # Don't let a single hook failure break the pipeline
-        # Log and continue with unmodified result
+        raise if @strict_mode
+
         Coradoc::Logger.warn("Hook failed: #{e.message}")
         result
       end
@@ -264,7 +169,6 @@ module Coradoc
           end
         end
 
-        # Re-raise if no error hook handled it
         raise error
       end
     end

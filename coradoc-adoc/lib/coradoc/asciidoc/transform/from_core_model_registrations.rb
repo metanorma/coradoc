@@ -4,18 +4,8 @@ module Coradoc
   module AsciiDoc
     module Transform
       # Registers all default CoreModel -> AsciiDoc transformers
-      #
-      # This module is automatically loaded and registers transformers
-      # for all built-in CoreModel types to convert them to AsciiDoc models.
-      #
-      # Users can register custom transformers before or after these
-      # defaults to override or extend behavior.
-      #
       module FromCoreModelRegistrations
         class << self
-          # Register all default transformers
-          #
-          # @return [void]
           def register_all!
             register_structural_transformers!
             register_block_transformers!
@@ -27,7 +17,6 @@ module Coradoc
           private
 
           def register_structural_transformers!
-            # StructuralElement handles both document and section types
             Registry.register(
               Coradoc::CoreModel::StructuralElement,
               ->(model) { FromCoreModel.send(:transform_structural_element, model) }
@@ -35,14 +24,12 @@ module Coradoc
           end
 
           def register_block_transformers!
-            # AnnotationBlock must be registered before Block (it's a subclass)
             Registry.register_with_priority(
               Coradoc::CoreModel::AnnotationBlock,
               ->(model) { FromCoreModel.send(:transform_annotation, model) },
               priority: 10
             )
 
-            # Generic Block handler (lower priority)
             Registry.register(
               Coradoc::CoreModel::Block,
               ->(model) { FromCoreModel.send(:transform_block, model) }
@@ -58,6 +45,16 @@ module Coradoc
             Registry.register(
               Coradoc::CoreModel::ListItem,
               ->(model) { FromCoreModel.send(:transform_list_item, model) }
+            )
+
+            Registry.register(
+              Coradoc::CoreModel::DefinitionList,
+              ->(model) { FromCoreModel.send(:transform_definition_list, model) }
+            )
+
+            Registry.register(
+              Coradoc::CoreModel::DefinitionItem,
+              ->(model) { FromCoreModel.send(:transform_definition_item, model) }
             )
           end
 
@@ -82,6 +79,41 @@ module Coradoc
             Registry.register(
               Coradoc::CoreModel::Image,
               ->(model) { FromCoreModel.send(:transform_image, model) }
+            )
+
+            Registry.register(
+              Coradoc::CoreModel::Footnote,
+              ->(model) { FromCoreModel.send(:transform_footnote, model) }
+            )
+
+            Registry.register(
+              Coradoc::CoreModel::FootnoteReference,
+              ->(model) { FromCoreModel.send(:transform_footnote_reference, model) }
+            )
+
+            Registry.register(
+              Coradoc::CoreModel::Abbreviation,
+              ->(model) { FromCoreModel.send(:transform_abbreviation, model) }
+            )
+
+            Registry.register(
+              Coradoc::CoreModel::Toc,
+              ->(model) { FromCoreModel.send(:transform_toc, model) }
+            )
+
+            Registry.register(
+              Coradoc::CoreModel::TocEntry,
+              ->(model) { FromCoreModel.send(:transform_toc_entry, model) }
+            )
+
+            Registry.register(
+              Coradoc::CoreModel::Bibliography,
+              ->(model) { FromCoreModel.send(:transform_bibliography, model) }
+            )
+
+            Registry.register(
+              Coradoc::CoreModel::BibliographyEntry,
+              ->(model) { FromCoreModel.send(:transform_bibliography_entry, model) }
             )
           end
         end
