@@ -1,50 +1,32 @@
 # frozen_string_literal: true
 
+require_relative 'from_core_model_registrations'
+
 module Coradoc
   module AsciiDoc
     module Transform
       # Transforms CoreModel to AsciiDoc models
-      #
-      # This transformer converts the canonical CoreModel representation
-      # to format-specific AsciiDoc model.
       class FromCoreModel
-        # Instance method that delegates to class method for convenience
         def transform(model)
           self.class.transform(model)
         end
 
         class << self
-          # Transform a CoreModel to AsciiDoc model
-          #
-          # First checks the Registry for a registered transformer.
-          # If none found, falls back to the case statement implementation.
-          #
-          # @param model [Coradoc::CoreModel::Base] CoreModel to transform
-          # @return [Coradoc::AsciiDoc::Model::Base] AsciiDoc model equivalent
           def transform(model)
-            # Check if there's a registered transformer
-            transformer = Registry.lookup(model.class) if model.is_a?(Coradoc::CoreModel::Base)
+            return model.map { |item| transform(item) } if model.is_a?(Array)
+            return model unless model.is_a?(Coradoc::CoreModel::Base)
 
-            if transformer
-              transformer.call(model)
-            else
-              # Fall back to case statement for unregistered types
-              transform_with_case(model)
-            end
+            transformer = Registry.lookup(model.class)
+            return transformer.call(model) if transformer
+
+            transform_with_case(model)
           end
 
-          # Transform using case statement (used as fallback when no registered transformer)
-          #
-          # This method handles all built-in types and can be used directly
-          # if you want to bypass the registry.
-          #
-          # @api private
           def transform_with_case(model)
             case model
             when Coradoc::CoreModel::StructuralElement
               transform_structural_element(model)
             when Coradoc::CoreModel::AnnotationBlock
-              # Must be checked before Block since AnnotationBlock < Block
               transform_annotation(model)
             when Coradoc::CoreModel::Block
               transform_block(model)
@@ -78,8 +60,6 @@ module Coradoc
               transform_bibliography(model)
             when Coradoc::CoreModel::BibliographyEntry
               transform_bibliography_entry(model)
-            when Array
-              model.map { |item| transform(item) }
             else
               model
             end
@@ -114,7 +94,6 @@ module Coradoc
                 contents: transform(element.children)
               )
             else
-              # Generic structural element
               Coradoc::AsciiDoc::Model::Section.new(
                 id: element.id,
                 title: create_title(element.title, 1),
@@ -124,10 +103,8 @@ module Coradoc
           end
 
           def transform_block(block)
-            # Use renderable_content which returns children if present, else content
             content = block.renderable_content
 
-            # Check element_type first for paragraphs (which don't have delimiter_type)
             if block.element_type == 'paragraph'
               return Coradoc::AsciiDoc::Model::Paragraph.new(
                 id: block.id,
@@ -135,14 +112,12 @@ module Coradoc
               )
             end
 
-            # Handle comment blocks
             if block.element_type == 'comment'
               return Coradoc::AsciiDoc::Model::CommentBlock.new(
                 text: safe_content_to_string(content)
               )
             end
 
-            # Safely extract text content for blocks that need lines
             content_text = safe_content_to_string(content)
 
             case block.delimiter_type
@@ -183,8 +158,6 @@ module Coradoc
                 content: create_text_elements(content)
               )
             else
-              # Generic block - use delimiter directly (for ====. ----, etc.)
-              # Compute delimiter_char and delimiter_len from delimiter_type
               delim = block.delimiter_type.to_s
               delim_char = delim.chars.first
               delim_len = delim.length
@@ -200,7 +173,6 @@ module Coradoc
             end
           end
 
-          # Safely convert content to string without producing Ruby object dumps
           def safe_content_to_string(content)
             case content
             when String
@@ -208,7 +180,6 @@ module Coradoc
             when Array
               content.map { |item| safe_content_to_string(item) }.join
             when Lutaml::Model::Serializable
-              # Handle Lutaml models - try to extract text properly
               if content.respond_to?(:to_adoc)
                 content.to_adoc
               elsif content.respond_to?(:text)
@@ -221,7 +192,6 @@ module Coradoc
             when nil
               ''
             else
-              # Only use to_s for simple types that respond to to_str
               content.respond_to?(:to_str) ? content.to_s : ''
             end
           end
@@ -288,46 +258,28 @@ module Coradoc
           def transform_inline(inline)
             case inline.format_type
             when 'bold'
-              Coradoc::AsciiDoc::Model::Inline::Bold.new(
-                content: inline.content
-              )
+              Coradoc::AsciiDoc::Model::Inline::Bold.new(content: inline.content)
             when 'italic'
-              Coradoc::AsciiDoc::Model::Inline::Italic.new(
-                content: inline.content
-              )
+              Coradoc::AsciiDoc::Model::Inline::Italic.new(content: inline.content)
             when 'monospace'
-              Coradoc::AsciiDoc::Model::Inline::Monospace.new(
-                content: inline.content
-              )
+              Coradoc::AsciiDoc::Model::Inline::Monospace.new(content: inline.content)
             when 'highlight'
-              Coradoc::AsciiDoc::Model::Inline::Highlight.new(
-                content: inline.content
-              )
+              Coradoc::AsciiDoc::Model::Inline::Highlight.new(content: inline.content)
             when 'strikethrough'
-              Coradoc::AsciiDoc::Model::Inline::Strikethrough.new(
-                content: inline.content
-              )
+              Coradoc::AsciiDoc::Model::Inline::Strikethrough.new(content: inline.content)
             when 'subscript'
-              Coradoc::AsciiDoc::Model::Inline::Subscript.new(
-                content: inline.content
-              )
+              Coradoc::AsciiDoc::Model::Inline::Subscript.new(content: inline.content)
             when 'superscript'
-              Coradoc::AsciiDoc::Model::Inline::Superscript.new(
-                content: inline.content
-              )
+              Coradoc::AsciiDoc::Model::Inline::Superscript.new(content: inline.content)
             when 'underline'
-              Coradoc::AsciiDoc::Model::Inline::Underline.new(
-                text: inline.content
-              )
+              Coradoc::AsciiDoc::Model::Inline::Underline.new(text: inline.content)
             when 'link'
               Coradoc::AsciiDoc::Model::Inline::Link.new(
                 path: inline.target,
                 name: inline.content
               )
             when 'xref'
-              Coradoc::AsciiDoc::Model::Inline::CrossReference.new(
-                href: inline.target
-              )
+              Coradoc::AsciiDoc::Model::Inline::CrossReference.new(href: inline.target)
             when 'footnote'
               Coradoc::AsciiDoc::Model::Inline::Footnote.new(
                 id: inline.target,
@@ -339,9 +291,7 @@ module Coradoc
                 content: inline.content
               )
             else
-              Coradoc::AsciiDoc::Model::TextElement.new(
-                content: inline.content
-              )
+              Coradoc::AsciiDoc::Model::TextElement.new(content: inline.content)
             end
           end
 
@@ -439,10 +389,8 @@ module Coradoc
             when Coradoc::CoreModel::InlineElement
               transform_inline(content)
             when Coradoc::AsciiDoc::Model::Base
-              # Already an AsciiDoc model - use as-is
               content
             when Lutaml::Model::Serializable
-              # Lutaml model that's not a recognized type - extract text safely
               text = if content.respond_to?(:to_adoc)
                        content.to_adoc
                      elsif content.respond_to?(:text)
@@ -456,7 +404,6 @@ module Coradoc
             when String
               Coradoc::AsciiDoc::Model::TextElement.new(content: content)
             else
-              # For unknown types, convert to string safely
               text = if content.respond_to?(:to_str)
                        content.to_s
                      else

@@ -4,15 +4,12 @@ require 'spec_helper'
 
 RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModelRegistrations do
   describe '.register_all!' do
-    # Use a fresh registry for these tests
-    before do
+    around do |ex|
       Coradoc::AsciiDoc::Transform::Registry.clear
-    end
-
-    after do
+      ex.run
       Coradoc::AsciiDoc::Transform::Registry.clear
-      # Re-register defaults for other tests
       described_class.register_all!
+      Coradoc::AsciiDoc::Transform::FromCoreModelRegistrations.register_all!
     end
 
     it 'registers Document transformer' do

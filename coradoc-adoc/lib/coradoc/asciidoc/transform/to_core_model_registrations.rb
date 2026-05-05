@@ -4,23 +4,14 @@ module Coradoc
   module AsciiDoc
     module Transform
       # Registers all default AsciiDoc -> CoreModel transformers
-      #
-      # This module is automatically loaded and registers transformers
-      # for all built-in AsciiDoc model types.
-      #
-      # Users can register custom transformers before or after these
-      # defaults to override or extend behavior.
-      #
       module ToCoreModelRegistrations
         class << self
-          # Register all default transformers
-          #
-          # @return [void]
           def register_all!
             register_document_transformers!
             register_block_transformers!
             register_list_transformers!
             register_inline_transformers!
+            register_table_transformers!
             register_other_transformers!
           end
 
@@ -44,7 +35,6 @@ module Coradoc
           end
 
           def register_block_transformers!
-            # Register specific block types first (higher priority)
             [
               [Coradoc::AsciiDoc::Model::Block::SourceCode, 'source'],
               [Coradoc::AsciiDoc::Model::Block::Quote, 'quote'],
@@ -61,10 +51,19 @@ module Coradoc
               )
             end
 
-            # Generic block handler (lower priority, catches remaining Block::Core subclasses)
             Registry.register(
               Coradoc::AsciiDoc::Model::Block::Core,
               ->(model) { ToCoreModel.send(:transform_block, model, model.delimiter) }
+            )
+
+            Registry.register(
+              Coradoc::AsciiDoc::Model::CommentBlock,
+              ->(model) {
+                Coradoc::CoreModel::Block.new(
+                  element_type: 'comment',
+                  content: model.text.to_s
+                )
+              }
             )
           end
 
@@ -86,12 +85,14 @@ module Coradoc
           end
 
           def register_inline_transformers!
-            # Standard inline formatting
             [
               [Coradoc::AsciiDoc::Model::Inline::Bold, 'bold'],
               [Coradoc::AsciiDoc::Model::Inline::Italic, 'italic'],
               [Coradoc::AsciiDoc::Model::Inline::Monospace, 'monospace'],
-              [Coradoc::AsciiDoc::Model::Inline::Highlight, 'highlight']
+              [Coradoc::AsciiDoc::Model::Inline::Highlight, 'highlight'],
+              [Coradoc::AsciiDoc::Model::Inline::Strikethrough, 'strikethrough'],
+              [Coradoc::AsciiDoc::Model::Inline::Subscript, 'subscript'],
+              [Coradoc::AsciiDoc::Model::Inline::Superscript, 'superscript']
             ].each do |inline_class, format_type|
               Registry.register(
                 inline_class,
@@ -99,19 +100,60 @@ module Coradoc
               )
             end
 
-            # Link has special handling
+            Registry.register(
+              Coradoc::AsciiDoc::Model::Inline::Underline,
+              inline_text_wrapper('underline')
+            )
+
             Registry.register(
               Coradoc::AsciiDoc::Model::Inline::Link,
               method_wrapper(:transform_link)
             )
+
+            Registry.register(
+              Coradoc::AsciiDoc::Model::Inline::CrossReference,
+              method_wrapper(:transform_cross_reference)
+            )
+
+            Registry.register(
+              Coradoc::AsciiDoc::Model::Inline::Footnote,
+              method_wrapper(:transform_inline_footnote)
+            )
+
+            Registry.register(
+              Coradoc::AsciiDoc::Model::Inline::Stem,
+              method_wrapper(:transform_stem)
+            )
+
+            Registry.register(
+              Coradoc::AsciiDoc::Model::Inline::AttributeReference,
+              ->(model) {
+                Coradoc::CoreModel::InlineElement.new(
+                  format_type: 'attribute_reference',
+                  content: "{#{model.name}}"
+                )
+              }
+            )
           end
 
-          def register_other_transformers!
+          def register_table_transformers!
             Registry.register(
               Coradoc::AsciiDoc::Model::Table,
               method_wrapper(:transform_table)
             )
 
+            Registry.register(
+              Coradoc::AsciiDoc::Model::TableRow,
+              method_wrapper(:transform_table_row)
+            )
+
+            Registry.register(
+              Coradoc::AsciiDoc::Model::TableCell,
+              method_wrapper(:transform_table_cell)
+            )
+          end
+
+          def register_other_transformers!
             Registry.register(
               Coradoc::AsciiDoc::Model::Term,
               method_wrapper(:transform_term)
@@ -126,26 +168,49 @@ module Coradoc
               Coradoc::AsciiDoc::Model::Image::BlockImage,
               method_wrapper(:transform_image)
             )
+
+            Registry.register(
+              Coradoc::AsciiDoc::Model::Bibliography,
+              method_wrapper(:transform_bibliography)
+            )
+
+            Registry.register(
+              Coradoc::AsciiDoc::Model::BibliographyEntry,
+              method_wrapper(:transform_bibliography_entry)
+            )
+
+            # Passthrough types (no CoreModel equivalent)
+            [
+              Coradoc::AsciiDoc::Model::TextElement,
+              Coradoc::AsciiDoc::Model::LineBreak,
+              Coradoc::AsciiDoc::Model::Include,
+              Coradoc::AsciiDoc::Model::Audio,
+              Coradoc::AsciiDoc::Model::Video,
+              Coradoc::AsciiDoc::Model::ContentList,
+              Coradoc::AsciiDoc::Model::Tag
+            ].each do |klass|
+              Registry.register(klass, ->(model) { model })
+            end
           end
 
-          # Helper to wrap a method call
           def method_wrapper(method_name)
             ->(model) { ToCoreModel.send(method_name, model) }
           end
 
-          # Helper to wrap block transformation with delimiter type
           def block_wrapper(delimiter_type)
             ->(model) { ToCoreModel.send(:transform_block, model, delimiter_type) }
           end
 
-          # Helper to wrap list transformation with marker type
           def list_wrapper(marker_type)
             ->(model) { ToCoreModel.send(:transform_list, model, marker_type) }
           end
 
-          # Helper to wrap inline transformation with format type
           def inline_wrapper(format_type)
             ->(model) { ToCoreModel.send(:transform_inline, model, format_type) }
+          end
+
+          def inline_text_wrapper(format_type)
+            ->(model) { ToCoreModel.send(:transform_inline_text, model, format_type) }
           end
         end
       end

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'to_core_model_registrations'
+
 module Coradoc
   module AsciiDoc
     module Transform
@@ -16,29 +18,21 @@ module Coradoc
         class << self
           # Transform an AsciiDoc model to CoreModel
           #
-          # First checks the Registry for a registered transformer.
-          # If none found, falls back to the case statement implementation.
+          # Dispatches to the registered transformer for the model's class.
           #
           # @param model [Coradoc::AsciiDoc::Model::Base] AsciiDoc model to transform
           # @return [Coradoc::CoreModel::Base] CoreModel equivalent
+          # @raise [TransformationError] if no transformer is registered for the model type
           def transform(model)
-            # Check if there's a registered transformer
-            transformer = Registry.lookup(model.class) if model.is_a?(Coradoc::AsciiDoc::Model::Base)
+            return model.map { |item| transform(item) } if model.is_a?(Array)
+            return model unless model.is_a?(Coradoc::AsciiDoc::Model::Base)
 
-            if transformer
-              transformer.call(model)
-            else
-              # Fall back to case statement for unregistered types
-              transform_with_case(model)
-            end
+            transformer = Registry.lookup(model.class)
+            return transformer.call(model) if transformer
+
+            transform_with_case(model)
           end
 
-          # Transform using case statement (used as fallback when no registered transformer)
-          #
-          # This method handles all built-in types and can be used directly
-          # if you want to bypass the registry.
-          #
-          # @api private
           def transform_with_case(model)
             case model
             when Coradoc::AsciiDoc::Model::Document
@@ -62,7 +56,6 @@ module Coradoc
             when Coradoc::AsciiDoc::Model::Block::Pass
               transform_block(model, 'pass')
             when Coradoc::AsciiDoc::Model::Block::Core
-              # Generic block - use delimiter directly
               transform_block(model, model.delimiter)
             when Coradoc::AsciiDoc::Model::Table
               transform_table(model)
@@ -107,32 +100,8 @@ module Coradoc
               transform_image(model)
             when Coradoc::AsciiDoc::Model::TextElement
               extract_text_content(model)
-            when Array
-              model.map { |item| transform(item) }
             else
               model
-            end
-          end
-
-          # Determine block type from delimiter
-          def determine_block_type(delimiter)
-            return 'unknown' if delimiter.nil? || delimiter.empty?
-
-            case delimiter.chars.first
-            when '-'
-              'listing'
-            when '='
-              'example'
-            when '_'
-              'quote'
-            when '*'
-              'sidebar'
-            when '.'
-              'literal'
-            when '+'
-              'pass'
-            else
-              delimiter
             end
           end
 
@@ -185,73 +154,6 @@ module Coradoc
               content.flat_map { |item| transform_inline_content(item) }
             when Coradoc::AsciiDoc::Model::TextElement
               transform_inline_content(content.content)
-            when Coradoc::AsciiDoc::Model::Inline::Bold
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'bold',
-                content: extract_text_content(content.content)
-              )]
-            when Coradoc::AsciiDoc::Model::Inline::Italic
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'italic',
-                content: extract_text_content(content.content)
-              )]
-            when Coradoc::AsciiDoc::Model::Inline::Monospace
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'monospace',
-                content: extract_text_content(content.content)
-              )]
-            when Coradoc::AsciiDoc::Model::Inline::Highlight
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'highlight',
-                content: extract_text_content(content.content)
-              )]
-            when Coradoc::AsciiDoc::Model::Inline::Strikethrough
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'strikethrough',
-                content: extract_text_content(content.content)
-              )]
-            when Coradoc::AsciiDoc::Model::Inline::Subscript
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'subscript',
-                content: extract_text_content(content.content)
-              )]
-            when Coradoc::AsciiDoc::Model::Inline::Superscript
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'superscript',
-                content: extract_text_content(content.content)
-              )]
-            when Coradoc::AsciiDoc::Model::Inline::Underline
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'underline',
-                content: extract_text_content(content.content)
-              )]
-            when Coradoc::AsciiDoc::Model::Inline::Link
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'link',
-                target: content.path,
-                content: content.name || content.path
-              )]
-            when Coradoc::AsciiDoc::Model::Inline::CrossReference
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'xref',
-                target: content.href,
-                content: content.args&.first || content.href
-              )]
-            when Coradoc::AsciiDoc::Model::Inline::Footnote
-              # Parse footnote text for inline elements (e.g., stem:[t_90])
-              footnote_text = content.text.to_s
-              parsed_content = parse_and_transform_inline(footnote_text)
-
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'footnote',
-                target: content.id,
-                content: parsed_content
-              )]
-            when Coradoc::AsciiDoc::Model::Inline::Stem
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'stem',
-                content: content.content.to_s
-              )]
             when Coradoc::AsciiDoc::Model::Term
               [Coradoc::CoreModel::InlineElement.new(
                 format_type: 'term',
@@ -259,8 +161,9 @@ module Coradoc
               )]
             when String
               content.empty? ? [] : [content]
+            when Coradoc::AsciiDoc::Model::Base
+              [transform(content)]
             else
-              # For other types, extract as text
               text = extract_text_content(content)
               text.empty? ? [] : [text]
             end
@@ -310,12 +213,10 @@ module Coradoc
             when Coradoc::CoreModel::Block
               model.flat_text
             when Coradoc::CoreModel::Image
-              # Image should be rendered as empty text - actual rendering handled by HTML converter
               model.alt || ''
             when Coradoc::CoreModel::InlineElement
               model.content.to_s
             else
-              # For unknown types, return empty string to avoid Ruby object dumps
               ''
             end
           end
@@ -408,11 +309,27 @@ module Coradoc
             )
           end
 
+          def transform_inline_text(inline, format_type)
+            Coradoc::CoreModel::InlineElement.new(
+              format_type: format_type,
+              content: inline.text.to_s
+            )
+          end
+
+          def transform_inline_footnote(footnote)
+            parsed_content = parse_and_transform_inline(footnote.text.to_s)
+            Coradoc::CoreModel::InlineElement.new(
+              format_type: 'footnote',
+              target: footnote.id,
+              content: parsed_content
+            )
+          end
+
           def transform_link(link)
             Coradoc::CoreModel::InlineElement.new(
               format_type: 'link',
               target: link.path,
-              content: link.name
+              content: link.name || link.path
             )
           end
 
@@ -492,21 +409,17 @@ module Coradoc
               content
             when Array
               # Join text elements with spaces (paragraph normalization)
-              # TextElements with line_break should have a space before the next element
               result = []
               content.each_with_index do |item, idx|
                 text = extract_text_content(item)
                 result << text if text && !text.empty?
 
-                # Add space between adjacent text elements (unless it's the last one)
                 next unless idx < content.length - 1 && text && !text.empty?
 
-                # Add space unless the current item ends with a hard line break
                 result << ' ' if item.is_a?(Coradoc::AsciiDoc::Model::TextElement) && item.line_break != '+'
               end
               result.join
             when Coradoc::AsciiDoc::Model::TextElement
-              # TextElement.content can be a string or an array of inline elements
               if content.content.is_a?(Array)
                 extract_text_content(content.content)
               else
@@ -520,18 +433,14 @@ module Coradoc
                  Coradoc::AsciiDoc::Model::Inline::Subscript,
                  Coradoc::AsciiDoc::Model::Inline::Superscript,
                  Coradoc::AsciiDoc::Model::Inline::Underline
-              # Inline formatting - extract content
               extract_text_content(content.content)
             when Coradoc::AsciiDoc::Model::Inline::Link
-              # Link - return the link text or URL
               content.name || content.path || ''
             when Coradoc::AsciiDoc::Model::Inline::CrossReference
               content.href || ''
             when Coradoc::AsciiDoc::Model::Inline::Stem
-              # STEM formula - return the content
               content.content.to_s
             when Coradoc::AsciiDoc::Model::Inline::Footnote
-              # Footnote - return the content or reference
               if content.respond_to?(:content) && content.content
                 extract_text_content(content.content)
               else
@@ -542,7 +451,6 @@ module Coradoc
             when Coradoc::AsciiDoc::Model::Term
               content.term.to_s
             when Coradoc::CoreModel::Image
-              # CoreModel Image - return alt text or empty
               content.alt || content.src || ''
             when Coradoc::AsciiDoc::Model::Base
               if content.respond_to?(:content)
@@ -551,8 +459,6 @@ module Coradoc
                 ''
               end
             else
-              # Handle unknown types - try to_s for simple types like Parslet::Slice
-              # but return empty string for complex objects to avoid Ruby object dumps
               if content.respond_to?(:to_str)
                 content.to_s
               elsif content.class.name.start_with?('Parslet::')
@@ -563,30 +469,23 @@ module Coradoc
             end
           end
 
-          # Parse raw text for inline elements and transform to CoreModel
-          # Used for footnote content and other places where raw text may contain inline markup
-          # @param text [String] Raw text that may contain inline markup
-          # @return [Array, String] Array of CoreModel elements or original string if no inline elements
           def parse_and_transform_inline(text)
             return text if text.nil? || text.to_s.strip.empty?
 
-            # Check if text contains any inline markup patterns
             inline_patterns = [
-              /stem:\[/,        # STEM formulas: stem:[formula]
-              /term:\[/,        # Term references: term:[text]
-              /footnote:\[/,    # Footnotes: footnote:[text]
-              /\{[a-zA-Z_]+\}/, # Attribute references: {name}
-              %r{https?://},    # Links
-              /<[^>]+>/         # HTML tags or cross-refs
+              /stem:\[/,
+              /term:\[/,
+              /footnote:\[/,
+              /\{[a-zA-Z_]+\}/,
+              %r{https?://},
+              /<[^>]+>/
             ]
 
             has_inline_markup = inline_patterns.any? { |pattern| text =~ pattern }
             return text unless has_inline_markup
 
-            # Parse the text for inline elements using the Transformer
             begin
               parsed_elements = Coradoc::AsciiDoc::Transformer.parse_inline_content(text)
-              # Extract the content from TextElement wrappers
               content_array = parsed_elements.flat_map do |element|
                 if element.is_a?(Coradoc::AsciiDoc::Model::TextElement)
                   element.content
@@ -595,17 +494,14 @@ module Coradoc
                 end
               end
 
-              # Transform the parsed inline elements to CoreModel
               transformed = transform_inline_content(content_array)
 
-              # If we only got back strings with no inline elements, return the original text
               if transformed.all? { |item| item.is_a?(String) }
                 transformed.join
               else
                 transformed
               end
             rescue StandardError
-              # If parsing fails, return the original text
               text
             end
           end
