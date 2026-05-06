@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(rm /Users/mulgogi/src/mn/coradoc/.git/index.lock)",
-      "Bash(git add *)",
-      "Bash(git commit -m 'refactor: extract ProcessorRegistry to DRY Input and Output modules *)"
-    ]
-  }
-}
