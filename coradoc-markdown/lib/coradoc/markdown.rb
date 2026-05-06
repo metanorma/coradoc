@@ -186,5 +186,5 @@ module Coradoc
   # Register the Markdown format with Coradoc
   register_format(:markdown, Markdown,
                   aliases: %w[md markdown mdown mkd],
-                  extensions: %w[.md .markdown .mdown .mkd]) if respond_to?(:register_format)
+                  extensions: %w[.md .markdown .mdown .mkd])
 end

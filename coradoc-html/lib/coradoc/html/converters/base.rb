@@ -96,7 +96,10 @@ module Coradoc
 
             return render_core_bibliography(content, state) if content.is_a?(Coradoc::CoreModel::Bibliography)
 
-            return render_core_bibliography_entry(content, state) if content.is_a?(Coradoc::CoreModel::BibliographyEntry)
+            if content.is_a?(Coradoc::CoreModel::BibliographyEntry)
+              return render_core_bibliography_entry(content,
+                                                    state)
+            end
 
             # Handle unknown types gracefully
             handle_unknown_content(content, state)

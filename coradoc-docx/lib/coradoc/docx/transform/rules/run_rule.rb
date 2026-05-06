@@ -100,7 +100,10 @@ module Coradoc
             result << CoreModel::InlineElement.new(format_type: 'hard_line_break') if run.respond_to?(:carriage_return) && run.carriage_return
 
             # Alternate content — extract preferred/fallback content
-            result << extract_alternate_content(run.alternate_content, context) if run.respond_to?(:alternate_content) && run.alternate_content
+            if run.respond_to?(:alternate_content) && run.alternate_content
+              result << extract_alternate_content(run.alternate_content,
+                                                  context)
+            end
 
             result.compact
           end
