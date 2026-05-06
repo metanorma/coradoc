@@ -179,9 +179,8 @@ RSpec.describe Coradoc::Registry do
       expect(registry.registered?(:auto_format)).to be true
     end
 
-    it 'silently ignores items without processor_id' do
-      registry.define(Module.new)
-      expect(registry.size).to eq(0)
+    it 'raises NoMethodError for items without processor_id' do
+      expect { registry.define(Module.new) }.to raise_error(NoMethodError)
     end
   end
 
@@ -243,7 +242,7 @@ RSpec.describe Coradoc::Registry do
     end
 
     it 'uses custom error_label' do
-      custom = described_class.new(error_label: "my handler")
+      custom = described_class.new(error_label: 'my handler')
       expect { custom.process('x', format: :missing) }.to raise_error(ArgumentError, /No my handler found/)
     end
   end

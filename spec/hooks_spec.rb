@@ -230,7 +230,7 @@ RSpec.describe 'Hooks pipeline integration' do
   describe 'Coradoc.parse hooks' do
     it 'invokes before_parse hook before parsing' do
       received_text = nil
-      Coradoc::Hooks.register(:before_parse) do |text, **kwargs|
+      Coradoc::Hooks.register(:before_parse) do |text, **_kwargs|
         received_text = text
         text
       end
@@ -242,7 +242,7 @@ RSpec.describe 'Hooks pipeline integration' do
 
     it 'invokes after_parse hook after parsing' do
       received_model = nil
-      Coradoc::Hooks.register(:after_parse) do |model, **kwargs|
+      Coradoc::Hooks.register(:after_parse) do |model, **_kwargs|
         received_model = model
         model
       end
@@ -255,7 +255,7 @@ RSpec.describe 'Hooks pipeline integration' do
     it 'allows before_parse to modify text' do
       Coradoc::Hooks.register(:before_parse) { |text, **| text.upcase }
 
-      doc = Coradoc.parse("# hello", format: :markdown)
+      doc = Coradoc.parse('# hello', format: :markdown)
       expect(doc.title).to eq('HELLO')
     end
 
@@ -266,7 +266,7 @@ RSpec.describe 'Hooks pipeline integration' do
         text
       end
 
-      Coradoc.parse("# Test", format: :markdown)
+      Coradoc.parse('# Test', format: :markdown)
 
       expect(received_format).to eq(:markdown)
     end
@@ -275,7 +275,7 @@ RSpec.describe 'Hooks pipeline integration' do
   describe 'Coradoc.serialize hooks' do
     it 'invokes before_serialize hook before serializing' do
       received_model = nil
-      Coradoc::Hooks.register(:before_serialize) do |model, **kwargs|
+      Coradoc::Hooks.register(:before_serialize) do |model, **_kwargs|
         received_model = model
         model
       end
@@ -288,7 +288,7 @@ RSpec.describe 'Hooks pipeline integration' do
 
     it 'invokes after_serialize hook after serializing' do
       received_output = nil
-      Coradoc::Hooks.register(:after_serialize) do |output, **kwargs|
+      Coradoc::Hooks.register(:after_serialize) do |output, **_kwargs|
         received_output = output
         output
       end
@@ -303,12 +303,24 @@ RSpec.describe 'Hooks pipeline integration' do
   describe 'Coradoc.convert hooks' do
     it 'fires both parse and serialize hooks during conversion' do
       hook_log = []
-      Coradoc::Hooks.register(:before_parse) { |t, **| hook_log << :before_parse; t }
-      Coradoc::Hooks.register(:after_parse) { |m, **| hook_log << :after_parse; m }
-      Coradoc::Hooks.register(:before_serialize) { |m, **| hook_log << :before_serialize; m }
-      Coradoc::Hooks.register(:after_serialize) { |o, **| hook_log << :after_serialize; o }
+      Coradoc::Hooks.register(:before_parse) do |t, **|
+        hook_log << :before_parse
+        t
+      end
+      Coradoc::Hooks.register(:after_parse) do |m, **|
+        hook_log << :after_parse
+        m
+      end
+      Coradoc::Hooks.register(:before_serialize) do |m, **|
+        hook_log << :before_serialize
+        m
+      end
+      Coradoc::Hooks.register(:after_serialize) do |o, **|
+        hook_log << :after_serialize
+        o
+      end
 
-      Coradoc.convert("# Hello", from: :markdown, to: :html)
+      Coradoc.convert('# Hello', from: :markdown, to: :html)
 
       expect(hook_log).to eq(%i[before_parse after_parse before_serialize after_serialize])
     end
