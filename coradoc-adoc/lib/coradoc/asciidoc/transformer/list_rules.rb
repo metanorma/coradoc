@@ -19,8 +19,8 @@ module Coradoc
 
               # Convert nested array to proper List object if needed
               if nested.is_a?(Array) && nested.any?
-                first_marker = nested.first.respond_to?(:marker) ? nested.first.marker : marker
-                nested = if first_marker&.start_with?('.', '1', 'a', 'A', 'i', 'I')
+                first_marker = nested.first.is_a?(Model::List::Item) ? nested.first.marker : marker
+                nested = if first_marker.to_s.start_with?('.', '1', 'a', 'A', 'i', 'I')
                            Model::List::Ordered.new(items: nested)
                          else
                            Model::List::Unordered.new(items: nested)

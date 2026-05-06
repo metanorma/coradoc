@@ -176,7 +176,7 @@ module Coradoc
                 end
 
                 # Merge the line break into the previous element if it has a line_break attribute
-                if prev.respond_to?(:line_break=)
+                if prev.is_a?(Coradoc::AsciiDoc::Model::Base) && prev.class.attributes.key?(:line_break)
                   prev.line_break = prev.line_break.to_s + line_break.line_break.to_s
                   sections.delete_at(i)
                   # Don't increment i since we deleted an element

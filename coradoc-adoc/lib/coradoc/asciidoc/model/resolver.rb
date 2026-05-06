@@ -142,7 +142,7 @@ module Coradoc
           return resolved.map { |n| resolve_node_recursive(n, base_dir, depth) }.flatten if resolved.is_a?(Array)
 
           # Handle nodes with nested content
-          if resolved.respond_to?(:contents) && resolved.contents
+          if resolved.is_a?(Coradoc::AsciiDoc::Model::Base) && resolved.class.attributes.key?(:contents) && resolved.contents
             resolved = deep_copy_node(resolved)
             resolved.contents = resolved.contents.map do |child|
               resolve_node_recursive(child, base_dir, depth + 1)
@@ -150,7 +150,7 @@ module Coradoc
           end
 
           # Handle sections with nested content
-          if resolved.respond_to?(:sections) && resolved.sections && !resolved.is_a?(Document)
+          if resolved.is_a?(Coradoc::AsciiDoc::Model::Base) && resolved.class.attributes.key?(:sections) && resolved.sections && !resolved.is_a?(Document)
             resolved = deep_copy_node(resolved)
             resolved.sections = resolved.sections.map do |child|
               resolve_node_recursive(child, base_dir, depth + 1)

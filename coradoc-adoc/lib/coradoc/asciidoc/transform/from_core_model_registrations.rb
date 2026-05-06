@@ -19,101 +19,101 @@ module Coradoc
           def register_structural_transformers!
             Registry.register(
               Coradoc::CoreModel::StructuralElement,
-              ->(model) { FromCoreModel.send(:transform_structural_element, model) }
+              ->(model) { FromCoreModel.transform_structural_element(model) }
             )
           end
 
           def register_block_transformers!
             Registry.register_with_priority(
               Coradoc::CoreModel::AnnotationBlock,
-              ->(model) { FromCoreModel.send(:transform_annotation, model) },
+              ->(model) { FromCoreModel.transform_annotation(model) },
               priority: 10
             )
 
             Registry.register(
               Coradoc::CoreModel::Block,
-              ->(model) { FromCoreModel.send(:transform_block, model) }
+              ->(model) { FromCoreModel.transform_block(model) }
             )
           end
 
           def register_list_transformers!
             Registry.register(
               Coradoc::CoreModel::ListBlock,
-              ->(model) { FromCoreModel.send(:transform_list, model) }
+              ->(model) { FromCoreModel.transform_list(model) }
             )
 
             Registry.register(
               Coradoc::CoreModel::ListItem,
-              ->(model) { FromCoreModel.send(:transform_list_item, model) }
+              ->(model) { FromCoreModel.transform_list_item(model) }
             )
 
             Registry.register(
               Coradoc::CoreModel::DefinitionList,
-              ->(model) { FromCoreModel.send(:transform_definition_list, model) }
+              ->(model) { FromCoreModel.transform_definition_list(model) }
             )
 
             Registry.register(
               Coradoc::CoreModel::DefinitionItem,
-              ->(model) { FromCoreModel.send(:transform_definition_item, model) }
+              ->(model) { FromCoreModel.transform_definition_item(model) }
             )
           end
 
           def register_inline_transformers!
             Registry.register(
               Coradoc::CoreModel::InlineElement,
-              ->(model) { FromCoreModel.send(:transform_inline, model) }
+              ->(model) { FromCoreModel.transform_inline(model) }
             )
           end
 
           def register_other_transformers!
             Registry.register(
               Coradoc::CoreModel::Table,
-              ->(model) { FromCoreModel.send(:transform_table, model) }
+              ->(model) { FromCoreModel.transform_table(model) }
             )
 
             Registry.register(
               Coradoc::CoreModel::Term,
-              ->(model) { FromCoreModel.send(:transform_term, model) }
+              ->(model) { FromCoreModel.transform_term(model) }
             )
 
             Registry.register(
               Coradoc::CoreModel::Image,
-              ->(model) { FromCoreModel.send(:transform_image, model) }
+              ->(model) { FromCoreModel.transform_image(model) }
             )
 
             Registry.register(
               Coradoc::CoreModel::Footnote,
-              ->(model) { FromCoreModel.send(:transform_footnote, model) }
+              ->(model) { FromCoreModel.transform_footnote(model) }
             )
 
             Registry.register(
               Coradoc::CoreModel::FootnoteReference,
-              ->(model) { FromCoreModel.send(:transform_footnote_reference, model) }
+              ->(model) { FromCoreModel.transform_footnote_reference(model) }
             )
 
             Registry.register(
               Coradoc::CoreModel::Abbreviation,
-              ->(model) { FromCoreModel.send(:transform_abbreviation, model) }
+              ->(model) { FromCoreModel.transform_abbreviation(model) }
             )
 
             Registry.register(
               Coradoc::CoreModel::Toc,
-              ->(model) { FromCoreModel.send(:transform_toc, model) }
+              ->(model) { FromCoreModel.transform_toc(model) }
             )
 
             Registry.register(
               Coradoc::CoreModel::TocEntry,
-              ->(model) { FromCoreModel.send(:transform_toc_entry, model) }
+              ->(model) { FromCoreModel.transform_toc_entry(model) }
             )
 
             Registry.register(
               Coradoc::CoreModel::Bibliography,
-              ->(model) { FromCoreModel.send(:transform_bibliography, model) }
+              ->(model) { FromCoreModel.transform_bibliography(model) }
             )
 
             Registry.register(
               Coradoc::CoreModel::BibliographyEntry,
-              ->(model) { FromCoreModel.send(:transform_bibliography_entry, model) }
+              ->(model) { FromCoreModel.transform_bibliography_entry(model) }
             )
           end
         end

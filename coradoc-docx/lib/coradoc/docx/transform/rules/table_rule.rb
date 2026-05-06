@@ -79,7 +79,6 @@ module Coradoc
             vm = cell.properties.v_merge
             vm.respond_to?(:value) ? vm.value.to_s == 'restart' : false
           end
-
         end
       end
     end

@@ -13,7 +13,7 @@ module Coradoc
               author: simple(:author),
               revision: simple(:revision)
             ) do
-              id = title.respond_to?(:id) ? title.id : nil
+              id = title.is_a?(Model::Title) ? title.id : nil
               Model::Header.new(id:, title:, author:, revision:)
             end
 
@@ -22,7 +22,7 @@ module Coradoc
               title: simple(:title),
               author: simple(:author)
             ) do
-              id = title.respond_to?(:id) ? title.id : nil
+              id = title.is_a?(Model::Title) ? title.id : nil
               Model::Header.new(id:, title:, author:, revision: nil)
             end
 
@@ -31,7 +31,7 @@ module Coradoc
               title: simple(:title),
               revision: simple(:revision)
             ) do
-              id = title.respond_to?(:id) ? title.id : nil
+              id = title.is_a?(Model::Title) ? title.id : nil
               Model::Header.new(id:, title:, author: nil, revision:)
             end
 
@@ -39,7 +39,7 @@ module Coradoc
             rule(
               title: simple(:title)
             ) do
-              id = title.respond_to?(:id) ? title.id : nil
+              id = title.is_a?(Model::Title) ? title.id : nil
               Model::Header.new(id:, title:, author: nil, revision: nil)
             end
 
@@ -72,7 +72,7 @@ module Coradoc
                 author = header[:author]
                 revision = header[:revision]
 
-                id = title.id if title.respond_to?(:id) && title.id && !id
+                id = title.id if title.is_a?(Model::Title) && title.id && !id
 
                 Model::Header.new(id:, title:, author:, revision:)
               else

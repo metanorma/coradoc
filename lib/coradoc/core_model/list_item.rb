@@ -45,13 +45,13 @@ module Coradoc
 
       # Delegate nested to nested_list (lutaml attribute added by list_block.rb)
       def nested
-        nested_list if respond_to?(:nested_list)
+        nested_list
       end
 
       # Set nested list
       # @param value [ListBlock, nil] nested list block
       def nested=(value)
-        self.nested_list = value if respond_to?(:nested_list=)
+        self.nested_list = value
       end
 
       # Convert to hash representation
@@ -62,7 +62,7 @@ module Coradoc
           marker: marker,
           content: content,
           nested_list: nested&.to_h,
-          children: children&.map { |child| child.respond_to?(:to_h) ? child.to_h : child }
+          children: children&.map { |child| child.is_a?(CoreModel::Base) ? child.to_h : child }
         }.compact
       end
 

@@ -112,14 +112,14 @@ module Coradoc
       # @param exception [Parslet::ParseFailed] The Parslet exception
       # @return [Array<Integer, Integer>] Line and column numbers
       def self.extract_location(exception)
-        return [nil, nil] unless exception.respond_to?(:cause)
+        return [nil, nil] unless exception.is_a?(Parslet::ParseFailed)
 
         cause = exception.cause
-        if cause.respond_to?(:source_line) && cause.respond_to?(:source_column)
-          [cause.source_line, cause.source_column]
-        else
-          [nil, nil]
-        end
+        return [nil, nil] unless cause
+
+        [cause.source_line, cause.source_column]
+      rescue NoMethodError
+        [nil, nil]
       end
 
       # Extract the relevant source line

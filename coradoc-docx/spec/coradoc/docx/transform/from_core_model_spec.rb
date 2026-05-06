@@ -120,7 +120,9 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
     end
 
     context 'with Abbreviation' do
-      let(:core_model) { Coradoc::CoreModel::Abbreviation.new(term: 'API', definition: 'Application Programming Interface') }
+      let(:core_model) do
+        Coradoc::CoreModel::Abbreviation.new(term: 'API', definition: 'Application Programming Interface')
+      end
 
       it 'produces a Paragraph with term and definition' do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
@@ -245,7 +247,8 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
         @tmpdir = Dir.mktmpdir
         img_path = File.join(@tmpdir, 'test.png')
         # Minimal 1x1 PNG
-        File.binwrite(img_path, "\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xAEB`\x82".b)
+        File.binwrite(img_path,
+                      "\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xAEB`\x82".b)
         Coradoc::CoreModel::Image.new(src: img_path, alt: 'Test image')
       end
 

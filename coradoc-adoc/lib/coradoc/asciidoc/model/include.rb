@@ -46,7 +46,7 @@ module Coradoc
         # @return [Hash] include options (leveloffset, lines, tags, etc.)
         def reference_options
           options = {}
-          if attributes.respond_to?(:named)
+          if attributes.is_a?(Coradoc::AsciiDoc::Model::AttributeList)
             attributes.named.each do |attr|
               case attr.name.to_s
               when 'leveloffset'

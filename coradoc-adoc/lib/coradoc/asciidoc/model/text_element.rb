@@ -34,13 +34,10 @@ module Coradoc
             content
           when Array
             content.map(&:to_s).join
+          when Coradoc::AsciiDoc::Model::Base
+            content.to_adoc
           when Lutaml::Model::Serializable
-            # Handle Lutaml models - try to extract text properly
-            if content.respond_to?(:to_adoc)
-              content.to_adoc
-            elsif content.respond_to?(:text)
-              content.text.to_s
-            elsif content.respond_to?(:content)
+            if content.class.attributes.key?(:content)
               content.content.to_s
             else
               ''
@@ -48,8 +45,7 @@ module Coradoc
           when nil
             ''
           else
-            # Only use to_s for simple types that respond to to_str
-            content.respond_to?(:to_str) ? content.to_s : ''
+            content.is_a?(String) ? content.to_s : ''
           end
         end
 

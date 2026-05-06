@@ -76,7 +76,7 @@ module Coradoc
               end
 
               # Apply value map if present
-              value = apply_value_map(value, rule.value_map(:from, options), attr) if rule.respond_to?(:value_map)
+              value = apply_value_map(value, rule.value_map(:from, options), attr)
 
               # Set the value
               instance.public_send(:"#{rule.to}=", value) if value
@@ -123,7 +123,7 @@ module Coradoc
 
               # Set on target instance
               target_attr = rule.name || rule.to
-              instance.public_send(:"#{target_attr}=", value) if instance.respond_to?("#{target_attr}=")
+              instance.public_send(:"#{target_attr}=", value)
             end
 
             instance
@@ -154,7 +154,7 @@ module Coradoc
             when Coradoc::Element::Base
               # Already a Coradoc element, may need conversion
               if attr&.type&.<(Lutaml::Model::Type::Value)
-                value.respond_to?(:content) ? value.content : value.to_s
+                value.is_a?(Coradoc::AsciiDoc::Model::Base) && value.class.attributes.key?(:content) ? value.content : value.to_s
               else
                 value
               end

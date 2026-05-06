@@ -14,7 +14,7 @@ module Coradoc
       # Register with the main coradoc registry
       Coradoc.register_format(:html, self,
                               aliases: %w[html htm],
-                              extensions: %w[.html .htm]) if Coradoc.respond_to?(:register_format)
+                              extensions: %w[.html .htm])
 
       @registered = true
     end

@@ -136,7 +136,7 @@ module Coradoc
         children_arr.map do |child|
           if child.is_a?(String)
             child
-          elsif child.respond_to?(:to_hash)
+          elsif child.is_a?(Lutaml::Model::Serializable)
             child.to_hash
           else
             child.to_s
@@ -156,8 +156,8 @@ module Coradoc
 
       # Compare a single attribute between this model and another
       def compare_attribute(attr, other)
-        self_value = send(attr)
-        other_value = other.send(attr)
+        self_value = public_send(attr)
+        other_value = other.public_send(attr)
 
         case self_value
         when Array

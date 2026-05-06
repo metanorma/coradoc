@@ -65,8 +65,6 @@ module Coradoc
             end
           end
 
-          private
-
           def transform_structural_element(element)
             case element.element_type
             when 'document'
@@ -170,29 +168,6 @@ module Coradoc
                 delimiter_len: delim_len,
                 lines: content_text.split("\n")
               )
-            end
-          end
-
-          def safe_content_to_string(content)
-            case content
-            when String
-              content
-            when Array
-              content.map { |item| safe_content_to_string(item) }.join
-            when Lutaml::Model::Serializable
-              if content.respond_to?(:to_adoc)
-                content.to_adoc
-              elsif content.respond_to?(:text)
-                content.text.to_s
-              elsif content.respond_to?(:content)
-                safe_content_to_string(content.content)
-              else
-                ''
-              end
-            when nil
-              ''
-            else
-              content.respond_to?(:to_str) ? content.to_s : ''
             end
           end
 
@@ -373,6 +348,29 @@ module Coradoc
             )
           end
 
+          private
+
+          def safe_content_to_string(content)
+            case content
+            when String
+              content
+            when Array
+              content.map { |item| safe_content_to_string(item) }.join
+            when Lutaml::Model::Serializable
+              if content.is_a?(Coradoc::AsciiDoc::Model::Base)
+                content.to_adoc
+              elsif content.class.attributes.key?(:text)
+                content.text.to_s
+              else
+                ''
+              end
+            when nil
+              ''
+            else
+              content.is_a?(String) ? content : ''
+            end
+          end
+
           def create_title(text, level)
             return nil if text.nil?
 
@@ -391,12 +389,10 @@ module Coradoc
             when Coradoc::AsciiDoc::Model::Base
               content
             when Lutaml::Model::Serializable
-              text = if content.respond_to?(:to_adoc)
+              text = if content.is_a?(Coradoc::AsciiDoc::Model::Base)
                        content.to_adoc
-                     elsif content.respond_to?(:text)
+                     elsif content.class.attributes.key?(:text)
                        content.text.to_s
-                     elsif content.respond_to?(:content)
-                       content.content.to_s
                      else
                        ''
                      end
@@ -404,11 +400,7 @@ module Coradoc
             when String
               Coradoc::AsciiDoc::Model::TextElement.new(content: content)
             else
-              text = if content.respond_to?(:to_str)
-                       content.to_s
-                     else
-                       ''
-                     end
+              text = content.is_a?(String) ? content : ''
               Coradoc::AsciiDoc::Model::TextElement.new(content: text)
             end
           end

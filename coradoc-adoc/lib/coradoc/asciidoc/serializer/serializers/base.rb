@@ -85,19 +85,12 @@ module Coradoc
             when Proc
               child.call
             else
-              # Handle objects that respond to to_adoc (like test doubles)
-              if child.respond_to?(:to_adoc)
-                # For non-Coradoc objects, call to_adoc without arguments
-                # Test doubles and external objects typically don't accept context
-                child.to_adoc
-              else
-                # This is a programming error - we received an unexpected type
-                raise ArgumentError,
-                      "Cannot serialize child of type #{child.class.name}. " \
-                      'Expected String, Coradoc::AsciiDoc::Model::Base, ' \
-                      'Lutaml::Model::Serializable, or Proc. ' \
-                      "Got: #{child.inspect[0..100]}"
-              end
+              # This is a programming error - we received an unexpected type
+              raise ArgumentError,
+                    "Cannot serialize child of type #{child.class.name}. " \
+                    'Expected String, Coradoc::AsciiDoc::Model::Base, ' \
+                    'Lutaml::Model::Serializable, or Proc. ' \
+                    "Got: #{child.inspect[0..100]}"
             end
           end
 
@@ -115,14 +108,10 @@ module Coradoc
             when nil
               ''
             else
-              # Try AdocSerializer first for Lutaml models
+              # Try AdocSerializer for Lutaml models
               if content.is_a?(Lutaml::Model::Serializable) || content.is_a?(Coradoc::AsciiDoc::Model::Base)
                 AdocSerializer.serialize(content)
-              # Fall back to to_adoc if available
-              elsif content.respond_to?(:to_adoc)
-                content.to_adoc
               else
-                # This is a programming error - we received an unexpected type
                 raise ArgumentError,
                       "Cannot serialize content of type #{content.class.name}. " \
                       'Expected String, nil, Array, or serializable object. ' \
@@ -163,8 +152,7 @@ module Coradoc
           # @param model [Coradoc::AsciiDoc::Model::Base] Model with attributes
           # @return [String] Formatted block attributes
           def format_block_attributes(model)
-            return '' unless model.respond_to?(:attributes) &&
-                             model.attributes
+            return '' unless model.is_a?(Lutaml::Model::Serializable) && model.attributes
 
             Formatter.block_attributes(model.attributes)
           end

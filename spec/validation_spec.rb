@@ -161,9 +161,9 @@ RSpec.describe Coradoc::Validation do
 
       it 'formats errors with path and message' do
         result = described_class.new(errors: [
-          Coradoc::Validation::Error.new('Missing title', path: 'title'),
-          Coradoc::Validation::Error.new('Empty section', path: 'body')
-        ])
+                                       Coradoc::Validation::Error.new('Missing title', path: 'title'),
+                                       Coradoc::Validation::Error.new('Empty section', path: 'body')
+                                     ])
         text = result.to_s
         expect(text).to include('2 validation error(s)')
         expect(text).to include('title: Missing title')
@@ -232,7 +232,7 @@ RSpec.describe Coradoc::Validation do
           optional :tags, type: Array, min_count: 1
 
           rule :check_title do |doc|
-            title = doc.respond_to?(:title) ? doc.title : nil
+            title = doc.title
             if title && title.length > 100
               ['Title is too long']
             else

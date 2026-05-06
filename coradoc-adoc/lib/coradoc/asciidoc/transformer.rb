@@ -47,7 +47,7 @@ module Coradoc
           data.map do |item|
             if item.is_a?(Hash) && item.key?(:text)
               text = item[:text]
-              if text.respond_to?(:content)
+              if text.is_a?(Model::Base) && text.class.attributes.key?(:content)
                 text.content
               elsif text.is_a?(Model::Base)
                 text
@@ -197,7 +197,7 @@ module Coradoc
 
           # Repeat marker
           cell_opts[:repeat] = true if format[:repeat]
-        elsif format.is_a?(String) || format.respond_to?(:to_s)
+        elsif format.is_a?(String)
           # Parse format string like ".2+^.^" or "4+^" or ".3+a"
           # Format: [colspan][.rowspan][halign][valign][style][*]
           format_str = format.to_s
@@ -237,7 +237,7 @@ module Coradoc
         return nil if attrs.nil?
 
         # Get the cols value from named attributes
-        cols_value = if attrs.respond_to?(:named)
+        cols_value = if attrs.is_a?(Model::AttributeList)
                        attrs.named.find { |n| n.name.to_s == 'cols' }&.value
                      elsif attrs.is_a?(Hash)
                        attrs['cols'] || attrs[:cols]
@@ -312,7 +312,7 @@ module Coradoc
 
         normalized_cells.each do |cell|
           # Get colspan (default 1)
-          colspan = (cell.respond_to?(:colspan) && cell.colspan) || 1
+          colspan = cell.is_a?(Model::TableCell) && cell.colspan ? cell.colspan : 1
 
           current_row_cells << cell
           current_col_slots += colspan
@@ -339,7 +339,7 @@ module Coradoc
 
         # Count column slots for each cell
         col_slots = cells.map do |cell|
-          (cell.respond_to?(:colspan) && cell.colspan) || 1
+          cell.is_a?(Model::TableCell) && cell.colspan ? cell.colspan : 1
         end
 
         total_cells = col_slots.sum

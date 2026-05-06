@@ -67,6 +67,7 @@ module Coradoc
     # @param options [Hash] optional configuration (e.g., extensions: [])
     # @return [void]
     def register_format(format_name, format_module, **options)
+      format_module.extend(FormatModule::Interface) unless format_module.is_a?(FormatModule::Interface)
       registry.register(format_name, format_module, options)
       FormatModule.validate!(format_module, format_name)
     end
@@ -148,7 +149,7 @@ module Coradoc
       return model if model.is_a?(CoreModel::Base)
 
       registry.each_value do |format_module|
-        next unless format_module.respond_to?(:handles_model?) && format_module.handles_model?(model)
+        next unless format_module.handles_model?(model)
 
         return format_module.to_core(model)
       end
@@ -195,7 +196,7 @@ module Coradoc
     #   Coradoc.detect_format("file.md")        # => :markdown
     def detect_format(filename)
       ext = File.extname(filename).downcase
-      registry.each do |name, _mod|
+      registry.each_key do |name|
         opts = registry.options_for(name)
         return name if opts[:extensions]&.include?(ext)
       end
@@ -243,7 +244,7 @@ module Coradoc
     # @example
     #   html = Coradoc.convert_file("document.adoc", to: :html)
     #   adoc = Coradoc.convert_file("report.docx", to: :asciidoc)
-    def convert_file(path, from: nil, to:, **options)
+    def convert_file(path, to:, from: nil, **options)
       source_format = from || detect_format(path)
       raise UnsupportedFormatError, "Could not detect format for: #{path}" unless source_format
 
@@ -270,7 +271,7 @@ module Coradoc
       return nil unless name
 
       key = name.to_s.downcase
-      registry.each do |fmt_name, _mod|
+      registry.each_key do |fmt_name|
         opts = registry.options_for(fmt_name)
         return fmt_name if opts[:aliases]&.include?(key)
       end
@@ -285,9 +286,7 @@ module Coradoc
       mod = get_format(format)
       return false unless mod
 
-      return mod.serialize? if mod.respond_to?(:serialize?)
-
-      true
+      mod.serialize?
     end
 
     # Check if a format supports parsing (reading input)
@@ -296,7 +295,9 @@ module Coradoc
     # @return [Boolean] true if the format can parse
     def parse_format?(format)
       mod = get_format(format)
-      mod&.respond_to?(:parse_to_core) || mod&.respond_to?(:parse) || false
+      return false unless mod
+
+      mod.public_methods.include?(:parse_to_core) || mod.public_methods.include?(:parse)
     end
 
     # Get capability summary for all registered formats
@@ -361,9 +362,9 @@ module Coradoc
     def document_stats(doc)
       stats = {}
 
-      stats[:title] = doc.title if doc.respond_to?(:title) && doc.title
+      stats[:title] = doc.title if doc.title
 
-      if doc.respond_to?(:children)
+      if doc.is_a?(CoreModel::StructuralElement)
         stats[:child_count] = count_elements(doc)
         stats[:element_counts] = count_element_types(doc)
       end
@@ -379,9 +380,9 @@ module Coradoc
       return elem.to_s unless elem.is_a?(CoreModel::Base)
 
       type = elem.class.name.split('::').last
-      if elem.respond_to?(:title) && elem.title
+      if elem.title
         "#{type}: #{elem.title}"
-      elsif elem.respond_to?(:content) && elem.content
+      elsif elem.is_a?(CoreModel::Block) && elem.content
         preview = elem.content.to_s[0..50]
         preview += '...' if elem.content.to_s.length > 50
         "#{type}: #{preview}"
@@ -411,10 +412,10 @@ module Coradoc
     private
 
     def count_elements(doc)
-      return 0 unless doc.respond_to?(:children)
+      return 0 unless doc.is_a?(CoreModel::StructuralElement)
 
       doc.children.sum do |child|
-        1 + (child.respond_to?(:children) ? count_elements(child) : 0)
+        1 + (child.is_a?(CoreModel::StructuralElement) ? count_elements(child) : 0)
       end
     end
 
@@ -423,11 +424,12 @@ module Coradoc
       visitor = Class.new(Visitor::Base) do
         define_method(:visit) do |element|
           if element.is_a?(CoreModel::Base)
-            type_key = if element.respond_to?(:element_type) && element.element_type
+            has_element_type = element.is_a?(CoreModel::StructuralElement) || element.is_a?(CoreModel::Block)
+            type_key = if has_element_type && element.element_type
                          element.element_type
                        else
                          element.class.name.split('::').last
-                                   .gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '')
+                                .gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '')
                        end
             counts[type_key] += 1
           end

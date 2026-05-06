@@ -22,7 +22,7 @@ module Coradoc
       DocumentManipulator.new(filtered)
     end
 
-    def transform_text(&block)
+    def transform_text
       return self unless block_given?
 
       Visitor::Transformer.new do |element|
@@ -36,13 +36,11 @@ module Coradoc
       self
     end
 
-    def transform_headings(&block)
+    def transform_headings
       return self unless block_given?
 
       Visitor::Transformer.new do |element|
-        if element.is_a?(CoreModel::StructuralElement) && element.title.is_a?(String)
-          element.title = yield(element.title)
-        end
+        element.title = yield(element.title) if element.is_a?(CoreModel::StructuralElement) && element.title.is_a?(String)
       end.visit(@document)
       self
     end
@@ -64,7 +62,7 @@ module Coradoc
 
     def remove_elements(element_type)
       Visitor::Transformer.new do |element|
-        next unless element.respond_to?(:children) && element.children
+        next unless element.is_a?(CoreModel::StructuralElement) && element.children
 
         element.children.reject! do |child|
           match_element_type?(child, element_type)
@@ -128,15 +126,13 @@ module Coradoc
     end
 
     def filter_sections(element, level: nil, title: nil)
-      if element.respond_to?(:children) && element.children
+      if element.is_a?(CoreModel::StructuralElement) && element.children
         element.children = element.children
                                   .map { |child| filter_sections(child, level: level, title: title) }
                                   .compact
       end
 
-      if element.is_a?(CoreModel::StructuralElement) && element.section? && !element.document?
-        return nil unless section_matches?(element, level: level, title: title)
-      end
+      return nil if element.is_a?(CoreModel::StructuralElement) && element.section? && !element.document? && !section_matches?(element, level: level, title: title)
 
       element
     end
@@ -154,7 +150,7 @@ module Coradoc
         element_title = section.title || ''
         case title
         when String then return false unless element_title.include?(title)
-        when Regexp then return false unless element_title =~ title
+        when Regexp then return false unless element_title&.match?(title)
         end
       end
 
@@ -163,7 +159,7 @@ module Coradoc
 
     def collect_sections(element, max_level: 3, current_level: 1)
       sections = []
-      return sections unless element.respond_to?(:children)
+      return sections unless element.is_a?(CoreModel::StructuralElement)
 
       element.children.each do |child|
         next unless child.is_a?(CoreModel::StructuralElement) &&
@@ -186,7 +182,7 @@ module Coradoc
       when CoreModel::Base
         cloned = element.class.new
         element.class.attributes.each_key do |name|
-          cloned.send("#{name}=", deep_clone(element.send(name)))
+          cloned.public_send("#{name}=", deep_clone(element.public_send(name)))
         end
         cloned
       when Array

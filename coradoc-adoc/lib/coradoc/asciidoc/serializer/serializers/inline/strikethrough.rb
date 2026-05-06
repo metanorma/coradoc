@@ -12,7 +12,7 @@ module Coradoc
 
               return '' if content.empty?
 
-              if model.respond_to?(:unconstrained) && model.unconstrained
+              if model.unconstrained
                 "[.line-through]#[.line-through]##{content}[.line-through]#[.line-through]#"
               else
                 "[.line-through]##{content}#"

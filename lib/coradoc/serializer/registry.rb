@@ -100,14 +100,12 @@ module Coradoc
           serializer_class = lookup(model)
           return nil unless serializer_class
 
-          serializer = serializer_class.respond_to?(:new) ? serializer_class.new : serializer_class
+          serializer = serializer_class.is_a?(Class) ? serializer_class.new : serializer_class
 
-          if serializer.respond_to?(:serialize)
+          if serializer.is_a?(Base)
             serializer.serialize(model, format: format, **options)
-          elsif serializer.respond_to?(:to_s)
-            serializer.to_s
           else
-            model.to_s
+            serializer.to_s
           end
         end
 

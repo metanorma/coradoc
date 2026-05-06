@@ -22,10 +22,10 @@ RSpec.describe Coradoc::Input do
       expect(described_class.processors[:test_format]).to eq(test_processor)
     end
 
-    it 'ignores processors without processor_id' do
+    it 'raises NoMethodError for items without processor_id' do
       invalid_processor = Module.new
 
-      expect { described_class.define(invalid_processor) }.not_to(change { described_class.processors.length })
+      expect { described_class.define(invalid_processor) }.to raise_error(NoMethodError)
     end
   end
 
