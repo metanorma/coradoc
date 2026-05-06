@@ -343,8 +343,8 @@ module Coradoc
             )
           end
 
-          def transform_definition_list(dl)
-            items = Array(dl.items).map do |item|
+          def transform_definition_list(definition_list)
+            items = Array(definition_list.items).map do |item|
               transform_definition_item(item)
             end
             Coradoc::AsciiDoc::Model::List::Definition.new(items: items)

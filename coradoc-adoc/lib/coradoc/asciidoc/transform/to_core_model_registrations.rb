@@ -58,7 +58,7 @@ module Coradoc
 
             Registry.register(
               Coradoc::AsciiDoc::Model::CommentBlock,
-              ->(model) {
+              lambda { |model|
                 Coradoc::CoreModel::Block.new(
                   element_type: 'comment',
                   content: model.text.to_s
@@ -127,7 +127,7 @@ module Coradoc
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Inline::AttributeReference,
-              ->(model) {
+              lambda { |model|
                 Coradoc::CoreModel::InlineElement.new(
                   format_type: 'attribute_reference',
                   content: "{#{model.name}}"
