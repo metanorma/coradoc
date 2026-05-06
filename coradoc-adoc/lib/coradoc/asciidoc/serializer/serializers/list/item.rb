@@ -31,14 +31,10 @@ module Coradoc
                              when Coradoc::AsciiDoc::Model::Base, Lutaml::Model::Serializable
                                subitem.to_adoc
                              else
-                               if subitem.respond_to?(:to_adoc)
-                                 subitem.to_adoc
-                               else
-                                 raise ArgumentError,
-                                       "Cannot serialize list item content of type #{subitem.class.name}. " \
-                                       'Expected String, Coradoc::AsciiDoc::Model::Base, or ' \
-                                       "Lutaml::Model::Serializable. Got: #{subitem.inspect[0..100]}"
-                               end
+                               raise ArgumentError,
+                                     "Cannot serialize list item content of type #{subitem.class.name}. " \
+                                     'Expected String, Coradoc::AsciiDoc::Model::Base, or ' \
+                                     "Lutaml::Model::Serializable. Got: #{subitem.inspect[0..100]}"
                              end
 
                 inline = inline?(subitem)
@@ -90,7 +86,7 @@ module Coradoc
               attach = model.attached.map do |elem|
                 "+\n#{elem.to_adoc}"
               end.join
-              nest = model.nested.nil? || (model.nested.respond_to?(:empty?) && model.nested.empty?) ? '' : model.nested.to_adoc
+              nest = model.nested.nil? || (model.nested.is_a?(Array) && model.nested.empty?) ? '' : model.nested.to_adoc
               out = " #{_anchor}#{out}#{model.line_break}"
               out + attach + nest
             end

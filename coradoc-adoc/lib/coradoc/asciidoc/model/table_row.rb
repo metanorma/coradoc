@@ -12,7 +12,7 @@ module Coradoc
         end
 
         def asciidoc?
-          columns&.any? { |c| c.respond_to?(:asciidoc?) && c.asciidoc? } || false
+          columns&.any? { |c| c.is_a?(Coradoc::AsciiDoc::Model::TableCell) && c.asciidoc? } || false
         end
 
         # NOTE: underline_for provides trailing newline for table row serialization.

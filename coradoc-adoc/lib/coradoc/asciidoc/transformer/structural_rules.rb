@@ -168,7 +168,7 @@ module Coradoc
               id = section[:id] || nil
               title = section[:title] || nil
 
-              id = title.id if title.respond_to?(:id) && title.id && !id
+              id = title.id if title.is_a?(Model::Title) && title.id && !id
 
               attribute_list = section[:attribute_list] || nil
               contents = section[:contents] || []

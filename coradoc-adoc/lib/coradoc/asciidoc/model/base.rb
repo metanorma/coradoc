@@ -51,12 +51,13 @@ module Coradoc
           return element if element.nil?
 
           element = yield element, :pre
-          element = if element.respond_to?(:visit)
+          element = case element
+                    when Coradoc::AsciiDoc::Model::Base
                       element.visit(&block)
-                    elsif element.is_a?(Array)
+                    when Array
                       element.map { |child| visit(child, &block) }
                              .flatten.compact
-                    elsif element.is_a?(Hash)
+                    when Hash
                       result = {}
                       element.each do |k, v|
                         result[k] = visit(v, &block)

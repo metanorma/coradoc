@@ -53,7 +53,7 @@ module Coradoc
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Block::Core,
-              ->(model) { ToCoreModel.send(:transform_block, model, model.delimiter) }
+              block_wrapper(nil) # uses model.delimiter at call time
             )
 
             Registry.register(
@@ -194,23 +194,27 @@ module Coradoc
           end
 
           def method_wrapper(method_name)
-            ->(model) { ToCoreModel.send(method_name, model) }
+            ->(model) { ToCoreModel.public_send(method_name, model) }
           end
 
           def block_wrapper(delimiter_type)
-            ->(model) { ToCoreModel.send(:transform_block, model, delimiter_type) }
+            if delimiter_type
+              ->(model) { ToCoreModel.transform_block(model, delimiter_type) }
+            else
+              ->(model) { ToCoreModel.transform_block(model, model.delimiter) }
+            end
           end
 
           def list_wrapper(marker_type)
-            ->(model) { ToCoreModel.send(:transform_list, model, marker_type) }
+            ->(model) { ToCoreModel.transform_list(model, marker_type) }
           end
 
           def inline_wrapper(format_type)
-            ->(model) { ToCoreModel.send(:transform_inline, model, format_type) }
+            ->(model) { ToCoreModel.transform_inline(model, format_type) }
           end
 
           def inline_text_wrapper(format_type)
-            ->(model) { ToCoreModel.send(:transform_inline_text, model, format_type) }
+            ->(model) { ToCoreModel.transform_inline_text(model, format_type) }
           end
         end
       end

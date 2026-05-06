@@ -52,7 +52,7 @@ module Coradoc
             def gen_anchor
               return '' unless @model.anchor
 
-              anchor_str = if @model.anchor.respond_to?(:to_adoc)
+              anchor_str = if @model.anchor.is_a?(Coradoc::AsciiDoc::Model::Base)
                              @model.anchor.to_adoc
                            else
                              @model.anchor.to_s

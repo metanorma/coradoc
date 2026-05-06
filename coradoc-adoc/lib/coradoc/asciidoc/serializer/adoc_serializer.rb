@@ -28,14 +28,9 @@ module Coradoc
             when Coradoc::AsciiDoc::Model::Base
               serialize_model(model, options)
             when Lutaml::Model::Serializable
-              # Handle Lutaml::Model objects that have to_adoc method
-              if model.respond_to?(:to_adoc)
-                model.to_adoc
-              else
-                raise ArgumentError,
-                      "Cannot serialize #{model.class.name} to AsciiDoc. " \
-                      'Expected a model with #to_adoc or a registered serializer.'
-              end
+              raise ArgumentError,
+                    "Cannot serialize #{model.class.name} to AsciiDoc. " \
+                    'Expected a Coradoc::AsciiDoc::Model::Base with a registered serializer.'
             else
               raise ArgumentError,
                     "Unknown element type for AsciiDoc serialization: #{model.class}. " \
@@ -53,8 +48,8 @@ module Coradoc
               return serializer_class.new
             end
 
-            # Fallback: if model has to_adoc method, use it directly
-            return FallbackSerializer.new if model.respond_to?(:to_adoc)
+            # Fallback: use FallbackSerializer which raises a clear error
+            return FallbackSerializer.new
 
             raise ArgumentError, "No serializer registered for #{model.class.name} and model doesn't respond to to_adoc"
           end

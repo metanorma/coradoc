@@ -6,23 +6,12 @@ module Coradoc
   module AsciiDoc
     module Transform
       # Transforms AsciiDoc models to CoreModel equivalents
-      #
-      # This transformer converts the format-specific AsciiDoc model
-      # to the canonical CoreModel representation.
       class ToCoreModel
-        # Instance method that delegates to class method for convenience
         def transform(model)
           self.class.transform(model)
         end
 
         class << self
-          # Transform an AsciiDoc model to CoreModel
-          #
-          # Dispatches to the registered transformer for the model's class.
-          #
-          # @param model [Coradoc::AsciiDoc::Model::Base] AsciiDoc model to transform
-          # @return [Coradoc::CoreModel::Base] CoreModel equivalent
-          # @raise [TransformationError] if no transformer is registered for the model type
           def transform(model)
             return model.map { |item| transform(item) } if model.is_a?(Array)
             return model unless model.is_a?(Coradoc::AsciiDoc::Model::Base)
@@ -105,8 +94,6 @@ module Coradoc
             end
           end
 
-          private
-
           def transform_document(doc)
             title_text = extract_title_text(doc.header&.title)
             Coradoc::CoreModel::StructuralElement.new(
@@ -119,7 +106,6 @@ module Coradoc
 
           def transform_section(section)
             title_text = extract_title_text(section.title)
-            # Transform both contents and nested sections
             content_children = transform(section.contents || [])
             nested_sections = transform(section.sections || [])
 
@@ -133,7 +119,6 @@ module Coradoc
           end
 
           def transform_paragraph(para)
-            # Transform paragraph content, preserving inline elements
             children = transform_inline_content(para.content)
 
             Coradoc::CoreModel::Block.new(
@@ -144,39 +129,11 @@ module Coradoc
             )
           end
 
-          # Transform inline content, preserving inline element structure
-          # Returns an array of strings and CoreModel::InlineElement objects
-          def transform_inline_content(content)
-            return [] if content.nil?
-
-            case content
-            when Array
-              content.flat_map { |item| transform_inline_content(item) }
-            when Coradoc::AsciiDoc::Model::TextElement
-              transform_inline_content(content.content)
-            when Coradoc::AsciiDoc::Model::Term
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'term',
-                content: content.term.to_s
-              )]
-            when String
-              content.empty? ? [] : [content]
-            when Coradoc::AsciiDoc::Model::Base
-              [transform(content)]
-            else
-              text = extract_text_content(content)
-              text.empty? ? [] : [text]
-            end
-          end
-
           def transform_block(block, delimiter_type)
-            # Transform block content (lines) - they can contain nested elements
             content_lines = Array(block.lines).map do |line|
               case line
               when Coradoc::AsciiDoc::Model::Base
-                # Transform nested AsciiDoc model objects to CoreModel
                 transformed = transform(line)
-                # If it's a CoreModel type, extract text representation
                 if transformed.is_a?(Coradoc::CoreModel::Base)
                   extract_core_model_text(transformed)
                 else
@@ -187,7 +144,6 @@ module Coradoc
               end
             end.join("\n")
 
-            # Get language from block.lang or attributes
             language = block.lang || block.attributes&.[]('language') ||
                        block.attributes&.positional&.first
 
@@ -199,44 +155,6 @@ module Coradoc
               content: content_lines,
               language: language
             )
-          end
-
-          # Extract text representation from CoreModel objects
-          def extract_core_model_text(model)
-            case model
-            when Coradoc::CoreModel::ListBlock
-              model.items.map do |item|
-                item.is_a?(Coradoc::CoreModel::ListItem) ? "* #{item.flat_text}" : item.to_s
-              end.join("\n")
-            when Coradoc::CoreModel::AnnotationBlock
-              "#{model.annotation_type}: #{model.flat_text}"
-            when Coradoc::CoreModel::Block
-              model.flat_text
-            when Coradoc::CoreModel::Image
-              model.alt || ''
-            when Coradoc::CoreModel::InlineElement
-              model.content.to_s
-            else
-              ''
-            end
-          end
-
-          # Extract text from a Title object
-          def extract_title_text(title)
-            return nil if title.nil?
-            return title.to_s unless title.is_a?(Coradoc::AsciiDoc::Model::Title)
-
-            content = title.content
-            return '' if content.nil?
-
-            # Content can be a string or an array
-            if content.is_a?(String)
-              content
-            elsif content.is_a?(Array)
-              content.map { |c| extract_text_content(c) }.join
-            else
-              extract_text_content(content)
-            end
           end
 
           def transform_table(table)
@@ -251,11 +169,30 @@ module Coradoc
             )
           end
 
+          def transform_table_row(row)
+            cells = Array(row.columns).map do |cell|
+              transform_table_cell(cell)
+            end
+            Coradoc::CoreModel::TableRow.new(cells: cells)
+          end
+
+          def transform_table_cell(cell)
+            children = transform_inline_content(cell.content)
+
+            Coradoc::CoreModel::TableCell.new(
+              content: extract_text_content(cell.content),
+              alignment: cell.horizontal_alignment,
+              vertical_alignment: cell.vertical_alignment,
+              colspan: cell.colspan,
+              rowspan: cell.rowspan,
+              style: cell.style_name,
+              children: children
+            )
+          end
+
           def transform_list(list, marker_type)
             items = Array(list.items).map do |item|
-              # Handle both ListItem (content) and ListItemDefinition (contents, terms)
               if item.is_a?(Coradoc::AsciiDoc::Model::List::DefinitionItem)
-                # Definition list item
                 term_content = item.terms
                 def_content = item.contents
 
@@ -264,8 +201,7 @@ module Coradoc
                   definitions: [extract_text_content(def_content)]
                 )
               else
-                # Regular list item - preserve inline elements
-                content_val = item.respond_to?(:content) ? item.content : item.contents
+                content_val = item.content
                 children = transform_inline_content(content_val)
 
                 li = Coradoc::CoreModel::ListItem.new(
@@ -333,37 +269,6 @@ module Coradoc
             )
           end
 
-          def transform_image(image)
-            Coradoc::CoreModel::Image.new(
-              src: image.src,
-              alt: image.title&.to_s,
-              width: image.attributes&.[]('width'),
-              height: image.attributes&.[]('height')
-            )
-          end
-
-          def transform_table_row(row)
-            cells = Array(row.columns).map do |cell|
-              transform_table_cell(cell)
-            end
-            Coradoc::CoreModel::TableRow.new(cells: cells)
-          end
-
-          def transform_table_cell(cell)
-            # Transform cell content, preserving inline elements
-            children = transform_inline_content(cell.content)
-
-            Coradoc::CoreModel::TableCell.new(
-              content: extract_text_content(cell.content),
-              alignment: cell.horizontal_alignment,
-              vertical_alignment: cell.vertical_alignment,
-              colspan: cell.colspan,
-              rowspan: cell.rowspan,
-              style: cell.style_name,
-              children: children
-            )
-          end
-
           def transform_cross_reference(xref)
             Coradoc::CoreModel::InlineElement.new(
               format_type: 'xref',
@@ -380,6 +285,15 @@ module Coradoc
             )
           end
 
+          def transform_image(image)
+            Coradoc::CoreModel::Image.new(
+              src: image.src,
+              alt: image.title&.to_s,
+              width: image.attributes&.[]('width'),
+              height: image.attributes&.[]('height')
+            )
+          end
+
           def transform_bibliography(bib)
             entries = Array(bib.entries).map do |entry|
               transform_bibliography_entry(entry)
@@ -388,7 +302,7 @@ module Coradoc
             Coradoc::CoreModel::Bibliography.new(
               id: bib.id,
               title: bib.title.to_s,
-              level: bib.respond_to?(:level) ? bib.level : nil,
+              level: nil,
               entries: entries
             )
           end
@@ -401,6 +315,66 @@ module Coradoc
             )
           end
 
+          private
+
+          def transform_inline_content(content)
+            return [] if content.nil?
+
+            case content
+            when Array
+              content.flat_map { |item| transform_inline_content(item) }
+            when Coradoc::AsciiDoc::Model::TextElement
+              transform_inline_content(content.content)
+            when Coradoc::AsciiDoc::Model::Term
+              [Coradoc::CoreModel::InlineElement.new(
+                format_type: 'term',
+                content: content.term.to_s
+              )]
+            when String
+              content.empty? ? [] : [content]
+            when Coradoc::AsciiDoc::Model::Base
+              [transform(content)]
+            else
+              text = extract_text_content(content)
+              text.empty? ? [] : [text]
+            end
+          end
+
+          def extract_core_model_text(model)
+            case model
+            when Coradoc::CoreModel::ListBlock
+              model.items.map do |item|
+                item.is_a?(Coradoc::CoreModel::ListItem) ? "* #{item.flat_text}" : item.to_s
+              end.join("\n")
+            when Coradoc::CoreModel::AnnotationBlock
+              "#{model.annotation_type}: #{model.flat_text}"
+            when Coradoc::CoreModel::Block
+              model.flat_text
+            when Coradoc::CoreModel::Image
+              model.alt || ''
+            when Coradoc::CoreModel::InlineElement
+              model.content.to_s
+            else
+              ''
+            end
+          end
+
+          def extract_title_text(title)
+            return nil if title.nil?
+            return title.to_s unless title.is_a?(Coradoc::AsciiDoc::Model::Title)
+
+            content = title.content
+            return '' if content.nil?
+
+            if content.is_a?(String)
+              content
+            elsif content.is_a?(Array)
+              content.map { |c| extract_text_content(c) }.join
+            else
+              extract_text_content(content)
+            end
+          end
+
           def extract_text_content(content)
             case content
             when nil
@@ -408,7 +382,6 @@ module Coradoc
             when String
               content
             when Array
-              # Join text elements with spaces (paragraph normalization)
               result = []
               content.each_with_index do |item, idx|
                 text = extract_text_content(item)
@@ -441,7 +414,7 @@ module Coradoc
             when Coradoc::AsciiDoc::Model::Inline::Stem
               content.content.to_s
             when Coradoc::AsciiDoc::Model::Inline::Footnote
-              if content.respond_to?(:content) && content.content
+              if content.content
                 extract_text_content(content.content)
               else
                 ''
@@ -453,14 +426,14 @@ module Coradoc
             when Coradoc::CoreModel::Image
               content.alt || content.src || ''
             when Coradoc::AsciiDoc::Model::Base
-              if content.respond_to?(:content)
+              if content.content
                 extract_text_content(content.content)
               else
                 ''
               end
             else
-              if content.respond_to?(:to_str)
-                content.to_s
+              if content.is_a?(String)
+                content
               elsif content.class.name.start_with?('Parslet::')
                 content.to_s
               else

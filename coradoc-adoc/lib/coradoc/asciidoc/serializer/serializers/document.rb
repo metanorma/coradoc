@@ -25,23 +25,20 @@ module Coradoc
             parts << "\n" if @model.sections && !@model.sections.empty? && !@model.header
 
             # Only serialize header if it has a non-empty title
-            if @model.header.respond_to?(:title) && !@model.header.title.to_s.empty?
+            if @model.header&.title && !@model.header.title.to_s.empty?
               parts << serialize_child(@model.header,
                                        @context)
             end
 
             # Only serialize document_attributes if it has data
-            if @model.document_attributes.respond_to?(:data) &&
-               @model.document_attributes.data && !@model.document_attributes.data.empty?
-              parts << serialize_child(@model.document_attributes, @context)
-            end
+            parts << serialize_child(@model.document_attributes, @context) if @model.document_attributes&.data && !@model.document_attributes.data.empty?
 
             # Serialize sections with last_element tracking
             parts << serialize_sections_with_last_element if @model.sections && !@model.sections.empty?
             result = parts.join
 
             # Clean up leading newlines when we have header
-            if @model.header.respond_to?(:title) && !@model.header.title.to_s.empty?
+            if @model.header&.title && !@model.header.title.to_s.empty?
               result = result.sub(LEADING_NEWLINES_REGEX,
                                   '')
             end

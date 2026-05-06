@@ -12,15 +12,16 @@ module Coradoc
           def attribute_list(attrs)
             return '' if attrs.nil?
 
-            # Delegate to the attribute list's serialization
-            attrs.respond_to?(:to_s) ? attrs.to_s : ''
+            attrs.to_s
           end
 
           # Format block attributes (anchor, role, options, etc.)
           # @param attrs [Hash, Coradoc::AsciiDoc::Model::AttributeList] Block attributes
           # @return [String] Formatted block attributes
           def block_attributes(attrs)
-            return '' if attrs.nil? || (attrs.respond_to?(:empty?) && attrs.empty?)
+            return '' if attrs.nil?
+            return '' if attrs.is_a?(String) && attrs.empty?
+            return '' if attrs.is_a?(Hash) && attrs.empty?
 
             # If it's an AttributeList model, use its serialization
             return attribute_list(attrs) if attrs.is_a?(Coradoc::AsciiDoc::Model::AttributeList)

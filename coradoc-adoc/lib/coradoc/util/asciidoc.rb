@@ -16,11 +16,12 @@ module Coradoc
         return '' if model.nil?
         return model if model.is_a?(String)
 
-        if model.respond_to?(:to_adoc)
+        case model
+        when Coradoc::AsciiDoc::Model::Base
           model.to_adoc
-        elsif model.is_a?(Array)
+        when Array
           model.map { |item| serialize(item) }.join("\n")
-        elsif model.is_a?(Hash)
+        when Hash
           model.map { |k, v| "#{k}: #{serialize(v)}" }.join("\n")
         else
           model.to_s
