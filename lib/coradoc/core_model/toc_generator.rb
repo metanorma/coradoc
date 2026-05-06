@@ -71,7 +71,7 @@ module Coradoc
         # Find all sections in the document within level range
         def find_sections(element, min_level, max_level)
           sections = []
-          return sections unless element.respond_to?(:children)
+          return sections unless element.is_a?(CoreModel::StructuralElement)
 
           Array(element.children).each do |child|
             next unless child.is_a?(CoreModel::StructuralElement)

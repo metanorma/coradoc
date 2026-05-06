@@ -45,8 +45,11 @@ module Coradoc
       # @param options [Hash] Configuration options
       def initialize(options = {})
         @options = symbolize_keys(options)
-        after_initialize if respond_to?(:after_initialize)
+        after_initialize
       end
+
+      # Hook for subclass initialization
+      def after_initialize; end
 
       # Get a configuration value
       #
@@ -95,7 +98,8 @@ module Coradoc
       # Override in subclasses for custom handling
       def apply_options(options)
         options.each do |key, value|
-          instance_variable_set("@#{key}", value) if respond_to?("#{key}=")
+          setter = "#{key}="
+          instance_variable_set("@#{key}", value) if public_methods.include?(setter.to_sym)
         end
       end
     end

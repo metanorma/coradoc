@@ -177,22 +177,25 @@ module Coradoc
     class Rule
       attr_reader :name, :options
 
-      # Create a validation rule
-      #
-      # @param name [Symbol] Rule name
-      # @param options [Hash] Rule options
       def initialize(name, **options)
         @name = name
         @options = options
       end
 
-      # Validate an element
-      #
-      # @param element [Object] Element to validate
-      # @param context [Hash] Validation context
-      # @return [Array<String>] Error messages
       def validate(element, context = {})
         raise NotImplementedError, 'Subclasses must implement #validate'
+      end
+
+      private
+
+      def field_value(element, field)
+        if element.is_a?(CoreModel::Base)
+          element.public_send(field) if element.class.attributes.key?(field)
+        else
+          element.public_send(field)
+        end
+      rescue NoMethodError
+        nil
       end
     end
 
@@ -212,7 +215,13 @@ module Coradoc
         private
 
         def get_value(element, field)
-          element.send(field) if element.respond_to?(field)
+          if element.is_a?(CoreModel::Base)
+            element.public_send(field) if element.class.attributes.key?(field)
+          else
+            element.public_send(field)
+          end
+        rescue NoMethodError
+          nil
         end
       end
 
@@ -221,7 +230,7 @@ module Coradoc
         def validate(element, _context = {})
           field = options[:field]
           expected_type = options[:type]
-          value = element.send(field) if element.respond_to?(field)
+          value = field_value(element, field)
 
           return [] if value.nil? && !options[:required]
           return [] if value.nil?
@@ -236,12 +245,12 @@ module Coradoc
       class Length < Rule
         def validate(element, _context = {})
           field = options[:field]
-          value = element.send(field) if element.respond_to?(field)
+          value = field_value(element, field)
 
           return [] if value.nil?
 
           errors = []
-          length = value.respond_to?(:length) ? value.length : 0
+          length = value.is_a?(String) ? value.length : 0
 
           errors << "#{field} must have at least #{options[:min]} characters/items" if options[:min] && length < options[:min]
 
@@ -255,12 +264,12 @@ module Coradoc
       class Count < Rule
         def validate(element, _context = {})
           field = options[:field]
-          value = element.send(field) if element.respond_to?(field)
+          value = field_value(element, field)
 
           return [] if value.nil?
 
           errors = []
-          count = value.respond_to?(:count) ? value.count : 0
+          count = value.is_a?(Enumerable) ? value.count : 0
 
           errors << "#{field} must have at least #{options[:min]} items" if options[:min] && count < options[:min]
 
@@ -275,7 +284,7 @@ module Coradoc
         def validate(element, _context = {})
           field = options[:field]
           pattern = options[:pattern]
-          value = element.send(field) if element.respond_to?(field)
+          value = field_value(element, field)
 
           return [] if value.nil?
 
@@ -377,7 +386,7 @@ module Coradoc
       private
 
       def validate_field(document, name, config, result)
-        value = document.respond_to?(name) ? document.send(name) : nil
+        value = field_value(document, name)
         path = name.to_s
 
         # Check required
@@ -398,7 +407,7 @@ module Coradoc
         end
 
         # Check min_length
-        if config[:min_length] && value.respond_to?(:length) && (value.length < config[:min_length])
+        if config[:min_length] && value.is_a?(String) && (value.length < config[:min_length])
           result.add_error(
             "#{name} must have at least #{config[:min_length]} characters",
             path: path,
@@ -407,7 +416,7 @@ module Coradoc
         end
 
         # Check max_length
-        if config[:max_length] && value.respond_to?(:length) && (value.length > config[:max_length])
+        if config[:max_length] && value.is_a?(String) && (value.length > config[:max_length])
           result.add_error(
             "#{name} must have at most #{config[:max_length]} characters",
             path: path,
@@ -416,7 +425,7 @@ module Coradoc
         end
 
         # Check min_count
-        if config[:min_count] && value.respond_to?(:count) && (value.count < config[:min_count])
+        if config[:min_count] && value.is_a?(Enumerable) && (value.count < config[:min_count])
           result.add_error(
             "#{name} must have at least #{config[:min_count]} items",
             path: path,
@@ -432,6 +441,16 @@ module Coradoc
           path: path,
           code: :format
         )
+      end
+
+      def field_value(document, field)
+        if document.is_a?(CoreModel::Base)
+          document.public_send(field) if document.class.attributes.key?(field)
+        else
+          document.public_send(field)
+        end
+      rescue NoMethodError
+        nil
       end
     end
 
@@ -479,7 +498,7 @@ module Coradoc
         #   )
         #
         def generate(model_class, required: [], ignored: [], custom_rules: {})
-          return nil unless model_class.respond_to?(:attributes)
+          return nil unless model_class.is_a?(Class) && model_class < CoreModel::Base
 
           # Pre-compute attribute definitions before the schema block
           attribute_defs = compute_attribute_definitions(

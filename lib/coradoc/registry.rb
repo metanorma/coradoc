@@ -46,8 +46,6 @@ module Coradoc
     # @param options [Hash] optional per-item configuration
     # @return [void]
     def define(item, **opts)
-      return unless item.respond_to?(:processor_id)
-
       register(item.processor_id, item, opts)
     end
 
@@ -85,9 +83,7 @@ module Coradoc
 
     # Direct access to the items hash (for backward compatibility)
     # @return [Hash<Symbol, Object>]
-    def items
-      @items
-    end
+    attr_reader :items
 
     # Number of registered items
     #
@@ -132,7 +128,9 @@ module Coradoc
     # @return [Object, nil]
     def for_file(filename)
       @items.values.find do |item|
-        item.respond_to?(:processor_match?) && item.processor_match?(filename)
+        item.processor_match?(filename)
+      rescue NoMethodError
+        false
       end
     end
 
@@ -149,7 +147,7 @@ module Coradoc
                for_file(options[:filename])
              end
 
-      label = @error_label || "processor"
+      label = @error_label || 'processor'
       raise ArgumentError, "No #{label} found for: #{options}" unless item
 
       item.processor_execute(content, options)
