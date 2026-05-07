@@ -128,13 +128,12 @@ module Coradoc
       # Extract headings from document blocks
       def extract_headings(document)
         headings = []
-        return headings unless document.respond_to?(:blocks)
+        return headings unless document.is_a?(Coradoc::Markdown::Document)
 
         Array(document.blocks).each do |block|
           if block.is_a?(Coradoc::Markdown::Heading)
             headings << block if within_level_range?(block.level)
-          elsif block.respond_to?(:blocks)
-            # Recursively search nested blocks
+          elsif block.is_a?(Coradoc::Markdown::Base) && block.class.attributes.key?(:blocks)
             headings.concat(extract_headings_from_nested(block))
           end
         end
@@ -144,12 +143,12 @@ module Coradoc
 
       def extract_headings_from_nested(block)
         headings = []
-        return headings unless block.respond_to?(:blocks)
+        return headings unless block.is_a?(Coradoc::Markdown::Base) && block.class.attributes.key?(:blocks)
 
         Array(block.blocks).each do |nested|
           if nested.is_a?(Coradoc::Markdown::Heading)
             headings << nested if within_level_range?(nested.level)
-          elsif nested.respond_to?(:blocks)
+          elsif nested.is_a?(Coradoc::Markdown::Base) && nested.class.attributes.key?(:blocks)
             headings.concat(extract_headings_from_nested(nested))
           end
         end

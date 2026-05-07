@@ -41,7 +41,7 @@ module Coradoc
       rule(block_quote: subtree(:content)) do
         # Recursively transform block quote content
         transformed = content.is_a?(Array) ? content.map { |c| transform_element(c) } : [transform_element(content)]
-        text = transformed.map { |c| c.respond_to?(:text) ? c.text : c.to_s }.join("\n")
+        text = transformed.map { |c| c.is_a?(Base) && c.class.attributes.key?(:text) ? c.text : c.to_s }.join("\n")
         Blockquote.new(content: text)
       end
 
@@ -134,7 +134,7 @@ module Coradoc
 
       # Fallback for unmatched elements
       rule(simple(:value)) do
-        Text.new(content: value.to_s) if value.respond_to?(:to_s)
+        Text.new(content: value.to_s)
       end
 
       class << self
@@ -268,7 +268,9 @@ module Coradoc
           if element.key?(:block_quote)
             content = element[:block_quote]
             transformed = content.is_a?(Array) ? content.map { |c| transform_element(c) } : [transform_element(content)]
-            text = transformed.compact.map { |c| c.respond_to?(:text) ? c.text : c.to_s }.join("\n")
+            text = transformed.compact.map do |c|
+              c.is_a?(Base) && c.class.attributes.key?(:text) ? c.text : c.to_s
+            end.join("\n")
             blockquote = Blockquote.new(content: text)
             apply_ial_to_element(blockquote, element[:ial]) if element.key?(:ial)
             return blockquote

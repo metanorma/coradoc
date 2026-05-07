@@ -26,11 +26,12 @@ module Coradoc
         return element if element.nil?
 
         element = yield element, :pre
-        element = if element.respond_to?(:visit)
+        element = case element
+                  when self
                     element.visit(&block)
-                  elsif element.is_a?(Array)
+                  when Array
                     element.map { |child| visit(child, &block) }.flatten.compact
-                  elsif element.is_a?(Hash)
+                  when Hash
                     result = {}
                     element.each { |k, v| result[k] = visit(v, &block) }
                     result
@@ -59,12 +60,12 @@ module Coradoc
         when nil
           ''
         else
-          if content.respond_to?(:to_md)
+          if content.is_a?(Base)
             content.to_md
           else
             raise ArgumentError,
                   "Cannot serialize #{content.class.name} to Markdown. " \
-                  'Expected String or object responding to #to_md.'
+                  'Expected String or Base subclass.'
           end
         end
       end

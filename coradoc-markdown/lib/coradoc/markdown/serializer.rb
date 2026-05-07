@@ -102,12 +102,12 @@ module Coradoc
         when Emphasis, Strong, Code, Link, Image, FootnoteReference, Math, Extension, Strikethrough, Highlight
           serialize(element)
         else
-          if element.respond_to?(:to_md)
+          if element.is_a?(Base)
             element.to_md
           else
             raise ArgumentError,
                   "Cannot serialize inline content of type #{element.class}. " \
-                  'Expected String, known inline model, or object responding to #to_md.'
+                  'Expected String, known inline model, or Base subclass.'
           end
         end
       end
