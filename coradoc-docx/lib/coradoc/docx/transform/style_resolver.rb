@@ -51,18 +51,16 @@ module Coradoc
           style_name = resolve_style_name(paragraph)
           return true if style_name && HEADING_PATTERN.match?(style_name)
 
-          # Check outline_level on paragraph properties
           ol = paragraph.properties.outline_level
           if ol
-            ol_level = ol.respond_to?(:value) ? ol.value.to_i : ol.to_i
+            ol_level = ol.is_a?(Uniword::Wordprocessingml::OutlineLevel) ? ol.value.to_i : ol.to_i
             return true if ol_level.positive?
           end
 
-          # Check outline_level from style definition
           style = find_style_for_paragraph(paragraph)
-          if style.respond_to?(:outline_level) && style.outline_level
+          if style&.outline_level
             ol_val = style.outline_level
-            ol_val = ol_val.respond_to?(:value) ? ol_val.value.to_i : ol_val.to_i
+            ol_val = ol_val.is_a?(Uniword::Wordprocessingml::OutlineLevel) ? ol_val.value.to_i : ol_val.to_i
             return true if ol_val.positive?
           end
 
@@ -82,7 +80,7 @@ module Coradoc
           # Check outline_level on paragraph properties
           ol = paragraph.properties&.outline_level
           if ol
-            level = ol.respond_to?(:value) ? ol.value.to_i : ol.to_i
+            level = ol.is_a?(Uniword::Wordprocessingml::OutlineLevel) ? ol.value.to_i : ol.to_i
             return level if level.positive?
           end
 
@@ -138,10 +136,9 @@ module Coradoc
           style_ref = paragraph.properties&.style
           return nil unless style_ref
 
-          value = style_ref.respond_to?(:value) ? style_ref.value : style_ref.to_s
+          value = style_ref.is_a?(Uniword::Wordprocessingml::PStyle) ? style_ref.val : style_ref.to_s
           return nil unless value
 
-          # Check local style map first (for custom style aliases)
           mapped = @style_map[value]
           return mapped if mapped
 
@@ -152,7 +149,7 @@ module Coradoc
           style_ref = run.properties.style
           return nil unless style_ref
 
-          value = style_ref.respond_to?(:value) ? style_ref.value : style_ref.to_s
+          value = style_ref.is_a?(Uniword::Wordprocessingml::PStyle) ? style_ref.val : style_ref.to_s
           return nil unless value
 
           mapped = @style_map[value]
@@ -165,23 +162,21 @@ module Coradoc
           style_id = style_id_from_paragraph(paragraph)
           return nil unless style_id
 
-          if @config.respond_to?(:style_by_id)
-            @config.style_by_id(style_id)
-          elsif @config.respond_to?(:styles)
-            @config.styles.find { |s| s.styleId == style_id }
-          end
+          return unless @config.is_a?(Uniword::Wordprocessingml::StylesConfiguration)
+
+          @config.style_by_id(style_id)
         end
 
         def style_id_from_paragraph(paragraph)
           style_ref = paragraph.properties&.style
           return nil unless style_ref
 
-          style_ref.respond_to?(:value) ? style_ref.value : style_ref.to_s
+          style_ref.is_a?(Uniword::Wordprocessingml::PStyle) ? style_ref.val : style_ref.to_s
         end
 
         def build_style_map(config)
           return {} unless config
-          return {} unless config.respond_to?(:styles)
+          return {} unless config.is_a?(Uniword::Wordprocessingml::StylesConfiguration)
 
           map = {}
           config.styles.each do |style|
@@ -191,7 +186,6 @@ module Coradoc
 
             map[id] = name
 
-            # Detect custom heading styles by basedOn chain
             if heading_by_based_on?(config, style)
               level = heading_level_from_chain(config, style)
               map[id] = "Heading#{level}"
@@ -202,26 +196,27 @@ module Coradoc
         end
 
         def extract_style_name(style)
-          return style.style_name if style.respond_to?(:style_name)
+          sn = style.style_name
+          return sn if sn
 
           name = style.name
           return nil unless name
 
-          name.respond_to?(:val) ? name.val.to_s : name.to_s
+          name.is_a?(Uniword::Wordprocessingml::StyleName) ? name.val.to_s : name.to_s
         end
 
         def heading_by_based_on?(config, style)
-          based_on = style.respond_to?(:based_on) ? style.based_on : nil
+          based_on = style.based_on
           return false unless based_on
 
           visited = Set.new
           current = style
           while current && !visited.include?(current.styleId)
             visited << current.styleId
-            parent_id = current.respond_to?(:based_on) ? current.based_on : nil
+            parent_id = current.based_on
             return true if parent_id && HEADING_PATTERN.match?(parent_id)
 
-            break unless parent_id && config.respond_to?(:styles)
+            break unless parent_id
 
             current = config.styles.find { |s| s.styleId == parent_id }
           end
@@ -240,8 +235,8 @@ module Coradoc
               return match[2].to_i if match
             end
 
-            parent_id = current.respond_to?(:based_on) ? current.based_on : nil
-            break unless parent_id && config.respond_to?(:styles)
+            parent_id = current.based_on
+            break unless parent_id
 
             current = config.styles.find { |s| s.styleId == parent_id }
           end

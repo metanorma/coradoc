@@ -9,7 +9,7 @@ module Coradoc
           return '' unless row
 
           # CoreModel::TableRow uses cells
-          cells = row.respond_to?(:cells) ? row.cells : []
+          cells = row.cells || []
           columns_html = cells.map do |cell|
             TableCell.to_html(cell)
           end.join("\n")
@@ -35,7 +35,7 @@ module Coradoc
           attrs = []
 
           # Add ID if present
-          attrs << %( id="#{escape_attribute(row.id)}") if row.respond_to?(:id) && row.id
+          attrs << %( id="#{escape_attribute(row.id)}") if row.id
 
           attrs.join
         end

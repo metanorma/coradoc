@@ -129,14 +129,13 @@ module Coradoc
         end
 
         def section_break?(paragraph)
-          return false unless paragraph.respond_to?(:properties)
+          return false unless paragraph.is_a?(Uniword::Wordprocessingml::Paragraph)
           return false unless paragraph.properties
 
           sect_pr = paragraph.properties.section_properties
           return false unless sect_pr
 
-          # A section break exists if sectPr has a type (nextPage, continuous, etc.)
-          sect_pr.respond_to?(:type) && sect_pr.type
+          sect_pr.type ? true : false
         end
 
         def section_break_element(paragraph, context)
@@ -182,12 +181,12 @@ module Coradoc
         end
 
         def body_ordered_elements(body)
-          order = body.respond_to?(:element_order) ? body.element_order : nil
+          order = body.is_a?(Uniword::Wordprocessingml::Body) ? body.element_order : nil
           return body.elements if order.nil? || order.empty?
 
           p_idx = tbl_idx = sdt_idx = 0
           order.filter_map do |entry|
-            name = entry.respond_to?(:name) ? entry.name : entry.to_s
+            name = entry.is_a?(String) ? entry : entry.name
             case name
             when 'p'
               para = body.paragraphs[p_idx]
@@ -216,7 +215,7 @@ module Coradoc
           doc_footnotes = document.footnotes
           if doc_footnotes.is_a?(Hash)
             doc_footnotes.each do |id, fn|
-              paragraphs = fn.respond_to?(:content) ? fn.content : []
+              paragraphs = fn.is_a?(Uniword::Wordprocessingml::Footnote) ? fn.paragraphs : fn[:content]
               footnotes[id.to_s] = Array(paragraphs)
             end
           end
@@ -280,7 +279,10 @@ module Coradoc
         end
 
         def extract_from_parts(document, method, prefix, core_doc)
-          parts = document.respond_to?(method) ? document.send(method) : nil
+          parts = case method
+                  when :headers then document.headers
+                  when :footers then document.footers
+                  end
           return unless parts
 
           Array(parts).each_with_index do |part, idx|
@@ -288,13 +290,18 @@ module Coradoc
             next if text.nil? || text.strip.empty?
             next if layout_only_text?(text)
 
-            core_doc.set_metadata("docx.#{prefix}.#{part.respond_to?(:type) ? part.type : idx}",
-                                  text.strip)
+            part_type = if part.is_a?(Uniword::Wordprocessingml::Header) ||
+                           part.is_a?(Uniword::Wordprocessingml::Footer)
+                          part.type
+                        else
+                          idx
+                        end
+            core_doc.set_metadata("docx.#{prefix}.#{part_type}", text.strip)
           end
         end
 
         def extract_part_text(part)
-          paragraphs = part.respond_to?(:paragraphs) ? part.paragraphs : []
+          paragraphs = part.paragraphs || []
           return nil unless paragraphs
 
           paragraphs.map do |para|
@@ -303,7 +310,7 @@ module Coradoc
         end
 
         def extract_paragraph_text_content(para)
-          runs = para.respond_to?(:runs) ? para.runs : []
+          runs = para.runs || []
           return nil unless runs
 
           runs.map { |r| r.text&.content.to_s }.join

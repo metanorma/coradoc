@@ -32,7 +32,7 @@ module Coradoc
           def transform_row(row, context)
             CoreModel::TableRow.new(
               cells: row.cells.map { |c| transform_cell(c, context) },
-              header: row.respond_to?(:header?) ? row.header? : false
+              header: row.header?
             )
           end
 
@@ -69,15 +69,14 @@ module Coradoc
           end
 
           def cell_paragraphs(cell)
-            cell.respond_to?(:paragraphs) ? (cell.paragraphs || []) : []
+            cell.paragraphs || []
           end
 
           def header_cell?(cell)
             return false unless cell.properties
-            return false unless cell.properties.respond_to?(:v_merge)
 
             vm = cell.properties.v_merge
-            vm.respond_to?(:value) ? vm.value.to_s == 'restart' : false
+            vm&.value.to_s == 'restart'
           end
         end
       end

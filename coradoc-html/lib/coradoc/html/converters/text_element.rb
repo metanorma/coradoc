@@ -23,11 +23,7 @@ module Coradoc
           # @return [String] Plain text (escaped)
           def to_html(model, state = {})
             # Handle both string and model with content attribute
-            content = if model.respond_to?(:content)
-                        model.content
-                      else
-                        model
-                      end
+            content = model.content || model
 
             return '' if content.nil?
 

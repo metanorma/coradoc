@@ -150,7 +150,7 @@ module Coradoc
         # @deprecated Use postprocess_coremodel_tree instead. Will be removed in v2.0.
         def postprocess_coradoc_tree
           warn '[DEPRECATION] `postprocess_coradoc_tree` is deprecated. Use `postprocess_coremodel_tree` instead.'
-          postprocess_coremodel_tree if respond_to?(:postprocess_coremodel_tree)
+          postprocess_coremodel_tree if public_methods.include?(:postprocess_coremodel_tree)
         end
 
         #### Output string functionalities
@@ -161,7 +161,7 @@ module Coradoc
         # @deprecated Use postprocess_output_string instead. Will be removed in v2.0.
         def postprocess_asciidoc_string
           warn '[DEPRECATION] `postprocess_asciidoc_string` is deprecated. Use `postprocess_output_string` instead.'
-          postprocess_output_string if respond_to?(:postprocess_output_string)
+          postprocess_output_string if public_methods.include?(:postprocess_output_string)
         end
       end
     end

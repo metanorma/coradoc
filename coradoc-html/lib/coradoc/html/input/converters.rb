@@ -74,8 +74,7 @@ module Coradoc
         def self.lookup(tag_name)
           ensure_converters_loaded
           converter = @@converters[tag_name.to_sym] || default_converter(tag_name)
-          converter = converter.new if converter.respond_to? :new
-          converter
+          converter.is_a?(Class) ? converter.new : converter
         end
 
         # NOTE: process won't run plugin hooks

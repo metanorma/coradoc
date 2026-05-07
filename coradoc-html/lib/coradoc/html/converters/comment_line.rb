@@ -12,9 +12,9 @@ module Coradoc
           return '' unless options[:preserve_comments]
 
           # Get comment text - check for content or text attribute
-          text = if comment.respond_to?(:content) && comment.content
+          text = if comment.content
                    comment.content
-                 elsif comment.respond_to?(:text) && comment.text
+                 elsif comment.text
                    comment.text
                  else
                    ''

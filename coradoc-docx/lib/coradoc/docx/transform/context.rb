@@ -62,7 +62,7 @@ module Coradoc
         private
 
         def extract_paragraph_text(paragraph)
-          return '' unless paragraph.respond_to?(:text)
+          return '' unless paragraph.is_a?(Uniword::Wordprocessingml::Paragraph) || paragraph.is_a?(Uniword::Wordprocessingml::Run)
 
           paragraph.text.to_s
         end

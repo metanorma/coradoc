@@ -242,11 +242,19 @@ module Coradoc
         end
 
         def add_list_to_builder(list_block, builder)
-          method = list_block.marker_type == 'numbered' ? :numbered_list : :bullet_list
+          list_method = list_block.marker_type == 'numbered' ? :numbered_list : :bullet_list
 
-          builder.send(method) do |list|
-            list_block.items.each do |item|
-              list.item(item.flat_text)
+          if list_method == :numbered_list
+            builder.numbered_list do |list|
+              list_block.items.each do |item|
+                list.item(item.flat_text)
+              end
+            end
+          else
+            builder.bullet_list do |list|
+              list_block.items.each do |item|
+                list.item(item.flat_text)
+              end
             end
           end
         end
@@ -334,8 +342,7 @@ module Coradoc
             va.value = 'superscript'
             props.vertical_align = va
           when 'monospace'
-            # Monospace via font
-            props.font = 'Courier New' if props.respond_to?(:font=)
+            props.fonts = Uniword::Wordprocessingml::RFonts.new(ascii: 'Courier New')
           when 'link'
             # Links need to be at the paragraph level (w:hyperlink)
             # Return the run; caller should wrap in Hyperlink

@@ -85,11 +85,11 @@ module Coradoc
           def extract_text_from_model(model)
             return '' if model.nil?
 
-            if model.respond_to?(:content) && model.content.is_a?(String)
+            if model.is_a?(Coradoc::CoreModel::Base) && model.content.is_a?(String)
               model.content
-            elsif model.respond_to?(:children) && model.children.is_a?(Array)
+            elsif model.is_a?(Coradoc::CoreModel::StructuralElement) && model.children.is_a?(Array)
               model.children.map { |c| extract_text_from_model(c) }.join
-            elsif model.respond_to?(:title) && model.title.is_a?(String)
+            elsif model.is_a?(Coradoc::CoreModel::Base) && model.title.is_a?(String)
               model.title
             else
               model.to_s

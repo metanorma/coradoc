@@ -11,7 +11,7 @@ module Coradoc
           attrs[:id] = model.id if model.id
 
           # Get title from metadata
-          if model.respond_to?(:metadata) && model.metadata && model.metadata[:title]
+          if model.metadata && model.metadata[:title]
             attrs[:title] =
               model.metadata[:title]
           end

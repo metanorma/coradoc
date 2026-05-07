@@ -125,14 +125,10 @@ module Coradoc
         def extract_attributes(model)
           attrs = {}
 
-          # Extract ID if available
-          attrs[:id] = model.id if model.respond_to?(:id) && model.id
+          attrs[:id] = model.id if model.id
+          attrs[:title] = model.title if model.title
 
-          # Extract title if available
-          attrs[:title] = model.title if model.respond_to?(:title) && model.title
-
-          # Extract class/role if available
-          if model.respond_to?(:metadata) && model.metadata
+          if model.is_a?(Coradoc::CoreModel::StructuralElement) && model.metadata
             attrs[:class] = model.metadata[:class] || model.metadata[:role]
             attrs.merge!(model.metadata.except(:class, :role))
           end

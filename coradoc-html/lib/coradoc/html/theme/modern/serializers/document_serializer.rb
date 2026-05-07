@@ -235,7 +235,7 @@ module Coradoc
               def serialize_table_row(row)
                 {
                   type: 'table_row',
-                  header: row.respond_to?(:header) && row.header,
+                  header: row.is_a?(Coradoc::CoreModel::TableRow) && row.header,
                   cells: (row.cells || []).map do |cell|
                     serialize_table_cell(cell)
                   end
@@ -318,10 +318,10 @@ module Coradoc
                 }
 
                 # Add link-specific attributes
-                result[:href] = element.target if element.inline_type == 'link' && element.respond_to?(:target)
+                result[:href] = element.target if element.inline_type == 'link' && element.target
 
                 # Add cross-ref specific attributes
-                result[:target] = element.target if element.inline_type == 'xref' && element.respond_to?(:target)
+                result[:target] = element.target if element.inline_type == 'xref' && element.target
 
                 result
               end

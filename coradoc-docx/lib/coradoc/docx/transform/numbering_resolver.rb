@@ -61,8 +61,8 @@ module Coradoc
         def build_num_map(config)
           return {} unless config
 
-          instances = config.respond_to?(:instances) ? config.instances : []
-          return {} if instances.empty?
+          instances = config.instances
+          return {} if instances.nil? || instances.empty?
 
           map = {}
           instances.each do |inst|
@@ -73,8 +73,8 @@ module Coradoc
             definition = find_definition(config, abstract_num_id)
             next unless definition
 
-            levels = definition.respond_to?(:levels) ? definition.levels : []
-            level = levels.first
+            levels = definition.levels
+            level = levels&.first
             next unless level
 
             fmt = extract_num_fmt(level)
@@ -93,11 +93,13 @@ module Coradoc
           aid = instance.abstract_num_id
           return nil unless aid
 
-          aid.respond_to?(:value) ? aid.value : aid
+          aid.is_a?(Uniword::Wordprocessingml::AbstractNumId) ? aid.val : aid
         end
 
         def find_definition(config, abstract_num_id)
-          defs = config.respond_to?(:definitions) ? config.definitions : []
+          defs = config.definitions
+          return [] unless defs
+
           defs.find { |d| d.abstract_num_id == abstract_num_id }
         end
 
@@ -105,7 +107,7 @@ module Coradoc
           nf = level.numFmt
           return 'bullet' unless nf
 
-          nf.respond_to?(:val) ? nf.val.to_s : nf.to_s
+          nf.is_a?(Uniword::Wordprocessingml::NumFmt) ? nf.val.to_s : nf.to_s
         end
 
         def marker_type_for(fmt)

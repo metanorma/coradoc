@@ -18,7 +18,7 @@ module Coradoc
         # @param context [Context] transform context with registry
         # @return [Array] transformed content (Strings, InlineElements, etc.)
         def transform_paragraph_content(paragraph, context)
-          order = paragraph.respond_to?(:element_order) ? paragraph.element_order : nil
+          order = paragraph.is_a?(Uniword::Wordprocessingml::Paragraph) ? paragraph.element_order : nil
 
           if order && !order.empty?
             transform_ordered(paragraph, order, context)
@@ -49,7 +49,7 @@ module Coradoc
 
           result = []
           order.each do |entry|
-            name = entry.respond_to?(:name) ? entry.name : entry.to_s
+            name = entry.is_a?(String) ? entry : entry.name
             idx = counters[name]
             counters[name] = idx + 1
 
