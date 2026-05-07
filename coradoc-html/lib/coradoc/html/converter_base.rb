@@ -118,25 +118,19 @@ module Coradoc
       # @param config [Hash, Object] Configuration options or object
       # @return [Object] Built configuration object
       def build_config(config)
-        # If config is already a Configuration object, validate and return it
-        if config.respond_to?(:validate!)
-          config.validate! if config.respond_to?(:validate!)
+        if config.public_methods.include?(:validate!)
+          config.validate!
           return config
         end
 
-        # Otherwise, build from hash (subclasses should override this)
         config
       end
 
-      # Extract document title
-      #
-      # @return [String] Document title
       def extract_document_title
-        # Handle CoreModel::StructuralElement (has title directly)
-        if @document.respond_to?(:title) && @document.title
+        if @document.is_a?(Coradoc::CoreModel::StructuralElement) && @document.title
           title = @document.title
           return title if title.is_a?(String)
-          return title.text if title.respond_to?(:text)
+          return title.text if title.is_a?(Coradoc::CoreModel::Base) && title.text
 
           return title.to_s
         end
@@ -144,10 +138,6 @@ module Coradoc
         'Untitled Document'
       end
 
-      # Extract text from content (array of inline elements)
-      #
-      # @param content [Array] Content elements
-      # @return [String] Extracted text
       def extract_text_from_content(content)
         case content
         when Array
@@ -157,7 +147,7 @@ module Coradoc
         when Coradoc::CoreModel::InlineElement
           content.content.to_s
         when Coradoc::CoreModel::Base
-          if content.respond_to?(:content)
+          if content.content
             extract_text_from_content(content.content)
           else
             content.to_s

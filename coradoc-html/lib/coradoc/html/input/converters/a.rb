@@ -33,7 +33,7 @@ module Coradoc
               ref_id = href.sub(/^#/, '').gsub(/\s/, '').gsub(/__+/, '_')
               # Convert content to string
               content_str = if content.is_a?(Array)
-                              content.map { |c| c.respond_to?(:content) ? c.content : c.to_s }.join
+                              content.map { |c| c.is_a?(Coradoc::CoreModel::Base) ? c.content : c.to_s }.join
                             else
                               content.to_s
                             end
@@ -52,7 +52,7 @@ module Coradoc
 
             # Convert content to string for the link
             content_str = if content.is_a?(Array)
-                            content.map { |c| c.respond_to?(:content) ? c.content : c.to_s }.join
+                            content.map { |c| c.is_a?(Coradoc::CoreModel::Base) && c.content ? c.content : c.to_s }.join
                           else
                             content.to_s
                           end

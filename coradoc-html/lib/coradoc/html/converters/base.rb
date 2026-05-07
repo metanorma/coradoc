@@ -434,37 +434,28 @@ module Coradoc
 
           # Extract text from unknown model types as a fallback
           def extract_text_fallback(content)
-            # Try text attribute first
-            if content.respond_to?(:text) && content.text
-              text_val = content.text
-              return text_val if text_val.is_a?(String)
-              return text_val.to_s if text_val.respond_to?(:to_s)
-            end
+            if content.is_a?(Coradoc::CoreModel::Base)
+              if content.class.attributes.key?(:text) && content.text
+                text_val = content.text
+                return text_val if text_val.is_a?(String)
 
-            # Try content attribute
-            if content.respond_to?(:content) && content.content
-              content_val = content.content
-              if content_val.is_a?(String)
-                return content_val
-              elsif content_val.is_a?(Array)
-                return content_val.map { |item| convert_content_to_html(item, {}) }.join
+                return text_val.to_s
               end
+
+              if content.class.attributes.key?(:content) && content.content
+                content_val = content.content
+                if content_val.is_a?(String)
+                  return content_val
+                elsif content_val.is_a?(Array)
+                  return content_val.map { |item| convert_content_to_html(item, {}) }.join
+                end
+              end
+
+              return content.href.to_s if content.class.attributes.key?(:href) && content.href
+              return content.term.to_s if content.class.attributes.key?(:term) && content.term
+              return content.id.to_s if content.class.attributes.key?(:id) && content.id
+              return content.name.to_s if content.class.attributes.key?(:name) && content.name
             end
-
-            # Try href attribute (for cross-references)
-            return content.href.to_s if content.respond_to?(:href) && content.href
-
-            # Try term attribute (for term references)
-            return content.term.to_s if content.respond_to?(:term) && content.term
-
-            # Try id attribute (for references with IDs)
-            return content.id.to_s if content.respond_to?(:id) && content.id
-
-            # Try name attribute
-            return content.name.to_s if content.respond_to?(:name) && content.name
-
-            # Try to_adoc if available (for AsciiDoc models)
-            return content.to_adoc.to_s if content.respond_to?(:to_adoc)
 
             ''
           end

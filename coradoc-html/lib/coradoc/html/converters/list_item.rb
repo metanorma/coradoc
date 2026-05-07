@@ -50,18 +50,18 @@ module Coradoc
             parts = []
 
             # Convert main content - check children first (mixed content), then content
-            content_to_render = model.respond_to?(:children) && model.children&.any? ? model.children : model.content
+            content_to_render = model.children&.any? ? model.children : model.content
             parts << convert_content_to_html(content_to_render, state) if content_to_render
 
             # Convert attached content
-            if model.respond_to?(:attached) && model.attached && !model.attached.empty?
+            if model.attached && !model.attached.empty?
               model.attached.each do |attached_item|
                 parts << convert_content_to_html(attached_item, state)
               end
             end
 
             # Convert nested list
-            parts << convert_content_to_html(model.nested, state) if model.respond_to?(:nested) && model.nested
+            parts << convert_content_to_html(model.nested, state) if model.nested
 
             attrs = {}
             attrs[:id] = model.id if model.id

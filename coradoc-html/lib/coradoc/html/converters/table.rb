@@ -48,16 +48,16 @@ module Coradoc
           attrs = []
 
           # Add ID if present
-          attrs << %( id="#{escape_attribute(table.id)}") if table.respond_to?(:id) && table.id
+          attrs << %( id="#{escape_attribute(table.id)}") if table.id
 
           # CoreModel::Table with frame attribute
-          attrs << %( class="frame-#{escape_attribute(table.frame)}") if table.respond_to?(:frame) && table.frame
+          attrs << %( class="frame-#{escape_attribute(table.frame)}") if table.frame
 
           attrs.join
         end
 
         def self.build_caption(table)
-          return nil unless table.respond_to?(:title) && table.title
+          return nil unless table.title
 
           caption_text = table.title.to_s
           return nil if caption_text.empty?

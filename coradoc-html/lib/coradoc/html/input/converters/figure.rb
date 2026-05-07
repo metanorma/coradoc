@@ -38,9 +38,9 @@ module Coradoc
               when Coradoc::CoreModel::InlineElement
                 item.content.to_s
               when Coradoc::CoreModel::Base
-                if item.respond_to?(:content)
+                if item.content
                   item.content.to_s
-                elsif item.respond_to?(:title)
+                elsif item.title
                   item.title.to_s
                 else
                   ''

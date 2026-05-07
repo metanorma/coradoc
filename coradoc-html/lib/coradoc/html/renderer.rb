@@ -179,22 +179,20 @@ module Coradoc
       # (lutaml-model may not create drops if Liquid was loaded after the model class)
       def ensure_drop_class(element)
         klass = element.class
-        if klass.respond_to?(:register_class_if_liquid_defined) &&
-           klass.respond_to?(:base_drop_class) && !klass.base_drop_class
+        if klass.public_methods.include?(:register_class_if_liquid_defined) &&
+           klass.public_methods.include?(:base_drop_class) && !klass.base_drop_class
           klass.register_class_if_liquid_defined
         end
       end
 
-      # Ensure all CoreModel drop classes are registered
-      # (lutaml-model only creates drops when Liquid is already loaded at class definition time)
       def ensure_core_model_drops
         return unless defined?(Coradoc::CoreModel)
 
         CoreModel.constants(false).each do |const_name|
           klass = CoreModel.const_get(const_name)
           next unless klass.is_a?(Class)
-          next unless klass.respond_to?(:register_class_if_liquid_defined)
-          next if klass.respond_to?(:base_drop_class) && klass.base_drop_class
+          next unless klass.public_methods.include?(:register_class_if_liquid_defined)
+          next if klass.public_methods.include?(:base_drop_class) && klass.base_drop_class
 
           klass.register_class_if_liquid_defined
         rescue StandardError

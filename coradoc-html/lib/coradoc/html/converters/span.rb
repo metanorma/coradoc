@@ -39,7 +39,7 @@ module Coradoc
           # @return [String] HTML string
           def to_html(model, state = {})
             # Prefer children for mixed content, fall back to content
-            content = if model.respond_to?(:children) && model.children&.any?
+            content = if model.children&.any?
                         model.children.map { |c| convert_content_to_html(c, state) }.join
                       else
                         escape_html(model.content || '')
@@ -47,7 +47,7 @@ module Coradoc
 
             # Build attributes from metadata
             attrs = {}
-            if model.respond_to?(:metadata) && model.metadata && model.metadata[:class]
+            if model.metadata && model.metadata[:class]
               attrs[:class] =
                 model.metadata[:class]
             end

@@ -66,7 +66,7 @@ module Coradoc
 
           # Check if InlineElement has meaningful nested content
           def item_has_nested_content?(item)
-            return false unless item.respond_to?(:nested_elements)
+            return false unless item.is_a?(Coradoc::CoreModel::InlineElement)
             return false if item.nested_elements.nil? || item.nested_elements.empty?
 
             true

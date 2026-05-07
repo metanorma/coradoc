@@ -13,7 +13,7 @@ module Coradoc
           return '' unless cell
 
           # Check if this is a header cell
-          is_header = cell.respond_to?(:header) && cell.header == true
+          is_header = cell.header == true
           tag = is_header ? 'th' : 'td'
 
           # Build cell attributes
@@ -52,33 +52,19 @@ module Coradoc
         def self.build_attributes(cell)
           attrs = []
 
-          # Add ID if present
-          attrs << %( id="#{escape_attribute(cell.id)}") if cell.respond_to?(:id) && cell.id
+          attrs << %( id="#{escape_attribute(cell.id)}") if cell.id
 
-          # Colspan and rowspan
-          attrs << %( colspan="#{cell.colspan}") if cell.respond_to?(:colspan) && cell.colspan
-          attrs << %( rowspan="#{cell.rowspan}") if cell.respond_to?(:rowspan) && cell.rowspan
+          attrs << %( colspan="#{cell.colspan}") if cell.colspan
+          attrs << %( rowspan="#{cell.rowspan}") if cell.rowspan
 
-          # Build style attribute for alignment, colors, etc.
           style_parts = []
 
-          # Horizontal alignment
-          style_parts << "text-align: #{escape_attribute(cell.alignment)}" if cell.respond_to?(:alignment) && cell.alignment
-
-          # Vertical alignment
-          style_parts << "vertical-align: #{escape_attribute(cell.vertical_alignment)}" if cell.respond_to?(:vertical_alignment) && cell.vertical_alignment
-
-          # Background color
-          style_parts << "background-color: #{escape_attribute(cell.bgcolor)}" if cell.respond_to?(:bgcolor) && cell.bgcolor
-
-          # Text color
-          style_parts << "color: #{escape_attribute(cell.color)}" if cell.respond_to?(:color) && cell.color
-
-          # Width
-          style_parts << "width: #{escape_attribute(cell.width)}" if cell.respond_to?(:width) && cell.width
-
-          # Height
-          style_parts << "height: #{escape_attribute(cell.height)}" if cell.respond_to?(:height) && cell.height
+          style_parts << "text-align: #{escape_attribute(cell.alignment)}" if cell.alignment
+          style_parts << "vertical-align: #{escape_attribute(cell.vertical_alignment)}" if cell.vertical_alignment
+          style_parts << "background-color: #{escape_attribute(cell.bgcolor)}" if cell.bgcolor
+          style_parts << "color: #{escape_attribute(cell.color)}" if cell.color
+          style_parts << "width: #{escape_attribute(cell.width)}" if cell.width
+          style_parts << "height: #{escape_attribute(cell.height)}" if cell.height
 
           # Add style attribute if we have any styles
           attrs << %( style="#{style_parts.join('; ')}") if style_parts.any?
@@ -88,7 +74,7 @@ module Coradoc
 
         # Wrap content with style tags based on cell style
         def self.wrap_with_style(content, cell)
-          return content unless cell.respond_to?(:style) && cell.style
+          return content unless cell.style
 
           case cell.style.to_s.downcase
           when 'strong', 's'
@@ -112,11 +98,11 @@ module Coradoc
           return '' if cell.nil?
 
           # Use renderable_content if available (prefers children over content)
-          content = if cell.respond_to?(:renderable_content)
+          content = if cell.renderable_content
                       cell.renderable_content
-                    elsif cell.respond_to?(:children) && cell.children.any?
+                    elsif cell.children.any?
                       cell.children
-                    elsif cell.respond_to?(:content)
+                    elsif cell.content
                       cell.content
                     else
                       cell

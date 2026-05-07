@@ -42,7 +42,7 @@ module Coradoc
             attrs[:id] = model.id if model.id
 
             # Add start attribute if not starting from 1
-            attrs[:start] = model.start if model.respond_to?(:start) && model.start && model.start != 1
+            attrs[:start] = model.start if model.start && model.start != 1
 
             build_element('ol', "\n#{items_html}\n", attrs)
           end

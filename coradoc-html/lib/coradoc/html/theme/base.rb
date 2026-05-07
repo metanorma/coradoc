@@ -158,11 +158,10 @@ module Coradoc
         #
         # @return [String] Document title
         def extract_document_title
-          # Handle CoreModel::StructuralElement (has title directly)
-          if @document.respond_to?(:title) && @document.title
+          if @document.is_a?(Coradoc::CoreModel::StructuralElement) && @document.title
             title = @document.title
             return title if title.is_a?(String)
-            return title.text if title.respond_to?(:text)
+            return title.text if title.is_a?(Coradoc::CoreModel::Base) && title.text
 
             return title.to_s
           end

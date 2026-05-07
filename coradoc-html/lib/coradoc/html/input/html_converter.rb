@@ -41,7 +41,7 @@ module Coradoc
 
             plugin_instances.each do |plugin|
               plugin.html_tree = root
-              if plugin.respond_to?(:preprocess_html_tree)
+              if plugin.public_methods.include?(:preprocess_html_tree)
                 track_time "Preprocessing document with #{plugin.name} plugin" do
                   plugin.preprocess_html_tree
                 end
@@ -61,7 +61,7 @@ module Coradoc
             end
 
             plugin_instances.each do |plugin|
-              next unless plugin.respond_to?(:postprocess_coremodel_tree)
+              next unless plugin.public_methods.include?(:postprocess_coremodel_tree)
 
               plugin.coremodel_tree = coremodel
               track_time "Postprocessing CoreModel tree with #{plugin.name} plugin" do
@@ -131,7 +131,7 @@ module Coradoc
             end
 
             plugin_instances.each do |plugin|
-              next unless plugin.respond_to?(:postprocess_output_string)
+              next unless plugin.public_methods.include?(:postprocess_output_string)
 
               plugin.output_string = result
               track_time "Postprocessing output string with #{plugin.name} plugin" do

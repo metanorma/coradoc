@@ -235,9 +235,9 @@ module Coradoc
         # @return [Array] Array of section objects
         def extract_sections(doc)
           sections = []
-          return sections unless doc.respond_to?(:sections)
+          return sections unless doc.is_a?(Coradoc::CoreModel::StructuralElement)
 
-          collect_sections(doc.sections, sections, 1)
+          collect_sections(doc.children, sections, 1)
           sections
         end
 
@@ -260,10 +260,7 @@ module Coradoc
             }
 
             # Recursively collect subsections
-            if item.respond_to?(:sections) && item.sections
-              collect_sections(item.sections, section_data[:children],
-                               level + 1)
-            end
+            collect_sections(item.children, section_data[:children], level + 1)
 
             sections << section_data
           end
@@ -274,14 +271,14 @@ module Coradoc
         # @param section [Coradoc::CoreModel::StructuralElement] Section to extract title from
         # @return [String] Section title
         def extract_section_title(section)
-          if section.respond_to?(:title)
-            title = section.title
-            if title.respond_to?(:text)
+          title = section.title
+          if title
+            if title.is_a?(Coradoc::CoreModel::Base) && title.text
               title.text
-            elsif title.respond_to?(:content)
+            elsif title.is_a?(Coradoc::CoreModel::Base) && title.content
               Coradoc::Html::Converters::Base.get_text_content(title)
             elsif title.is_a?(Array)
-              title.map { |t| t.respond_to?(:text) ? t.text : t.to_s }.join
+              title.map { |t| t.is_a?(Coradoc::CoreModel::Base) && t.text ? t.text : t.to_s }.join
             else
               title.to_s
             end
@@ -295,7 +292,7 @@ module Coradoc
         # @param section [Coradoc::CoreModel::StructuralElement] Section to extract ID from
         # @return [String] Section ID
         def extract_section_id(section)
-          if section.respond_to?(:id) && section.id
+          if section.id
             section.id
           else
             # Generate ID from title
