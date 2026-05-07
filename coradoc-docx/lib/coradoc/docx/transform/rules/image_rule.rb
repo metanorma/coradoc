@@ -109,7 +109,10 @@ module Coradoc
           def extent_to_px(extent, dimension)
             return nil unless extent
 
-            value = extent.respond_to?(dimension) ? extent.send(dimension) : nil
+            value = case dimension
+                    when :cx then extent.cx
+                    when :cy then extent.cy
+                    end
             return nil unless value
 
             px = value.to_i / EMU_PER_PX

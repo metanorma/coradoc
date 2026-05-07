@@ -45,10 +45,8 @@ module Coradoc
           private
 
           def effective_props(run)
-            if run.respond_to?(:effective_run_properties)
-              ep = run.effective_run_properties
-              return ep if ep
-            end
+            ep = run.effective_run_properties
+            return ep if ep
 
             run.properties
           end
@@ -66,15 +64,12 @@ module Coradoc
               result << context.transform(drawing)
             end
 
-            # Tab character
-            result << "\t" if run.respond_to?(:tab) && run.tab
+            result << "\t" if run.tab
 
-            # Inline math (m:oMath within a run)
-            result << context.transform(run.o_math) if run.respond_to?(:o_math) && run.o_math
+            result << context.transform(run.o_math) if run.class.attributes.key?(:o_math) && run.o_math
 
-            # Deleted text (tracked changes)
-            if run.respond_to?(:del_text) && run.del_text
-              text = run.del_text.respond_to?(:content) ? run.del_text.content.to_s : run.del_text.to_s
+            if run.del_text
+              text = run.del_text.is_a?(Uniword::Wordprocessingml::DeletedText) ? run.del_text.content.to_s : run.del_text.to_s
               unless text.empty?
                 result << CoreModel::InlineElement.new(
                   format_type: 'strikethrough',
@@ -83,24 +78,18 @@ module Coradoc
               end
             end
 
-            # Symbol (w:sym)
-            if run.respond_to?(:sym) && run.sym
-              sym = run.sym
-              char = sym.respond_to?(:char) ? sym.char : nil
+            if run.sym
+              char = run.sym.char
               result << char.to_s if char && !char.empty?
             end
 
-            # No-break hyphen (U+2011)
-            result << "\u2011" if run.respond_to?(:no_break_hyphen) && run.no_break_hyphen
+            result << "\u2011" if run.no_break_hyphen
 
-            # Soft hyphen (U+00AD)
-            result << "\u00AD" if run.respond_to?(:soft_hyphen) && run.soft_hyphen
+            result << "\u00AD" if run.class.attributes.key?(:soft_hyphen) && run.soft_hyphen
 
-            # Carriage return (w:cr) — treat as line break
-            result << CoreModel::InlineElement.new(format_type: 'hard_line_break') if run.respond_to?(:carriage_return) && run.carriage_return
+            result << CoreModel::InlineElement.new(format_type: 'hard_line_break') if run.class.attributes.key?(:carriage_return) && run.carriage_return
 
-            # Alternate content — extract preferred/fallback content
-            if run.respond_to?(:alternate_content) && run.alternate_content
+            if run.alternate_content
               result << extract_alternate_content(run.alternate_content,
                                                   context)
             end
@@ -109,19 +98,17 @@ module Coradoc
           end
 
           def extract_alternate_content(ac, context)
-            # Prefer the fallback content (wc:w:bdoContent or mc:Fallback)
-            content = if ac.respond_to?(:fallback) && ac.fallback
+            content = if ac.fallback
                         ac.fallback
-                      elsif ac.respond_to?(:choice) && ac.choice
+                      elsif ac.choice
                         ac.choice
                       end
 
             return nil unless content
 
-            # If the fallback/choice has paragraphs or runs, transform them
-            if content.respond_to?(:runs)
+            if content.is_a?(Uniword::Wordprocessingml::Run)
               content.runs&.each { |r| context.transform(r) }
-            elsif content.respond_to?(:paragraphs)
+            elsif content.is_a?(Uniword::Wordprocessingml::Paragraph)
               content.paragraphs&.flat_map { |p| context.transform(p) }
             end
           end
@@ -147,7 +134,7 @@ module Coradoc
             return nil unless props
 
             # Check rStyle for semantic role
-            if context.style_resolver.respond_to?(:run_semantic_role)
+            if context.style_resolver.is_a?(Coradoc::Docx::Transform::StyleResolver)
               role = context.style_resolver.run_semantic_role(run)
               case role
               when :monospace then return 'monospace'

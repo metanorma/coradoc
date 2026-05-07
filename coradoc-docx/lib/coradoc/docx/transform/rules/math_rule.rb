@@ -66,7 +66,8 @@ module Coradoc
           end
 
           def element_to_xml(element)
-            return '' unless element.respond_to?(:to_xml)
+            return '' unless element.is_a?(Uniword::Wordprocessingml::AlternateContent) ||
+                             element.is_a?(Uniword::Wordprocessingml::OMath)
 
             element.to_xml
           end

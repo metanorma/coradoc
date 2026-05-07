@@ -62,19 +62,17 @@ module Coradoc
           private
 
           def field_text(field)
-            # SimpleField may have runs with resolved text
-            if field.respond_to?(:runs) && field.runs && !field.runs.empty?
+            if field.runs && !field.runs.empty?
               return field.runs.map do |r|
                 r.text&.content.to_s
               end.join
             end
 
-            # Fall back to text attribute
-            field.respond_to?(:text) ? field.text.to_s : nil
+            nil
           end
 
           def field_instruction(field)
-            instr = field.respond_to?(:instr) ? field.instr : nil
+            instr = field.instr
             instr.to_s
           end
 
