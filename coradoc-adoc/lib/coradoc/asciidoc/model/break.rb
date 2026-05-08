@@ -20,6 +20,13 @@ module Coradoc
         #
         class ThematicBreak < Base
         end
+
+        # Page break for AsciiDoc documents.
+        #
+        # Represented by <<< in AsciiDoc. Layout-only element;
+        # has no CoreModel equivalent and is filtered during ToCoreModel.
+        class PageBreak < Base
+        end
       end
     end
   end

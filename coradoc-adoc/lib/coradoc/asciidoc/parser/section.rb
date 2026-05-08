@@ -15,6 +15,7 @@ module Coradoc
             admonition_line |
             block |
             table.as(:table) |
+            page_break.as(:page_break) |
             # highlight.as(:highlight) |
             # glossaries.as(:glossaries) |
             paragraph |

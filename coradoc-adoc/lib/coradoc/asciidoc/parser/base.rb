@@ -58,6 +58,7 @@ module Coradoc
             include_directive |
             list |
             table.as(:table) |
+            page_break.as(:page_break) |
             paragraph |
             tag |
             empty_line.as(:line_break) |

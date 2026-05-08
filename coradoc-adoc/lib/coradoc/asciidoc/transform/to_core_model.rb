@@ -13,7 +13,7 @@ module Coradoc
 
         class << self
           def transform(model)
-            return model.map { |item| transform(item) } if model.is_a?(Array)
+            return model.map { |item| transform(item) }.compact if model.is_a?(Array)
             return model unless model.is_a?(Coradoc::AsciiDoc::Model::Base)
 
             transformer = Registry.lookup(model.class)
@@ -96,10 +96,12 @@ module Coradoc
 
           def transform_document(doc)
             title_text = extract_title_text(doc.header&.title)
+            attributes = extract_document_attributes(doc)
             Coradoc::CoreModel::StructuralElement.new(
               element_type: 'document',
               id: doc.id,
               title: title_text,
+              attributes: attributes,
               children: transform(doc.sections || doc.contents || [])
             )
           end
@@ -173,7 +175,10 @@ module Coradoc
             cells = Array(row.columns).map do |cell|
               transform_table_cell(cell)
             end
-            Coradoc::CoreModel::TableRow.new(cells: cells)
+            Coradoc::CoreModel::TableRow.new(
+              cells: cells,
+              header: row.header
+            )
           end
 
           def transform_table_cell(cell)
@@ -316,6 +321,11 @@ module Coradoc
           end
 
           private
+
+          def extract_document_attributes(doc)
+            return {} unless doc.document_attributes
+            doc.document_attributes.to_hash
+          end
 
           def transform_inline_content(content)
             return [] if content.nil?

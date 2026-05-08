@@ -182,7 +182,6 @@ module Coradoc
             # Passthrough types (no CoreModel equivalent)
             [
               Coradoc::AsciiDoc::Model::TextElement,
-              Coradoc::AsciiDoc::Model::LineBreak,
               Coradoc::AsciiDoc::Model::Include,
               Coradoc::AsciiDoc::Model::Audio,
               Coradoc::AsciiDoc::Model::Video,
@@ -190,6 +189,14 @@ module Coradoc
               Coradoc::AsciiDoc::Model::Tag
             ].each do |klass|
               Registry.register(klass, ->(model) { model })
+            end
+
+            # Filtered types (layout-only, no CoreModel representation)
+            [
+              Coradoc::AsciiDoc::Model::LineBreak,
+              Coradoc::AsciiDoc::Model::Break::PageBreak
+            ].each do |klass|
+              Registry.register(klass, ->(_model) { nil })
             end
           end
 
