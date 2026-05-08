@@ -55,7 +55,7 @@ module Coradoc
 
         def olist_item(nesting_level = 1)
           item = olist_marker(nesting_level).as(:marker) >>
-                 match("\n").absent? >> space >> text_line(true)
+                 match("\n").absent? >> space >> text_line(true, unguarded: true)
           # >>
           # (list_continuation.present? >> list_continuation >>
           # paragraph #| example_block(n_deep: 1)
@@ -86,7 +86,7 @@ module Coradoc
         def ulist_item(nesting_level = 1)
           item = ulist_marker(nesting_level).as(:marker) >>
                  str(' [[[').absent? >>
-                 match("\n").absent? >> space >> text_line(true)
+                 match("\n").absent? >> space >> text_line(true, unguarded: true)
 
           att = (list_continuation.present? >>
                   list_continuation >>
