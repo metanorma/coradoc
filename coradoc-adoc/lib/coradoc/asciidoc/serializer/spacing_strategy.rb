@@ -47,19 +47,11 @@ module Coradoc
             end
           end
 
-          # Check if element is block-level
-          # @param element [Object] Element to check
-          # @return [Boolean] True if block-level
           def block_level?(element)
             return false if element.nil?
+            return true if element.is_a?(String)
 
-            element.is_a?(Coradoc::AsciiDoc::Model::Block::Core) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Section) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Paragraph) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::List) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Table) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::CommentBlock) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Admonition)
+            element.block_level?
           end
 
           # Check if element is inline-level
@@ -67,15 +59,9 @@ module Coradoc
           # @return [Boolean] True if inline-level
           def inline_level?(element)
             return false if element.nil?
+            return true if element.is_a?(String)
 
-            element.is_a?(String) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::TextElement) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Inline::Bold) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Inline::Italic) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Inline::Monospace) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Inline::Highlight) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Inline::Superscript) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Inline::Subscript)
+            element.inline?
           end
         end
       end

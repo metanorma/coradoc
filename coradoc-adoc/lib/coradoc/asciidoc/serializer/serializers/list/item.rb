@@ -94,16 +94,10 @@ module Coradoc
             private
 
             def inline?(elem)
-              case elem
-              when Coradoc::AsciiDoc::Model::Inline::HardLineBreak
-                :hardbreak
-              when ->(i) { i.class.name.to_s.include?('::Inline::') }
-                true
-              when String, Coradoc::AsciiDoc::Model::TextElement, Coradoc::AsciiDoc::Model::Image::InlineImage
-                true
-              else
-                false
-              end
+              return true if elem.is_a?(String)
+              return false unless elem.is_a?(Coradoc::AsciiDoc::Model::Base)
+
+              elem.inline?
             end
 
             def gen_anchor(inline: false)

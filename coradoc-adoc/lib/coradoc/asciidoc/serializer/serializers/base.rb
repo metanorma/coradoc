@@ -120,17 +120,6 @@ module Coradoc
             end
           end
 
-          # Helper to check if element is block-level
-          # @param element [Object] Element to check
-          # @return [Boolean] True if block-level
-          def block_level_element?(element)
-            element.is_a?(Coradoc::AsciiDoc::Model::Block::Core) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Section) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Paragraph) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::List) ||
-              element.is_a?(Coradoc::AsciiDoc::Model::Table)
-          end
-
           # Helper to add spacing between elements
           # @param elements [Array] Elements to space
           # @param options [Hash] Spacing options
