@@ -129,7 +129,8 @@ RSpec.describe 'Integration pipeline fixes' do
   end
 
   describe 'Fix 05: Document attributes' do
-    xit 'preserves document attributes in CoreModel' do
+    it 'preserves document attributes in CoreModel' do
+      skip 'Parser does not yet propagate document attributes to CoreModel'
       adoc = <<~ADOC
         = My Document
         :author: John
@@ -142,7 +143,8 @@ RSpec.describe 'Integration pipeline fixes' do
       expect(core.attributes).to include('author' => 'John', 'revdate' => '2024-01-01')
     end
 
-    xit 'handles multiple attributes' do
+    it 'handles multiple attributes' do
+      skip 'Parser does not yet propagate document attributes to CoreModel'
       adoc = <<~ADOC
         = Doc
         :docnumber: 1
@@ -162,7 +164,8 @@ RSpec.describe 'Integration pipeline fixes' do
   end
 
   describe 'Fix 07: Cross-references' do
-    xit 'parses simple cross-reference <<id>>' do
+    it 'parses simple cross-reference <<id>>' do
+      skip 'Cross-reference parsing not yet implemented'
       adoc = <<~ADOC
         = Doc
 
@@ -175,7 +178,8 @@ RSpec.describe 'Integration pipeline fixes' do
       expect(xrefs.first.target).to eq('introduction')
     end
 
-    xit 'parses cross-reference with text <<id,text>>' do
+    it 'parses cross-reference with text <<id,text>>' do
+      skip 'Cross-reference parsing not yet implemented'
       adoc = <<~ADOC
         = Doc
 
@@ -189,7 +193,8 @@ RSpec.describe 'Integration pipeline fixes' do
       expect(xrefs.first.content).to eq('Introduction')
     end
 
-    xit 'parses multiple cross-references' do
+    it 'parses multiple cross-references' do
+      skip 'Cross-reference parsing not yet implemented'
       adoc = <<~ADOC
         = Doc
 
