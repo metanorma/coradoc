@@ -21,6 +21,10 @@ module Coradoc
       # @see Coradoc::AsciiDoc::Model::CommentLine Single-line comments
       #
       class CommentBlock < Base
+        def block_level?
+          true
+        end
+
         attribute :text, :string
         attribute :line_break, :string, default: -> { "\n" }
       end

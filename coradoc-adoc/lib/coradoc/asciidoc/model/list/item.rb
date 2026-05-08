@@ -65,23 +65,6 @@ module Coradoc
                     initialize_empty: true
 
           attribute :nested, Coradoc::AsciiDoc::Model::List::Nestable
-
-          HARDBREAK_MARKERS = %i[hardbreak init].freeze
-          STRIP_UNICODE_BEGIN_MARKERS = (HARDBREAK_MARKERS.dup + [false]).freeze
-          STRIP_UNICODE_END_MARKERS = [:hardbreak, :end, false].freeze
-
-          def inline?(elem)
-            case elem
-            when Inline::HardLineBreak
-              :hardbreak
-            when ->(i) { i.class.name.to_s.include? '::Inline::' }
-              true
-            when String, TextElement, Image::InlineImage
-              true
-            else
-              false
-            end
-          end
         end
       end
     end

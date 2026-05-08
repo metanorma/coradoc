@@ -5,6 +5,10 @@ module Coradoc
     module Model
       module Image
         class InlineImage < Coradoc::AsciiDoc::Model::Image::Core
+          def inline?
+            true
+          end
+
           attribute :colons, :string, default: -> { ':' }
         end
       end

@@ -5,6 +5,10 @@ module Coradoc
     module Model
       module Image
         class BlockImage < Coradoc::AsciiDoc::Model::Image::Core
+          def block_level?
+            true
+          end
+
           # Autoload nested AttributeList class
           autoload :AttributeList, 'coradoc/asciidoc/model/image/block_image/attribute_list'
 

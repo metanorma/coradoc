@@ -4,6 +4,10 @@ module Coradoc
   module AsciiDoc
     module Model
       class TextElement < Base
+        def inline?
+          true
+        end
+
         attribute :id, :string
         attribute :content,
                   Lutaml::Model::Serializable,

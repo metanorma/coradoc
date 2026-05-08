@@ -5,6 +5,9 @@ module Coradoc
     module Model
       module Inline
         class Base < Coradoc::AsciiDoc::Model::Base
+          def inline?
+            true
+          end
         end
       end
     end
