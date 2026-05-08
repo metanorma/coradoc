@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# rubocop:disable RSpec/DescribeClass
 RSpec.describe 'Round-Trip Conversion' do
   # Helper to parse, transform to CoreModel, transform back, and serialize
   def round_trip(adoc_text)

@@ -12,7 +12,7 @@ module Coradoc
 
         def bold_constrained
           (str('*').present? >> str('*') >>
-            match('[^*]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^*\n]').repeat(1).as(:text).repeat(1, 1) >>
              str('*') >> str('*').absent? >>
              str("\n\n").absent?
           ).as(:bold_constrained)
@@ -20,7 +20,7 @@ module Coradoc
 
         def bold_unconstrained
           (str('**').present? >> str('**') >>
-            match('[^*]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^*\n]').repeat(1).as(:text).repeat(1, 1) >>
              str('**')
           ).as(:bold_unconstrained)
         end
@@ -28,7 +28,7 @@ module Coradoc
         def span_constrained
           (attribute_list >>
             str('#') >>
-            match('[^#]').repeat(1).as(:text) >>
+            match('[^#\n]').repeat(1).as(:text) >>
              str('#') >> str('#').absent?
           ).as(:span_constrained)
         end
@@ -36,63 +36,63 @@ module Coradoc
         def span_unconstrained
           (attribute_list >>
             str('##') >>
-            match('[^#]').repeat(1).as(:text) >>
+            match('[^#\n]').repeat(1).as(:text) >>
              str('##')
           ).as(:span_unconstrained)
         end
 
         def italic_constrained
           (str('_') >> str('_').absent? >>
-            match('[^_]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^_\n]').repeat(1).as(:text).repeat(1, 1) >>
              str('_') >> str('_').absent?
           ).as(:italic_constrained)
         end
 
         def italic_unconstrained
           (str('__') >>
-            match('[^_]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^_\n]').repeat(1).as(:text).repeat(1, 1) >>
              str('__')
           ).as(:italic_unconstrained)
         end
 
         def highlight_constrained
           (str('#') >>
-            match('[^#]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^#\n]').repeat(1).as(:text).repeat(1, 1) >>
              str('#') >> str('#').absent?
           ).as(:highlight_constrained)
         end
 
         def highlight_unconstrained
           (str('##') >>
-            match('[^#]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^#\n]').repeat(1).as(:text).repeat(1, 1) >>
              str('##')
           ).as(:highlight_unconstrained)
         end
 
         def monospace_constrained
           (str('`') >>
-            match('[^`]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^`\n]').repeat(1).as(:text).repeat(1, 1) >>
              str('`') >> str('`').absent?
           ).as(:monospace_constrained)
         end
 
         def monospace_unconstrained
           (str('``') >>
-            match('[^`]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^`\n]').repeat(1).as(:text).repeat(1, 1) >>
              str('``')
           ).as(:monospace_unconstrained)
         end
 
         def superscript
           (str('^') >>
-            match('[^^]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^^\n]').repeat(1).as(:text).repeat(1, 1) >>
              str('^')
           ).as(:superscript)
         end
 
         def subscript
           (str('~') >>
-            match('[^~]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^~\n]').repeat(1).as(:text).repeat(1, 1) >>
              str('~')
           ).as(:subscript)
         end
@@ -100,7 +100,7 @@ module Coradoc
         def span
           attribute_list >>
             (str('#') >>
-              match('[^#]').repeat(1).as(:text) >>
+              match('[^#\n]').repeat(1).as(:text) >>
                str('#') >> str('#').absent?
             ).as(:span)
         end
@@ -126,7 +126,7 @@ module Coradoc
         def underline
           (attribute_list >> match('\\[.underline\\]').as(:role) >>
             str('#') >>
-            match('[^#]').repeat(1).as(:text) >>
+            match('[^#\n]').repeat(1).as(:text) >>
             str('#')
           ).as(:underline)
         end
@@ -134,7 +134,7 @@ module Coradoc
         def small
           (attribute_list >> match('\\[.small\\]').as(:role) >>
             str('#') >>
-            match('[^#]').repeat(1).as(:text) >>
+            match('[^#\n]').repeat(1).as(:text) >>
             str('#')
           ).as(:small)
         end

@@ -22,9 +22,13 @@ module Coradoc
 
         # Text
         # :zero :one :many
-        def text_line(many_breaks = false)
-          tl = (asciidoc_char_with_id.absent? | element_id_inline) >>
-               literal_space? >> text_any.as(:text)
+        def text_line(many_breaks = false, unguarded: false)
+          tl = if unguarded
+                 literal_space? >> text_any.as(:text)
+               else
+                 (asciidoc_char_with_id.absent? | element_id_inline) >>
+                   literal_space? >> text_any.as(:text)
+               end
           if many_breaks
             tl >> (line_ending.repeat(1).as(:line_break) | eof?)
           else
@@ -59,6 +63,10 @@ module Coradoc
 
         def glossaries
           glossary.repeat(1)
+        end
+
+        def page_break
+          str('<<<') >> line_ending
         end
       end
     end

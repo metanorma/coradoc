@@ -447,7 +447,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
       result = converter_module.process_coradoc(node, {})
 
       # Extract text content from the block (use children for mixed content)
-      content = result.respond_to?(:children) && result.children.any? ? result.children : result.content
+      content = result.is_a?(Coradoc::CoreModel::Base) && result.children&.any? ? result.children : result.content
       text = extract_text_from_content(content)
       expect(text).to include('Simple text')
     end
@@ -459,7 +459,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
 
       result = converter_module.process_coradoc(node, {})
 
-      content = result.respond_to?(:children) && result.children.any? ? result.children : result.content
+      content = result.is_a?(Coradoc::CoreModel::Base) && result.children&.any? ? result.children : result.content
       text = extract_text_from_content(content)
       expect(text).to include('Before')
       expect(text).to include('Bold')
@@ -477,15 +477,13 @@ RSpec.describe Coradoc::Input::Html::Converters do
       when Coradoc::CoreModel::InlineElement
         # Extract from both content and nested_elements
         text_parts = [extract_text_from_content(c.content)]
-        text_parts << extract_text_from_content(c.nested_elements) if c.respond_to?(:nested_elements) && c.nested_elements
+        text_parts << extract_text_from_content(c.nested_elements) if c.nested_elements
         text_parts.join
       when Coradoc::CoreModel::Base
-        if c.respond_to?(:children) && c.children.is_a?(Array)
+        if c.children.is_a?(Array)
           extract_text_from_content(c.children)
-        elsif c.respond_to?(:content)
-          extract_text_from_content(c.content)
         else
-          ''
+          extract_text_from_content(c.content)
         end
       when Array
         extract_text_from_content(c)

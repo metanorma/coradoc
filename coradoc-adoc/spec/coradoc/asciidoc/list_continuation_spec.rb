@@ -21,7 +21,7 @@ RSpec.describe 'AsciiDoc List Continuation' do
       expect(result).to be_a(Coradoc::AsciiDoc::Model::Document)
 
       # Navigate to the list
-      contents = result.respond_to?(:contents) ? result.contents : result.sections
+      contents = result.is_a?(Coradoc::AsciiDoc::Model::Document) ? result.sections : result.contents
       list = contents.first
       expect(list).to be_a(Coradoc::AsciiDoc::Model::List::Unordered)
 

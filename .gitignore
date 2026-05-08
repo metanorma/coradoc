@@ -52,4 +52,8 @@ sample.oscal.*
 /x.yaml
 
 coverage/
+coradoc-adoc/coverage/
+coradoc-html/coverage/
+coradoc-markdown/coverage/
+coradoc-docx/coverage/
 .claude/

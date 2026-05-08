@@ -132,7 +132,9 @@ module Coradoc
                                   .compact
       end
 
-      return nil if element.is_a?(CoreModel::StructuralElement) && element.section? && !element.document? && !section_matches?(element, level: level, title: title)
+      return nil if element.is_a?(CoreModel::StructuralElement) && element.section? && !element.document? && !section_matches?(
+        element, level: level, title: title
+      )
 
       element
     end

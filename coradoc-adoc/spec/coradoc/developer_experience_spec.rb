@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# rubocop:disable RSpec/DescribeClass - This is a feature spec for the API facade
 RSpec.describe 'Developer Experience API' do
   # Load coradoc core and asciidoc
 

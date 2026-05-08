@@ -19,6 +19,11 @@ module Coradoc
               Model::CommentBlock.new(text: comment_text)
             end
 
+            # Page break
+            rule(page_break: simple(:page_break)) do
+              Model::Break::PageBreak.new
+            end
+
             # Tag
             rule(tag: subtree(:tag)) do
               Model::Tag.new(

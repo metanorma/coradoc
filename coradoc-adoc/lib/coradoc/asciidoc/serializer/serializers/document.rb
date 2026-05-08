@@ -31,7 +31,10 @@ module Coradoc
             end
 
             # Only serialize document_attributes if it has data
-            parts << serialize_child(@model.document_attributes, @context) if @model.document_attributes&.data && !@model.document_attributes.data.empty?
+            if @model.document_attributes&.data && !@model.document_attributes.data.empty?
+              parts << serialize_child(@model.document_attributes,
+                                       @context)
+            end
 
             # Serialize sections with last_element tracking
             parts << serialize_sections_with_last_element if @model.sections && !@model.sections.empty?

@@ -76,7 +76,7 @@ module Coradoc
         def block_content(n_deep = 3)
           c = block_image |
               list |
-              text_line |
+              text_line(false, unguarded: true) |
               empty_line.as(:line_break)
           c |= block(n_deep - 1) if n_deep.positive?
           c.repeat(1)
@@ -124,7 +124,7 @@ module Coradoc
             closing_pattern = str(delim_str) >> newline
 
             # Build content that doesn't match the closing delimiter
-            content = block_image | list | text_line | empty_line.as(:line_break)
+            content = block_image | list | text_line(false, unguarded: true) | empty_line.as(:line_break)
             if n_deep.positive?
               # For nested blocks, also prevent them from consuming the closing delimiter
               content |= block(n_deep - 1)
@@ -139,7 +139,7 @@ module Coradoc
             line_start? >>
             current_delimiter.as(:delimiter) >> newline >>
             if type == :pass
-              (text_line | empty_line.as(:line_break)).repeat(1).as(:lines)
+              (text_line(false, unguarded: true) | empty_line.as(:line_break)).repeat(1).as(:lines)
             else
               # Use dynamic block content that respects closing delimiter
               block_content_with_closing.as(:lines)
@@ -161,7 +161,7 @@ module Coradoc
             delim_str = c.captures[:delimit].to_s.strip
             closing_pattern = str(delim_str) >> newline
 
-            content = block_image | list | text_line | empty_line.as(:line_break)
+            content = block_image | list | text_line(false, unguarded: true) | empty_line.as(:line_break)
             content |= block(n_deep - 1) if n_deep.positive?
 
             (closing_pattern.absent? >> content).repeat(1)
@@ -172,7 +172,7 @@ module Coradoc
             line_start? >>
             current_delimiter.as(:delimiter) >> newline >>
             if type == :pass
-              (text_line | empty_line.as(:line_break)).repeat(1).as(:lines)
+              (text_line(false, unguarded: true) | empty_line.as(:line_break)).repeat(1).as(:lines)
             else
               block_content_with_closing.as(:lines)
             end >>
