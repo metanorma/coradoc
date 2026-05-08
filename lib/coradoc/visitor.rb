@@ -31,7 +31,7 @@ module Coradoc
   module Visitor
     # Registry mapping CoreModel classes to visitor method names.
     # CoreModel types self-register via register_visitor on load.
-    DISPATCH_TABLE = {} # rubocop:disable Style/MutableConstant
+    DISPATCH_TABLE = {}
 
     # Register a CoreModel class to a visitor method name.
     # Called during CoreModel type definition.

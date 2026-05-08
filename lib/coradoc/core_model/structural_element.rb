@@ -54,6 +54,10 @@ module Coradoc
       #   @return [Array<Base>, nil] child elements (sections, blocks, etc.)
       attribute :children, Base, collection: true
 
+      # @!attribute attributes
+      #   @return [Hash] document-level attributes (key-value pairs)
+      attribute :attributes, :hash, default: -> { {} }
+
       # Heading level with sensible default
       #
       # @return [Integer] level, defaulting to 1 when unset
