@@ -333,11 +333,9 @@ module Coradoc
 
       # Infer column count from cells
       # Look for patterns where rows have consistent cell counts
-      # Prefers LARGER valid column counts (more likely to be correct)
       def self.infer_column_count(cells)
         return nil if cells.nil? || cells.empty?
 
-        # Count column slots for each cell
         col_slots = cells.map do |cell|
           cell.is_a?(Model::TableCell) && cell.colspan ? cell.colspan : 1
         end
@@ -349,7 +347,6 @@ module Coradoc
           next false if candidate > total_cells
           next false if total_cells % candidate != 0
 
-          # Verify that the cells distribute evenly
           slots_used = 0
           valid = true
 
@@ -366,9 +363,29 @@ module Coradoc
           valid && slots_used.zero?
         end
 
-        # Return the largest valid column count
-        # (more likely to represent actual table structure)
         possible_cols.max || col_slots.first || 1
+      end
+
+      # Regroup parser-level rows into proper AsciiDoc rows.
+      # The parser produces one "row" per line; this flattens all cells
+      # and regroups by the cols attribute, then marks the first row as header.
+      #
+      # @param rows [Array<Model::TableRow>] Parser-level rows
+      # @param attrs [Model::AttributeList, nil] Table attributes containing cols
+      # @return [Array<Model::TableRow>] Properly grouped rows with header flag
+      def self.regroup_table_rows(rows, attrs = nil)
+        return rows if rows.nil? || rows.empty?
+
+        col_count = parse_cols_attribute(attrs)
+        all_cells = rows.flat_map do |r|
+          r.is_a?(Model::TableRow) ? r.columns : []
+        end
+
+        return rows if all_cells.empty?
+
+        grouped = group_cells_into_rows(all_cells, col_count)
+        grouped.first.header = true unless grouped.empty?
+        grouped
       end
 
       # Transform a syntax tree using this transformer's rules

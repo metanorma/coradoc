@@ -65,7 +65,7 @@ module Coradoc
               delim_char: simple(:delim_char),
               rows: sequence(:rows)
             ) do
-              Model::Table.new(rows: rows)
+              Model::Table.new(rows: Transformer.regroup_table_rows(rows))
             end
 
             # Table with rows and title
@@ -74,7 +74,7 @@ module Coradoc
               delim_char: simple(:delim_char),
               rows: sequence(:rows)
             ) do
-              Model::Table.new(title: title.to_s, rows: rows)
+              Model::Table.new(title: title.to_s, rows: Transformer.regroup_table_rows(rows))
             end
 
             # Table with rows and id
@@ -83,7 +83,7 @@ module Coradoc
               delim_char: simple(:delim_char),
               rows: sequence(:rows)
             ) do
-              Model::Table.new(id: id.to_s, rows: rows)
+              Model::Table.new(id: id.to_s, rows: Transformer.regroup_table_rows(rows))
             end
 
             # Table with rows, id, and attributes
@@ -93,7 +93,7 @@ module Coradoc
               delim_char: simple(:delim_char),
               rows: sequence(:rows)
             ) do
-              Model::Table.new(id: id.to_s, rows: rows, attrs: attrs)
+              Model::Table.new(id: id.to_s, rows: Transformer.regroup_table_rows(rows, attrs), attrs: attrs)
             end
 
             # Table with rows, title, and attributes
@@ -103,7 +103,7 @@ module Coradoc
               delim_char: simple(:delim_char),
               rows: sequence(:rows)
             ) do
-              Model::Table.new(title: title.to_s, rows: rows, attrs: attrs)
+              Model::Table.new(title: title.to_s, rows: Transformer.regroup_table_rows(rows, attrs), attrs: attrs)
             end
 
             # Table with rows and attributes only
@@ -112,7 +112,7 @@ module Coradoc
               delim_char: simple(:delim_char),
               rows: sequence(:rows)
             ) do
-              Model::Table.new(rows: rows, attrs: attrs)
+              Model::Table.new(rows: Transformer.regroup_table_rows(rows, attrs), attrs: attrs)
             end
 
             # Table with rows, id, title, and attributes (full set)
@@ -123,7 +123,7 @@ module Coradoc
               delim_char: simple(:delim_char),
               rows: sequence(:rows)
             ) do
-              Model::Table.new(id: id.to_s, title: title.to_s, rows: rows, attrs: attrs)
+              Model::Table.new(id: id.to_s, title: title.to_s, rows: Transformer.regroup_table_rows(rows, attrs), attrs: attrs)
             end
 
             # Table with id and title (no attributes)
@@ -133,7 +133,7 @@ module Coradoc
               delim_char: simple(:delim_char),
               rows: sequence(:rows)
             ) do
-              Model::Table.new(id: id.to_s, title: title.to_s, rows: rows)
+              Model::Table.new(id: id.to_s, title: title.to_s, rows: Transformer.regroup_table_rows(rows))
             end
 
             # Title
