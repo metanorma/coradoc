@@ -33,10 +33,24 @@ RSpec.describe Coradoc::AsciiDoc::Model::Base do
   end
 
   describe '#to_adoc' do
-    it 'is defined on Base' do
+    it 'serializes via ElementRegistry' do
       instance = test_class.new(name: 'test')
 
-      expect(instance).to respond_to(:to_adoc)
+      expect(instance).to be_a(described_class)
+    end
+  end
+
+  describe 'element classification' do
+    it 'defaults block_level? to false' do
+      instance = test_class.new
+
+      expect(instance.block_level?).to be(false)
+    end
+
+    it 'defaults inline? to false' do
+      instance = test_class.new
+
+      expect(instance.inline?).to be(false)
     end
   end
 

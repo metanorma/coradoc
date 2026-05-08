@@ -29,6 +29,10 @@ module Coradoc
         class Core < Nestable
           include Coradoc::AsciiDoc::Model::Anchorable
 
+          def block_level?
+            true
+          end
+
           attribute :id, :string
           attribute :prefix, :string
           # attribute :anchor, Inline::Anchor, default: -> {

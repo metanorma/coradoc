@@ -26,6 +26,10 @@ module Coradoc
       class Table < Base
         include Coradoc::AsciiDoc::Model::Anchorable
 
+        def block_level?
+          true
+        end
+
         attribute :id, :string
         attribute :title, :string
         attribute :rows, Coradoc::AsciiDoc::Model::TableRow, collection: true

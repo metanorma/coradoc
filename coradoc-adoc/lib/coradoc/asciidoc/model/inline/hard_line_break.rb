@@ -14,6 +14,9 @@ module Coradoc
         #   break.to_adoc # => " +"
         #
         class HardLineBreak < Base
+          def inline?
+            :hardbreak
+          end
         end
       end
     end

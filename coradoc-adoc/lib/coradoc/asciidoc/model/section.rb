@@ -39,6 +39,10 @@ module Coradoc
       class Section < Base
         include Coradoc::AsciiDoc::Model::Anchorable
 
+        def block_level?
+          true
+        end
+
         attribute :id, :string
         attribute :content, :string
         attribute :title, Coradoc::AsciiDoc::Model::Title

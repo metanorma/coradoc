@@ -17,6 +17,9 @@ module Coradoc
       # @see Coradoc::AsciiDoc::Model::Block::Core
       #
       class Attached < Base
+        def block_level?
+          true
+        end
       end
     end
   end

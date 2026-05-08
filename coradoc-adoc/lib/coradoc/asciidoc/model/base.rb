@@ -35,6 +35,16 @@ module Coradoc
 
         attribute :id, :string
 
+        # Element classification for spacing and serialization decisions.
+        # Subclasses override these to declare their level.
+        def block_level?
+          false
+        end
+
+        def inline?
+          false
+        end
+
         # Generate a warning message whenever this method is called.
         def simplify_block_content(content)
           warn '[DEPRECATION] #simplify_block_content is called inside a Lutaml Model.  This is still a WIP.'
