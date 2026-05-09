@@ -109,7 +109,7 @@ module Coradoc
 
           # Render CoreModel inline element
           def render_core_inline_element(element, state = {})
-            case element.format_type
+            case element.resolve_format_type
             when 'bold'
               "<strong>#{convert_content_to_html(element.content, state)}</strong>"
             when 'italic'
@@ -207,24 +207,8 @@ module Coradoc
           end
 
           # Resolve the semantic type from a block via polymorphic dispatch.
-          # Block#resolve_semantic_type handles class-level semantic_type →
-          # block_semantic_type attribute → element_type → delimiter fallback.
           def resolve_block_semantic_type(block)
-            block.resolve_semantic_type ||
-              resolve_format_specific_semantic(block)
-          end
-
-          # Format-specific semantic mappings not covered by the core model
-          def resolve_format_specific_semantic(block)
-            delim = block.delimiter_type
-            return nil unless delim && !delim.empty?
-
-            case delim
-            when "'''", '---', '___', '***' then :horizontal_rule
-            when '[verse]' then :verse
-            when 'comment' then :comment
-            when 'paragraph' then :paragraph
-            end
+            block.resolve_semantic_type
           end
 
           # Render CoreModel structural element
@@ -403,8 +387,8 @@ module Coradoc
             id = nil
             # Extract [[anchor]] prefix
             if text =~ /\A\[\[([^\]]+)\]\]/
-              id = $1
-              text = $'
+              id = ::Regexp.last_match(1)
+              text = ::Regexp.last_match.post_match
             end
             html = process_inline_patterns(escape_html(text))
             [html, id]
@@ -413,13 +397,12 @@ module Coradoc
           # Post-process text to convert inline AsciiDoc patterns to HTML
           def process_inline_patterns(html)
             # Convert `backtick text` to <code>text</code>
-            html = html.gsub(/`([^`]+)`/) { "<code>#{escape_html($1)}</code>" }
+            html = html.gsub(/`([^`]+)`/) { "<code>#{escape_html(::Regexp.last_match(1))}</code>" }
             # Convert <<cross-reference>> to <a href="#ref">ref</a>
-            html = html.gsub(/&lt;&lt;([^&]+)&gt;&gt;/) do
-              ref = $1
+            html.gsub(/&lt;&lt;([^&]+)&gt;&gt;/) do
+              ref = ::Regexp.last_match(1)
               "<a href=\"##{escape_attribute(ref)}\">#{escape_html(ref)}</a>"
             end
-            html
           end
 
           # Render CoreModel TOC

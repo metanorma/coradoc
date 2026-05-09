@@ -12,8 +12,7 @@ module Coradoc
             cleaned_content = cleanup_html_text(node.text)
 
             # Return as CoreModel::InlineElement with format_type "text"
-            Coradoc::CoreModel::InlineElement.new(
-              format_type: 'text',
+            Coradoc::CoreModel::TextElement.new(
               content: cleaned_content
             )
           end

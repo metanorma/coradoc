@@ -19,8 +19,7 @@ module Coradoc
               convert_node_to_core(child, state)
             end.compact
 
-            span = Coradoc::CoreModel::InlineElement.new(
-              format_type: 'span',
+            span = Coradoc::CoreModel::SpanElement.new(
               content: text
             )
 

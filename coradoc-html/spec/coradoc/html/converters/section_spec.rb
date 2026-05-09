@@ -6,8 +6,7 @@ require 'coradoc/core_model'
 RSpec.describe Coradoc::Html::Converters::Section do
   describe '#to_html' do
     it 'converts a basic section to HTML' do
-      paragraph = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      paragraph = Coradoc::CoreModel::ParagraphBlock.new(
         content: 'This is a paragraph.'
       )
 
@@ -70,8 +69,7 @@ RSpec.describe Coradoc::Html::Converters::Section do
     end
 
     it 'escapes HTML in section content' do
-      paragraph = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      paragraph = Coradoc::CoreModel::ParagraphBlock.new(
         content: "<script>alert('xss')</script>"
       )
 

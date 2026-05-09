@@ -15,18 +15,17 @@ module Coradoc
             # CoreModel doesn't have a specific Video type, so we use Block
             # with element_attributes to store video-specific data
             Coradoc::CoreModel::Block.new(
-              element_type: 'video',
               block_semantic_type: :video,
               content: src,
               title: title,
               id: id,
-              width: node['width'],
-              height: node['height'],
               element_attributes: {
                 autoplay: node['autoplay'],
                 loop: node['loop'],
                 controls: node['controls'],
-                poster: node['poster']
+                poster: node['poster'],
+                width: node['width'],
+                height: node['height']
               }.compact
             )
           end

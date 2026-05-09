@@ -14,8 +14,7 @@ module Coradoc
             return nil if content_empty?(content)
 
             # Create CoreModel::InlineElement with format_type "superscript"
-            e = Coradoc::CoreModel::InlineElement.new(
-              format_type: 'superscript',
+            e = Coradoc::CoreModel::SuperscriptElement.new(
               content: content
             )
             result = [leading_whitespace, e, trailing_whitespace].compact

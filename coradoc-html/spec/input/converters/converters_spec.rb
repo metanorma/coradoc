@@ -122,8 +122,8 @@ RSpec.describe Coradoc::Input::Html::Converters do
 
         result = converter.to_coradoc(node, {})
 
-        expect(result).to be_a(Coradoc::CoreModel::Block)
-        expect(result.block_semantic_type).to eq('paragraph')
+        expect(result).to be_a(Coradoc::CoreModel::ParagraphBlock)
+        expect(result.resolve_semantic_type).to eq(:paragraph)
       end
 
       it 'preserves id attribute' do
@@ -167,7 +167,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
 
         # May return array or single element
         elements = Array(result)
-        expect(elements.any? { |e| e.is_a?(Coradoc::CoreModel::InlineElement) && e.format_type == 'bold' }).to be true
+        expect(elements.any? { |e| e.is_a?(Coradoc::CoreModel::BoldElement) }).to be true
       end
     end
   end
@@ -184,7 +184,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
         result = converter.to_coradoc(node, {})
 
         elements = Array(result)
-        expect(elements.any? { |e| e.is_a?(Coradoc::CoreModel::InlineElement) && e.format_type == 'italic' }).to be true
+        expect(elements.any? { |e| e.is_a?(Coradoc::CoreModel::ItalicElement) }).to be true
       end
     end
   end
@@ -202,7 +202,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
 
         elements = Array(result)
         expect(elements.any? do |e|
-          e.is_a?(Coradoc::CoreModel::InlineElement) && e.format_type == 'monospace'
+          e.is_a?(Coradoc::CoreModel::MonospaceElement)
         end).to be true
       end
     end
@@ -220,7 +220,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
         result = converter.to_coradoc(node, {})
 
         elements = Array(result)
-        link = elements.find { |e| e.is_a?(Coradoc::CoreModel::InlineElement) && e.format_type == 'link' }
+        link = elements.find { |e| e.is_a?(Coradoc::CoreModel::LinkElement) }
         expect(link).not_to be_nil
         expect(link.target).to eq('http://example.com')
       end

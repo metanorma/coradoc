@@ -18,8 +18,7 @@ module Coradoc
             c.start_with?('term-')
           end&.sub('term-', '')
 
-          Coradoc::CoreModel::InlineElement.new(
-            format_type: 'term',
+          Coradoc::CoreModel::TermElement.new(
             content: term_text,
             target: term_type || 'term',
             metadata: {

@@ -32,8 +32,7 @@ module Coradoc
           # If text equals href, don't set text (empty link text)
           text = nil if text == href
 
-          Coradoc::CoreModel::InlineElement.new(
-            format_type: 'link',
+          Coradoc::CoreModel::LinkElement.new(
             target: href,
             content: text,
             metadata: { title: title }.compact,

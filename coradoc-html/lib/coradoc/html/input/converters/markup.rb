@@ -14,14 +14,12 @@ module Coradoc
 
             # Wrap whitespace in InlineElement so it can be processed
             leading_whitespace = if leading_ws
-                                   Coradoc::CoreModel::InlineElement.new(
-                                     format_type: 'text',
+                                   Coradoc::CoreModel::TextElement.new(
                                      content: leading_ws
                                    )
                                  end
             trailing_whitespace = if trailing_ws
-                                    Coradoc::CoreModel::InlineElement.new(
-                                      format_type: 'text',
+                                    Coradoc::CoreModel::TextElement.new(
                                       content: trailing_ws
                                     )
                                   end
@@ -33,8 +31,7 @@ module Coradoc
             elsif node.children.empty?
               # Return InlineElement wrapper for whitespace
               if leading_ws
-                Coradoc::CoreModel::InlineElement.new(
-                  format_type: 'text',
+                Coradoc::CoreModel::TextElement.new(
                   content: leading_ws
                 )
               end
@@ -46,8 +43,7 @@ module Coradoc
               text_content, nested = extract_text_and_elements(content)
 
               # Create CoreModel::InlineElement with the appropriate format type
-              inline_element = Coradoc::CoreModel::InlineElement.new(
-                format_type: coradoc_format_type,
+              inline_element = Coradoc::CoreModel::InlineElement.format_type_class(coradoc_format_type).new(
                 content: text_content,
                 nested_elements: nested.empty? ? nil : nested,
                 metadata: { unconstrained: u }
