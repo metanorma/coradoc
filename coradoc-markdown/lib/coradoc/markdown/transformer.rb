@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 require 'parslet'
-require_relative 'parser_util'
 
 module Coradoc
   module Markdown
+    autoload :ParserUtil, "#{__dir__}/parser_util"
+
     # Transformer converts Parslet AST into Markdown Document Model objects.
     #
     # This transformer takes the raw output from the BlockParser/InlineParser

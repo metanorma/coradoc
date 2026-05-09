@@ -127,19 +127,40 @@ module Coradoc
           end
 
           def transform_delimited_block(block)
-            delimiter = block.delimiter_type
+            semantic = resolve_markdown_semantic(block)
 
-            case delimiter
-            when '```', '~'
+            case semantic
+            when :source_code, :listing
               transform_code_block(block)
-            when '>'
+            when :quote, :verse
               transform_blockquote(block)
-            when '---', '***', '___'
+            when :horizontal_rule
               transform_horizontal_rule(block)
-            when '++++'
+            when :pass
               Coradoc::Markdown::Extension.nomarkdown(block.content.to_s)
+            when :literal
+              transform_code_block(block)
             else
               transform_paragraph(block)
+            end
+          end
+
+          def resolve_markdown_semantic(block)
+            # Polymorphic dispatch: typed classes override semantic_type
+            semantic = block.resolve_semantic_type
+            return semantic if semantic
+
+            # Backward compat: derive from delimiter_type
+            markdown_delimiter_to_semantic(block.delimiter_type)
+          end
+
+          def markdown_delimiter_to_semantic(delimiter)
+            case delimiter
+            when '```', '~' then :source_code
+            when '>' then :quote
+            when '---', '***', '___' then :horizontal_rule
+            when '++++' then :pass
+            else nil
             end
           end
 

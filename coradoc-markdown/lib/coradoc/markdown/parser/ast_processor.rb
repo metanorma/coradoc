@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'inline_parser'
-
 module Coradoc
   module Markdown
     module Parser
+      autoload :InlineParser, "#{__dir__}/inline_parser"
+
       # Post-processes the AST produced by BlockParser.
       #
       # This processor handles:

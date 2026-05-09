@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'definition_term'
-require_relative 'definition_item'
-
 module Coradoc
   module Markdown
     # DefinitionList model representing a Kramdown definition list.

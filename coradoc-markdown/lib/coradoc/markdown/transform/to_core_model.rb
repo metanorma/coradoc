@@ -103,18 +103,16 @@ module Coradoc
           end
 
           def transform_code_block(block)
-            Coradoc::CoreModel::Block.new(
+            Coradoc::CoreModel::SourceBlock.new(
               element_type: 'block',
-              delimiter_type: '```',
               content: block.code.to_s,
               language: block.language
             )
           end
 
           def transform_blockquote(blockquote)
-            Coradoc::CoreModel::Block.new(
+            Coradoc::CoreModel::QuoteBlock.new(
               element_type: 'block',
-              delimiter_type: '>',
               content: blockquote.content.to_s
             )
           end
@@ -184,7 +182,7 @@ module Coradoc
           def transform_horizontal_rule(_rule)
             Coradoc::CoreModel::Block.new(
               element_type: 'block',
-              delimiter_type: '---'
+              block_semantic_type: :horizontal_rule
             )
           end
 
@@ -228,9 +226,8 @@ module Coradoc
                 content: math.content.to_s
               )
             else
-              Coradoc::CoreModel::Block.new(
+              Coradoc::CoreModel::PassBlock.new(
                 element_type: 'block',
-                delimiter_type: '++++',
                 content: math.content.to_s,
                 language: 'latexmath'
               )
@@ -247,9 +244,8 @@ module Coradoc
                 content: ext.content.to_s
               )
             when :nomarkdown
-              Coradoc::CoreModel::Block.new(
+              Coradoc::CoreModel::PassBlock.new(
                 element_type: 'block',
-                delimiter_type: '++++',
                 content: ext.content.to_s
               )
             else

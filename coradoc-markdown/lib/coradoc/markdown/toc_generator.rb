@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
-require_relative 'model/base'
-require_relative 'model/heading'
-require_relative 'model/document'
-
 module Coradoc
   module Markdown
+    module Model
+      autoload :Base, "#{__dir__}/model/base"
+      autoload :Heading, "#{__dir__}/model/heading"
+      autoload :Document, "#{__dir__}/model/document"
+    end
+
     # Table of Contents Generator
     #
     # Generates a table of contents from document headings.

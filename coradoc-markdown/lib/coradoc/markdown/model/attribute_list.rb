@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-require_relative '../parser_util'
-
 module Coradoc
   module Markdown
     # Represents an Inline Attribute List (IAL) or Attribute List Definition (ALD)

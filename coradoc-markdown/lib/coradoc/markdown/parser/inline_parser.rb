@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative 'parslet_extras'
-require_relative 'html_entities'
-
 module Coradoc
   module Markdown
     module Parser
+      autoload :ParsletExtras, "#{__dir__}/parslet_extras"
+      autoload :HtmlEntities, "#{__dir__}/html_entities"
+
       class InlineParser < Parslet::Parser
         using ParsletExtras
 

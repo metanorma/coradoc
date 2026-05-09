@@ -71,9 +71,8 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         )
       end
 
-      it 'transforms to CoreModel::Block with code delimiter' do
-        expect(transform).to be_a(Coradoc::CoreModel::Block)
-        expect(transform.delimiter_type).to eq('```')
+      it 'transforms to CoreModel::SourceBlock with code content' do
+        expect(transform).to be_a(Coradoc::CoreModel::SourceBlock)
         expect(transform.content).to eq("def hello\n  puts 'world'\nend")
         expect(transform.language).to eq('ruby')
       end
@@ -84,9 +83,8 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         Coradoc::Markdown::Blockquote.new(content: 'Quoted text')
       end
 
-      it 'transforms to CoreModel::Block with blockquote delimiter' do
-        expect(transform).to be_a(Coradoc::CoreModel::Block)
-        expect(transform.delimiter_type).to eq('>')
+      it 'transforms to CoreModel::QuoteBlock with blockquote content' do
+        expect(transform).to be_a(Coradoc::CoreModel::QuoteBlock)
         expect(transform.content).to eq('Quoted text')
       end
     end
@@ -222,9 +220,9 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         Coradoc::Markdown::HorizontalRule.new
       end
 
-      it 'transforms to CoreModel::Block with hr delimiter' do
+      it 'transforms to CoreModel::Block with horizontal rule semantic type' do
         expect(transform).to be_a(Coradoc::CoreModel::Block)
-        expect(transform.delimiter_type).to eq('---')
+        expect(transform.block_semantic_type).to eq('horizontal_rule')
       end
     end
 

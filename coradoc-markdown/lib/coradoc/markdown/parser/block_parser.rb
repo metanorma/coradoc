@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'parslet_extras'
-
 module Coradoc
   module Markdown
     module Parser
+      autoload :ParsletExtras, "#{__dir__}/parslet_extras"
+
       class BlockParser < Parslet::Parser
         using ParsletExtras
 
