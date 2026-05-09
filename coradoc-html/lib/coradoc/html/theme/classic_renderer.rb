@@ -358,28 +358,23 @@ module Coradoc
           max_level = @options[:sectnumlevels] || 3
           doc = Nokogiri::HTML::DocumentFragment.parse(html)
 
-          # Track section numbers at each level
           counters = Array.new(max_level + 1, 0)
 
-          # Find all headings (h2-h6, h1 is document title)
-          (2..6).each do |level|
-            doc.css("h#{level}").each do |heading|
-              section_level = level - 1 # h2 = level 1, h3 = level 2, etc.
-              next if section_level > max_level
+          doc.traverse do |node|
+            next unless node.element?
+            next unless node.name =~ /\Ah(\d)\z/
+            level = $1.to_i
+            next if level < 2
 
-              # Increment counter for this level
-              counters[section_level] += 1
+            section_level = level - 1
+            next if section_level > max_level
 
-              # Reset deeper level counters
-              ((section_level + 1)..max_level).each { |i| counters[i] = 0 }
+            counters[section_level] += 1
+            ((section_level + 1)..max_level).each { |i| counters[i] = 0 }
 
-              # Build section number (e.g., "1.2.3")
-              section_number = counters[1..section_level].join('.')
-
-              # Add section number to heading
-              number_span = %(<span class="sectnum">#{section_number}. </span>)
-              heading.inner_html = number_span + heading.inner_html
-            end
+            section_number = counters[1..section_level].join('.')
+            number_span = %(<span class="sectnum">#{section_number}. </span>)
+            node.inner_html = number_span + node.inner_html
           end
 
           doc.to_html
