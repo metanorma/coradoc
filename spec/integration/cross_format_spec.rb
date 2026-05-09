@@ -273,8 +273,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       core_doc = Coradoc::CoreModel::StructuralElement.new(
         element_type: 'document',
         children: [
-          Coradoc::CoreModel::Block.new(
-            element_type: 'paragraph',
+          Coradoc::CoreModel::ParagraphBlock.new(
             content: 'This is a paragraph.'
           )
         ]
@@ -331,9 +330,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       core_doc = Coradoc::CoreModel::StructuralElement.new(
         element_type: 'document',
         children: [
-          Coradoc::CoreModel::Block.new(
-            element_type: 'block',
-            delimiter_type: '----', # Canonical source block delimiter
+          Coradoc::CoreModel::SourceBlock.new(
             content: "puts 'hello'",
             language: 'ruby'
           )
@@ -480,8 +477,8 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
         math = Coradoc::Markdown::Math.inline('E = mc^2')
         core = Coradoc::Markdown.to_core_model(math)
 
-        expect(core).to be_a(Coradoc::CoreModel::InlineElement)
-        expect(core.format_type).to eq('stem')
+        expect(core).to be_a(Coradoc::CoreModel::StemElement)
+        expect(core.resolve_format_type).to eq('stem')
         expect(core.content).to eq('E = mc^2')
       end
 
@@ -527,12 +524,12 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
         expect(core).to be_a(Coradoc::CoreModel::Toc)
       end
 
-      it 'transforms comment extension to CoreModel comment Block' do
+      it 'transforms comment extension to CoreModel CommentBlock' do
         comment = Coradoc::Markdown::Extension.comment('This is a comment')
         core = Coradoc::Markdown.to_core_model(comment)
 
-        expect(core).to be_a(Coradoc::CoreModel::Block)
-        expect(core.element_type).to eq('comment')
+        expect(core).to be_a(Coradoc::CoreModel::CommentBlock)
+        expect(core.resolve_semantic_type).to eq(:comment)
         expect(core.content).to eq('This is a comment')
       end
 

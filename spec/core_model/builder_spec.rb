@@ -69,7 +69,7 @@ RSpec.describe Coradoc::CoreModel::Builder do
       result = builder.build_block(ast)
 
       expect(result).to be_a(Coradoc::CoreModel::Block)
-      expect(result.block_semantic_type).to eq('example')
+      expect(result.delimiter_type).to eq('====')
     end
 
     it 'builds an annotation block' do
@@ -100,7 +100,7 @@ RSpec.describe Coradoc::CoreModel::Builder do
       result = builder.build_list(ast)
 
       expect(result).to be_a(Coradoc::CoreModel::ListBlock)
-      expect(result.marker_type).to eq('asterisk')
+      expect(result.marker_type).to eq('unordered')
     end
   end
 
@@ -122,8 +122,8 @@ RSpec.describe Coradoc::CoreModel::Builder do
 
       result = builder.build_inline(ast)
 
-      expect(result).to be_a(Coradoc::CoreModel::InlineElement)
-      expect(result.format_type).to eq('bold')
+      expect(result).to be_a(Coradoc::CoreModel::BoldElement)
+      expect(result.resolve_format_type).to eq('bold')
       expect(result.content).to eq('important text')
     end
 
@@ -132,7 +132,8 @@ RSpec.describe Coradoc::CoreModel::Builder do
 
       result = builder.build_inline(ast)
 
-      expect(result.format_type).to eq('italic')
+      expect(result).to be_a(Coradoc::CoreModel::ItalicElement)
+      expect(result.resolve_format_type).to eq('italic')
     end
   end
 
