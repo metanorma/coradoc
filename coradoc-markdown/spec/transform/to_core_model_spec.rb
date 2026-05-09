@@ -56,9 +56,8 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         Coradoc::Markdown::Paragraph.new(text: 'Some paragraph text')
       end
 
-      it 'transforms to CoreModel::Block with paragraph type' do
-        expect(transform).to be_a(Coradoc::CoreModel::Block)
-        expect(transform.element_type).to eq('paragraph')
+      it 'transforms to CoreModel::ParagraphBlock' do
+        expect(transform).to be_a(Coradoc::CoreModel::ParagraphBlock)
         expect(transform.content).to eq('Some paragraph text')
       end
     end
@@ -147,9 +146,9 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         )
       end
 
-      it 'transforms to CoreModel::InlineElement with link type' do
-        expect(transform).to be_a(Coradoc::CoreModel::InlineElement)
-        expect(transform.format_type).to eq('link')
+      it 'transforms to CoreModel::LinkElement' do
+        expect(transform).to be_a(Coradoc::CoreModel::LinkElement)
+        expect(transform.resolve_format_type).to eq('link')
         expect(transform.target).to eq('https://example.com')
         expect(transform.content).to eq('Example')
       end
@@ -160,9 +159,9 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         Coradoc::Markdown::Emphasis.new(text: 'italic text')
       end
 
-      it 'transforms to CoreModel::InlineElement with italic type' do
-        expect(transform).to be_a(Coradoc::CoreModel::InlineElement)
-        expect(transform.format_type).to eq('italic')
+      it 'transforms to CoreModel::ItalicElement' do
+        expect(transform).to be_a(Coradoc::CoreModel::ItalicElement)
+        expect(transform.resolve_format_type).to eq('italic')
         expect(transform.content).to eq('italic text')
       end
     end
@@ -172,9 +171,9 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         Coradoc::Markdown::Strong.new(text: 'bold text')
       end
 
-      it 'transforms to CoreModel::InlineElement with bold type' do
-        expect(transform).to be_a(Coradoc::CoreModel::InlineElement)
-        expect(transform.format_type).to eq('bold')
+      it 'transforms to CoreModel::BoldElement' do
+        expect(transform).to be_a(Coradoc::CoreModel::BoldElement)
+        expect(transform.resolve_format_type).to eq('bold')
         expect(transform.content).to eq('bold text')
       end
     end
@@ -184,9 +183,9 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         Coradoc::Markdown::Code.new(text: 'inline code')
       end
 
-      it 'transforms to CoreModel::InlineElement with monospace type' do
-        expect(transform).to be_a(Coradoc::CoreModel::InlineElement)
-        expect(transform.format_type).to eq('monospace')
+      it 'transforms to CoreModel::MonospaceElement' do
+        expect(transform).to be_a(Coradoc::CoreModel::MonospaceElement)
+        expect(transform.resolve_format_type).to eq('monospace')
         expect(transform.content).to eq('inline code')
       end
     end
@@ -196,9 +195,9 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         Coradoc::Markdown::Highlight.new(text: 'marked text')
       end
 
-      it 'transforms to CoreModel::InlineElement with highlight type' do
-        expect(transform).to be_a(Coradoc::CoreModel::InlineElement)
-        expect(transform.format_type).to eq('highlight')
+      it 'transforms to CoreModel::HighlightElement' do
+        expect(transform).to be_a(Coradoc::CoreModel::HighlightElement)
+        expect(transform.resolve_format_type).to eq('highlight')
         expect(transform.content).to eq('marked text')
       end
     end
@@ -208,9 +207,9 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         Coradoc::Markdown::Strikethrough.new(text: 'deleted text')
       end
 
-      it 'transforms to CoreModel::InlineElement with strikethrough type' do
-        expect(transform).to be_a(Coradoc::CoreModel::InlineElement)
-        expect(transform.format_type).to eq('strikethrough')
+      it 'transforms to CoreModel::StrikethroughElement' do
+        expect(transform).to be_a(Coradoc::CoreModel::StrikethroughElement)
+        expect(transform.resolve_format_type).to eq('strikethrough')
         expect(transform.content).to eq('deleted text')
       end
     end
@@ -220,9 +219,9 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         Coradoc::Markdown::HorizontalRule.new
       end
 
-      it 'transforms to CoreModel::Block with horizontal rule semantic type' do
-        expect(transform).to be_a(Coradoc::CoreModel::Block)
-        expect(transform.block_semantic_type).to eq('horizontal_rule')
+      it 'transforms to CoreModel::HorizontalRuleBlock' do
+        expect(transform).to be_a(Coradoc::CoreModel::HorizontalRuleBlock)
+        expect(transform.resolve_semantic_type).to eq(:horizontal_rule)
       end
     end
 
