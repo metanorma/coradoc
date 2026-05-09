@@ -26,7 +26,7 @@ module Coradoc
           items = Array(ast[:unordered]).map { |item| build_list_item(item) }
 
           ListBlock.new(
-            marker_type: 'asterisk',
+            marker_type: 'unordered',
             marker_level: 1,
             items: items,
             attributes: build_attributes_private(ast[:attribute_list])
@@ -38,7 +38,7 @@ module Coradoc
           items = Array(ast[:ordered]).map { |item| build_list_item(item) }
 
           ListBlock.new(
-            marker_type: 'numbered',
+            marker_type: 'ordered',
             marker_level: 1,
             items: items,
             attributes: build_attributes_private(ast[:attribute_list])
@@ -91,7 +91,7 @@ module Coradoc
 
           if nested_ast.is_a?(Array)
             ListBlock.new(
-              marker_type: 'asterisk',
+              marker_type: 'unordered',
               marker_level: 2,
               items: nested_ast.map { |item| build_list_item(item) }
             )

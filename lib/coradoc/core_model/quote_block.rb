@@ -6,8 +6,6 @@ module Coradoc
     class QuoteBlock < Block
       def self.semantic_type = :quote
 
-      attribute :block_semantic_type, :string, default: -> { 'quote' }
-
       attribute :attribution, :string
     end
   end

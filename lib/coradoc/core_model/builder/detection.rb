@@ -106,12 +106,12 @@ module Coradoc
         # Detect marker type for lists
         def detect_marker_type(ast)
           marker = ast[:marker]&.to_s
-          return 'asterisk' if marker&.start_with?('*')
-          return 'dash' if marker&.start_with?('-')
-          return 'numbered' if marker&.match?(/^\d+\./) || marker&.start_with?('.')
-          return 'labeled' if marker&.end_with?('::')
+          return 'unordered' if marker&.start_with?('*')
+          return 'unordered' if marker&.start_with?('-')
+          return 'ordered' if marker&.match?(/^\d+\./) || marker&.start_with?('.')
+          return 'definition' if marker&.end_with?('::')
 
-          'asterisk'
+          'unordered'
         end
 
         # Detect marker level
@@ -171,7 +171,7 @@ module Coradoc
 
         # List of list markers
         def list_markers
-          %w[* - . :: numbered]
+          %w[* - . ::]
         end
 
         # List of inline format types

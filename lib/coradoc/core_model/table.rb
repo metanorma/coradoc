@@ -52,22 +52,18 @@ module Coradoc
 
       # @!attribute bgcolor
       #   @return [String, nil] background color (CSS color value)
-      #   @note Populated by HTML converter only
       attribute :bgcolor, :string
 
       # @!attribute color
       #   @return [String, nil] text color (CSS color value)
-      #   @note Populated by HTML converter only
       attribute :color, :string
 
       # @!attribute width
-      #   @return [String, nil] cell width (CSS width value)
-      #   @note Populated by HTML converter only
+      #   @return [String, nil] cell width
       attribute :width, :string
 
       # @!attribute height
-      #   @return [String, nil] cell height (CSS height value)
-      #   @note Populated by HTML converter only
+      #   @return [String, nil] cell height
       attribute :height, :string
 
       # Mixed content (strings and InlineElement objects)
@@ -148,7 +144,6 @@ module Coradoc
 
       # @!attribute frame
       #   @return [String, nil] table frame style ('all', 'topbot', 'sides', 'none')
-      #   @note Populated by HTML converter only
       attribute :frame, :string
 
       # @!attribute grid

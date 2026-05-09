@@ -2,11 +2,10 @@
 
 module Coradoc
   module CoreModel
-    # Represents a list item in AsciiDoc
+    # Represents a list item
     #
     # List items can contain text content, nested lists, and attached blocks.
-    # They support various marker types (asterisk, dash, numbered, etc.) and
-    # can have different nesting levels.
+    # They support various marker types and can have different nesting levels.
     #
     # @example Creating a simple list item
     #   item = ListItem.new(
