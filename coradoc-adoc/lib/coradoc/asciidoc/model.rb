@@ -1,14 +1,16 @@
 # frozen_string_literal: true
 
-# IMPORTANT: Load Base class and Serialization module FIRST
-# These register the asciidoc format with Lutaml::Model, which is needed
-# before any model class can use the asciidoc DSL
-require_relative 'model/base'
+# IMPORTANT: Load Serialization module eagerly — it registers the asciidoc
+# format with Lutaml::Model, which is needed before any model class can
+# use the asciidoc DSL.
 require_relative 'model/serialization'
 
 module Coradoc
   module AsciiDoc
     module Model
+      # Base class for all AsciiDoc model classes (no side effects)
+      autoload :Base, "#{__dir__}/model/base"
+
       # Layer 0: Mixins (no dependencies)
       autoload :Anchorable, "#{__dir__}/model/anchorable"
       autoload :Attached, "#{__dir__}/model/attached"

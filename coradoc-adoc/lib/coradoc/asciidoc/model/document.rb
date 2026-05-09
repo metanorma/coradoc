@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'resolver'
-
 module Coradoc
   module AsciiDoc
     module Model
+      autoload :Resolver, "#{__dir__}/resolver"
+
       # Document model representing an AsciiDoc document.
       #
       # The Document class is the main container for parsed AsciiDoc content.

@@ -15,9 +15,14 @@ module Coradoc
   end
 end
 
-# Load version and parse_error (small files, needed immediately)
+# Autoload version and parse error
 require_relative 'asciidoc/version'
-require_relative 'asciidoc/parse_error'
+
+module Coradoc
+  module AsciiDoc
+    autoload :ParseError, "#{__dir__}/asciidoc/parse_error"
+  end
+end
 
 # Autoload main components (lazy loading)
 module Coradoc

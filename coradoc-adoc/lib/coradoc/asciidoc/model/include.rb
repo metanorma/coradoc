@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'resolvable'
-
 module Coradoc
   module AsciiDoc
     module Model
+      autoload :Resolvable, "#{__dir__}/resolvable"
+
       # Include directive element for AsciiDoc documents.
       #
       # Include directives allow incorporating content from external files
