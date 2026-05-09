@@ -50,12 +50,11 @@ module Coradoc
           # Extract ID if present
           id = element['id']
 
-          Coradoc::CoreModel::Block.new(
-            delimiter_type: '[verse]',
+          Coradoc::CoreModel::VerseBlock.new(
             content: content,
             title: title,
             id: id,
-            metadata: attribution ? { attribution: attribution } : {}
+            attribution: attribution
           )
         end
 

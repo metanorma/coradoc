@@ -10,7 +10,7 @@ module Coradoc
             # Use AnnotationBlock with annotation_type: "sidebar" for aside elements
             Coradoc::CoreModel::AnnotationBlock.new(
               annotation_type: 'sidebar',
-              delimiter_type: '****',
+              block_semantic_type: :sidebar,
               children: content
             )
           end

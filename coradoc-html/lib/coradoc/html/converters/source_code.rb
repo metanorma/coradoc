@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Coradoc
   module Html
     module Converters
+      autoload :Base, "#{__dir__}/base"
       # Converter for SourceCode blocks
       #
       # SourceCode models use the `lines` attribute, while Source models use `content`.

@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'converter_base'
-
 module Coradoc
   module Html
+    autoload :ConverterBase, "#{__dir__}/converter_base"
+
     # Static HTML converter
     #
     # Converts CoreModel documents to static HTML5 output.

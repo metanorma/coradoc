@@ -13,6 +13,12 @@ module Coradoc
       # @example Generate modern HTML output
       #   html = Coradoc::Output::Html.convert_to_html5(document, theme: :modern)
       class ModernRenderer < Base
+        autoload :Serializers, "#{__dir__}/modern/serializers/document_serializer"
+        autoload :JavascriptGenerator, "#{__dir__}/modern/javascript_generator"
+        autoload :TailwindConfigBuilder, "#{__dir__}/modern/tailwind_config_builder"
+        autoload :CSSGenerator, "#{__dir__}/modern/css_generator"
+        autoload :UIComponents, "#{__dir__}/modern/components/ui_components"
+
         # Register this theme
         Registry.register(:modern, self)
 
@@ -111,7 +117,6 @@ module Coradoc
         #
         # @return [Hash] Serialized document data
         def serialize_document
-          require_relative 'modern/serializers/document_serializer'
           Serializers::DocumentSerializer.serialize(@document)
         end
 
@@ -121,7 +126,6 @@ module Coradoc
         # @param config [Hash] Theme configuration
         # @return [String] Vue application JavaScript
         def generate_vue_app(document_data, config)
-          require_relative 'modern/javascript_generator'
           JavascriptGenerator.generate(document_data, config)
         end
 
@@ -130,7 +134,6 @@ module Coradoc
         # @param config [Hash] Theme configuration
         # @return [String] Tailwind configuration script
         def generate_tailwind_config(config)
-          require_relative 'modern/tailwind_config_builder'
           TailwindConfigBuilder.build(config)
         end
 
@@ -139,10 +142,6 @@ module Coradoc
         # @param config [Hash] Theme configuration
         # @return [String] Custom CSS
         def generate_custom_css(config)
-          require_relative 'modern/css_generator'
-          require_relative 'modern/components/ui_components'
-
-          # Use enhanced CSS from UIComponents module
           UIComponents.enhanced_css(config)
         end
 

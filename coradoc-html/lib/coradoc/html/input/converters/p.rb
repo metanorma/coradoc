@@ -13,7 +13,8 @@ module Coradoc
             content = strip_fullwidth_spaces(content)
 
             Coradoc::CoreModel::Block.new(
-              delimiter_type: 'paragraph',
+              block_semantic_type: :paragraph,
+              element_type: 'paragraph',
               children: content,
               id: id
             )

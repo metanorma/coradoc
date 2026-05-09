@@ -10,9 +10,8 @@ module Coradoc
             title_content = extract_title(node)
             content = treat_children_coradoc(node, state)
 
-            # Use CoreModel::Block with delimiter_type "====" for example/figure
-            Coradoc::CoreModel::Block.new(
-              delimiter_type: '====',
+            # Use CoreModel::ExampleBlock for example/figure
+            Coradoc::CoreModel::ExampleBlock.new(
               title: extract_text_from_content(title_content),
               children: content,
               id: id

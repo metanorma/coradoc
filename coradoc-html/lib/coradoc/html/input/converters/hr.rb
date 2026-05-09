@@ -8,7 +8,7 @@ module Coradoc
           def to_coradoc(_node, _state = {})
             Coradoc::CoreModel::Block.new(
               element_type: 'thematic_break',
-              delimiter_type: "'''"
+              block_semantic_type: :horizontal_rule
             )
           end
         end

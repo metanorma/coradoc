@@ -39,8 +39,7 @@ module Coradoc
           # Extract ID if present
           id = element['id']
 
-          Coradoc::CoreModel::Block.new(
-            delimiter_type: '--',
+          Coradoc::CoreModel::OpenBlock.new(
             content: content,
             id: id
           )

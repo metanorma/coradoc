@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Coradoc
   module Html
     module Converters
+      autoload :Base, "#{__dir__}/base"
       # Converter for CoreModel::InlineElement (term) elements
       #
       # Terms are used in definition lists and can have types like "acronym",

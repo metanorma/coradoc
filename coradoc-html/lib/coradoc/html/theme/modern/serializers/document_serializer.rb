@@ -128,17 +128,13 @@ module Coradoc
               # @param block [Coradoc::CoreModel::Block] Block to serialize
               # @return [Hash] Serialized block
               def serialize_core_model_block(block)
-                block_type = case block.element_type
-                             when 'paragraph' then 'paragraph'
-                             when 'block'
-                               case block.delimiter_type
-                               when '----' then 'source'
-                               when '____' then 'quote'
-                               when '====' then 'example'
-                               else 'block'
-                               end
-                             else
-                               'block'
+                semantic = block.block_semantic_type&.to_sym
+                block_type = case semantic
+                             when :paragraph then 'paragraph'
+                             when :source_code then 'source'
+                             when :quote, :verse then 'quote'
+                             when :example then 'example'
+                             else 'block'
                              end
 
                 {

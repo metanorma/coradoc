@@ -123,7 +123,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
         result = converter.to_coradoc(node, {})
 
         expect(result).to be_a(Coradoc::CoreModel::Block)
-        expect(result.delimiter_type).to eq('paragraph')
+        expect(result.block_semantic_type).to eq('paragraph')
       end
 
       it 'preserves id attribute' do

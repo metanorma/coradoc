@@ -9,8 +9,7 @@ module Coradoc
             id = node['id']
             contents = treat_children_coradoc(node, state)
 
-            Coradoc::CoreModel::Block.new(
-              delimiter_type: '--',
+            Coradoc::CoreModel::OpenBlock.new(
               content: contents,
               id: id
             )

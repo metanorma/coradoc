@@ -43,11 +43,10 @@ module Coradoc
           # Extract ID if present
           id = element['id']
 
-          Coradoc::CoreModel::Block.new(
-            delimiter_type: '____',
+          Coradoc::CoreModel::QuoteBlock.new(
             content: content,
             id: id,
-            metadata: attribution ? { attribution: attribution } : {}
+            attribution: attribution
           )
         end
 

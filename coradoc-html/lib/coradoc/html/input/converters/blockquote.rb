@@ -10,11 +10,10 @@ module Coradoc
             cite = node['cite']
             content = treat_children_coradoc(node, state)
 
-            Coradoc::CoreModel::Block.new(
-              delimiter_type: '____',
+            Coradoc::CoreModel::QuoteBlock.new(
               content: content,
               id: id,
-              metadata: cite ? { attribution: cite } : {}
+              attribution: cite
             )
           end
         end

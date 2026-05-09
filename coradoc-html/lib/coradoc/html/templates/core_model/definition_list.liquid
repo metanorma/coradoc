@@ -1,0 +1,11 @@
+{%- comment -%}
+Definition list template
+{%- endcomment -%}
+<dl id="{{ id }}" class="definition-list">
+  {%- for item in items -%}
+    <dt>{{ item.term }}</dt>
+    {%- for def in item.definitions -%}
+    <dd>{{ def }}</dd>
+    {%- endfor -%}
+  {%- endfor -%}
+</dl>

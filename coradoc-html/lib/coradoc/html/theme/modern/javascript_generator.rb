@@ -6,6 +6,8 @@ module Coradoc
       class ModernRenderer
         # Generate Vue.js application code
         module JavascriptGenerator
+          autoload :VueTemplates, "#{__dir__}/vue_template_generator"
+
           class << self
             # Generate Vue application
             #
@@ -17,7 +19,6 @@ module Coradoc
               templates = load_templates
 
               # Get enhanced document template
-              require_relative 'components/ui_components'
               document_template = UIComponents.enhanced_document_template(config)
 
               <<~JS
@@ -293,7 +294,6 @@ module Coradoc
             #
             # @return [Hash] Hash of templates
             def load_templates
-              require_relative 'vue_template_generator'
               {
                 paragraph: VueTemplates.template_for('paragraph'),
                 admonition: VueTemplates.template_for('admonition'),

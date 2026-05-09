@@ -16,7 +16,7 @@ module Coradoc
             # with element_attributes to store video-specific data
             Coradoc::CoreModel::Block.new(
               element_type: 'video',
-              delimiter_type: 'video',
+              block_semantic_type: :video,
               content: src,
               title: title,
               id: id,

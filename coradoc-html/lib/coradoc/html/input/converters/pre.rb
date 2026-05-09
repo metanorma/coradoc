@@ -10,16 +10,20 @@ module Coradoc
             lang = language(node)
             content = extract_text_content(node)
 
-            delimiter_type = lang ? '----' : '....'
-            element_type = lang ? 'source' : 'literal'
-
-            Coradoc::CoreModel::Block.new(
-              element_type: element_type,
-              delimiter_type: delimiter_type,
-              content: content,
-              id: id,
-              language: lang
-            )
+            if lang
+              Coradoc::CoreModel::SourceBlock.new(
+                element_type: 'source',
+                content: content,
+                id: id,
+                language: lang
+              )
+            else
+              Coradoc::CoreModel::LiteralBlock.new(
+                element_type: 'literal',
+                content: content,
+                id: id
+              )
+            end
           end
 
           private

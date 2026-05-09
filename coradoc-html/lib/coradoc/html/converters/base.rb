@@ -169,37 +169,63 @@ module Coradoc
             # Get renderable content (children if present, otherwise content)
             renderable = block.renderable_content
 
-            # Check element_type first for paragraph handling
-            case block.element_type
-            when 'paragraph'
+            semantic = resolve_block_semantic_type(block)
+
+            case semantic
+            when :paragraph
               content = convert_content_to_html(renderable, state)
               return "<p#{attrs}>#{content}</p>" if content && !content.empty?
 
               ''
-            end
-
-            # Then check delimiter_type for special blocks
-            case block.delimiter_type
-            when '----', 'source'
+            when :source_code
               lang = block.language || block.metadata&.dig(:language)
               lang_attr = lang ? " data-lang=\"#{escape_attribute(lang)}\"" : ''
               "<pre#{attrs}><code#{lang_attr}>#{escape_html(block.flat_text)}</code></pre>"
-            when '____'
+            when :quote, :verse
               "<blockquote#{attrs}>#{convert_content_to_html(renderable, state)}</blockquote>"
-            when '===='
+            when :example
               "<div class=\"example\"#{attrs}>#{convert_content_to_html(renderable, state)}</div>"
-            when '****'
+            when :sidebar
               "<aside class=\"sidebar\"#{attrs}>#{convert_content_to_html(renderable, state)}</aside>"
-            when '....'
+            when :literal
               "<pre class=\"literal\"#{attrs}>#{escape_html(block.flat_text)}</pre>"
-            when '++++'
-              block.flat_text # Pass through
-            when 'comment'
-              '' # Skip comments in output
-            when '***', '---', '___'
+            when :pass
+              block.flat_text
+            when :listing
+              "<pre#{attrs}>#{escape_html(block.flat_text)}</pre>"
+            when :open
+              "<div#{attrs}>#{convert_content_to_html(renderable, state)}</div>"
+            when :verse
+              "<blockquote#{attrs}>#{convert_content_to_html(renderable, state)}</blockquote>"
+            when :comment, :reviewer
+              ''
+            when :horizontal_rule
               "<hr#{attrs}>"
             else
               "<div#{attrs}>#{convert_content_to_html(renderable, state)}</div>"
+            end
+          end
+
+          # Resolve the semantic type from a block via polymorphic dispatch.
+          # Block#resolve_semantic_type handles class-level semantic_type →
+          # block_semantic_type attribute → element_type → delimiter fallback.
+          def resolve_block_semantic_type(block)
+            block.resolve_semantic_type ||
+              resolve_format_specific_semantic(block)
+          end
+
+          # Format-specific semantic mappings not covered by the core model
+          def resolve_format_specific_semantic(block)
+            delim = block.delimiter_type
+            return nil unless delim && !delim.empty?
+
+            case delim
+            when "'''", '---', '___', '***' then :horizontal_rule
+            when '[verse]' then :verse
+            when 'comment' then :comment
+            when 'paragraph' then :paragraph
+            else
+              nil
             end
           end
 

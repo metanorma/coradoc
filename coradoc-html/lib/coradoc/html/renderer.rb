@@ -42,13 +42,23 @@ module Coradoc
         'Coradoc::CoreModel::BibliographyEntry' => 'bibliography_entry',
         'Coradoc::CoreModel::StructuralElement' => 'structural_element',
         'Coradoc::CoreModel::Block' => 'block',
+        'Coradoc::CoreModel::SourceBlock' => 'source_block',
+        'Coradoc::CoreModel::ExampleBlock' => 'example_block',
+        'Coradoc::CoreModel::QuoteBlock' => 'quote_block',
+        'Coradoc::CoreModel::SidebarBlock' => 'sidebar_block',
+        'Coradoc::CoreModel::LiteralBlock' => 'literal_block',
+        'Coradoc::CoreModel::PassBlock' => 'pass_block',
+        'Coradoc::CoreModel::ListingBlock' => 'listing_block',
+        'Coradoc::CoreModel::OpenBlock' => 'open_block',
+        'Coradoc::CoreModel::VerseBlock' => 'verse_block',
+        'Coradoc::CoreModel::ReviewerBlock' => 'reviewer_block',
+        'Coradoc::CoreModel::AnnotationBlock' => 'annotation_block',
         'Coradoc::CoreModel::ListBlock' => 'list_block',
         'Coradoc::CoreModel::ListItem' => 'list_item',
         'Coradoc::CoreModel::Table' => 'table',
         'Coradoc::CoreModel::TableRow' => 'table_row',
         'Coradoc::CoreModel::TableCell' => 'table_cell',
         'Coradoc::CoreModel::Image' => 'image',
-        'Coradoc::CoreModel::AnnotationBlock' => 'annotation_block',
         'Coradoc::CoreModel::InlineElement' => 'inline_element',
         'Coradoc::CoreModel::Paragraph' => 'paragraph',
         'Coradoc::CoreModel::Term' => 'term',
@@ -123,6 +133,37 @@ module Coradoc
         else
           render_fallback(element, context)
         end
+      end
+
+      # Render a CoreModel element as a complete HTML5 document
+      #
+      # Wraps the fragment output of #render in a proper HTML5 document
+      # with DOCTYPE, charset, and viewport meta tags.
+      #
+      # @param element [Coradoc::CoreModel::Base] The element to render
+      # @param options [Hash] Document-level options
+      # @option options [String] :lang Document language (default: "en")
+      # @option options [String] :title Document title (default: extracted from element)
+      # @return [String] Complete HTML5 document
+      def render_html5(element, options = {})
+        body_html = render(element)
+
+        lang = options[:lang] || 'en'
+        title = options[:title] || extract_title(element) || 'Untitled Document'
+
+        <<~HTML
+          <!DOCTYPE html>
+          <html lang="#{lang}">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>#{escape_html(title)}</title>
+          </head>
+          <body>
+          #{body_html}
+          </body>
+          </html>
+        HTML
       end
 
       # Get list of all available template names
@@ -318,7 +359,7 @@ module Coradoc
         assigns = {}
 
         # Common attributes that most CoreModel types have
-        %w[id title content children element_type language lines
+        %w[id title content children element_type block_semantic_type language lines
            delimiter_type delimiter_length metadata_entries element_attributes
            text href alt src level entries items rows cells
            anchor term definition abbreviations].each do |key|
@@ -352,6 +393,12 @@ module Coradoc
             .gsub(/>/, '&gt;')
             .gsub(/"/, '&quot;')
             .gsub(/'/, '&#39;')
+      end
+
+      def extract_title(element)
+        return nil unless element
+        return element.title if element.is_a?(Coradoc::CoreModel::StructuralElement) && element.title
+        nil
       end
     end
 

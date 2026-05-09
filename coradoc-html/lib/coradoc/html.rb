@@ -7,21 +7,6 @@ require 'coradoc/html/output'
 
 module Coradoc
   module Html
-    # Register HTML format with coradoc when loaded
-    def self.register_with_coradoc
-      return if @registered
-
-      # Register with the main coradoc registry
-      Coradoc.register_format(:html, self,
-                              aliases: %w[html htm],
-                              extensions: %w[.html .htm])
-
-      @registered = true
-    end
-
-    # Call registration when this module is included/required
-    register_with_coradoc
-
     module Converters
       # Autoload HTML converters - they will be loaded when accessed
       autoload :Base, 'coradoc/html/converters/base'
@@ -263,3 +248,8 @@ module Coradoc
     end
   end
 end
+
+# Register after all module methods are defined
+Coradoc.register_format(:html, Coradoc::Html,
+                        aliases: %w[html htm],
+                        extensions: %w[.html .htm])
