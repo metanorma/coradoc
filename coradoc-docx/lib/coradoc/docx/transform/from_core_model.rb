@@ -242,7 +242,7 @@ module Coradoc
         end
 
         def add_list_to_builder(list_block, builder)
-          list_method = list_block.marker_type == 'numbered' ? :numbered_list : :bullet_list
+          list_method = list_block.marker_type == 'ordered' ? :numbered_list : :bullet_list
 
           if list_method == :numbered_list
             builder.numbered_list do |list|

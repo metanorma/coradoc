@@ -112,13 +112,13 @@ module Coradoc
 
         def marker_type_for(fmt)
           case fmt
-          when 'decimal' then 'numbered'
+          when 'decimal' then 'ordered'
           when 'lowerLetter' then 'lower_alpha'
           when 'upperLetter' then 'upper_alpha'
           when 'lowerRoman' then 'lower_roman'
           when 'upperRoman' then 'upper_roman'
-          when 'bullet' then 'asterisk'
-          else 'numbered'
+          when 'bullet' then 'unordered'
+          else 'ordered'
           end
         end
       end
