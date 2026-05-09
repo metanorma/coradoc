@@ -647,17 +647,26 @@
     box-shadow: var(--shadow-sm);
   }
 
-  .admonitionblock td.icon {
-    width: 80px;
+  .admonitionblock .icon {
+    margin-bottom: var(--space-sm);
+  }
+
+  .admonitionblock td.icon,
+  .admonitionblock .icon {
     vertical-align: top;
     padding-right: var(--space-lg);
   }
 
-  .admonitionblock td.icon .title {
+  .admonitionblock td.icon .title,
+  .admonitionblock .icon .title {
     font-weight: 700;
     text-transform: uppercase;
     font-size: var(--font-size-xs);
     letter-spacing: 0.05em;
+  }
+
+  .admonitionblock .content {
+    margin-top: var(--space-sm);
   }
 
   .admonitionblock.note {
@@ -665,7 +674,8 @@
     background-color: color-mix(in srgb, var(--color-note) 5%, var(--color-background-alt));
   }
 
-  .admonitionblock.note td.icon .title {
+  .admonitionblock.note td.icon .title,
+  .admonitionblock.note .icon .title {
     color: var(--color-note);
   }
 
@@ -674,7 +684,8 @@
     background-color: color-mix(in srgb, var(--color-tip) 5%, var(--color-background-alt));
   }
 
-  .admonitionblock.tip td.icon .title {
+  .admonitionblock.tip td.icon .title,
+  .admonitionblock.tip .icon .title {
     color: var(--color-tip);
   }
 
@@ -683,7 +694,8 @@
     background-color: color-mix(in srgb, var(--color-important) 5%, var(--color-background-alt));
   }
 
-  .admonitionblock.important td.icon .title {
+  .admonitionblock.important td.icon .title,
+  .admonitionblock.important .icon .title {
     color: var(--color-important);
   }
 
@@ -693,7 +705,9 @@
   }
 
   .admonitionblock.warning td.icon .title,
-  .admonitionblock.caution td.icon .title {
+  .admonitionblock.caution td.icon .title,
+  .admonitionblock.warning .icon .title,
+  .admonitionblock.caution .icon .title {
     color: var(--color-caution);
   }
 
@@ -702,7 +716,8 @@
     background-color: color-mix(in srgb, var(--color-danger) 5%, var(--color-background-alt));
   }
 
-  .admonitionblock.danger td.icon .title {
+  .admonitionblock.danger td.icon .title,
+  .admonitionblock.danger .icon .title {
     color: var(--color-danger);
   }
 }

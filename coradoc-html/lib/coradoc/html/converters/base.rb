@@ -279,13 +279,15 @@ module Coradoc
           # Render CoreModel annotation block (admonition)
           def render_core_annotation_block(block, state = {})
             attrs = build_html_attributes(block.id, block.title)
-            type_class = block.annotation_type ? " #{escape_html(block.annotation_type)}" : ''
-            label = block.annotation_label || block.annotation_type&.upcase
+            type = block.annotation_type ? block.annotation_type.to_s.downcase : 'note'
+            label = block.annotation_label || type.upcase
 
-            html = "<div class=\"admonition#{type_class}\"#{attrs}>"
-            html += "<div class=\"admonition-label\">#{escape_html(label)}</div>" if label
+            html = "<div class=\"admonitionblock #{escape_attribute(type)}\"#{attrs}>"
+            html += "<div class=\"icon\"><span class=\"title\">#{escape_html(label)}</span></div>"
             renderable = block.renderable_content
-            html += convert_content_to_html(renderable, state)
+            content_html = convert_content_to_html(renderable, state)
+            content_html = process_inline_patterns(content_html)
+            html += "<div class=\"content\">#{content_html}</div>"
             html += '</div>'
             html
           end
@@ -386,9 +388,38 @@ module Coradoc
 
           # Render CoreModel definition item
           def render_core_definition_item(item, state = {})
-            term_html = convert_content_to_html(item.term, state)
-            definitions_html = (item.definitions || []).map { |d| "<dd>#{convert_content_to_html(d, state)}</dd>" }.join
-            "<dt>#{term_html}</dt>#{definitions_html}"
+            term_text = item.term.to_s
+            term_html, term_id = process_definition_term(term_text)
+            dt_attrs = term_id ? %( id="#{escape_attribute(term_id)}") : ''
+            definitions_html = (item.definitions || []).map do |d|
+              "<dd>#{process_inline_patterns(convert_content_to_html(d, state))}</dd>"
+            end.join
+            "<dt#{dt_attrs}>#{term_html}</dt>#{definitions_html}"
+          end
+
+          # Process definition list term to extract anchor and inline patterns
+          # Returns [html_string, id_or_nil]
+          def process_definition_term(text)
+            id = nil
+            # Extract [[anchor]] prefix
+            if text =~ /\A\[\[([^\]]+)\]\]/
+              id = $1
+              text = $'
+            end
+            html = process_inline_patterns(escape_html(text))
+            [html, id]
+          end
+
+          # Post-process text to convert inline AsciiDoc patterns to HTML
+          def process_inline_patterns(html)
+            # Convert `backtick text` to <code>text</code>
+            html = html.gsub(/`([^`]+)`/) { "<code>#{escape_html($1)}</code>" }
+            # Convert <<cross-reference>> to <a href="#ref">ref</a>
+            html = html.gsub(/&lt;&lt;([^&]+)&gt;&gt;/) do
+              ref = $1
+              "<a href=\"##{escape_attribute(ref)}\">#{escape_html(ref)}</a>"
+            end
+            html
           end
 
           # Render CoreModel TOC

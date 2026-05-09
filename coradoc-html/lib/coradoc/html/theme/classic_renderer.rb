@@ -78,11 +78,15 @@ module Coradoc
           lang = @options[:lang] || 'en'
           body_classes = build_body_classes
 
+          # Add auto-generated IDs to headings before section numbering
+          # so IDs are generated from clean titles without number prefixes
+          final_body = add_heading_ids(html_body)
+
           # Apply section numbering if enabled
           final_body = if @options[:sectnums]
-                         apply_section_numbering(html_body)
+                         apply_section_numbering(final_body)
                        else
-                         html_body
+                         final_body
                        end
 
           # Build TOC if enabled
@@ -378,6 +382,53 @@ module Coradoc
           end
 
           doc.to_html
+        end
+
+        # Add auto-generated IDs to headings that lack them
+        #
+        # @param html [String] HTML content
+        # @return [String] HTML with heading IDs
+        def add_heading_ids(html)
+          require 'nokogiri'
+
+          doc = Nokogiri::HTML::DocumentFragment.parse(html)
+          used_ids = Set.new
+
+          # First pass: collect existing IDs
+          doc.css('[id]').each { |node| used_ids.add(node['id']) }
+
+          # Second pass: add IDs to headings without them
+          doc.css('h1, h2, h3, h4, h5, h6').each do |node|
+            next if node['id']
+
+            generated = generate_heading_id(node)
+            next if generated.empty?
+
+            id = generated
+            # Ensure uniqueness
+            if used_ids.include?(id)
+              suffix = 2
+              id = "#{generated}_#{suffix}" while used_ids.include?(id)
+            end
+
+            node['id'] = id
+            used_ids.add(id)
+          end
+
+          doc.to_html
+        end
+
+        # Generate an ID from heading text content
+        #
+        # @param node [Nokogiri::XML::Element] Heading element
+        # @return [String] Generated ID
+        def generate_heading_id(node)
+          text = node.text.strip
+          id = '_' + text.downcase
+                    .gsub(/[^a-z0-9\s]/, '')
+                    .gsub(/\s+/, '_')
+                    .gsub(/^_+|_+$/, '')
+          id.empty? ? '_' : id
         end
       end
     end
