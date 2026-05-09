@@ -55,7 +55,7 @@ module Coradoc
         end
 
         def source_block(n_deep)
-          block_style(n_deep, '-', 4)
+          block_style(n_deep, '-', 4, verbatim: true)
         end
 
         # Open block: exactly 2 dashes (cannot nest within itself)
@@ -110,7 +110,7 @@ module Coradoc
         # @param delimiter [String] The delimiter character ("=", "-", "_", "*", "+")
         # @param repeater [Integer] Minimum number of delimiter characters (default: 4)
         # @param type [Symbol] Block type for special handling (e.g., :pass)
-        def block_style(n_deep = 3, delimiter = '*', repeater = 4, type = nil)
+        def block_style(n_deep = 3, delimiter = '*', repeater = 4, type = nil, verbatim: false)
           # repeat(repeater,) means repeater or more characters
           current_delimiter = str(delimiter).repeat(repeater).capture(:delimit)
           closing_delimiter = dynamic do |_s, c|
@@ -124,7 +124,7 @@ module Coradoc
             closing_pattern = str(delim_str) >> newline
 
             # Build content that doesn't match the closing delimiter
-            content = block_image | list | text_line(false, unguarded: true) | empty_line.as(:line_break)
+            content = block_image | list | text_line(false, unguarded: true, verbatim: verbatim) | empty_line.as(:line_break)
             if n_deep.positive?
               # For nested blocks, also prevent them from consuming the closing delimiter
               content |= block(n_deep - 1)
@@ -139,7 +139,7 @@ module Coradoc
             line_start? >>
             current_delimiter.as(:delimiter) >> newline >>
             if type == :pass
-              (text_line(false, unguarded: true) | empty_line.as(:line_break)).repeat(1).as(:lines)
+              (text_line(false, unguarded: true, verbatim: verbatim) | empty_line.as(:line_break)).repeat(1).as(:lines)
             else
               # Use dynamic block content that respects closing delimiter
               block_content_with_closing.as(:lines)

@@ -103,14 +103,15 @@ module Coradoc
           def transform_block(block)
             content = block.renderable_content
 
-            if block.element_type == 'paragraph'
+            semantic = resolve_semantic_type(block)
+
+            case semantic
+            when :paragraph
               return Coradoc::AsciiDoc::Model::Paragraph.new(
                 id: block.id,
                 content: create_text_elements(content)
               )
-            end
-
-            if block.element_type == 'comment'
+            when :comment
               return Coradoc::AsciiDoc::Model::CommentBlock.new(
                 text: safe_content_to_string(content)
               )
@@ -118,42 +119,67 @@ module Coradoc
 
             content_text = safe_content_to_string(content)
 
-            case block.delimiter_type
-            when 'source'
+            case semantic
+            when :source_code
               Coradoc::AsciiDoc::Model::Block::SourceCode.new(
                 id: block.id,
                 title: block.title,
                 lines: content_text.split("\n"),
                 attributes: build_attributes(block)
               )
-            when 'quote'
+            when :quote
               Coradoc::AsciiDoc::Model::Block::Quote.new(
                 id: block.id,
                 title: block.title,
                 lines: content_text.split("\n")
               )
-            when 'example'
+            when :example
               Coradoc::AsciiDoc::Model::Block::Example.new(
                 id: block.id,
                 title: block.title,
                 lines: content_text.split("\n")
               )
-            when 'sidebar'
+            when :sidebar
               Coradoc::AsciiDoc::Model::Block::Side.new(
                 id: block.id,
                 title: block.title,
                 lines: content_text.split("\n")
               )
-            when 'literal'
+            when :literal
               Coradoc::AsciiDoc::Model::Block::Literal.new(
                 id: block.id,
                 title: block.title,
                 lines: content_text.split("\n")
               )
-            when 'paragraph'
-              Coradoc::AsciiDoc::Model::Paragraph.new(
+            when :open
+              Coradoc::AsciiDoc::Model::Block::Open.new(
                 id: block.id,
-                content: create_text_elements(content)
+                title: block.title,
+                lines: content_text.split("\n")
+              )
+            when :pass
+              Coradoc::AsciiDoc::Model::Block::Pass.new(
+                id: block.id,
+                title: block.title,
+                lines: content_text.split("\n")
+              )
+            when :listing
+              Coradoc::AsciiDoc::Model::Block::Listing.new(
+                id: block.id,
+                title: block.title,
+                lines: content_text.split("\n")
+              )
+            when :verse
+              Coradoc::AsciiDoc::Model::Block::Quote.new(
+                id: block.id,
+                title: block.title,
+                lines: content_text.split("\n")
+              )
+            when :reviewer
+              Coradoc::AsciiDoc::Model::Block::ReviewerComment.new(
+                id: block.id,
+                title: block.title,
+                lines: content_text.split("\n")
               )
             else
               delim = block.delimiter_type.to_s
@@ -349,6 +375,51 @@ module Coradoc
           end
 
           private
+
+          # Reverse mapping: semantic type → AsciiDoc delimiter generation
+          SEMANTIC_TO_ADOC_BLOCK = {
+            source_code: :source_code,
+            quote: :quote,
+            example: :example,
+            sidebar: :sidebar,
+            literal: :literal,
+            pass: :pass,
+            open: :open,
+            verse: :open,
+            paragraph: :paragraph,
+            comment: :comment
+          }.freeze
+
+          # Map raw delimiter_type string → semantic type (backward compat)
+          DELIMITER_CHAR_TO_SEMANTIC = {
+            '-' => :source_code,
+            '=' => :example,
+            '_' => :quote,
+            '*' => :sidebar,
+            '.' => :literal,
+            '+' => :pass
+          }.freeze
+
+          def resolve_semantic_type(block)
+            # Polymorphic dispatch: typed classes override semantic_type
+            semantic = block.resolve_semantic_type
+            return semantic if semantic
+
+            # Format-specific fallback from delimiter_type
+            delim = block.delimiter_type
+            return nil unless delim && !delim.empty?
+
+            case delim
+            when 'comment' then :comment
+            when 'paragraph' then :paragraph
+            when '[verse]' then :verse
+            when '>' then :quote
+            when "'''", '---', '___', '***' then :horizontal_rule
+            else
+              char = delim[0]
+              DELIMITER_CHAR_TO_SEMANTIC[char] || nil
+            end
+          end
 
           def safe_content_to_string(content)
             case content

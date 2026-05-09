@@ -31,21 +31,23 @@ module Coradoc
             when Coradoc::AsciiDoc::Model::Paragraph
               transform_paragraph(model)
             when Coradoc::AsciiDoc::Model::Block::SourceCode
-              transform_block(model, 'source')
+              transform_source_block(model)
             when Coradoc::AsciiDoc::Model::Block::Quote
-              transform_block(model, 'quote')
+              transform_typed_block(model, Coradoc::CoreModel::QuoteBlock)
             when Coradoc::AsciiDoc::Model::Block::Example
-              transform_block(model, 'example')
+              transform_typed_block(model, Coradoc::CoreModel::ExampleBlock)
             when Coradoc::AsciiDoc::Model::Block::Side
-              transform_block(model, 'sidebar')
+              transform_typed_block(model, Coradoc::CoreModel::SidebarBlock)
             when Coradoc::AsciiDoc::Model::Block::Literal
-              transform_block(model, 'literal')
+              transform_typed_block(model, Coradoc::CoreModel::LiteralBlock)
             when Coradoc::AsciiDoc::Model::Block::Open
-              transform_block(model, 'open')
+              transform_typed_block(model, Coradoc::CoreModel::OpenBlock)
             when Coradoc::AsciiDoc::Model::Block::Pass
-              transform_block(model, 'pass')
+              transform_typed_block(model, Coradoc::CoreModel::PassBlock)
+            when Coradoc::AsciiDoc::Model::Block::Listing
+              transform_typed_block(model, Coradoc::CoreModel::ListingBlock)
             when Coradoc::AsciiDoc::Model::Block::Core
-              transform_block(model, model.delimiter)
+              transform_block(model, model.delimiter.to_s)
             when Coradoc::AsciiDoc::Model::Table
               transform_table(model)
             when Coradoc::AsciiDoc::Model::TableRow
@@ -125,38 +127,71 @@ module Coradoc
 
             Coradoc::CoreModel::Block.new(
               element_type: 'paragraph',
+              block_semantic_type: :paragraph,
               id: para.id,
               content: extract_text_content(para.content),
               children: children
             )
           end
 
-          def transform_block(block, delimiter_type)
-            content_lines = Array(block.lines).map do |line|
-              case line
-              when Coradoc::AsciiDoc::Model::Base
-                transformed = transform(line)
-                if transformed.is_a?(Coradoc::CoreModel::Base)
-                  extract_core_model_text(transformed)
-                else
-                  transformed.to_s
-                end
-              else
-                line.to_s
-              end
+          def transform_source_block(block)
+            content_lines = Array(block.lines).reject do |line|
+              line.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
+                line.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
+            end.map do |line|
+              extract_text_content(line)
             end.join("\n")
 
-            language = block.lang || block.attributes&.[]('language') ||
-                       block.attributes&.positional&.first
+            language = extract_block_language(block)
 
-            Coradoc::CoreModel::Block.new(
+            Coradoc::CoreModel::SourceBlock.new(
               element_type: 'block',
-              delimiter_type: delimiter_type,
               id: block.id,
               title: extract_title_text(block.title),
               content: content_lines,
               language: language
             )
+          end
+
+          def transform_block(block, semantic_type_or_delimiter)
+            content_lines = extract_block_lines(block)
+            semantic_type = if semantic_type_or_delimiter.is_a?(Symbol)
+                              semantic_type_or_delimiter
+                            else
+                              asciidoc_delimiter_to_semantic(semantic_type_or_delimiter)
+                            end
+
+            Coradoc::CoreModel::Block.new(
+              element_type: 'block',
+              block_semantic_type: semantic_type,
+              delimiter_type: semantic_type_or_delimiter.is_a?(String) ? semantic_type_or_delimiter : nil,
+              id: block.id,
+              title: extract_title_text(block.title),
+              content: content_lines,
+              language: extract_block_language(block)
+            )
+          end
+
+          def transform_typed_block(block, klass, extra_attrs = {})
+            content_lines = extract_block_lines(block)
+
+            klass.new(
+              element_type: 'block',
+              id: block.id,
+              title: extract_title_text(block.title),
+              content: content_lines,
+              language: extract_block_language(block),
+              **extra_attrs
+            )
+          end
+
+          def extract_block_lines(block)
+            Array(block.lines).reject do |line|
+              line.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
+                line.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
+            end.map do |line|
+              extract_text_content(line)
+            end.join("\n")
           end
 
           def transform_table(table)
@@ -322,9 +357,42 @@ module Coradoc
 
           private
 
+          # AsciiDoc delimiters are any length of the same character (4+ for most, 2+ for open).
+          # We map by the first character to handle all lengths correctly.
+          ADOC_DELIMITER_CHAR_TO_SEMANTIC = {
+            '-' => :source_code,
+            '=' => :example,
+            '_' => :quote,
+            '*' => :sidebar,
+            '.' => :literal,
+            '+' => :pass
+          }.freeze
+
+          def asciidoc_delimiter_to_semantic(delimiter)
+            return :open if delimiter && delimiter.length < 4
+
+            char = delimiter&.[](0)
+            ADOC_DELIMITER_CHAR_TO_SEMANTIC[char] || :open
+          end
+
           def extract_document_attributes(doc)
             return {} unless doc.document_attributes
             doc.document_attributes.to_hash
+          end
+
+          def extract_block_language(block)
+            lang = block.lang
+            return lang if lang.is_a?(String) && !lang.empty?
+
+            attrs = block.attributes
+            return nil unless attrs.is_a?(Coradoc::AsciiDoc::Model::AttributeList)
+
+            named_lang = attrs['language']
+            return named_lang.to_s if named_lang
+
+            # For [source,yaml], the language is the second positional attribute
+            positional = attrs.positional
+            positional[1]&.value&.to_s if positional.length > 1
           end
 
           def transform_inline_content(content)

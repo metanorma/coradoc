@@ -41,18 +41,18 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
     end
 
     context 'when transforming a block' do
-      it 'transforms a CoreModel block to AsciiDoc' do
+      it 'transforms a CoreModel example block to AsciiDoc' do
         block = Coradoc::CoreModel::Block.new(
           id: 'example-1',
+          block_semantic_type: :example,
           delimiter_type: '====',
           content: "Line 1\nLine 2"
         )
 
         result = transformer.transform(block)
 
-        expect(result).to be_a(Coradoc::AsciiDoc::Model::Block::Core)
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Block::Example)
         expect(result.id).to eq('example-1')
-        expect(result.delimiter).to eq('====')
       end
     end
 

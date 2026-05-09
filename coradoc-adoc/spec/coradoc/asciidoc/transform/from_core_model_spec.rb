@@ -32,15 +32,16 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
     end
 
     context 'with Block' do
-      it 'transforms a CoreModel Block to AsciiDoc Block' do
+      it 'transforms a CoreModel Block to AsciiDoc Example Block' do
         core_block = Coradoc::CoreModel::Block.new(
+          block_semantic_type: :example,
           delimiter_type: '====',
           content: 'Example content'
         )
 
         result = described_class.transform(core_block)
 
-        expect(result).to be_a(Coradoc::AsciiDoc::Model::Block::Core)
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Block::Example)
       end
     end
 

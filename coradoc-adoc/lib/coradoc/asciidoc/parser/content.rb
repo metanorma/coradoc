@@ -22,8 +22,10 @@ module Coradoc
 
         # Text
         # :zero :one :many
-        def text_line(many_breaks = false, unguarded: false)
-          tl = if unguarded
+        def text_line(many_breaks = false, unguarded: false, verbatim: false)
+          tl = if verbatim
+                 text_any.as(:text)
+               elsif unguarded
                  literal_space? >> text_any.as(:text)
                else
                  (asciidoc_char_with_id.absent? | element_id_inline) >>

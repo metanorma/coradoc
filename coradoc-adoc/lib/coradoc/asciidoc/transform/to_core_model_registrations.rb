@@ -35,25 +35,30 @@ module Coradoc
           end
 
           def register_block_transformers!
-            [
-              [Coradoc::AsciiDoc::Model::Block::SourceCode, 'source'],
-              [Coradoc::AsciiDoc::Model::Block::Quote, 'quote'],
-              [Coradoc::AsciiDoc::Model::Block::Example, 'example'],
-              [Coradoc::AsciiDoc::Model::Block::Side, 'sidebar'],
-              [Coradoc::AsciiDoc::Model::Block::Literal, 'literal'],
-              [Coradoc::AsciiDoc::Model::Block::Open, 'open'],
-              [Coradoc::AsciiDoc::Model::Block::Pass, 'pass']
-            ].each do |block_class, delimiter_type|
+            Registry.register_with_priority(
+              Coradoc::AsciiDoc::Model::Block::SourceCode,
+              METHOD_DISPATCH[:transform_source_block],
+              priority: 10
+            )
+
+            {
+              Coradoc::AsciiDoc::Model::Block::Quote => Coradoc::CoreModel::QuoteBlock,
+              Coradoc::AsciiDoc::Model::Block::Example => Coradoc::CoreModel::ExampleBlock,
+              Coradoc::AsciiDoc::Model::Block::Side => Coradoc::CoreModel::SidebarBlock,
+              Coradoc::AsciiDoc::Model::Block::Literal => Coradoc::CoreModel::LiteralBlock,
+              Coradoc::AsciiDoc::Model::Block::Open => Coradoc::CoreModel::OpenBlock,
+              Coradoc::AsciiDoc::Model::Block::Pass => Coradoc::CoreModel::PassBlock
+            }.each do |block_class, core_model_class|
               Registry.register_with_priority(
                 block_class,
-                block_wrapper(delimiter_type),
+                typed_block_wrapper(core_model_class),
                 priority: 10
               )
             end
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Block::Core,
-              block_wrapper(nil) # uses model.delimiter at call time
+              block_model_wrapper
             )
 
             Registry.register(
@@ -200,16 +205,35 @@ module Coradoc
             end
           end
 
+          METHOD_DISPATCH = {
+            transform_document: ->(model) { ToCoreModel.transform_document(model) },
+            transform_section: ->(model) { ToCoreModel.transform_section(model) },
+            transform_paragraph: ->(model) { ToCoreModel.transform_paragraph(model) },
+            transform_source_block: ->(model) { ToCoreModel.transform_source_block(model) },
+            transform_link: ->(model) { ToCoreModel.transform_link(model) },
+            transform_cross_reference: ->(model) { ToCoreModel.transform_cross_reference(model) },
+            transform_inline_footnote: ->(model) { ToCoreModel.transform_inline_footnote(model) },
+            transform_stem: ->(model) { ToCoreModel.transform_stem(model) },
+            transform_table: ->(model) { ToCoreModel.transform_table(model) },
+            transform_table_row: ->(model) { ToCoreModel.transform_table_row(model) },
+            transform_table_cell: ->(model) { ToCoreModel.transform_table_cell(model) },
+            transform_term: ->(model) { ToCoreModel.transform_term(model) },
+            transform_admonition: ->(model) { ToCoreModel.transform_admonition(model) },
+            transform_image: ->(model) { ToCoreModel.transform_image(model) },
+            transform_bibliography: ->(model) { ToCoreModel.transform_bibliography(model) },
+            transform_bibliography_entry: ->(model) { ToCoreModel.transform_bibliography_entry(model) }
+          }.freeze
+
           def method_wrapper(method_name)
-            ->(model) { ToCoreModel.public_send(method_name, model) }
+            METHOD_DISPATCH.fetch(method_name)
           end
 
-          def block_wrapper(delimiter_type)
-            if delimiter_type
-              ->(model) { ToCoreModel.transform_block(model, delimiter_type) }
-            else
-              ->(model) { ToCoreModel.transform_block(model, model.delimiter) }
-            end
+          def typed_block_wrapper(klass)
+            ->(model) { ToCoreModel.transform_typed_block(model, klass) }
+          end
+
+          def block_model_wrapper
+            ->(model) { ToCoreModel.transform_block(model, model.delimiter.to_s) }
           end
 
           def list_wrapper(marker_type)

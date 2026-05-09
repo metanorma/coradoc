@@ -54,6 +54,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModel do
         result = transformer.transform(block)
 
         expect(result).to be_a(Coradoc::CoreModel::Block)
+        expect(result.block_semantic_type).to eq('example')
         expect(result.delimiter_type).to eq('====')
         expect(result.content).to eq("Line 1\nLine 2")
       end
