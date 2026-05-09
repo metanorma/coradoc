@@ -85,7 +85,7 @@ RSpec.describe Coradoc::DocumentBuilder do
       end
 
       code_block = builder.document.children.first
-      expect(code_block.element_type).to eq('block')
+      expect(code_block).to be_a(Coradoc::CoreModel::SourceBlock)
       expect(code_block.content).to eq("puts 'hello'")
       expect(code_block.language).to eq('ruby')
     end
@@ -107,7 +107,7 @@ RSpec.describe Coradoc::DocumentBuilder do
       end
 
       quote = builder.document.children.first
-      expect(quote.delimiter_type).to eq('____')
+      expect(quote).to be_a(Coradoc::CoreModel::QuoteBlock)
       expect(quote.content).to eq('To be or not to be')
     end
 
@@ -117,7 +117,7 @@ RSpec.describe Coradoc::DocumentBuilder do
       end
 
       quote = builder.document.children.first
-      expect(quote.metadata('attribution')).to eq('Shakespeare')
+      expect(quote.attribution).to eq('Shakespeare')
     end
   end
 

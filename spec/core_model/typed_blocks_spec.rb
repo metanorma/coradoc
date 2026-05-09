@@ -27,9 +27,10 @@ RSpec.describe 'CoreModel typed block subclasses' do
     end
 
     describe "#{klass.name}.new" do
-      it 'sets default block_semantic_type' do
+      it 'does not require block_semantic_type (class IS the type)' do
         block = klass.new
-        expect(block.block_semantic_type).to eq(expected_semantic.to_s)
+        expect(block.block_semantic_type).to be_nil
+        expect(block.resolve_semantic_type).to eq(expected_semantic)
       end
 
       it 'inherits from Block' do
@@ -39,15 +40,15 @@ RSpec.describe 'CoreModel typed block subclasses' do
   end
 
   types = {
-    Coradoc::CoreModel::SourceBlock   => :source_code,
-    Coradoc::CoreModel::ExampleBlock  => :example,
-    Coradoc::CoreModel::QuoteBlock    => :quote,
-    Coradoc::CoreModel::SidebarBlock  => :sidebar,
-    Coradoc::CoreModel::LiteralBlock  => :literal,
-    Coradoc::CoreModel::PassBlock     => :pass,
-    Coradoc::CoreModel::ListingBlock  => :listing,
-    Coradoc::CoreModel::OpenBlock     => :open,
-    Coradoc::CoreModel::VerseBlock    => :verse,
+    Coradoc::CoreModel::SourceBlock => :source_code,
+    Coradoc::CoreModel::ExampleBlock => :example,
+    Coradoc::CoreModel::QuoteBlock => :quote,
+    Coradoc::CoreModel::SidebarBlock => :sidebar,
+    Coradoc::CoreModel::LiteralBlock => :literal,
+    Coradoc::CoreModel::PassBlock => :pass,
+    Coradoc::CoreModel::ListingBlock => :listing,
+    Coradoc::CoreModel::OpenBlock => :open,
+    Coradoc::CoreModel::VerseBlock => :verse,
     Coradoc::CoreModel::ReviewerBlock => :reviewer
   }
 
@@ -93,20 +94,31 @@ RSpec.describe 'CoreModel typed block subclasses' do
     end
   end
 
+  describe 'ParagraphBlock' do
+    it 'resolves :paragraph from class hierarchy' do
+      block = Coradoc::CoreModel::ParagraphBlock.new(content: 'text')
+      expect(block.resolve_semantic_type).to eq(:paragraph)
+    end
+  end
+
+  describe 'CommentBlock' do
+    it 'resolves :comment from class hierarchy' do
+      block = Coradoc::CoreModel::CommentBlock.new(content: 'a comment')
+      expect(block.resolve_semantic_type).to eq(:comment)
+    end
+  end
+
+  describe 'HorizontalRuleBlock' do
+    it 'resolves :horizontal_rule from class hierarchy' do
+      block = Coradoc::CoreModel::HorizontalRuleBlock.new
+      expect(block.resolve_semantic_type).to eq(:horizontal_rule)
+    end
+  end
+
   describe 'Block.resolve_semantic_type dispatch' do
     it 'returns nil for generic Block' do
       block = Coradoc::CoreModel::Block.new
       expect(block.resolve_semantic_type).to be_nil
-    end
-
-    it 'resolves paragraph from element_type' do
-      block = Coradoc::CoreModel::Block.new(element_type: 'paragraph')
-      expect(block.resolve_semantic_type).to eq(:paragraph)
-    end
-
-    it 'resolves comment from element_type' do
-      block = Coradoc::CoreModel::Block.new(element_type: 'comment')
-      expect(block.resolve_semantic_type).to eq(:comment)
     end
 
     it 'resolves from block_semantic_type attribute when no class override' do
@@ -114,23 +126,8 @@ RSpec.describe 'CoreModel typed block subclasses' do
       expect(block.resolve_semantic_type).to eq(:sidebar)
     end
 
-    it 'resolves from delimiter_type for 4+ char delimiters' do
-      block = Coradoc::CoreModel::Block.new(delimiter_type: '----')
-      expect(block.resolve_semantic_type).to eq(:source_code)
-    end
-
-    it 'ignores short delimiters (< 4 chars)' do
-      block = Coradoc::CoreModel::Block.new(delimiter_type: '---')
-      expect(block.resolve_semantic_type).to be_nil
-    end
-
     it 'prefers class-level semantic_type over block_semantic_type attribute' do
       block = Coradoc::CoreModel::SourceBlock.new(block_semantic_type: 'listing')
-      expect(block.resolve_semantic_type).to eq(:source_code)
-    end
-
-    it 'prefers class-level over element_type' do
-      block = Coradoc::CoreModel::SourceBlock.new(element_type: 'paragraph')
       expect(block.resolve_semantic_type).to eq(:source_code)
     end
   end
