@@ -124,7 +124,8 @@ module Coradoc
             closing_pattern = str(delim_str) >> newline
 
             # Build content that doesn't match the closing delimiter
-            content = block_image | list | text_line(false, unguarded: true, verbatim: verbatim) | empty_line.as(:line_break)
+            content = block_image | list | text_line(false, unguarded: true,
+                                                            verbatim: verbatim) | empty_line.as(:line_break)
             if n_deep.positive?
               # For nested blocks, also prevent them from consuming the closing delimiter
               content |= block(n_deep - 1)

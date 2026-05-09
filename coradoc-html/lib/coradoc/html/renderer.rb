@@ -398,6 +398,7 @@ module Coradoc
       def extract_title(element)
         return nil unless element
         return element.title if element.is_a?(Coradoc::CoreModel::StructuralElement) && element.title
+
         nil
       end
     end

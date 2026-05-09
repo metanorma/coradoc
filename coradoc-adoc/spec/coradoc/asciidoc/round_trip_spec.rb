@@ -257,4 +257,3 @@ RSpec.describe 'Round-Trip Conversion' do
     end
   end
 end
-# rubocop:enable RSpec/DescribeClass

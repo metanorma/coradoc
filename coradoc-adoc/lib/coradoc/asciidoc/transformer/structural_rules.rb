@@ -123,7 +123,8 @@ module Coradoc
               delim_char: simple(:delim_char),
               rows: sequence(:rows)
             ) do
-              Model::Table.new(id: id.to_s, title: title.to_s, rows: Transformer.regroup_table_rows(rows, attrs), attrs: attrs)
+              Model::Table.new(id: id.to_s, title: title.to_s, rows: Transformer.regroup_table_rows(rows, attrs),
+                               attrs: attrs)
             end
 
             # Table with id and title (no attributes)

@@ -224,8 +224,6 @@ module Coradoc
             when '[verse]' then :verse
             when 'comment' then :comment
             when 'paragraph' then :paragraph
-            else
-              nil
             end
           end
 

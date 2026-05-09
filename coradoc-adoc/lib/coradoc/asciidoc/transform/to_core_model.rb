@@ -377,6 +377,7 @@ module Coradoc
 
           def extract_document_attributes(doc)
             return {} unless doc.document_attributes
+
             doc.document_attributes.to_hash
           end
 

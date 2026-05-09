@@ -320,9 +320,7 @@ RSpec.describe 'Integration pipeline fixes' do
                  el.children
                end
 
-    if children
-      children.each { |c| xrefs.concat(find_all_xrefs(c)) }
-    end
+    children&.each { |c| xrefs.concat(find_all_xrefs(c)) }
 
     xrefs
   end

@@ -120,4 +120,3 @@ RSpec.describe 'Developer Experience API' do
     end
   end
 end
-# rubocop:enable RSpec/DescribeClass
