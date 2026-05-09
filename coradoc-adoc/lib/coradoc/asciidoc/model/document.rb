@@ -138,8 +138,7 @@ module Coradoc
                 sections << element
 
               else
-                warn "Unknown element type: #{element.class}"
-                warn "Element: #{element.inspect}"
+                next if element.is_a?(String)
               end
             end
 

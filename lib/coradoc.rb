@@ -35,6 +35,7 @@
 #   Coradoc.serialize(doc, to: :html)
 
 require_relative 'coradoc/coradoc'
+require_relative 'coradoc/version'
 
 module Coradoc
   autoload :CLI, 'coradoc/cli'
