@@ -156,8 +156,8 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModel do
 
         result = described_class.transform(bold)
 
-        expect(result).to be_a(Coradoc::CoreModel::InlineElement)
-        expect(result.format_type).to eq('bold')
+        expect(result).to be_a(Coradoc::CoreModel::BoldElement)
+        expect(result.resolve_format_type).to eq('bold')
       end
 
       it 'transforms Italic to CoreModel' do
@@ -165,8 +165,8 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModel do
 
         result = described_class.transform(italic)
 
-        expect(result).to be_a(Coradoc::CoreModel::InlineElement)
-        expect(result.format_type).to eq('italic')
+        expect(result).to be_a(Coradoc::CoreModel::ItalicElement)
+        expect(result.resolve_format_type).to eq('italic')
       end
 
       it 'transforms Monospace to CoreModel' do
@@ -174,8 +174,8 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModel do
 
         result = described_class.transform(mono)
 
-        expect(result).to be_a(Coradoc::CoreModel::InlineElement)
-        expect(result.format_type).to eq('monospace')
+        expect(result).to be_a(Coradoc::CoreModel::MonospaceElement)
+        expect(result.resolve_format_type).to eq('monospace')
       end
 
       it 'transforms Link to CoreModel' do
@@ -186,8 +186,8 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModel do
 
         result = described_class.transform(link)
 
-        expect(result).to be_a(Coradoc::CoreModel::InlineElement)
-        expect(result.format_type).to eq('link')
+        expect(result).to be_a(Coradoc::CoreModel::LinkElement)
+        expect(result.resolve_format_type).to eq('link')
       end
     end
 

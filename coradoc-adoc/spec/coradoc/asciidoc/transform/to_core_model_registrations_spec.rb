@@ -134,8 +134,8 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModelRegistrations do
         bold = Coradoc::AsciiDoc::Model::Inline::Bold.new(content: 'bold text')
         result = Coradoc::AsciiDoc::Transform::Registry.transform(bold)
 
-        expect(result).to be_a(Coradoc::CoreModel::InlineElement)
-        expect(result.format_type).to eq('bold')
+        expect(result).to be_a(Coradoc::CoreModel::BoldElement)
+        expect(result.resolve_format_type).to eq('bold')
       end
     end
 

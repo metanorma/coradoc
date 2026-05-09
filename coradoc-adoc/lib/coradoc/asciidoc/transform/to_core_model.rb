@@ -125,9 +125,7 @@ module Coradoc
           def transform_paragraph(para)
             children = transform_inline_content(para.content)
 
-            Coradoc::CoreModel::Block.new(
-              element_type: 'paragraph',
-              block_semantic_type: :paragraph,
+            Coradoc::CoreModel::ParagraphBlock.new(
               id: para.id,
               content: extract_text_content(para.content),
               children: children
@@ -145,7 +143,6 @@ module Coradoc
             language = extract_block_language(block)
 
             Coradoc::CoreModel::SourceBlock.new(
-              element_type: 'block',
               id: block.id,
               title: extract_title_text(block.title),
               content: content_lines,
@@ -162,7 +159,6 @@ module Coradoc
                             end
 
             Coradoc::CoreModel::Block.new(
-              element_type: 'block',
               block_semantic_type: semantic_type,
               delimiter_type: semantic_type_or_delimiter.is_a?(String) ? semantic_type_or_delimiter : nil,
               id: block.id,
@@ -176,7 +172,6 @@ module Coradoc
             content_lines = extract_block_lines(block)
 
             klass.new(
-              element_type: 'block',
               id: block.id,
               title: extract_title_text(block.title),
               content: content_lines,
@@ -279,47 +274,43 @@ module Coradoc
           end
 
           def transform_inline(inline, format_type)
-            Coradoc::CoreModel::InlineElement.new(
-              format_type: format_type,
+            klass = Coradoc::CoreModel::InlineElement.format_type_class(format_type)
+            klass.new(
               content: extract_text_content(inline.content)
             )
           end
 
           def transform_inline_text(inline, format_type)
-            Coradoc::CoreModel::InlineElement.new(
-              format_type: format_type,
+            klass = Coradoc::CoreModel::InlineElement.format_type_class(format_type)
+            klass.new(
               content: inline.text.to_s
             )
           end
 
           def transform_inline_footnote(footnote)
             parsed_content = parse_and_transform_inline(footnote.text.to_s)
-            Coradoc::CoreModel::InlineElement.new(
-              format_type: 'footnote',
+            Coradoc::CoreModel::FootnoteElement.new(
               target: footnote.id,
               content: parsed_content
             )
           end
 
           def transform_link(link)
-            Coradoc::CoreModel::InlineElement.new(
-              format_type: 'link',
+            Coradoc::CoreModel::LinkElement.new(
               target: link.path,
               content: link.name || link.path
             )
           end
 
           def transform_cross_reference(xref)
-            Coradoc::CoreModel::InlineElement.new(
-              format_type: 'xref',
+            Coradoc::CoreModel::CrossReferenceElement.new(
               target: xref.href,
               content: xref.args&.first || xref.href
             )
           end
 
           def transform_stem(stem)
-            Coradoc::CoreModel::InlineElement.new(
-              format_type: 'stem',
+            Coradoc::CoreModel::StemElement.new(
               content: stem.content,
               stem_type: stem.type || 'stem'
             )
@@ -405,8 +396,7 @@ module Coradoc
             when Coradoc::AsciiDoc::Model::TextElement
               transform_inline_content(content.content)
             when Coradoc::AsciiDoc::Model::Term
-              [Coradoc::CoreModel::InlineElement.new(
-                format_type: 'term',
+              [Coradoc::CoreModel::TermElement.new(
                 content: content.term.to_s
               )]
             when String

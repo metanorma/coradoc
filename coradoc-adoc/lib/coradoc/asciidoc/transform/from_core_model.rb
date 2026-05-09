@@ -257,7 +257,7 @@ module Coradoc
           end
 
           def transform_inline(inline)
-            case inline.format_type
+            case inline.resolve_format_type
             when 'bold'
               Coradoc::AsciiDoc::Model::Inline::Bold.new(content: inline.content)
             when 'italic'
@@ -401,7 +401,6 @@ module Coradoc
           }.freeze
 
           def resolve_semantic_type(block)
-            # Polymorphic dispatch: typed classes override semantic_type
             semantic = block.resolve_semantic_type
             return semantic if semantic
 
@@ -411,7 +410,6 @@ module Coradoc
 
             case delim
             when 'comment' then :comment
-            when 'paragraph' then :paragraph
             when '[verse]' then :verse
             when '>' then :quote
             when "'''", '---', '___', '***' then :horizontal_rule
