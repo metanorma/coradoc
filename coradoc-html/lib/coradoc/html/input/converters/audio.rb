@@ -15,7 +15,6 @@ module Coradoc
             # CoreModel doesn't have a specific Audio type, so we use Block
             # with element_attributes to store audio-specific data
             Coradoc::CoreModel::Block.new(
-              element_type: 'audio',
               block_semantic_type: :audio,
               content: src,
               title: title,

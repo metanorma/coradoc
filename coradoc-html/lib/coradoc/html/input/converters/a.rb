@@ -37,8 +37,7 @@ module Coradoc
                             else
                               content.to_s
                             end
-              return Coradoc::CoreModel::InlineElement.new(
-                format_type: 'xref',
+              return Coradoc::CoreModel::CrossReferenceElement.new(
                 target: ref_id,
                 content: content_str.strip.empty? ? nil : content_str.strip
               )
@@ -60,15 +59,13 @@ module Coradoc
             out = []
             # Add leading space if needed
             if textnode_before_end_with?(node, ambigous_characters)
-              out << Coradoc::CoreModel::InlineElement.new(
-                format_type: 'text',
+              out << Coradoc::CoreModel::TextElement.new(
                 content: ' '
               )
             end
 
             # Create link element
-            link = Coradoc::CoreModel::InlineElement.new(
-              format_type: 'link',
+            link = Coradoc::CoreModel::LinkElement.new(
               target: href,
               content: content_str.strip,
               metadata: {

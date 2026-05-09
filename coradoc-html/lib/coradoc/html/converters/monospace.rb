@@ -12,8 +12,7 @@ module Coradoc
           # @return [Coradoc::CoreModel::InlineElement] Monospace inline element
           def to_coradoc(node, state = {})
             content = treat_children(node, state)
-            Coradoc::CoreModel::InlineElement.new(
-              format_type: 'monospace',
+            Coradoc::CoreModel::MonospaceElement.new(
               content: content
             )
           end

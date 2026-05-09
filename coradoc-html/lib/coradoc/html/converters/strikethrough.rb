@@ -12,8 +12,7 @@ module Coradoc
           # @return [Coradoc::CoreModel::InlineElement] Strikethrough inline element
           def to_coradoc(node, state = {})
             content = treat_children(node, state)
-            Coradoc::CoreModel::InlineElement.new(
-              format_type: 'strikethrough',
+            Coradoc::CoreModel::StrikethroughElement.new(
               content: content
             )
           end

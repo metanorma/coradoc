@@ -38,15 +38,13 @@ module Coradoc
             if href.start_with?('#')
               ref_id = href[1..] # Remove leading #
               content = text.empty? || text == ref_id ? nil : text
-              Coradoc::CoreModel::InlineElement.new(
-                format_type: 'xref',
+              Coradoc::CoreModel::CrossReferenceElement.new(
                 target: ref_id,
                 content: content
               )
             else
               # External links become regular links
-              Coradoc::CoreModel::InlineElement.new(
-                format_type: 'link',
+              Coradoc::CoreModel::LinkElement.new(
                 target: href,
                 content: text
               )

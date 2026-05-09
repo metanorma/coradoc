@@ -12,9 +12,7 @@ module Coradoc
             # Strip full-width spaces from paragraph content
             content = strip_fullwidth_spaces(content)
 
-            Coradoc::CoreModel::Block.new(
-              block_semantic_type: :paragraph,
-              element_type: 'paragraph',
+            Coradoc::CoreModel::ParagraphBlock.new(
               children: content,
               id: id
             )

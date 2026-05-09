@@ -107,12 +107,12 @@ module Coradoc
         # Mapping from HTML elements to CoreModel types
         HTML_TO_MODEL = {
           # Block elements
-          p: 'Coradoc::CoreModel::Block',
+          p: 'Coradoc::CoreModel::ParagraphBlock',
           div: 'Coradoc::CoreModel::Block',
           section: 'Coradoc::CoreModel::StructuralElement',
           article: 'Coradoc::CoreModel::StructuralElement',
           header: 'Coradoc::CoreModel::StructuralElement',
-          aside: 'Coradoc::CoreModel::AnnotationBlock',
+          aside: 'Coradoc::CoreModel::SidebarBlock',
           blockquote: 'Coradoc::CoreModel::Block',
           pre: 'Coradoc::CoreModel::Block',
 
@@ -153,7 +153,7 @@ module Coradoc
           audio: 'Coradoc::CoreModel::Block',
 
           # Other
-          hr: 'Coradoc::CoreModel::Block',
+          hr: 'Coradoc::CoreModel::HorizontalRuleBlock',
           br: 'Coradoc::CoreModel::InlineElement',
 
           # Headings

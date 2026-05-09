@@ -53,6 +53,9 @@ module Coradoc
         'Coradoc::CoreModel::VerseBlock' => 'verse_block',
         'Coradoc::CoreModel::ReviewerBlock' => 'reviewer_block',
         'Coradoc::CoreModel::AnnotationBlock' => 'annotation_block',
+        'Coradoc::CoreModel::ParagraphBlock' => 'paragraph',
+        'Coradoc::CoreModel::CommentBlock' => 'comment_block',
+        'Coradoc::CoreModel::HorizontalRuleBlock' => 'horizontal_rule',
         'Coradoc::CoreModel::ListBlock' => 'list_block',
         'Coradoc::CoreModel::ListItem' => 'list_item',
         'Coradoc::CoreModel::Table' => 'table',
@@ -359,10 +362,10 @@ module Coradoc
         assigns = {}
 
         # Common attributes that most CoreModel types have
-        %w[id title content children element_type block_semantic_type language lines
-           delimiter_type delimiter_length metadata_entries element_attributes
+        %w[id title content children block_semantic_type language lines
+           metadata_entries element_attributes
            text href alt src level entries items rows cells
-           anchor term definition abbreviations].each do |key|
+           anchor term definition abbreviations delimiter_type].each do |key|
           assigns[key] = drop[key] if drop.key?(key)
         end
 

@@ -29,9 +29,8 @@ RSpec.describe 'AnnotationBlock HTML conversion' do
 
       html = Coradoc::Html::Converters::Base.convert_content_to_html(annotation)
 
-      expect(html).to include('class="admonition note"')
-      expect(html).to include('admonition-label')
-      expect(html).to include('NOTE')
+      expect(html).to include('class="admonitionblock note"')
+      expect(html).to include('<span class="title">NOTE</span>')
       expect(html).to include('This is a note')
     end
 
@@ -43,7 +42,7 @@ RSpec.describe 'AnnotationBlock HTML conversion' do
 
       html = Coradoc::Html::Converters::Base.convert_content_to_html(annotation)
 
-      expect(html).to include('class="admonition warning"')
+      expect(html).to include('class="admonitionblock warning"')
       expect(html).to include('WARNING')
     end
 
@@ -56,7 +55,7 @@ RSpec.describe 'AnnotationBlock HTML conversion' do
 
       html = Coradoc::Html::Converters::Base.convert_content_to_html(annotation)
 
-      expect(html).to include('class="admonition reviewer"')
+      expect(html).to include('class="admonitionblock reviewer"')
       expect(html).to include('john.doe')
     end
 
@@ -82,7 +81,7 @@ RSpec.describe 'AnnotationBlock HTML conversion' do
 
       html = Coradoc::Html::Converters::Base.convert_content_to_html(annotation)
 
-      expect(html).to include('admonition warning')
+      expect(html).to include('admonitionblock warning')
       expect(html).to include('<strong>critical</strong>')
       expect(html).to include('This is ')
     end

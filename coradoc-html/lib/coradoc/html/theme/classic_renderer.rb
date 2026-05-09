@@ -367,7 +367,8 @@ module Coradoc
           doc.traverse do |node|
             next unless node.element?
             next unless node.name =~ /\Ah(\d)\z/
-            level = $1.to_i
+
+            level = ::Regexp.last_match(1).to_i
             next if level < 2
 
             section_level = level - 1
@@ -425,9 +426,9 @@ module Coradoc
         def generate_heading_id(node)
           text = node.text.strip
           id = '_' + text.downcase
-                    .gsub(/[^a-z0-9\s]/, '')
-                    .gsub(/\s+/, '_')
-                    .gsub(/^_+|_+$/, '')
+                         .gsub(/[^a-z0-9\s]/, '')
+                         .gsub(/\s+/, '_')
+                         .gsub(/^_+|_+$/, '')
           id.empty? ? '_' : id
         end
       end

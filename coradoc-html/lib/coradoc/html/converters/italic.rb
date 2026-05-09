@@ -12,8 +12,7 @@ module Coradoc
           # @return [Coradoc::CoreModel::InlineElement] Italic inline element
           def to_coradoc(node, state = {})
             content = treat_children(node, state)
-            Coradoc::CoreModel::InlineElement.new(
-              format_type: 'italic',
+            Coradoc::CoreModel::ItalicElement.new(
               content: content
             )
           end

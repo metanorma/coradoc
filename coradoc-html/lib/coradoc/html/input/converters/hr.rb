@@ -6,10 +6,7 @@ module Coradoc
       module Converters
         class Hr < Base
           def to_coradoc(_node, _state = {})
-            Coradoc::CoreModel::Block.new(
-              element_type: 'thematic_break',
-              block_semantic_type: :horizontal_rule
-            )
+            Coradoc::CoreModel::HorizontalRuleBlock.new
           end
         end
 
