@@ -54,6 +54,10 @@ module Coradoc
     autoload :Extension, 'coradoc/markdown/model/extension'
     autoload :Strikethrough, 'coradoc/markdown/model/strikethrough'
     autoload :Highlight, 'coradoc/markdown/model/highlight'
+    autoload :Subscript, 'coradoc/markdown/model/subscript'
+    autoload :Superscript, 'coradoc/markdown/model/superscript'
+    autoload :Underline, 'coradoc/markdown/model/underline'
+    autoload :CrossReference, 'coradoc/markdown/model/cross_reference'
 
     # Serializer
     autoload :Serializer, 'coradoc/markdown/serializer'

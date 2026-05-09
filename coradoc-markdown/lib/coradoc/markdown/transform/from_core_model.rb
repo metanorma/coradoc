@@ -160,7 +160,6 @@ module Coradoc
             when '>' then :quote
             when '---', '***', '___' then :horizontal_rule
             when '++++' then :pass
-            else nil
             end
           end
 
@@ -234,7 +233,7 @@ module Coradoc
           end
 
           def transform_inline(element)
-            case element.format_type
+            case element.resolve_format_type
             when 'bold'
               Coradoc::Markdown::Strong.new(text: element.content.to_s)
             when 'italic'
@@ -255,13 +254,16 @@ module Coradoc
             when 'strikethrough'
               Coradoc::Markdown::Strikethrough.new(text: element.content.to_s)
             when 'subscript'
-              "<sub>#{element.content}</sub>"
+              Coradoc::Markdown::Subscript.new(text: element.content.to_s)
             when 'superscript'
-              "<sup>#{element.content}</sup>"
+              Coradoc::Markdown::Superscript.new(text: element.content.to_s)
             when 'underline'
-              "<u>#{element.content}</u>"
+              Coradoc::Markdown::Underline.new(text: element.content.to_s)
             when 'xref'
-              "[#{element.content}](##{element.target})"
+              Coradoc::Markdown::CrossReference.new(
+                text: element.content.to_s,
+                target: element.target.to_s
+              )
             else
               element.content.to_s
             end

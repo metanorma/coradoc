@@ -96,15 +96,13 @@ module Coradoc
           def transform_paragraph(para)
             content = extract_text(para.text)
 
-            Coradoc::CoreModel::Block.new(
-              element_type: 'paragraph',
+            Coradoc::CoreModel::ParagraphBlock.new(
               content: content
             )
           end
 
           def transform_code_block(block)
             Coradoc::CoreModel::SourceBlock.new(
-              element_type: 'block',
               content: block.code.to_s,
               language: block.language
             )
@@ -112,7 +110,6 @@ module Coradoc
 
           def transform_blockquote(blockquote)
             Coradoc::CoreModel::QuoteBlock.new(
-              element_type: 'block',
               content: blockquote.content.to_s
             )
           end
@@ -165,25 +162,21 @@ module Coradoc
           end
 
           def transform_link(link)
-            Coradoc::CoreModel::InlineElement.new(
-              format_type: 'link',
+            Coradoc::CoreModel::LinkElement.new(
               target: link.url,
               content: extract_text(link.text)
             )
           end
 
           def transform_inline(inline, format_type)
-            Coradoc::CoreModel::InlineElement.new(
-              format_type: format_type,
+            klass = Coradoc::CoreModel::InlineElement.format_type_class(format_type)
+            klass.new(
               content: extract_text(inline.text)
             )
           end
 
           def transform_horizontal_rule(_rule)
-            Coradoc::CoreModel::Block.new(
-              element_type: 'block',
-              block_semantic_type: :horizontal_rule
-            )
+            Coradoc::CoreModel::HorizontalRuleBlock.new
           end
 
           def transform_definition_list(dl)
@@ -221,8 +214,7 @@ module Coradoc
 
           def transform_math(math)
             if math.inline?
-              Coradoc::CoreModel::InlineElement.new(
-                format_type: 'stem',
+              Coradoc::CoreModel::StemElement.new(
                 content: math.content.to_s
               )
             else
@@ -239,13 +231,11 @@ module Coradoc
             when :toc
               Coradoc::CoreModel::Toc.new
             when :comment
-              Coradoc::CoreModel::Block.new(
-                element_type: 'comment',
+              Coradoc::CoreModel::CommentBlock.new(
                 content: ext.content.to_s
               )
             when :nomarkdown
               Coradoc::CoreModel::PassBlock.new(
-                element_type: 'block',
                 content: ext.content.to_s
               )
             else

@@ -62,6 +62,14 @@ module Coradoc
           element.to_md
         when Highlight
           element.to_md
+        when Subscript
+          element.to_md
+        when Superscript
+          element.to_md
+        when Underline
+          element.to_md
+        when CrossReference
+          element.to_md
         when AttributeList
           element.to_md
         when Math
@@ -99,7 +107,7 @@ module Coradoc
         case element
         when String
           element
-        when Emphasis, Strong, Code, Link, Image, FootnoteReference, Math, Extension, Strikethrough, Highlight
+        when Emphasis, Strong, Code, Link, Image, FootnoteReference, Math, Extension, Strikethrough, Highlight, Subscript, Superscript, Underline, CrossReference
           serialize(element)
         else
           if element.is_a?(Base)

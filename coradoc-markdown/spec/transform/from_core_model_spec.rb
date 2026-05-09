@@ -313,8 +313,9 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
         )
       end
 
-      it 'uses HTML fallback' do
-        expect(transform).to eq('<sub>2</sub>')
+      it 'returns Subscript model' do
+        expect(transform).to be_a(Coradoc::Markdown::Subscript)
+        expect(transform.text).to eq('2')
       end
     end
 
@@ -326,8 +327,9 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
         )
       end
 
-      it 'uses HTML fallback' do
-        expect(transform).to eq('<sup>2</sup>')
+      it 'returns Superscript model' do
+        expect(transform).to be_a(Coradoc::Markdown::Superscript)
+        expect(transform.text).to eq('2')
       end
     end
 
@@ -339,8 +341,9 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
         )
       end
 
-      it 'uses HTML fallback' do
-        expect(transform).to eq('<u>underlined</u>')
+      it 'returns Underline model' do
+        expect(transform).to be_a(Coradoc::Markdown::Underline)
+        expect(transform.text).to eq('underlined')
       end
     end
 
@@ -353,8 +356,10 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
         )
       end
 
-      it 'uses markdown link syntax' do
-        expect(transform).to eq('[Section 1](#section_1)')
+      it 'returns CrossReference model' do
+        expect(transform).to be_a(Coradoc::Markdown::CrossReference)
+        expect(transform.text).to eq('Section 1')
+        expect(transform.target).to eq('section_1')
       end
     end
 
