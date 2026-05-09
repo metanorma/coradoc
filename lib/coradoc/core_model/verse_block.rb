@@ -6,8 +6,6 @@ module Coradoc
     class VerseBlock < Block
       def self.semantic_type = :verse
 
-      attribute :block_semantic_type, :string, default: -> { 'verse' }
-
       attribute :attribution, :string
     end
   end

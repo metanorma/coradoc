@@ -52,9 +52,7 @@ module Coradoc
     end
 
     def code(code_text, language: nil)
-      @current_context.children << CoreModel::Block.new(
-        element_type: 'block',
-        delimiter_type: '----',
+      @current_context.children << CoreModel::SourceBlock.new(
         content: code_text,
         language: language
       )
@@ -62,12 +60,10 @@ module Coradoc
     end
 
     def blockquote(text, attribution: nil)
-      block = CoreModel::Block.new(
-        element_type: 'block',
-        delimiter_type: '____',
-        content: text
+      block = CoreModel::QuoteBlock.new(
+        content: text,
+        attribution: attribution
       )
-      block.set_metadata('attribution', attribution) if attribution
       @current_context.children << block
       self
     end

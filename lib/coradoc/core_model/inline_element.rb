@@ -4,95 +4,136 @@ module Coradoc
   module CoreModel
     # Generic inline formatting element
     #
-    # Represents all inline text formatting in AsciiDoc:
-    # - Bold (*text* or **text**)
-    # - Italic (_text_ or __text__)
-    # - Monospace (`text` or ``text``)
-    # - Subscript (~text~)
-    # - Superscript (^text^)
-    # - Underline ([underline]#text#)
-    # - Small ([small]#text#)
-    # - Links
-    # - Cross-references
-    # - Footnotes
-    #
-    # Inline elements can be nested within each other, allowing for
-    # complex formatting like bold italic text.
-    #
-    # @example Simple bold text
-    #   bold = CoreModel::InlineElement.new(
-    #     format_type: "bold",
-    #     constrained: true,
-    #     content: "important"
-    #   )
-    #
-    # @example Nested formatting (bold italic)
-    #   italic = CoreModel::InlineElement.new(
-    #     format_type: "italic",
-    #     content: "text"
-    #   )
-    #   bold = CoreModel::InlineElement.new(
-    #     format_type: "bold",
-    #     content: "bold ",
-    #     nested_elements: [italic]
-    #   )
-    #
-    # @example Unconstrained bold
-    #   bold = CoreModel::InlineElement.new(
-    #     format_type: "bold",
-    #     constrained: false,
-    #     content: "word"
-    #   )
+    # Typed subclasses (BoldElement, ItalicElement, etc.) express their
+    # format identity via the class hierarchy — the class IS the format type.
+    # Generic InlineElement instances use the format_type attribute for typing.
     class InlineElement < Base
       include ChildrenContent
 
-      # Canonical set of format_type values produced by ToCoreModel transformers.
-      # Extended types (text, span, break, etc.) are produced only by HTML input converters.
+      class << self
+        def format_type
+          nil
+        end
+
+        def format_type_class(type)
+          FORMAT_TYPE_CLASS_MAP[type] || InlineElement
+        end
+      end
+
+      def resolve_format_type
+        self.class.format_type || format_type
+      end
+
       FORMAT_TYPES = %w[
         bold italic monospace underline strikethrough
         subscript superscript highlight
         link xref stem footnote
-        hard_line_break
+        hard_line_break text span term
+        line_break quotation
       ].freeze
 
-      # @!attribute format_type
-      #   @return [String, nil] type of inline formatting
-      #     (e.g., 'bold', 'italic', 'monospace', 'link', 'xref')
       attribute :format_type, :string
-
-      # @!attribute constrained
-      #   @return [Boolean] whether the formatting uses constrained syntax
-      #     (true for *text*, false for **text**)
       attribute :constrained, :boolean, default: -> { true }
-
-      # @!attribute content
-      #   @return [String, nil] text content of the element
       attribute :content, :string
-
-      # @!attribute nested_elements
-      #   @return [Array<InlineElement>, nil] nested inline formatting
       attribute :nested_elements, InlineElement, collection: true
-
-      # @!attribute target
-      #   @return [String, nil] target URL or reference (for links, xrefs)
       attribute :target, :string
-
-      # @!attribute stem_type
-      #   @return [String, nil] stem notation type (e.g., 'latexmath', 'asciimath', 'stem')
       attribute :stem_type, :string
 
       private
 
-      # Attributes to compare for semantic equivalence
-      #
-      # Inline elements are semantically equivalent if they have the same
-      # format type, content, and nested elements. The constrained flag
-      # affects rendering but not semantic meaning.
-      #
-      # @return [Array<Symbol>] list of comparable attributes
       def comparable_attributes
         %i[format_type constrained content nested_elements stem_type]
       end
     end
+
+    # Typed InlineElement subclasses
+
+    class BoldElement < InlineElement
+      def self.format_type = 'bold'
+    end
+
+    class ItalicElement < InlineElement
+      def self.format_type = 'italic'
+    end
+
+    class MonospaceElement < InlineElement
+      def self.format_type = 'monospace'
+    end
+
+    class UnderlineElement < InlineElement
+      def self.format_type = 'underline'
+    end
+
+    class StrikethroughElement < InlineElement
+      def self.format_type = 'strikethrough'
+    end
+
+    class SubscriptElement < InlineElement
+      def self.format_type = 'subscript'
+    end
+
+    class SuperscriptElement < InlineElement
+      def self.format_type = 'superscript'
+    end
+
+    class HighlightElement < InlineElement
+      def self.format_type = 'highlight'
+    end
+
+    class LinkElement < InlineElement
+      def self.format_type = 'link'
+    end
+
+    class CrossReferenceElement < InlineElement
+      def self.format_type = 'xref'
+    end
+
+    class StemElement < InlineElement
+      def self.format_type = 'stem'
+    end
+
+    class FootnoteElement < InlineElement
+      def self.format_type = 'footnote'
+    end
+
+    class HardLineBreakElement < InlineElement
+      def self.format_type = 'hard_line_break'
+    end
+
+    class TextElement < InlineElement
+      def self.format_type = 'text'
+    end
+
+    class SpanElement < InlineElement
+      def self.format_type = 'span'
+    end
+
+    class TermElement < InlineElement
+      def self.format_type = 'term'
+    end
+
+    class LineBreakElement < InlineElement
+      def self.format_type = 'line_break'
+    end
+
+    FORMAT_TYPE_CLASS_MAP = {
+      'bold' => BoldElement,
+      'italic' => ItalicElement,
+      'monospace' => MonospaceElement,
+      'underline' => UnderlineElement,
+      'strikethrough' => StrikethroughElement,
+      'subscript' => SubscriptElement,
+      'superscript' => SuperscriptElement,
+      'highlight' => HighlightElement,
+      'link' => LinkElement,
+      'xref' => CrossReferenceElement,
+      'stem' => StemElement,
+      'footnote' => FootnoteElement,
+      'hard_line_break' => HardLineBreakElement,
+      'text' => TextElement,
+      'span' => SpanElement,
+      'term' => TermElement,
+      'line_break' => LineBreakElement
+    }.freeze
   end
 end

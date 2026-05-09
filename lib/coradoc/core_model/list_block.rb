@@ -55,18 +55,17 @@ module Coradoc
 
     # Represents a list block with proper nesting support
     #
-    # Handles all AsciiDoc list types:
-    # - Unordered lists (*, **, ***)
-    # - Ordered lists (., .., ...)
+    # Handles all list types:
+    # - Unordered lists
+    # - Ordered lists
     # - Description lists
-    # - Labeled lists
     #
     # Lists can contain nested lists at multiple levels, with each level
     # tracked through marker_level.
     #
     # @example Creating an unordered list
     #   list = CoreModel::ListBlock.new(
-    #     marker_type: "asterisk",
+    #     marker_type: "unordered",
     #     marker_level: 1,
     #     items: [
     #       ListItem.new(marker: "*", content: "First item"),
@@ -76,12 +75,12 @@ module Coradoc
     #
     # @example Creating a nested list
     #   nested = CoreModel::ListBlock.new(
-    #     marker_type: "asterisk",
+    #     marker_type: "unordered",
     #     marker_level: 2,
     #     items: [ListItem.new(marker: "**", content: "Nested item")]
     #   )
     #   list = CoreModel::ListBlock.new(
-    #     marker_type: "asterisk",
+    #     marker_type: "unordered",
     #     marker_level: 1,
     #     items: [
     #       ListItem.new(
@@ -94,7 +93,7 @@ module Coradoc
     class ListBlock < Base
       # @!attribute marker_type
       #   @return [String, nil] type of list marker
-      #     (e.g., 'asterisk', 'dash', 'numbered', 'labeled')
+      #     (e.g., 'unordered', 'ordered', 'definition')
       attribute :marker_type, :string
 
       # @!attribute marker_level

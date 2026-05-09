@@ -32,7 +32,6 @@ module Coradoc
 
       # @!attribute caption
       #   @return [String, nil] caption text for the image
-      #   @note Populated by HTML converter only
       attribute :caption, :string
 
       # @!attribute width

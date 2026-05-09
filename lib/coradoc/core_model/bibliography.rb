@@ -5,7 +5,6 @@ module Coradoc
     # Bibliography section in a document.
     #
     # Bibliography sections contain lists of references cited in the document.
-    # They are typically marked with [bibliography] attribute in AsciiDoc.
     #
     # @!attribute [r] id
     #   @return [String, nil] Optional identifier for the bibliography

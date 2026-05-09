@@ -8,8 +8,6 @@ module Coradoc
     # When a language is present, SourceBlock should be used instead.
     class ListingBlock < Block
       def self.semantic_type = :listing
-
-      attribute :block_semantic_type, :string, default: -> { 'listing' }
     end
   end
 end

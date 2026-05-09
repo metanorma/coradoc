@@ -191,9 +191,9 @@ module Coradoc
       # Build inline element
       def build_inline(ast)
         format_type = detect_inline_format(ast)
+        klass = InlineElement.format_type_class(format_type)
 
-        InlineElement.new(
-          format_type: format_type,
+        klass.new(
           constrained: detect_constrained(ast, format_type),
           content: extract_inline_content(ast, format_type),
           nested_elements: build_nested_inlines(ast)

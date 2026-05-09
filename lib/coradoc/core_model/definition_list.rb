@@ -5,7 +5,6 @@ module Coradoc
     # Represents a definition list
     #
     # DefinitionList contains terms and their definitions.
-    # This maps to Kramdown definition lists and AsciiDoc labeled lists.
     #
     # @example Creating a definition list
     #   list = CoreModel::DefinitionList.new(
