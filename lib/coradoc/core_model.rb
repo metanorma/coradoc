@@ -42,5 +42,15 @@ module Coradoc
     autoload :TocGenerator, "#{__dir__}/core_model/toc_generator"
     autoload :Bibliography, "#{__dir__}/core_model/bibliography"
     autoload :BibliographyEntry, "#{__dir__}/core_model/bibliography_entry"
+    autoload :SourceBlock, "#{__dir__}/core_model/source_block"
+    autoload :ExampleBlock, "#{__dir__}/core_model/example_block"
+    autoload :QuoteBlock, "#{__dir__}/core_model/quote_block"
+    autoload :SidebarBlock, "#{__dir__}/core_model/sidebar_block"
+    autoload :LiteralBlock, "#{__dir__}/core_model/literal_block"
+    autoload :PassBlock, "#{__dir__}/core_model/pass_block"
+    autoload :ListingBlock, "#{__dir__}/core_model/listing_block"
+    autoload :OpenBlock, "#{__dir__}/core_model/open_block"
+    autoload :VerseBlock, "#{__dir__}/core_model/verse_block"
+    autoload :ReviewerBlock, "#{__dir__}/core_model/reviewer_block"
   end
 end

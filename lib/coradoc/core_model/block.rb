@@ -2,39 +2,53 @@
 
 module Coradoc
   module CoreModel
-    # Generic delimited block model
+    # Semantic block type constants
     #
-    # Represents all standard AsciiDoc delimited blocks including:
-    # - Example blocks (====)
-    # - Literal blocks (````)
-    # - Listing blocks (----)
-    # - Open blocks (--)
-    # - Pass blocks (++++/++++)
-    # - Quote blocks (____)
-    # - Sidebar blocks (****)
-    # - Source blocks (----)
-    # - Paragraphs (element_type: 'paragraph')
+    # Format gems own the mapping between their syntax and these
+    # canonical semantic types. The core model never stores raw
+    # delimiter strings.
+    module BlockSemanticType
+      SOURCE_CODE = :source_code
+      LISTING = :listing
+      EXAMPLE = :example
+      QUOTE = :quote
+      SIDEBAR = :sidebar
+      LITERAL = :literal
+      OPEN = :open
+      PASS = :pass
+      VERSE = :verse
+      HORIZONTAL_RULE = :horizontal_rule
+      COMMENT = :comment
+      PARAGRAPH = :paragraph
+      VIDEO = :video
+      AUDIO = :audio
+      ANNOTATION = :annotation
+      REVIEWER = :reviewer
+
+      def self.all
+          [SOURCE_CODE, LISTING, EXAMPLE, QUOTE, SIDEBAR, LITERAL, OPEN, PASS,
+           VERSE, HORIZONTAL_RULE, COMMENT, PARAGRAPH, VIDEO, AUDIO,
+           ANNOTATION, REVIEWER].freeze
+        end
+    end
+
+    # Generic block model
     #
-    # This is a schema-agnostic representation that captures the semantic
-    # structure without schema-specific interpretation.
+    # Represents all block-level elements in a format-neutral way.
+    # Each block has a `block_semantic_type` symbol (e.g., :source_code,
+    # :quote, :example) that captures its semantic meaning without
+    # tying it to any specific format's syntax.
     #
-    # @example Creating a generic block
+    # @example Creating a source code block
     #   block = CoreModel::Block.new(
-    #     delimiter_type: "====",
-    #     delimiter_length: 4,
-    #     content: "Example content here"
-    #   )
-    #
-    # @example Creating a source block
-    #   block = CoreModel::Block.new(
-    #     delimiter_type: "----",
+    #     block_semantic_type: :source_code,
     #     content: "puts 'Hello, World!'",
-    #     attributes: [{ role: "source", language: "ruby" }]
+    #     language: "ruby"
     #   )
     #
     # @example Creating a paragraph with inline formatting
     #   block = CoreModel::Block.new(
-    #     element_type: "paragraph",
+    #     block_semantic_type: :paragraph,
     #     children: [
     #       "Text with ",
     #       CoreModel::InlineElement.new(format_type: "bold", content: "bold"),
@@ -44,14 +58,38 @@ module Coradoc
     class Block < Base
       include ChildrenContent
 
-      # @!attribute element_type
+      class << self
+        # Class-level semantic type — overridden by each typed subclass.
+        # Returns nil for the generic Block base class.
+        def semantic_type
+          nil
+        end
+      end
+
+      # Resolve the semantic type from this block instance.
+      # Checks class-level semantic_type first (typed subclasses),
+      # then the block_semantic_type attribute, then element_type,
+      # then delimiter_type fallback.
+      def resolve_semantic_type
+        self.class.semantic_type ||
+          (block_semantic_type&.to_sym) ||
+          resolve_semantic_from_element_type ||
+          resolve_semantic_from_delimiter
+      end
+
+      # @!attribute block_semantic_type
       #   @return [String, nil] the semantic type of the block
+      #     (e.g., 'source_code', 'quote', 'example', 'paragraph')
+      attribute :block_semantic_type, :string
+
+      # @!attribute element_type
+      #   @return [String, nil] the structural role of the block
       #     (e.g., 'paragraph', 'block')
       attribute :element_type, :string
 
       # @!attribute delimiter_type
-      #   @return [String, nil] the delimiter character(s) used
-      #     (e.g., '****', '====', '----')
+      #   @return [String, nil] DEPRECATED — use block_semantic_type.
+      #     Retained for backward compatibility during migration.
       attribute :delimiter_type, :string
 
       # @!attribute delimiter_length
@@ -76,15 +114,37 @@ module Coradoc
 
       private
 
+      def resolve_semantic_from_element_type
+        case element_type
+        when 'paragraph' then :paragraph
+        when 'comment' then :comment
+        else nil
+        end
+      end
+
+      def resolve_semantic_from_delimiter
+        delim = delimiter_type
+        return nil unless delim && delim.length >= 4
+
+        char = delim[0]
+        DELIMITER_CHAR_TO_SEMANTIC[char] || nil
+      end
+
+      # Map delimiter first character to semantic type (backward compat)
+      DELIMITER_CHAR_TO_SEMANTIC = {
+        '-' => :source_code,
+        '=' => :example,
+        '_' => :quote,
+        '*' => :sidebar,
+        '.' => :literal,
+        '+' => :pass
+      }.freeze
+
       # Attributes to compare for semantic equivalence
-      #
-      # Blocks are semantically equivalent if they have the same
-      # delimiter type and content, regardless of delimiter length
-      # or line structure.
       #
       # @return [Array<Symbol>] list of comparable attributes
       def comparable_attributes
-        super + %i[delimiter_type content]
+        super + %i[block_semantic_type content]
       end
     end
   end

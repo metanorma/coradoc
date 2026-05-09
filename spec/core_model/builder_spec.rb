@@ -69,7 +69,7 @@ RSpec.describe Coradoc::CoreModel::Builder do
       result = builder.build_block(ast)
 
       expect(result).to be_a(Coradoc::CoreModel::Block)
-      expect(result.delimiter_type).to eq('====')
+      expect(result.block_semantic_type).to eq('example')
     end
 
     it 'builds an annotation block' do
