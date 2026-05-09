@@ -105,8 +105,8 @@ RSpec.describe 'Developer Experience API' do
 
       result = Coradoc.to_core(adoc)
 
-      expect(result).to be_a(Coradoc::CoreModel::Block)
-      expect(result.element_type).to eq('paragraph')
+      expect(result).to be_a(Coradoc::CoreModel::ParagraphBlock)
+      expect(result.resolve_semantic_type).to eq(:paragraph)
     end
   end
 
