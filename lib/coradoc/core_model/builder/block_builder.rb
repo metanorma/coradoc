@@ -16,7 +16,7 @@ module Coradoc
           AnnotationBlock.new(
             annotation_type: annotation_type,
             annotation_label: extract_annotation_label(ast),
-            delimiter_type: ast[:delimiter]&.to_s,
+            block_semantic_type: :annotation,
             delimiter_length: ast[:delimiter]&.to_s&.length || 4,
             content: extract_block_content(ast),
             lines: extract_block_lines(ast),
@@ -28,8 +28,10 @@ module Coradoc
 
         # Build generic block
         def build_generic_block(ast)
+          semantic_type = delimiter_to_semantic_type(ast[:delimiter]&.to_s)
+
           Block.new(
-            delimiter_type: ast[:delimiter]&.to_s,
+            block_semantic_type: semantic_type,
             delimiter_length: ast[:delimiter]&.to_s&.length || 4,
             content: extract_block_content(ast),
             lines: extract_block_lines(ast),
@@ -37,6 +39,22 @@ module Coradoc
             id: ast[:id],
             attributes: build_attributes_private(ast[:attribute_list])
           )
+        end
+
+        # Map delimiter character to semantic type
+        def delimiter_to_semantic_type(delimiter)
+          return nil unless delimiter && !delimiter.empty?
+
+          char = delimiter[0]
+          case char
+          when '-' then :source_code
+          when '=' then :example
+          when '_' then :quote
+          when '*' then :sidebar
+          when '.' then :literal
+          when '+' then :pass
+          else nil
+          end
         end
 
         # Extract block content from various AST formats

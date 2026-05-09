@@ -2,13 +2,6 @@
 
 require 'logger'
 
-# Load builder modules
-require_relative 'builder/detection'
-require_relative 'builder/list_builder'
-require_relative 'builder/block_builder'
-require_relative 'builder/text_builder'
-require_relative 'builder/element_builder'
-
 module Coradoc
   module CoreModel
     # Builds CoreModel objects from generic AST
@@ -45,6 +38,12 @@ module Coradoc
     #   }
     #   block = CoreModel::Builder.new.build_block(block_ast)
     class Builder
+      autoload :Detection, "#{__dir__}/builder/detection"
+      autoload :ListBuilder, "#{__dir__}/builder/list_builder"
+      autoload :BlockBuilder, "#{__dir__}/builder/block_builder"
+      autoload :TextBuilder, "#{__dir__}/builder/text_builder"
+      autoload :ElementBuilder, "#{__dir__}/builder/element_builder"
+
       include Detection
       include ListBuilder
       include BlockBuilder

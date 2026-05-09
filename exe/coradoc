@@ -21,6 +21,7 @@ require 'coradoc'
 require 'coradoc/cli'
 
 # Load available format gems
+require 'coradoc/asciidoc'
 require 'coradoc/html'
 require 'coradoc/markdown'
 

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'lutaml/model'
-require_relative 'errors'
 
 # Coradoc - A hub-and-spoke document transformation library
 #
@@ -442,6 +441,7 @@ module Coradoc
     end
   end
 
+  autoload :Error, "#{__dir__}/errors"
   autoload :Version, "#{__dir__}/version"
   autoload :Logger, "#{__dir__}/logger"
   autoload :Hooks, "#{__dir__}/hooks"
@@ -449,13 +449,12 @@ module Coradoc
   autoload :Validation, "#{__dir__}/validation"
   autoload :Configurable, "#{__dir__}/configurable"
   autoload :FormatModule, "#{__dir__}/format_module"
+  autoload :CoreModel, "#{__dir__}/core_model"
+  autoload :Registry, "#{__dir__}/registry"
+  autoload :Transform, "#{__dir__}/transform"
+  autoload :Input, "#{__dir__}/input"
+  autoload :Output, "#{__dir__}/output"
 end
-
-require_relative 'core_model'
-require_relative 'registry'
-require_relative 'transform'
-require_relative 'input'
-require_relative 'output'
 
 # Format gems self-register via Coradoc.register_format when they are required.
 # No hardcoded registration needed here — each gem's entry file handles its own

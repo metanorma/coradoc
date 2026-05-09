@@ -489,8 +489,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
         math = Coradoc::Markdown::Math.block('\lambda_\alpha > 5')
         core = Coradoc::Markdown.to_core_model(math)
 
-        expect(core).to be_a(Coradoc::CoreModel::Block)
-        expect(core.delimiter_type).to eq('++++')
+        expect(core).to be_a(Coradoc::CoreModel::PassBlock)
         expect(core.language).to eq('latexmath')
         expect(core.content).to eq('\lambda_\alpha > 5')
       end
@@ -541,8 +540,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
         nomarkdown = Coradoc::Markdown::Extension.nomarkdown('<div>raw html</div>')
         core = Coradoc::Markdown.to_core_model(nomarkdown)
 
-        expect(core).to be_a(Coradoc::CoreModel::Block)
-        expect(core.delimiter_type).to eq('++++')
+        expect(core).to be_a(Coradoc::CoreModel::PassBlock)
         expect(core.content).to eq('<div>raw html</div>')
       end
 

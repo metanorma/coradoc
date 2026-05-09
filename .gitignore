@@ -9,11 +9,13 @@ Gemfile.local
 /.bundle/
 /.yardoc
 /_yardoc/
-/coverage/
 /doc/
 /pkg/
 /spec/reports/
 /tmp/
+
+# Code coverage
+coverage/
 
 /.tmp.xml
 /test.*
@@ -51,9 +53,4 @@ sample.oscal.*
 /x
 /x.yaml
 
-coverage/
-coradoc-adoc/coverage/
-coradoc-html/coverage/
-coradoc-markdown/coverage/
-coradoc-docx/coverage/
 .claude/

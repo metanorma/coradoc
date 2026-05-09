@@ -19,7 +19,6 @@ module Coradoc
     # @example Creating a NOTE annotation
     #   note = CoreModel::AnnotationBlock.new(
     #     annotation_type: "note",
-    #     delimiter_type: "****",
     #     content: "This is important information."
     #   )
     #
@@ -27,7 +26,6 @@ module Coradoc
     #   reviewer = CoreModel::AnnotationBlock.new(
     #     annotation_type: "reviewer",
     #     annotation_label: "john.doe",
-    #     delimiter_type: "////",
     #     content: "Please review this section."
     #   )
     class AnnotationBlock < Block

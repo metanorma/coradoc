@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'registry'
-
 module Coradoc
   # Module adapter that gives a module Registry-backed processor methods.
   #

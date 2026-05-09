@@ -38,9 +38,6 @@ module Coradoc
         def detect_block_type(ast)
           return :annotation if extract_annotation_type(ast)
 
-          delimiter = ast[:delimiter]&.to_s
-          return :annotation if delimiter && annotation_delimiters.include?(delimiter[0])
-
           return :list if ast[:marker] && list_markers.include?(ast[:marker].to_s)
 
           :generic
@@ -170,11 +167,6 @@ module Coradoc
         # List of annotation types
         def annotation_types
           %w[note warning caution important tip reviewer sidebar]
-        end
-
-        # List of annotation delimiters (first character)
-        def annotation_delimiters
-          %w[* / =]
         end
 
         # List of list markers
