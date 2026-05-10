@@ -227,12 +227,15 @@ module Coradoc
 
     # Check if this format can transform the given model to CoreModel
     #
-    # HTML produces CoreModel directly, so it only handles already-CoreModel objects.
+    # HTML uses Nokogiri as its model layer. Accepts Nokogiri nodes
+    # and CoreModel objects (pass-through).
     #
     # @param model [Object] The model to check
-    # @return [Boolean] true if the model is already CoreModel
+    # @return [Boolean] true if the model is a Nokogiri node or CoreModel
     def self.handles_model?(model)
-      model.is_a?(Coradoc::CoreModel::Base)
+      model.is_a?(Nokogiri::XML::Node) ||
+        model.is_a?(Nokogiri::XML::Document) ||
+        model.is_a?(Coradoc::CoreModel::Base)
     end
 
     def self.to_core(document)

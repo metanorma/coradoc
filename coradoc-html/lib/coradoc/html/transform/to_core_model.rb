@@ -1,31 +1,29 @@
 # frozen_string_literal: true
 
+require 'nokogiri'
 require 'coradoc/core_model'
 
 module Coradoc
   module Html
     module Transform
-      # Transforms HTML input models to CoreModel equivalents
+      # Transforms Nokogiri HTML nodes to CoreModel
       #
-      # HTML input converters now produce CoreModel directly, so this transformer
-      # is largely a pass-through that ensures the model is CoreModel.
+      # Nokogiri serves as the HTML model layer. This transformer converts
+      # Nokogiri::XML::Document or Nokogiri::XML::Node objects into CoreModel
+      # by delegating to the existing input converter pipeline.
       class ToCoreModel
         class << self
-          # Transform an HTML input model to CoreModel
+          # Transform an HTML model (Nokogiri node) to CoreModel
           #
-          # @param model [Object] HTML input model to transform
+          # @param model [Nokogiri::XML::Document, Nokogiri::XML::Node, Coradoc::CoreModel::Base]
+          #   HTML input model to transform
           # @return [Coradoc::CoreModel::Base] CoreModel equivalent
           def transform(model)
-            # HTML input now produces CoreModel directly
-            transform_direct(model)
-          end
-
-          private
-
-          def transform_direct(model)
             case model
             when Coradoc::CoreModel::Base
               model
+            when Nokogiri::XML::Document, Nokogiri::XML::Node
+              ::Coradoc::Input::Html::HtmlConverter.to_core_model(model)
             when Array
               model.map { |item| transform(item) }
             else

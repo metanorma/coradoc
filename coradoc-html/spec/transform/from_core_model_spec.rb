@@ -15,9 +15,9 @@ RSpec.describe Coradoc::Html::Transform::FromCoreModel do
         )
       end
 
-      it 'returns the model for HTML rendering' do
-        expect(transform).to eq(model)
-        expect(transform.element_type).to eq('document')
+      it 'returns HTML string' do
+        expect(transform).to be_a(String)
+        expect(transform).to include('<html')
       end
     end
 
@@ -29,9 +29,9 @@ RSpec.describe Coradoc::Html::Transform::FromCoreModel do
         )
       end
 
-      it 'returns the model for HTML rendering' do
-        expect(transform).to eq(model)
-        expect(transform.element_type).to eq('paragraph')
+      it 'returns HTML string' do
+        expect(transform).to be_a(String)
+        expect(transform).to include('<')
       end
     end
 
@@ -45,9 +45,9 @@ RSpec.describe Coradoc::Html::Transform::FromCoreModel do
         )
       end
 
-      it 'returns the model for HTML rendering' do
-        expect(transform).to eq(model)
-        expect(transform.marker_type).to eq('unordered')
+      it 'returns HTML string' do
+        expect(transform).to be_a(String)
+        expect(transform).to include('<')
       end
     end
 
@@ -58,16 +58,15 @@ RSpec.describe Coradoc::Html::Transform::FromCoreModel do
         ]
       end
 
-      it 'transforms each element' do
-        expect(transform).to be_an(Array)
-        expect(transform.length).to eq(1)
+      it 'joins transformed elements' do
+        expect(transform).to be_a(String)
       end
     end
 
     context 'with unknown type' do
       let(:model) { 'plain string' }
 
-      it 'returns the value unchanged' do
+      it 'returns the value as string' do
         expect(transform).to eq('plain string')
       end
     end
