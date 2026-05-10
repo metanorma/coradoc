@@ -2,32 +2,6 @@
 
 module Coradoc
   module CoreModel
-    # Semantic block type constants
-    module BlockSemanticType
-      SOURCE_CODE = :source_code
-      LISTING = :listing
-      EXAMPLE = :example
-      QUOTE = :quote
-      SIDEBAR = :sidebar
-      LITERAL = :literal
-      OPEN = :open
-      PASS = :pass
-      VERSE = :verse
-      HORIZONTAL_RULE = :horizontal_rule
-      COMMENT = :comment
-      PARAGRAPH = :paragraph
-      VIDEO = :video
-      AUDIO = :audio
-      ANNOTATION = :annotation
-      REVIEWER = :reviewer
-
-      def self.all
-        [SOURCE_CODE, LISTING, EXAMPLE, QUOTE, SIDEBAR, LITERAL, OPEN, PASS,
-         VERSE, HORIZONTAL_RULE, COMMENT, PARAGRAPH, VIDEO, AUDIO,
-         ANNOTATION, REVIEWER].freeze
-      end
-    end
-
     # Generic block model
     #
     # Represents all block-level elements in a format-neutral way.
