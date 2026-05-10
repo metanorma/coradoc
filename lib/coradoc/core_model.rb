@@ -67,5 +67,6 @@ module Coradoc
     autoload :ParagraphBlock, "#{__dir__}/core_model/paragraph_block"
     autoload :CommentBlock, "#{__dir__}/core_model/comment_block"
     autoload :HorizontalRuleBlock, "#{__dir__}/core_model/horizontal_rule_block"
+    autoload :IdGenerator, "#{__dir__}/core_model/id_generator"
   end
 end
