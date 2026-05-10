@@ -39,7 +39,7 @@ module Coradoc
       private
 
       def comparable_attributes
-        super + %i[term definitions]
+        super + %i[term definitions term_children definition_children]
       end
     end
   end
