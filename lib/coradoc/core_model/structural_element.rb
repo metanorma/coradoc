@@ -5,9 +5,8 @@ module Coradoc
     # Base class for structural elements
     #
     # Represents document structure elements that organize content:
-    # - Sections (= Title, == Title, === Title, etc.)
-    # - Headers
-    # - Document divisions
+    # - Sections (headings at various levels)
+    # - Document roots
     # - Preamble
     #
     # Structural elements can contain other elements (blocks, lists, etc.)
@@ -55,8 +54,8 @@ module Coradoc
       attribute :children, Base, collection: true
 
       # @!attribute attributes
-      #   @return [Hash] document-level attributes (key-value pairs)
-      attribute :attributes, :hash, default: -> { {} }
+      #   @return [Metadata, nil] document-level attributes (typed key-value pairs)
+      attribute :attributes, Metadata
 
       # Heading level with sensible default
       #
