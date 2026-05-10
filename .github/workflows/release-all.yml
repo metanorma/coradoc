@@ -9,6 +9,12 @@ on:
           Pass 'skip' to skip version bump and release gems at current versions.
         required: true
         default: 'skip'
+      gems:
+        description: |
+          Comma-separated list of gems to release (e.g. 'coradoc,coradoc-adoc').
+          Leave empty to release ALL gems.
+        required: false
+        default: ''
       dry_run:
         description: 'Dry run (build only, do not push to RubyGems)'
         required: false
@@ -35,8 +41,35 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
-    - name: Build all gems
-      run: bundle exec rake build:all
+    - name: Determine gems to release
+      id: gems
+      run: |
+        ALL_GEMS="coradoc coradoc-adoc coradoc-docx coradoc-markdown coradoc-html"
+        INPUT="${{ inputs.gems }}"
+        if [ -z "$INPUT" ]; then
+          echo "targets=$ALL_GEMS" >> "$GITHUB_OUTPUT"
+          echo "Releasing all gems: $ALL_GEMS"
+        else
+          # Validate input gems exist
+          for g in $(echo "$INPUT" | tr ',' ' '); do
+            if ! echo "$ALL_GEMS" | grep -qw "$g"; then
+              echo "::error::Unknown gem: $g. Valid gems: $ALL_GEMS"
+              exit 1
+            fi
+          done
+          TARGETS=$(echo "$INPUT" | tr ',' ' ')
+          echo "targets=$TARGETS" >> "$GITHUB_OUTPUT"
+          echo "Releasing selected gems: $TARGETS"
+        fi
+
+    - name: Build gems
+      run: |
+        for gem in ${{ steps.gems.outputs.targets }}; do
+          dir="$gem"
+          if [ "$gem" = "coradoc" ]; then dir="."; fi
+          echo "Building $gem..."
+          (cd "$dir" && gem build *.gemspec)
+        done
 
     - name: Setup RubyGems credentials
       if: ${{ !inputs.dry_run }}
@@ -48,17 +81,35 @@ jobs:
         EOF
         chmod 0600 ~/.gem/credentials
 
-    - name: Release all gems to RubyGems
+    - name: Release gems to RubyGems
       if: ${{ !inputs.dry_run }}
-      run: bundle exec rake release:all
+      run: |
+        for gem in ${{ steps.gems.outputs.targets }}; do
+          dir="$gem"
+          if [ "$gem" = "coradoc" ]; then dir="."; fi
+          gem_file=$(ls "$dir"/*.gem 2>/dev/null | head -1)
+          if [ -n "$gem_file" ]; then
+            echo "Pushing $gem_file..."
+            gem push "$gem_file"
+          else
+            echo "::warning::No gem file found for $gem"
+          fi
+        done
 
     - name: Dry run summary
       if: ${{ inputs.dry_run }}
       run: |
         echo "## Dry Run Summary"
-        echo "All gems built successfully:"
-        find . -name "*.gem" -not -path "*/vendor/*" -exec basename {} \;
+        echo "Gems that would be released:"
+        for gem in ${{ steps.gems.outputs.targets }}; do
+          dir="$gem"
+          if [ "$gem" = "coradoc" ]; then dir="."; fi
+          gem_file=$(ls "$dir"/*.gem 2>/dev/null | head -1)
+          if [ -n "$gem_file" ]; then
+            echo "  - $(basename "$gem_file")"
+          fi
+        done
 
     - name: Cleanup
       if: always()
-      run: bundle exec rake clean:all
+      run: find . -name "*.gem" -not -path "*/vendor/*" -delete
