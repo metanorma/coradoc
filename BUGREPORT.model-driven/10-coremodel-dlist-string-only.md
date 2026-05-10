@@ -1,11 +1,12 @@
 # 10: CoreModel DefinitionItem stores only strings — cannot hold structured content
 
-## Status: PARTIALLY FIXED
+## Status: FIXED
 
-- `DefinitionItem` now has `term_children` and `definition_children` attributes for structured content (arrays of mixed `String` + `InlineElement`)
+- `DefinitionItem` has `term_children` and `definition_children` for structured content (arrays of mixed `String` + `InlineElement`)
 - `term_renderable` and `definition_renderable` methods provide mixed content access (following `Block#renderable_content` pattern)
-- `term` and `definitions` attributes still typed as `:string` for backward compatibility
+- `term` and `definitions` attributes remain `:string` for backward compatibility
 - ToCoreModel transformer populates both flat string and structured children arrays
+- `term_children` and `definition_children` now included in `comparable_attributes` for equality checking
 
 
 **Severity:** HIGH

@@ -1,10 +1,12 @@
 # 05: CoreModel Builder encodes format-specific parsing knowledge
 
-## Status: PARTIALLY FIXED
+## Status: FIXED
 
-- Format-specific builder logic (marker detection, delimiter mapping, annotation type extraction) relocated to format gems
-- Some format-neutral builder utilities may still exist in core
-- Builder methods returning raw Hashes may still need migration to typed model construction
+- Builder methods now return typed CoreModel objects (ParagraphBlock, SectionElement, HeaderElement, CommentBlock, Table, BibliographyEntry, ElementAttribute) instead of raw Hashes
+- `group_document_elements` uses `is_a?` class checks instead of Hash `[:type]` discrimination
+- `build_attributes` returns `ElementAttribute` typed objects
+- Detection logic (marker types, inline format detection) remains AsciiDoc-specific as it lives under `coradoc-adoc/`
+- `document_builder.rb` in core remains format-neutral
 
 
 **Severity:** HIGH  
