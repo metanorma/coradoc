@@ -15,7 +15,7 @@ RSpec.describe Coradoc::AsciiDoc::Builder do
       result = described_class.build(ast)
 
       expect(result).to be_a(Hash)
-      expect(result[:header]).not_to be_nil
+      expect(result[:header]).to be_a(Coradoc::CoreModel::HeaderElement)
     end
   end
 
@@ -28,14 +28,22 @@ RSpec.describe Coradoc::AsciiDoc::Builder do
 
       result = builder.build_document(ast)
 
-      expect(result[:header][:title]).to eq('Document Title')
+      expect(result[:header]).to be_a(Coradoc::CoreModel::HeaderElement)
+      expect(result[:header].title).to eq('Document Title')
       expect(result[:sections]).to be_an(Array)
     end
 
-    it 'handles empty AST' do
+    it 'handles nil AST' do
+      result = builder.build_document(nil)
+
+      expect(result).to be_nil
+    end
+
+    it 'returns structured result for empty hash' do
       result = builder.build_document({})
 
       expect(result).to be_a(Hash)
+      expect(result).to be_empty
     end
   end
 
@@ -45,8 +53,8 @@ RSpec.describe Coradoc::AsciiDoc::Builder do
 
       result = builder.build_element(ast)
 
-      expect(result[:type]).to eq(:section)
-      expect(result[:title]).to eq('Section Title')
+      expect(result).to be_a(Coradoc::CoreModel::SectionElement)
+      expect(result.title).to eq('Section Title')
     end
 
     it 'builds a paragraph element' do
@@ -54,7 +62,7 @@ RSpec.describe Coradoc::AsciiDoc::Builder do
 
       result = builder.build_element(ast)
 
-      expect(result[:type]).to eq(:paragraph)
+      expect(result).to be_a(Coradoc::CoreModel::ParagraphBlock)
     end
 
     it 'returns nil for nil input' do
@@ -64,7 +72,8 @@ RSpec.describe Coradoc::AsciiDoc::Builder do
     it 'builds an unknown element for unrecognized AST' do
       result = builder.build_element({ unknown_key: 'value' })
 
-      expect(result[:type]).to eq(:unknown)
+      expect(result).to be_a(Coradoc::CoreModel::Block)
+      expect(result.block_semantic_type).to eq('unknown')
     end
   end
 
@@ -149,8 +158,8 @@ RSpec.describe Coradoc::AsciiDoc::Builder do
 
       result = builder.build_paragraph(ast)
 
-      expect(result[:type]).to eq(:paragraph)
-      expect(result[:content]).to be_an(Array)
+      expect(result).to be_a(Coradoc::CoreModel::ParagraphBlock)
+      expect(result.content).to eq("Line 1\nLine 2")
     end
   end
 
@@ -164,7 +173,11 @@ RSpec.describe Coradoc::AsciiDoc::Builder do
       result = builder.build_attributes(ast)
 
       expect(result).to be_an(Array)
-      expect(result.first[:positional]).to eq('NOTE')
+      expect(result.length).to eq(3)
+      expect(result[0]).to be_a(Coradoc::CoreModel::ElementAttribute)
+      expect(result[0].name).to eq('NOTE')
+      expect(result[2].name).to eq('role')
+      expect(result[2].value).to eq('important')
     end
   end
 end

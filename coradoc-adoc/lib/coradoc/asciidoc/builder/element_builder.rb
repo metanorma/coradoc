@@ -7,27 +7,22 @@ module Coradoc
         def build_header(ast)
           header_ast = ast[:header] || ast
 
-          {
-            type: :header,
-            title: header_ast[:title],
-            author: header_ast[:author],
-            revision: header_ast[:revision],
+          Coradoc::CoreModel::HeaderElement.new(
+            title: extract_text_content(header_ast[:title]),
             id: header_ast[:id]
-          }
+          )
         end
 
         def build_section(ast)
           section_ast = ast[:section] || ast
 
-          {
-            type: :section,
-            title: section_ast[:title],
+          Coradoc::CoreModel::SectionElement.new(
+            title: extract_text_content(section_ast[:title]),
             id: section_ast[:id],
             level: extract_level(section_ast),
-            contents: build_section_contents(section_ast[:contents]),
-            sections: build_subsections(section_ast[:sections]),
-            attribute_list: section_ast[:attribute_list]
-          }
+            children: build_section_contents(section_ast[:contents]) +
+                      build_subsections(section_ast[:sections])
+          )
         end
 
         def build_section_contents(contents_ast)
@@ -43,104 +38,85 @@ module Coradoc
         end
 
         def build_line_break(ast)
-          {
-            type: :line_break,
+          Coradoc::CoreModel::Block.new(
+            block_semantic_type: 'line_break',
             content: ast[:line_break] || ast['line_break']
-          }
+          )
         end
 
         def build_comment_line(ast)
           comment_ast = ast[:comment_line] || ast['comment_line'] || ast
 
-          {
-            type: :comment_line,
-            text: comment_ast[:comment_text] || comment_ast['comment_text'],
-            line_break: comment_ast[:line_break] || comment_ast['line_break']
-          }
+          Coradoc::CoreModel::CommentBlock.new(
+            content: comment_ast[:comment_text] || comment_ast['comment_text']
+          )
         end
 
         def build_comment_block(ast)
           comment_ast = ast[:comment_block] || ast['comment_block'] || ast
 
-          {
-            type: :comment_block,
-            text: comment_ast[:comment_text] || comment_ast['comment_text']
-          }
+          Coradoc::CoreModel::CommentBlock.new(
+            content: comment_ast[:comment_text] || comment_ast['comment_text']
+          )
         end
 
         def build_include(ast)
           include_ast = ast[:include] || ast['include'] || ast
 
-          {
-            type: :include,
-            path: include_ast[:path] || include_ast['path'],
-            attributes: build_attributes_private(
-              include_ast[:attribute_list] || include_ast['attribute_list']
-            ),
-            line_break: include_ast[:line_break] || include_ast['line_break']
-          }
+          Coradoc::CoreModel::Block.new(
+            block_semantic_type: 'include',
+            content: include_ast[:path] || include_ast['path']
+          )
         end
 
         def build_table(ast)
           table_ast = ast[:table] || ast['table'] || ast
 
-          {
-            type: :table,
+          Coradoc::CoreModel::Table.new(
             title: table_ast[:title] || table_ast['title'],
             id: table_ast[:id] || table_ast['id'],
-            rows: table_ast[:rows] || table_ast['rows'] || [],
-            attributes: build_attributes_private(
-              table_ast[:attribute_list] || table_ast['attribute_list']
-            )
-          }
+            rows: table_ast[:rows] || table_ast['rows'] || []
+          )
         end
 
         def build_unparsed(ast)
-          {
-            type: :unparsed,
-            text: (ast[:unparsed] || ast['unparsed']).to_s
-          }
+          Coradoc::CoreModel::Block.new(
+            block_semantic_type: 'unparsed',
+            content: (ast[:unparsed] || ast['unparsed']).to_s
+          )
         end
 
         def build_tag(ast)
           tag_ast = ast[:tag] || ast['tag'] || ast
 
-          {
-            type: :tag,
-            name: tag_ast[:name] || tag_ast['name'],
-            attributes: build_attributes_private(
-              tag_ast[:attribute_list] || tag_ast['attribute_list']
-            ),
-            line_break: tag_ast[:line_break] || tag_ast['line_break'],
-            prefix: tag_ast[:prefix] || tag_ast['prefix']
-          }
+          Coradoc::CoreModel::Block.new(
+            block_semantic_type: 'tag',
+            content: tag_ast[:name] || tag_ast['name']
+          )
         end
 
         def build_bibliography_entry(ast)
           bib_ast = ast[:bibliography_entry] || ast['bibliography_entry'] || ast
 
-          {
-            type: :bibliography_entry,
+          Coradoc::CoreModel::BibliographyEntry.new(
             anchor_name: bib_ast[:anchor_name] || bib_ast['anchor_name'],
             document_id: bib_ast[:document_id] || bib_ast['document_id'],
-            ref_text: bib_ast[:ref_text] || bib_ast['ref_text'],
-            line_break: bib_ast[:line_break] || bib_ast['line_break']
-          }
+            ref_text: bib_ast[:ref_text] || bib_ast['ref_text']
+          )
         end
 
         def build_generic_element(ast)
-          {
-            type: :unknown,
-            ast: ast
-          }
+          Coradoc::CoreModel::Block.new(
+            block_semantic_type: 'unknown',
+            content: ast.to_s
+          )
         end
 
         def build_attribute(ast)
-          {
-            key: ast[:key],
-            value: ast[:value],
-            line_break: ast[:line_break]
-          }
+          Coradoc::CoreModel::ElementAttribute.new(
+            name: ast[:key],
+            value: ast[:value]
+          )
         end
       end
     end

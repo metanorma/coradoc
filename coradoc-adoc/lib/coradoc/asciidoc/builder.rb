@@ -20,7 +20,7 @@ module Coradoc
       end
 
       def build_document(ast)
-        return {} unless ast.is_a?(Hash)
+        return nil unless ast.is_a?(Hash)
 
         if ast.key?(:document)
           build_document_elements(ast[:document])
@@ -100,13 +100,11 @@ module Coradoc
       def build_paragraph(ast)
         para_ast = ast[:paragraph] || ast
 
-        {
-          type: :paragraph,
-          content: build_paragraph_content(para_ast[:lines]),
+        Coradoc::CoreModel::ParagraphBlock.new(
+          content: build_paragraph_content(para_ast[:lines]).join("\n"),
           id: para_ast[:id],
-          title: para_ast[:title],
-          attribute_list: para_ast[:attribute_list]
-        }
+          title: para_ast[:title]
+        )
       end
 
       def build_inline(ast)
@@ -129,7 +127,9 @@ module Coradoc
 
           if attr_ast[:positional]
             Array(attr_ast[:positional]).each do |pos|
-              attributes << { positional: pos.to_s }
+              attributes << Coradoc::CoreModel::ElementAttribute.new(
+                name: pos.to_s
+              )
             end
           end
 
@@ -137,10 +137,10 @@ module Coradoc
             Array(attr_ast[:named]).each do |named|
               next unless named.is_a?(Hash)
 
-              attributes << {
-                key: named[:key] || named[:named_key],
+              attributes << Coradoc::CoreModel::ElementAttribute.new(
+                name: named[:key] || named[:named_key],
                 value: named[:value] || named[:named_value]
-              }
+              )
             end
           end
 
@@ -155,22 +155,20 @@ module Coradoc
       def build_document_attributes(ast)
         attrs_ast = ast[:document_attributes] || ast
 
-        {
-          type: :document_attributes,
-          attributes: Array(attrs_ast).map do |attr|
-            {
-              key: attr[:key],
-              value: attr[:value],
-              line_break: attr[:line_break]
-            }
-          end
-        }
+        Array(attrs_ast).map do |attr|
+          Coradoc::CoreModel::ElementAttribute.new(
+            key: attr[:key],
+            value: attr[:value]
+          )
+        end
       end
 
       private
 
       def build_text(ast)
-        { type: :text, content: extract_text_content(ast) }
+        Coradoc::CoreModel::InlineElement.new(
+          content: extract_text_content(ast)
+        )
       end
 
       def build_paragraph_content(lines)
@@ -204,18 +202,20 @@ module Coradoc
       end
 
       def group_document_elements(elements)
-        header = elements.find { |e| e[:type] == :header }
-        sections = elements.select { |e| e[:type] == :section }
-        doc_attrs = elements.find { |e| e[:type] == :document_attributes }
+        header = elements.find { |e| e.is_a?(CoreModel::HeaderElement) }
+        sections = elements.select { |e| e.is_a?(CoreModel::SectionElement) }
+        doc_attrs = elements.select { |e| e.is_a?(CoreModel::ElementAttribute) }
         other_content = elements.reject do |e|
-          %i[header section document_attributes].include?(e[:type])
+          e.is_a?(CoreModel::HeaderElement) ||
+            e.is_a?(CoreModel::SectionElement) ||
+            e.is_a?(CoreModel::ElementAttribute)
         end
 
         result = {}
         result[:header] = header if header
         result[:sections] = sections if sections.any?
         result[:content] = other_content if other_content.any?
-        result[:document_attributes] = doc_attrs[:attributes] if doc_attrs
+        result[:document_attributes] = doc_attrs if doc_attrs.any?
         result
       end
 
