@@ -33,7 +33,6 @@ module Coradoc
       ].freeze
 
       attribute :format_type, :string
-      attribute :constrained, :boolean, default: -> { true }
       attribute :content, :string
       attribute :nested_elements, InlineElement, collection: true
       attribute :target, :string
@@ -42,7 +41,7 @@ module Coradoc
       private
 
       def comparable_attributes
-        %i[format_type constrained content nested_elements stem_type]
+        %i[format_type content nested_elements stem_type]
       end
     end
 
