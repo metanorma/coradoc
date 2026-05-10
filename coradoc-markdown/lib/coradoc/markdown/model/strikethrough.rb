@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-
 module Coradoc
   module Markdown
     # Represents strikethrough text using GFM ~~ syntax.

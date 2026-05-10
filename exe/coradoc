@@ -15,12 +15,10 @@ GEM_TO_REQUIRE_PATH = {
 }.freeze
 
 GEM_TO_REQUIRE_PATH.each do |gem_name, require_path|
-  begin
-    gem gem_name
-    require require_path
-  rescue LoadError
-    nil
-  end
+  gem gem_name
+  require require_path
+rescue LoadError
+  nil
 end
 
 Coradoc::CLI.start(ARGV)
