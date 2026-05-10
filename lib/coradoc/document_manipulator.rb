@@ -49,7 +49,7 @@ module Coradoc
       sections = collect_sections(@document, max_level: levels)
       toc = CoreModel::TocGenerator.generate(sections)
 
-      toc_element = CoreModel::Block.new(element_type: 'toc', content: toc)
+      toc_element = CoreModel::Block.new(block_semantic_type: 'toc', content: toc)
       case position
       when :top
         @document.children = [toc_element] + @document.children

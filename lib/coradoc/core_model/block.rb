@@ -21,6 +21,13 @@ module Coradoc
         self.class.semantic_type || block_semantic_type&.to_sym
       end
 
+      # Derived element_type string for backward compatibility.
+      # Returns the semantic type as a string, derived from the class
+      # or block_semantic_type.
+      def element_type
+        resolve_semantic_type&.to_s
+      end
+
       # @!attribute block_semantic_type
       #   @return [String, nil] semantic type for generic Block instances.
       #     Typed subclasses should not override this — use the class instead.
@@ -30,11 +37,6 @@ module Coradoc
       #   @return [String, nil] raw delimiter for round-trip fidelity.
       #     Format-specific; CoreModel does NOT derive semantics from this.
       attribute :delimiter_type, :string
-
-      # @!attribute element_type
-      #   @return [String, nil] format-specific structural role.
-      #     Not used for CoreModel type resolution.
-      attribute :element_type, :string
 
       # @!attribute content
       #   @return [String, nil] the block's text content (simple string)
