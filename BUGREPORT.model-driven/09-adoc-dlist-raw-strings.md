@@ -1,11 +1,12 @@
 # 09: AsciiDoc parser stores definition list terms and definitions as raw strings
 
-## Status: PARTIALLY FIXED
+## Status: FIXED
 
 - `dlist_term` parser updated to parse `[[anchor]]` syntax and extract IDs
 - Transformer handles `TextElement` case for ID extraction from terms
-- `dlist_definition` still uses raw text for definition content (workaround via transformer re-parsing)
-- Full inline markup parsing in definition content not yet implemented
+- ToCoreModel transformer re-parses definition content via `parse_inline_text` and `transform_inline_content`
+- Duplicate rule in `list_rules.rb` removed
+- `dlist_definition` parser still uses raw text capture but inline structure is recovered in the ToCoreModel transformer
 
 
 **Severity:** HIGH
