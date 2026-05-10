@@ -52,7 +52,7 @@ module Coradoc
 
         method_name = DISPATCH_TABLE[element.class]
         if method_name
-          send(method_name, element)
+          public_send(method_name, element)
         elsif element.is_a?(Array)
           visit_array(element)
         else
