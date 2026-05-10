@@ -79,8 +79,7 @@ module Coradoc
             when Coradoc::AsciiDoc::Model::Inline::Stem
               transform_stem(model)
             when Coradoc::AsciiDoc::Model::CommentBlock
-              Coradoc::CoreModel::Block.new(
-                element_type: 'comment',
+              Coradoc::CoreModel::CommentBlock.new(
                 content: model.text.to_s
               )
             when Coradoc::AsciiDoc::Model::Bibliography
@@ -99,8 +98,7 @@ module Coradoc
           def transform_document(doc)
             title_text = extract_title_text(doc.header&.title)
             attributes = extract_document_attributes(doc)
-            Coradoc::CoreModel::StructuralElement.new(
-              element_type: 'document',
+            Coradoc::CoreModel::DocumentElement.new(
               id: doc.id,
               title: title_text,
               attributes: attributes,
@@ -115,8 +113,7 @@ module Coradoc
 
             section_id = section.id || Coradoc::CoreModel::IdGenerator.generate_from_title(title_text)
 
-            Coradoc::CoreModel::StructuralElement.new(
-              element_type: 'section',
+            Coradoc::CoreModel::SectionElement.new(
               id: section_id,
               level: section.level,
               title: title_text,

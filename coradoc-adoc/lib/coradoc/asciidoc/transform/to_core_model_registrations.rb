@@ -64,8 +64,7 @@ module Coradoc
             Registry.register(
               Coradoc::AsciiDoc::Model::CommentBlock,
               lambda { |model|
-                Coradoc::CoreModel::Block.new(
-                  element_type: 'comment',
+                Coradoc::CoreModel::CommentBlock.new(
                   content: model.text.to_s
                 )
               }

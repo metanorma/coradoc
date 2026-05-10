@@ -66,8 +66,8 @@ module Coradoc
           end
 
           def transform_structural_element(element)
-            case element.element_type
-            when 'document'
+            case element
+            when CoreModel::DocumentElement
               header = if element.title
                          Coradoc::AsciiDoc::Model::Header.new(
                            title: Coradoc::AsciiDoc::Model::Title.new(
@@ -84,7 +84,7 @@ module Coradoc
                 header: header,
                 sections: transform(element.children)
               )
-            when 'section'
+            when CoreModel::SectionElement
               Coradoc::AsciiDoc::Model::Section.new(
                 id: element.id,
                 level: element.level,
