@@ -7,9 +7,8 @@ module Coradoc
         class Head < Base
           def to_coradoc(node, _state = {})
             title = extract_title(node)
-            # Use StructuralElement with element_type "document" for document header
-            Coradoc::CoreModel::StructuralElement.new(
-              element_type: 'document',
+            # Use DocumentElement for document header
+            Coradoc::CoreModel::DocumentElement.new(
               title: title,
               level: 0
             )

@@ -88,6 +88,8 @@ module Coradoc
               # @return [Hash] Serialized element
               def serialize_core_model_element(element)
                 case element
+                when Coradoc::CoreModel::DocumentElement
+                  serialize_core_model_document(element)
                 when Coradoc::CoreModel::StructuralElement
                   serialize_core_model_section(element)
                 when Coradoc::CoreModel::Block
@@ -120,6 +122,17 @@ module Coradoc
                   level: level,
                   content: [],
                   sections: serialize_core_model_children(section.children)
+                }
+              end
+
+              def serialize_core_model_document(doc)
+                {
+                  id: doc.id || generate_uid(doc),
+                  type: 'document',
+                  title: doc.title ? { type: 'title', text: doc.title.to_s, level: 0 } : nil,
+                  level: 0,
+                  content: [],
+                  sections: serialize_core_model_children(doc.children)
                 }
               end
 

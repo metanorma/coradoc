@@ -54,7 +54,7 @@ module Coradoc
                    end
 
           Coradoc::CoreModel::Block.new(
-            element_type: 'attribute',
+            block_semantic_type: 'attribute',
             content: key,
             metadata: {
               key: key,

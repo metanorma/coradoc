@@ -61,10 +61,6 @@ module Coradoc
 
           style_parts << "text-align: #{escape_attribute(cell.alignment)}" if cell.alignment
           style_parts << "vertical-align: #{escape_attribute(cell.vertical_alignment)}" if cell.vertical_alignment
-          style_parts << "background-color: #{escape_attribute(cell.bgcolor)}" if cell.bgcolor
-          style_parts << "color: #{escape_attribute(cell.color)}" if cell.color
-          style_parts << "width: #{escape_attribute(cell.width)}" if cell.width
-          style_parts << "height: #{escape_attribute(cell.height)}" if cell.height
 
           # Add style attribute if we have any styles
           attrs << %( style="#{style_parts.join('; ')}") if style_parts.any?
@@ -172,8 +168,6 @@ module Coradoc
 
             # Background color
             if style.include?('background-color')
-              bgcolor = style[/background-color:\s*([^;]+)/, 1]
-              attrs[:bgcolor] = bgcolor.strip if bgcolor
             end
 
             # Text color

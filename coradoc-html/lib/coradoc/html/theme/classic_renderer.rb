@@ -48,7 +48,7 @@ module Coradoc
           lang = @options[:lang] || 'en'
           body_classes = build_body_classes
 
-          final_body = add_heading_ids(html_body)
+          final_body = html_body
           final_body = if @options[:sectnums]
                          apply_section_numbering(final_body)
                        else
@@ -246,40 +246,6 @@ module Coradoc
           end
 
           doc.to_html
-        end
-
-        def add_heading_ids(html)
-          doc = Nokogiri::HTML::DocumentFragment.parse(html)
-          used_ids = Set.new
-
-          doc.css('[id]').each { |node| used_ids.add(node['id']) }
-
-          doc.css('h1, h2, h3, h4, h5, h6').each do |node|
-            next if node['id']
-
-            generated = generate_heading_id(node)
-            next if generated.empty?
-
-            id = generated
-            if used_ids.include?(id)
-              suffix = 2
-              id = "#{generated}_#{suffix}" while used_ids.include?(id)
-            end
-
-            node['id'] = id
-            used_ids.add(id)
-          end
-
-          doc.to_html
-        end
-
-        def generate_heading_id(node)
-          text = node.text.strip
-          id = '_' + text.downcase
-                         .gsub(/[^a-z0-9\s]/, '')
-                         .gsub(/\s+/, '_')
-                         .gsub(/^_+|_+$/, '')
-          id.empty? ? '_' : id
         end
 
         private

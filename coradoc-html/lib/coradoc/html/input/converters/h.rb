@@ -19,8 +19,7 @@ module Coradoc
             level_int = node.name[/\d/].to_i
             content = treat_children_no_anchors(node, state)
 
-            Coradoc::CoreModel::StructuralElement.new(
-              element_type: 'section',
+            Coradoc::CoreModel::SectionElement.new(
               title: extract_title_text(content),
               level: level_int,
               id: id,

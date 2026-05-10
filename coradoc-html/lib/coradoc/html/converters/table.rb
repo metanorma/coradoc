@@ -21,7 +21,6 @@ module Coradoc
 
           attrs = {}
           attrs[:id] = table.id if table.id
-          attrs[:class] = "frame-#{table.frame}" if table.frame
 
           NodeBuilder.build(:table, children, **attrs).to_html
         end
@@ -44,7 +43,6 @@ module Coradoc
             title: title
           )
           table.id = attrs[:id] if attrs[:id]
-          table.frame = attrs[:frame] if attrs[:frame]
 
           table
         end
@@ -52,12 +50,6 @@ module Coradoc
         def self.extract_table_attributes(element)
           attrs = {}
           attrs[:id] = element['id'] if element['id']
-
-          if element['class']&.include?('frame-')
-            frame = element['class'][/frame-(\w+)/, 1]
-            attrs[:frame] = frame if frame
-          end
-
           attrs
         end
       end

@@ -12,14 +12,12 @@ module Coradoc
 
             if lang
               Coradoc::CoreModel::SourceBlock.new(
-                element_type: 'source',
                 content: content,
                 id: id,
                 language: lang
               )
             else
               Coradoc::CoreModel::LiteralBlock.new(
-                element_type: 'literal',
                 content: content,
                 id: id
               )

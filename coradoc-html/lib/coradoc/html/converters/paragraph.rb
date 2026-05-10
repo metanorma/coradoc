@@ -9,14 +9,13 @@ module Coradoc
           # Convert HTML <p> to CoreModel Block
           # @param node [Nokogiri::XML::Node] HTML node
           # @param state [Hash] Conversion state
-          # @return [Coradoc::CoreModel::Block] Block model with element_type: paragraph
+          # @return [Coradoc::CoreModel::ParagraphBlock] Paragraph block model
           def to_coradoc(node, state = {})
             content = treat_children(node, state)
             attrs = extract_node_attributes(node)
 
             # Create paragraph block with content
-            paragraph = Coradoc::CoreModel::Block.new(
-              element_type: 'paragraph',
+            paragraph = Coradoc::CoreModel::ParagraphBlock.new(
               children: [content]
             )
 
@@ -26,8 +25,8 @@ module Coradoc
             paragraph
           end
 
-          # Convert CoreModel::Block (element_type: paragraph) to HTML <p>
-          # @param model [Coradoc::CoreModel::Block] Paragraph block model
+          # Convert CoreModel::ParagraphBlock to HTML <p>
+          # @param model [Coradoc::CoreModel::ParagraphBlock] Paragraph block model
           # @param state [Hash] Conversion state
           # @return [String] HTML string
           def to_html(model, state = {})

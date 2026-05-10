@@ -7,7 +7,7 @@ module Coradoc
     module Converters
       class Section < Base
         class << self
-          # Convert HTML <section> to CoreModel::StructuralElement
+          # Convert HTML <section> to CoreModel::SectionElement
           def to_coradoc(node, state = {})
             title_node = node.at('h1, h2, h3, h4, h5, h6')
             title = title_node&.text&.strip
@@ -20,8 +20,7 @@ module Coradoc
               convert_node_to_core(child, state)
             end.compact
 
-            section = Coradoc::CoreModel::StructuralElement.new(
-              element_type: 'section',
+            section = Coradoc::CoreModel::SectionElement.new(
               level: level,
               title: title,
               children: children
@@ -30,7 +29,7 @@ module Coradoc
             section
           end
 
-          # Convert CoreModel::StructuralElement to HTML <section>
+          # Convert CoreModel::SectionElement to HTML <section>
           def to_html(model, state = {})
             children = []
 

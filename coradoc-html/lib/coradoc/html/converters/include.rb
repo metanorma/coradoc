@@ -54,7 +54,7 @@ module Coradoc
           end
 
           Coradoc::CoreModel::Block.new(
-            element_type: 'include',
+            block_semantic_type: 'include',
             content: path,
             metadata: {
               path: path,

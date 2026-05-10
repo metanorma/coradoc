@@ -200,12 +200,12 @@ module Coradoc
             attrs = build_id_title_attrs(element.id, nil)
             children_html = (element.children || []).map { |c| convert_content_to_html(c, state) }.join
 
-            case element.element_type
-            when 'document'
+            case element
+            when CoreModel::DocumentElement
               NodeBuilder.build(:article, children_html, **attrs).to_html
-            when 'header'
+            when CoreModel::HeaderElement
               NodeBuilder.build(:header, children_html, **attrs).to_html
-            when 'section'
+            when CoreModel::SectionElement
               level = element.heading_level
               level = [level, 6].min
               title_node = (NodeBuilder.build("h#{level}", escape_html(element.title)) if element.title)

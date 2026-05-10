@@ -52,7 +52,7 @@ module Coradoc
           id = element['id']
 
           Coradoc::CoreModel::Block.new(
-            element_type: 'bibliography',
+            block_semantic_type: 'bibliography',
             title: title,
             id: id,
             children: entries

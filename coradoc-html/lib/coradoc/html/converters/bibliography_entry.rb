@@ -60,7 +60,7 @@ module Coradoc
           content = extract_content(content_nodes)
 
           Coradoc::CoreModel::Block.new(
-            element_type: 'bibliography_entry',
+            block_semantic_type: 'bibliography_entry',
             content: content,
             id: entry_id,
             metadata: {

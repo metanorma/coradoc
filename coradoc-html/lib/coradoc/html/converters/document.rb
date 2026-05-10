@@ -7,14 +7,13 @@ module Coradoc
     module Converters
       class Document < Base
         class << self
-          # Convert HTML document to CoreModel::StructuralElement
+          # Convert HTML document to CoreModel::DocumentElement
           def to_coradoc(node, state = {})
             body = find_body_content(node)
             metadata = extract_metadata(node, state)
             content = treat_children(body, state)
 
-            doc = Coradoc::CoreModel::StructuralElement.new(
-              element_type: 'document',
+            doc = Coradoc::CoreModel::DocumentElement.new(
               title: metadata[:title],
               children: content
             )

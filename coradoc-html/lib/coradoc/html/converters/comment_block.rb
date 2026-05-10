@@ -31,8 +31,7 @@ module Coradoc
           # Extract comment text
           text = element.text.to_s
 
-          Coradoc::CoreModel::Block.new(
-            element_type: 'comment',
+          Coradoc::CoreModel::CommentBlock.new(
             content: text
           )
         end

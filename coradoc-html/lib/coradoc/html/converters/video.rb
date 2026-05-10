@@ -73,7 +73,7 @@ module Coradoc
           metadata[:src] = src
 
           Coradoc::CoreModel::Block.new(
-            element_type: 'video',
+            block_semantic_type: 'video',
             content: src,
             title: caption,
             id: id,
