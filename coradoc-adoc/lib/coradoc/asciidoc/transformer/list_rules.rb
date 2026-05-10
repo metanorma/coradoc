@@ -61,9 +61,25 @@ module Coradoc
               Model::List::Ordered.new(items: list_items, attrs: attribute_list)
             end
 
-            # Definition list term
-            rule(dlist_term: simple(:term), delimiter: simple(:_delim)) do
-              term.to_s
+            # Definition list term (with optional anchor)
+            rule(dlist_term: subtree(:term_data), delimiter: simple(:_delim)) do
+              case term_data
+              when Hash
+                text = term_data[:text]
+                text = text.to_s if text.is_a?(Parslet::Slice) || text.is_a?(String)
+                text = text.content.to_s if text.is_a?(Model::TextElement)
+                id = term_data[:id]
+                id = id.to_s if id.is_a?(Parslet::Slice)
+                { text: text.to_s, id: id }
+              when Parslet::Slice
+                { text: term_data.to_s, id: nil }
+              when String
+                { text: term_data, id: nil }
+              when Model::TextElement
+                { text: term_data.content.to_s, id: term_data.id }
+              else
+                { text: term_data.to_s, id: nil }
+              end
             end
 
             # Definition list item
@@ -73,7 +89,17 @@ module Coradoc
                 definition: simple(:contents)
               }
             ) do
-              Model::List::DefinitionItem.new(terms: terms, contents: contents)
+              term_strings = terms.map do |t|
+                t.is_a?(Hash) ? t[:text].to_s : t.to_s
+              end
+              item_id = nil
+              terms.each do |t|
+                next unless t.is_a?(Hash) && t[:id]
+
+                item_id = t[:id].to_s
+                break
+              end
+              Model::List::DefinitionItem.new(terms: term_strings, contents: contents, id: item_id)
             end
 
             # Definition list item with hash terms (single term case)
@@ -83,11 +109,13 @@ module Coradoc
               terms_data = item_data[:terms]
               definition = item_data[:definition]
 
-              # Extract terms
+              # Extract terms and optional id from structured dlist_term output
+              item_id = nil
               terms = if terms_data.is_a?(Array)
                         terms_data.map do |t|
-                          if t.is_a?(Hash) && t[:dlist_term]
-                            t[:dlist_term].to_s
+                          if t.is_a?(Hash)
+                            item_id ||= t[:id].to_s if t[:id]
+                            t[:text].to_s
                           else
                             t.to_s
                           end
@@ -97,11 +125,9 @@ module Coradoc
                       end
 
               # Extract definition
-              if definition.is_a?(Parslet::Slice)
-              end
               contents = definition.to_s
 
-              Model::List::DefinitionItem.new(terms: terms, contents: contents)
+              Model::List::DefinitionItem.new(terms: terms, contents: contents, id: item_id)
             end
 
             rule(definition_list: sequence(:list_items)) do

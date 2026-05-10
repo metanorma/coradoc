@@ -107,8 +107,10 @@ module Coradoc
         end
 
         def dlist_term(_delimiter)
-          match("[^\n:]").repeat(1) # >> empty_line.repeat(0)
-                         .as(:dlist_term) >> dlist_delimiter
+          (element_id_inline.maybe >>
+            match("[^\n:]").repeat(1)
+                           .as(:text)
+          ).as(:dlist_term) >> dlist_delimiter
         end
 
         def dlist_definition
