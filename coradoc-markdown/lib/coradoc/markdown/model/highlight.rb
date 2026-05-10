@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-
 module Coradoc
   module Markdown
     # Represents highlighted text using == syntax (extended Markdown).
