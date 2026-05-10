@@ -113,9 +113,11 @@ module Coradoc
             content_children = transform(section.contents || [])
             nested_sections = transform(section.sections || [])
 
+            section_id = section.id || Coradoc::CoreModel::IdGenerator.generate_from_title(title_text)
+
             Coradoc::CoreModel::StructuralElement.new(
               element_type: 'section',
-              id: section.id,
+              id: section_id,
               level: section.level,
               title: title_text,
               children: content_children + nested_sections
@@ -231,10 +233,25 @@ module Coradoc
                 term_content = item.terms
                 def_content = item.contents
 
-                Coradoc::CoreModel::DefinitionItem.new(
-                  term: extract_text_content(term_content),
-                  definitions: [extract_text_content(def_content)]
+                # Re-parse raw text through inline parser for structured content
+                term_parts = term_content.is_a?(Array) ? term_content : [term_content]
+                parsed_terms = term_parts.flat_map do |part|
+                  remaining, _anchor = extract_dlist_anchor(part)
+                  parse_inline_text(remaining)
+                end
+
+                parsed_defs = parse_inline_text(def_content)
+
+                term_children = transform_inline_content(parsed_terms)
+                def_children = transform_inline_content(parsed_defs)
+
+                di = Coradoc::CoreModel::DefinitionItem.new(
+                  term: extract_text_content(term_children),
+                  definitions: [extract_text_content(def_children)],
+                  term_children: term_children,
+                  definition_children: def_children
                 )
+                di
               else
                 content_val = item.content
                 children = transform_inline_content(content_val)
@@ -267,10 +284,13 @@ module Coradoc
           end
 
           def transform_admonition(admonition)
-            Coradoc::CoreModel::AnnotationBlock.new(
+            children = transform_inline_content(admonition.content)
+            block = Coradoc::CoreModel::AnnotationBlock.new(
               annotation_type: admonition.type,
               content: extract_text_content(admonition.content)
             )
+            block.children = children
+            block
           end
 
           def transform_inline(inline, format_type)
@@ -385,6 +405,45 @@ module Coradoc
             # For [source,yaml], the language is the second positional attribute
             positional = attrs.positional
             positional[1]&.value&.to_s if positional.length > 1
+          end
+
+          # Parse raw text through the inline parser to extract inline elements
+          # (anchors, cross-references, monospace, etc.)
+          def parse_inline_text(raw_text)
+            return [] if raw_text.nil? || raw_text.to_s.strip.empty?
+
+            text = raw_text.to_s
+            parser = Coradoc::AsciiDoc::Parser::Base.new
+            transformer = Coradoc::AsciiDoc::Transformer.new
+
+            parsed = parser.text_any.parse(text)
+            result = transformer.apply({ text: parsed })
+
+            case result
+            when Coradoc::AsciiDoc::Model::TextElement
+              result.content.is_a?(Array) ? result.content : [result.content]
+            when Array
+              result
+            when Coradoc::AsciiDoc::Model::Base
+              [result]
+            else
+              [text]
+            end
+          rescue Parslet::ParseFailed
+            [text]
+          end
+
+          # Extract anchor [[id]] prefix from raw dlist term text
+          # Returns [remaining_text, anchor_id_or_nil]
+          def extract_dlist_anchor(raw_term)
+            text = raw_term.to_s
+            if text =~ /\A\[\[([^\]]+)\]\]\s*/
+              anchor_id = ::Regexp.last_match(1)
+              remaining = ::Regexp.last_match.post_match
+              [remaining, anchor_id]
+            else
+              [text, nil]
+            end
           end
 
           def transform_inline_content(content)
