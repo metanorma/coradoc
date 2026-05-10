@@ -35,7 +35,6 @@ spec/examples.txt
 .irbrc
 .pryrc
 .pryrc.sample
-.ruby-version
 .vscode/
 
 Gemfile.lock
