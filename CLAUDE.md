@@ -74,6 +74,9 @@ Format gems register via `Coradoc.register_format(:name, Module)` and must imple
 
 ## Conventions
 
+- **NO HASHES IN MODELS**: CoreModel classes must NEVER use `:hash` as an attribute type. Every attribute must be a typed model, string, integer, or array of typed models. No hash bags, no generic key-value stores. This enforces the model-driven architecture.
+- **NO SERIALIZATION IN MODELS**: CoreModel classes must NEVER contain `to_hash`, `to_json`, `serialize`, or any custom serialization methods. Models are pure data structures. Serialization is handled by dedicated serializer classes (lutaml-model handles this automatically).
+- **NO RAW HTML STRINGS**: The HTML gem must use Nokogiri as both the model layer AND the HTML builder. Never concatenate raw HTML strings. Never manually construct HTML in text. Use `Nokogiri::HTML::Builder` or `Nokogiri::XML::Node` methods to construct HTML output. ALL non-model-driven HTML construction code must be converted to Nokogiri builder.
 - **Model classes own only their native format**: No `to_adoc` in Markdown models, no `to_md` in AsciiDoc models. Cross-format conversion always routes through CoreModel transformers (ToCoreModel / FromCoreModel). This enforces SRP, OCP, and DIP.
 - **Autoload over require_relative**: Use `autoload` with `#{__dir__}` paths (see `core_model.rb` for pattern). Exception: files with load-time side effects (registrations, `apply` calls) use `require_relative`.
 - **Error-raising in serializers**: Unknown types in `serialize_content` should raise `ArgumentError`, never fall back to `to_s`. This catches missing serializers immediately rather than producing Ruby object dumps.
