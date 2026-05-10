@@ -23,8 +23,7 @@ module Coradoc
             latex = omml_to_latex(element)
 
             if display_math?(element)
-              CoreModel::Block.new(
-                element_type: 'block',
+              CoreModel::PassBlock.new(
                 delimiter_type: '++++',
                 language: 'latexmath',
                 content: latex

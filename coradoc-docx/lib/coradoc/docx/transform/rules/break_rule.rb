@@ -16,7 +16,7 @@ module Coradoc
 
           def apply(brk, _context)
             if brk.type == 'page'
-              Coradoc::CoreModel::Block.new(element_type: 'page_break')
+              Coradoc::CoreModel::Block.new(block_semantic_type: 'page_break')
             else
               Coradoc::CoreModel::InlineElement.new(
                 format_type: 'hard_line_break'

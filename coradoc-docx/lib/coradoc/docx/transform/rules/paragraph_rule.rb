@@ -32,7 +32,7 @@ module Coradoc
             id = extract_bookmark_id(paragraph)
 
             block = CoreModel::Block.new(
-              element_type: block_type,
+              block_semantic_type: block_type,
               content: extract_plain_text(children)
             )
             block.children = children

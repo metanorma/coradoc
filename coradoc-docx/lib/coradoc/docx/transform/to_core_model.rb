@@ -56,8 +56,7 @@ module Coradoc
             children.shift
           end
 
-          doc = Coradoc::CoreModel::StructuralElement.new(
-            element_type: 'document',
+          doc = Coradoc::CoreModel::DocumentElement.new(
             title: doc_title,
             children: children
           )
@@ -147,7 +146,7 @@ module Coradoc
           else
             # Standalone section break → thematic break
             Coradoc::CoreModel::Block.new(
-              element_type: 'thematic_break'
+              block_semantic_type: 'thematic_break'
             )
           end
         end

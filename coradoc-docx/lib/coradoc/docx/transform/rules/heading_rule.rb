@@ -25,8 +25,7 @@ module Coradoc
             title = extract_title(paragraph, context)
             id = extract_bookmark_id(paragraph)
 
-            CoreModel::StructuralElement.new(
-              element_type: 'section',
+            CoreModel::SectionElement.new(
               level: level,
               title: title,
               id: id
