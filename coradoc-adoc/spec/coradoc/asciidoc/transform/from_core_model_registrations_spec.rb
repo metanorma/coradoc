@@ -64,8 +64,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModelRegistrations do
       it 'transforms StructuralElement document using registered transformer' do
         described_class.register_all!
 
-        doc = Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'document',
+        doc = Coradoc::CoreModel::DocumentElement.new(
           id: 'test-doc',
           title: 'Test Document'
         )
@@ -78,8 +77,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModelRegistrations do
       it 'transforms StructuralElement section using registered transformer' do
         described_class.register_all!
 
-        section = Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'section',
+        section = Coradoc::CoreModel::SectionElement.new(
           id: 'test-section',
           level: 1,
           title: 'Test Section'

@@ -73,7 +73,7 @@ RSpec.describe Coradoc::DocumentBuilder do
       end
 
       para = builder.document.children.first
-      expect(para.element_type).to eq('paragraph')
+      expect(para).to be_a(Coradoc::CoreModel::ParagraphBlock)
       expect(para.content).to eq('This is a paragraph.')
     end
   end
@@ -213,8 +213,7 @@ RSpec.describe Coradoc::DocumentBuilder do
       end
 
       core = builder.to_core
-      expect(core).to be_a(Coradoc::CoreModel::StructuralElement)
-      expect(core.element_type).to eq('document')
+      expect(core).to be_a(Coradoc::CoreModel::DocumentElement)
     end
   end
 

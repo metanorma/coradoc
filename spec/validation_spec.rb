@@ -289,7 +289,6 @@ RSpec.describe Coradoc::Validation do
         expect(schema).to be_a(Coradoc::Validation::Schema)
         expect(schema.fields).to have_key(:id)
         expect(schema.fields).to have_key(:title)
-        expect(schema.fields).to have_key(:element_type)
         expect(schema.fields).to have_key(:level)
         expect(schema.fields).to have_key(:children)
       end
@@ -297,11 +296,11 @@ RSpec.describe Coradoc::Validation do
       it 'marks specified attributes as required' do
         schema = described_class.generate(
           Coradoc::CoreModel::StructuralElement,
-          required: %i[title element_type]
+          required: %i[title level]
         )
 
         expect(schema.fields[:title][:required]).to be true
-        expect(schema.fields[:element_type][:required]).to be true
+        expect(schema.fields[:level][:required]).to be true
       end
 
       it 'ignores specified attributes' do
@@ -331,8 +330,7 @@ RSpec.describe Coradoc::Validation do
           required: [:element_type]
         )
 
-        element = Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'section',
+        element = Coradoc::CoreModel::SectionElement.new(
           level: 1,
           title: 'Test'
         )
@@ -344,11 +342,10 @@ RSpec.describe Coradoc::Validation do
       it 'catches validation errors with generated schema' do
         schema = described_class.generate(
           Coradoc::CoreModel::StructuralElement,
-          required: [:element_type]
+          required: [:title]
         )
 
         element = Coradoc::CoreModel::StructuralElement.new(
-          element_type: nil,
           level: 1
         )
 

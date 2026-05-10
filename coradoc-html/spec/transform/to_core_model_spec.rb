@@ -27,8 +27,7 @@ RSpec.describe Coradoc::Html::Transform::ToCoreModel do
 
     context 'with CoreModel::Base' do
       let(:model) do
-        Coradoc::CoreModel::Block.new(
-          element_type: 'paragraph',
+        Coradoc::CoreModel::ParagraphBlock.new(
           content: 'Already CoreModel'
         )
       end
@@ -41,8 +40,8 @@ RSpec.describe Coradoc::Html::Transform::ToCoreModel do
     context 'with Array' do
       let(:model) do
         [
-          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Para 1'),
-          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Para 2')
+          Coradoc::CoreModel::ParagraphBlock.new(content: 'Para 1'),
+          Coradoc::CoreModel::ParagraphBlock.new(content: 'Para 2')
         ]
       end
 

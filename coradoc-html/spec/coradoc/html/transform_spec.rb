@@ -25,7 +25,7 @@ RSpec.describe Coradoc::Html::Transform::ToCoreModel do
     end
 
     it 'passes through CoreModel unchanged' do
-      core = Coradoc::CoreModel::StructuralElement.new(element_type: 'document')
+      core = Coradoc::CoreModel::DocumentElement.new
       result = described_class.transform(core)
 
       expect(result).to equal(core)
@@ -45,8 +45,7 @@ end
 RSpec.describe Coradoc::Html::Transform::FromCoreModel do
   describe '.transform' do
     it 'transforms CoreModel to HTML string' do
-      doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      doc = Coradoc::CoreModel::DocumentElement.new(
         title: 'Test'
       )
       result = described_class.transform(doc)
@@ -57,8 +56,8 @@ RSpec.describe Coradoc::Html::Transform::FromCoreModel do
 
     it 'transforms arrays by joining' do
       elements = [
-        Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'A'),
-        Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'B')
+        Coradoc::CoreModel::ParagraphBlock.new(content: 'A'),
+        Coradoc::CoreModel::ParagraphBlock.new(content: 'B')
       ]
       result = described_class.transform(elements)
 
@@ -79,7 +78,7 @@ RSpec.describe Coradoc::Html, '#handles_model?' do
   end
 
   it 'handles CoreModel::Base' do
-    core = Coradoc::CoreModel::StructuralElement.new(element_type: 'document')
+    core = Coradoc::CoreModel::DocumentElement.new
     expect(described_class.handles_model?(core)).to be true
   end
 

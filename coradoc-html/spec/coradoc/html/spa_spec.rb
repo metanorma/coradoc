@@ -4,7 +4,7 @@ require 'spec_helper'
 require 'tempfile'
 
 RSpec.describe Coradoc::Html::Spa do
-  let(:document) { Coradoc::CoreModel::StructuralElement.new(element_type: 'document') }
+  let(:document) { Coradoc::CoreModel::DocumentElement.new }
 
   describe Coradoc::Html::Spa::Configuration do
     describe '.new' do

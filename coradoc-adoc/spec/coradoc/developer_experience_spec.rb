@@ -11,8 +11,8 @@ RSpec.describe 'Developer Experience API' do
 
       result = Coradoc.parse(text, format: :asciidoc)
 
-      expect(result).to be_a(Coradoc::CoreModel::StructuralElement)
-      expect(result.element_type).to eq('document')
+      expect(result).to be_a(Coradoc::CoreModel::DocumentElement)
+      expect(result.document?).to be true
     end
 
     it 'raises error for unregistered format' do
@@ -77,8 +77,7 @@ RSpec.describe 'Developer Experience API' do
 
   describe 'Coradoc.serialize' do
     it 'serializes CoreModel to AsciiDoc' do
-      core = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      core = Coradoc::CoreModel::DocumentElement.new(
         title: 'My Document',
         children: []
       )

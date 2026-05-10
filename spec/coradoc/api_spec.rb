@@ -417,8 +417,8 @@ RSpec.describe 'Coradoc API' do
       doc = Coradoc::CoreModel::StructuralElement.new(
         element_type: 'document',
         children: [
-          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'A'),
-          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'B')
+          Coradoc::CoreModel::ParagraphBlock.new(content: 'A'),
+          Coradoc::CoreModel::ParagraphBlock.new(content: 'B')
         ]
       )
 
@@ -439,7 +439,7 @@ RSpec.describe 'Coradoc API' do
       doc = Coradoc::CoreModel::StructuralElement.new(
         element_type: 'document',
         children: [
-          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'A'),
+          Coradoc::CoreModel::ParagraphBlock.new(content: 'A'),
           Coradoc::CoreModel::AnnotationBlock.new(annotation_type: 'note', content: 'B'),
           Coradoc::CoreModel::ListBlock.new(marker_type: 'unordered')
         ]
@@ -465,22 +465,20 @@ RSpec.describe 'Coradoc API' do
     end
 
     it 'describes elements with content' do
-      elem = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      elem = Coradoc::CoreModel::ParagraphBlock.new(
         content: 'Some text here'
       )
 
-      expect(Coradoc.describe_element(elem)).to eq('Block: Some text here')
+      expect(Coradoc.describe_element(elem)).to eq('ParagraphBlock: Some text here')
     end
 
     it 'truncates long content' do
       long_text = 'A' * 60
-      elem = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      elem = Coradoc::CoreModel::ParagraphBlock.new(
         content: long_text
       )
 
-      expect(Coradoc.describe_element(elem)).to eq("Block: #{'A' * 51}...")
+      expect(Coradoc.describe_element(elem)).to eq("ParagraphBlock: #{'A' * 51}...")
     end
 
     it 'describes elements without title or content' do

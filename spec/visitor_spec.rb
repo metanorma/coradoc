@@ -9,16 +9,14 @@ RSpec.describe Coradoc::Visitor do
       element_type: 'document',
       title: 'Test Document',
       children: [
-        Coradoc::CoreModel::Block.new(
-          element_type: 'paragraph',
+        Coradoc::CoreModel::ParagraphBlock.new(
           content: 'First paragraph'
         ),
         Coradoc::CoreModel::StructuralElement.new(
           element_type: 'section',
           title: 'Section 1',
           children: [
-            Coradoc::CoreModel::Block.new(
-              element_type: 'paragraph',
+            Coradoc::CoreModel::ParagraphBlock.new(
               content: 'Second paragraph'
             )
           ]
@@ -43,7 +41,7 @@ RSpec.describe Coradoc::Visitor do
       end
 
       it 'visits blocks' do
-        block = Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Test')
+        block = Coradoc::CoreModel::ParagraphBlock.new(content: 'Test')
         expect { subject.visit(block) }.not_to raise_error
       end
 
@@ -57,7 +55,7 @@ RSpec.describe Coradoc::Visitor do
       end
 
       it 'visits arrays' do
-        arr = [document, Coradoc::CoreModel::Block.new(element_type: 'test')]
+        arr = [document, Coradoc::CoreModel::Block.new(block_semantic_type: 'test')]
         expect { subject.visit(arr) }.not_to raise_error
       end
     end
@@ -117,7 +115,7 @@ RSpec.describe Coradoc::Visitor do
         document.accept(transformer)
 
         expect(transformed).to include(Coradoc::CoreModel::StructuralElement)
-        expect(transformed).to include(Coradoc::CoreModel::Block)
+        expect(transformed).to include(Coradoc::CoreModel::ParagraphBlock)
       end
 
       it 'can modify elements' do
@@ -144,8 +142,7 @@ RSpec.describe Coradoc::Visitor do
       end
 
       it 'finds elements by id' do
-        block_with_id = Coradoc::CoreModel::Block.new(
-          element_type: 'paragraph',
+        block_with_id = Coradoc::CoreModel::ParagraphBlock.new(
           content: 'Test',
           id: 'my-block'
         )

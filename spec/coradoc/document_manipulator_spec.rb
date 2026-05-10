@@ -4,28 +4,23 @@ require 'spec_helper'
 
 RSpec.describe Coradoc::DocumentManipulator do
   let(:document) do
-    Coradoc::CoreModel::StructuralElement.new(
-      element_type: 'document',
+    Coradoc::CoreModel::DocumentElement.new(
       title: 'Test Document',
       children: [
-        Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'section',
+        Coradoc::CoreModel::SectionElement.new(
           title: 'Introduction',
           level: 1,
           children: [
-            Coradoc::CoreModel::Block.new(
-              element_type: 'paragraph',
+            Coradoc::CoreModel::ParagraphBlock.new(
               content: 'This is the introduction.'
             )
           ]
         ),
-        Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'section',
+        Coradoc::CoreModel::SectionElement.new(
           title: 'Background',
           level: 2,
           children: [
-            Coradoc::CoreModel::Block.new(
-              element_type: 'paragraph',
+            Coradoc::CoreModel::ParagraphBlock.new(
               content: 'Background information.'
             )
           ]
@@ -139,9 +134,9 @@ RSpec.describe Coradoc::DocumentManipulator do
       Coradoc::CoreModel::StructuralElement.new(
         element_type: 'document',
         children: [
-          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Keep this'),
-          Coradoc::CoreModel::Block.new(element_type: 'comment', content: 'Remove this'),
-          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Keep this too')
+          Coradoc::CoreModel::ParagraphBlock.new(content: 'Keep this'),
+          Coradoc::CoreModel::CommentBlock.new(content: 'Remove this'),
+          Coradoc::CoreModel::ParagraphBlock.new(content: 'Keep this too')
         ]
       )
     end

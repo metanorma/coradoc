@@ -18,8 +18,8 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModel do
 
         result = transformer.transform(doc)
 
-        expect(result).to be_a(Coradoc::CoreModel::StructuralElement)
-        expect(result.element_type).to eq('document')
+        expect(result).to be_a(Coradoc::CoreModel::DocumentElement)
+        expect(result.document?).to be true
         expect(result.title).to eq('Test Document')
       end
     end
@@ -35,8 +35,8 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModel do
 
         result = transformer.transform(section)
 
-        expect(result).to be_a(Coradoc::CoreModel::StructuralElement)
-        expect(result.element_type).to eq('section')
+        expect(result).to be_a(Coradoc::CoreModel::SectionElement)
+        expect(result.section?).to be true
         expect(result.level).to eq(1)
         expect(result.title).to eq('Introduction')
         expect(result.id).to eq('intro')
@@ -77,7 +77,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModel do
 
         expect(result).to be_an(Array)
         expect(result.length).to eq(2)
-        expect(result.first).to be_a(Coradoc::CoreModel::StructuralElement)
+        expect(result.first).to be_a(Coradoc::CoreModel::SectionElement)
       end
     end
   end

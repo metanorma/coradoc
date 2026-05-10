@@ -4,7 +4,7 @@ require 'spec_helper'
 require 'tempfile'
 
 RSpec.describe Coradoc::Html::ConverterBase do
-  let(:document) { Coradoc::CoreModel::StructuralElement.new(element_type: 'document') }
+  let(:document) { Coradoc::CoreModel::DocumentElement.new }
 
   describe '.new' do
     it 'accepts a document' do

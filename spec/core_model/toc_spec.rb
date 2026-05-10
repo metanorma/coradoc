@@ -84,22 +84,19 @@ end
 RSpec.describe Coradoc::CoreModel::TocGenerator do
   describe '.generate' do
     it 'generates TOC from document with sections' do
-      section1 = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section',
+      section1 = Coradoc::CoreModel::SectionElement.new(
         id: 'section-1',
         title: 'Section 1',
         level: 1,
         children: []
       )
-      section2 = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section',
+      section2 = Coradoc::CoreModel::SectionElement.new(
         id: 'section-2',
         title: 'Section 2',
         level: 1,
         children: []
       )
-      doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      doc = Coradoc::CoreModel::DocumentElement.new(
         children: [section1, section2]
       )
 
@@ -112,22 +109,19 @@ RSpec.describe Coradoc::CoreModel::TocGenerator do
     end
 
     it 'handles nested sections correctly' do
-      subsection = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section',
+      subsection = Coradoc::CoreModel::SectionElement.new(
         id: 'subsection',
         title: 'Subsection',
         level: 2,
         children: []
       )
-      section = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section',
+      section = Coradoc::CoreModel::SectionElement.new(
         id: 'main-section',
         title: 'Main Section',
         level: 1,
         children: [subsection]
       )
-      doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      doc = Coradoc::CoreModel::DocumentElement.new(
         children: [section]
       )
 
@@ -139,10 +133,9 @@ RSpec.describe Coradoc::CoreModel::TocGenerator do
     end
 
     it 'returns nil for document without sections' do
-      doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      doc = Coradoc::CoreModel::DocumentElement.new(
         children: [
-          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Text')
+          Coradoc::CoreModel::ParagraphBlock.new(content: 'Text')
         ]
       )
 
@@ -152,14 +145,14 @@ RSpec.describe Coradoc::CoreModel::TocGenerator do
     end
 
     it 'respects min_level option' do
-      h1 = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section', id: 'h1', title: 'H1', level: 1, children: []
+      h1 = Coradoc::CoreModel::SectionElement.new(
+        id: 'h1', title: 'H1', level: 1, children: []
       )
-      h2 = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section', id: 'h2', title: 'H2', level: 2, children: []
+      h2 = Coradoc::CoreModel::SectionElement.new(
+        id: 'h2', title: 'H2', level: 2, children: []
       )
-      doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document', children: [h1, h2]
+      doc = Coradoc::CoreModel::DocumentElement.new(
+        children: [h1, h2]
       )
 
       toc = described_class.generate(doc, min_level: 2)
@@ -168,17 +161,17 @@ RSpec.describe Coradoc::CoreModel::TocGenerator do
     end
 
     it 'respects max_level option' do
-      subsection = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section', id: 'sub', title: 'Sub', level: 3, children: []
+      subsection = Coradoc::CoreModel::SectionElement.new(
+        id: 'sub', title: 'Sub', level: 3, children: []
       )
-      section = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section', id: 'sec', title: 'Sec', level: 2, children: [subsection]
+      section = Coradoc::CoreModel::SectionElement.new(
+        id: 'sec', title: 'Sec', level: 2, children: [subsection]
       )
-      h1 = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section', id: 'h1', title: 'H1', level: 1, children: [section]
+      h1 = Coradoc::CoreModel::SectionElement.new(
+        id: 'h1', title: 'H1', level: 1, children: [section]
       )
-      doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document', children: [h1]
+      doc = Coradoc::CoreModel::DocumentElement.new(
+        children: [h1]
       )
 
       toc = described_class.generate(doc, max_level: 2)
@@ -188,17 +181,17 @@ RSpec.describe Coradoc::CoreModel::TocGenerator do
     end
 
     it 'adds section numbers when numbered: true' do
-      subsection = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section', id: 'sub', title: 'Sub', level: 2, children: []
+      subsection = Coradoc::CoreModel::SectionElement.new(
+        id: 'sub', title: 'Sub', level: 2, children: []
       )
-      section2 = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section', id: 's2', title: 'S2', level: 1, children: []
+      section2 = Coradoc::CoreModel::SectionElement.new(
+        id: 's2', title: 'S2', level: 1, children: []
       )
-      section1 = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section', id: 's1', title: 'S1', level: 1, children: [subsection]
+      section1 = Coradoc::CoreModel::SectionElement.new(
+        id: 's1', title: 'S1', level: 1, children: [subsection]
       )
-      doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document', children: [section1, section2]
+      doc = Coradoc::CoreModel::DocumentElement.new(
+        children: [section1, section2]
       )
 
       toc = described_class.generate(doc, numbered: true)

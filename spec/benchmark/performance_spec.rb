@@ -96,8 +96,7 @@ RSpec.describe 'Performance Benchmarks', type: :benchmark do
     it 'creates documents efficiently' do
       result = Benchmark.measure do
         1000.times do
-          Coradoc::CoreModel::StructuralElement.new(
-            element_type: 'document',
+          Coradoc::CoreModel::DocumentElement.new(
             title: 'Test Document',
             children: [
               Coradoc::CoreModel::Block.new(
@@ -132,12 +131,10 @@ RSpec.describe 'Performance Benchmarks', type: :benchmark do
 
   describe 'HTML Rendering' do
     let(:complex_document) do
-      Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      Coradoc::CoreModel::DocumentElement.new(
         title: 'Complex Document',
         children: [
-          Coradoc::CoreModel::StructuralElement.new(
-            element_type: 'section',
+          Coradoc::CoreModel::SectionElement.new(
             level: 1,
             title: 'Section 1',
             children: [

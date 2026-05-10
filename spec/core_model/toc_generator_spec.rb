@@ -8,8 +8,7 @@ RSpec.describe Coradoc::CoreModel::TocGenerator do
   describe '.generate' do
     # Helper to create section elements
     def create_section(id:, title:, level:, children: [])
-      Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section',
+      Coradoc::CoreModel::SectionElement.new(
         id: id,
         title: title,
         level: level,
@@ -18,8 +17,7 @@ RSpec.describe Coradoc::CoreModel::TocGenerator do
     end
 
     def create_document(children:)
-      Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      Coradoc::CoreModel::DocumentElement.new(
         children: children
       )
     end
@@ -40,7 +38,7 @@ RSpec.describe Coradoc::CoreModel::TocGenerator do
 
       it 'returns nil for document without sections' do
         doc = create_document(children: [
-                                Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Text')
+                                Coradoc::CoreModel::ParagraphBlock.new(content: 'Text')
                               ])
 
         toc = described_class.generate(doc)
@@ -277,8 +275,7 @@ RSpec.describe Coradoc::CoreModel::TocGenerator do
 
     describe 'edge cases' do
       it 'handles section with nil level' do
-        section = Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'section',
+        section = Coradoc::CoreModel::SectionElement.new(
           id: 's1',
           title: 'Section',
           level: nil,
@@ -294,7 +291,7 @@ RSpec.describe Coradoc::CoreModel::TocGenerator do
 
       it 'handles document with mixed content' do
         section = create_section(id: 's1', title: 'Section', level: 1)
-        paragraph = Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Text')
+        paragraph = Coradoc::CoreModel::ParagraphBlock.new(content: 'Text')
         doc = create_document(children: [paragraph, section])
 
         toc = described_class.generate(doc)
@@ -304,8 +301,7 @@ RSpec.describe Coradoc::CoreModel::TocGenerator do
       end
 
       it 'handles sections with missing id' do
-        section = Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'section',
+        section = Coradoc::CoreModel::SectionElement.new(
           title: 'No ID Section',
           level: 1,
           children: []
@@ -319,8 +315,7 @@ RSpec.describe Coradoc::CoreModel::TocGenerator do
       end
 
       it 'handles sections with missing title' do
-        section = Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'section',
+        section = Coradoc::CoreModel::SectionElement.new(
           id: 'no-title',
           level: 1,
           children: []

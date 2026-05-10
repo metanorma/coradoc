@@ -8,8 +8,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
   describe '#transform' do
     context 'when transforming a document' do
       it 'transforms a CoreModel document to AsciiDoc' do
-        doc = Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'document',
+        doc = Coradoc::CoreModel::DocumentElement.new(
           title: 'Test Document',
           children: []
         )
@@ -23,8 +22,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
 
     context 'when transforming a section' do
       it 'transforms a CoreModel section to AsciiDoc' do
-        section = Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'section',
+        section = Coradoc::CoreModel::SectionElement.new(
           id: 'intro',
           level: 2,
           title: 'Introduction',
@@ -198,13 +196,11 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
     context 'when transforming an array' do
       it 'transforms each element in the collection' do
         elements = [
-          Coradoc::CoreModel::StructuralElement.new(
-            element_type: 'section',
+          Coradoc::CoreModel::SectionElement.new(
             level: 1,
             title: 'Section 1'
           ),
-          Coradoc::CoreModel::StructuralElement.new(
-            element_type: 'section',
+          Coradoc::CoreModel::SectionElement.new(
             level: 1,
             title: 'Section 2'
           )

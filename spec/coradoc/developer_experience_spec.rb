@@ -111,7 +111,7 @@ RSpec.describe Coradoc do
       core = Coradoc::CoreModel::StructuralElement.new(
         element_type: 'document',
         children: [
-          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Test')
+          Coradoc::CoreModel::ParagraphBlock.new(content: 'Test')
         ]
       )
 

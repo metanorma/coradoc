@@ -10,10 +10,9 @@ require 'fileutils'
 
 RSpec.describe Coradoc::Html::Theme::ClassicRenderer do
   let(:document) do
-    Coradoc::CoreModel::StructuralElement.new(
+    Coradoc::CoreModel::DocumentElement.new(
       id: 'test-doc',
-      title: 'Test Document',
-      element_type: 'document'
+      title: 'Test Document'
     )
   end
 
@@ -124,10 +123,9 @@ end
 
 RSpec.describe Coradoc::Html::Theme::ModernRenderer do
   let(:document) do
-    Coradoc::CoreModel::StructuralElement.new(
+    Coradoc::CoreModel::DocumentElement.new(
       id: 'test-doc',
-      title: 'Test Document',
-      element_type: 'document'
+      title: 'Test Document'
     )
   end
 

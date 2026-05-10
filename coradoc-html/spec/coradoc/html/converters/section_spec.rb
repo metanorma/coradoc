@@ -10,8 +10,7 @@ RSpec.describe Coradoc::Html::Converters::Section do
         content: 'This is a paragraph.'
       )
 
-      section = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section',
+      section = Coradoc::CoreModel::SectionElement.new(
         level: 1,
         title: 'Test Section',
         children: [paragraph]
@@ -24,8 +23,7 @@ RSpec.describe Coradoc::Html::Converters::Section do
     end
 
     it 'converts section with ID' do
-      section = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section',
+      section = Coradoc::CoreModel::SectionElement.new(
         level: 1,
         title: 'Section',
         id: 'section1'
@@ -37,14 +35,12 @@ RSpec.describe Coradoc::Html::Converters::Section do
     end
 
     it 'converts nested sections' do
-      child_section = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section',
+      child_section = Coradoc::CoreModel::SectionElement.new(
         level: 2,
         title: 'Child'
       )
 
-      parent_section = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section',
+      parent_section = Coradoc::CoreModel::SectionElement.new(
         level: 1,
         title: 'Parent',
         children: [child_section]
@@ -57,8 +53,7 @@ RSpec.describe Coradoc::Html::Converters::Section do
     end
 
     it 'handles empty section content' do
-      section = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section',
+      section = Coradoc::CoreModel::SectionElement.new(
         level: 1,
         title: 'Empty Section'
       )
@@ -73,8 +68,7 @@ RSpec.describe Coradoc::Html::Converters::Section do
         content: "<script>alert('xss')</script>"
       )
 
-      section = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section',
+      section = Coradoc::CoreModel::SectionElement.new(
         level: 1,
         title: 'XSS Test',
         children: [paragraph]
@@ -96,8 +90,7 @@ RSpec.describe Coradoc::Html::Converters::Section do
         items: [list_item]
       )
 
-      section = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'section',
+      section = Coradoc::CoreModel::SectionElement.new(
         level: 1,
         title: 'Section with List',
         children: [list]

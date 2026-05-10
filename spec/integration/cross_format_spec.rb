@@ -35,7 +35,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       core_doc = Coradoc::AsciiDoc::Transform::ToCoreModel.transform(adoc_doc)
 
       expect(core_doc).to be_a(Coradoc::CoreModel::StructuralElement)
-      expect(core_doc.element_type).to eq('document')
+      expect(core_doc).to be_a(Coradoc::CoreModel::DocumentElement)
       expect(core_doc.title).to eq('Document Title')
     end
 
@@ -79,8 +79,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       md_doc = Coradoc::Markdown.parse(md_content)
       core_doc = Coradoc::Markdown.to_core_model(md_doc)
 
-      expect(core_doc).to be_a(Coradoc::CoreModel::StructuralElement)
-      expect(core_doc.element_type).to eq('document')
+      expect(core_doc).to be_a(Coradoc::CoreModel::DocumentElement)
     end
 
     it 'transforms CoreModel to HTML' do
@@ -97,12 +96,10 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
   describe 'CoreModel round-trip' do
     it 'preserves document structure through CoreModel' do
       # Create a CoreModel document directly
-      core_doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      core_doc = Coradoc::CoreModel::DocumentElement.new(
         title: 'Test Document',
         children: [
-          Coradoc::CoreModel::StructuralElement.new(
-            element_type: 'section',
+          Coradoc::CoreModel::SectionElement.new(
             level: 1,
             title: 'Section 1',
             children: [
@@ -121,10 +118,9 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
 
       # Convert back to CoreModel
       core_doc2 = Coradoc::Markdown.to_core_model(md_doc)
-      expect(core_doc2).to be_a(Coradoc::CoreModel::StructuralElement)
-      expect(core_doc2.element_type).to eq('document')
+      expect(core_doc2).to be_a(Coradoc::CoreModel::DocumentElement)
       # NOTE: Title extraction picks first heading in Markdown
-      expect(core_doc2.children.first).to be_a(Coradoc::CoreModel::StructuralElement)
+      expect(core_doc2.children.first).to be_a(Coradoc::CoreModel::SectionElement)
     end
   end
 
@@ -270,8 +266,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
 
   describe 'HTML output from CoreModel' do
     it 'renders paragraphs correctly' do
-      core_doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      core_doc = Coradoc::CoreModel::DocumentElement.new(
         children: [
           Coradoc::CoreModel::ParagraphBlock.new(
             content: 'This is a paragraph.'
@@ -286,11 +281,9 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
     end
 
     it 'renders sections with headings' do
-      core_doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      core_doc = Coradoc::CoreModel::DocumentElement.new(
         children: [
-          Coradoc::CoreModel::StructuralElement.new(
-            element_type: 'section',
+          Coradoc::CoreModel::SectionElement.new(
             level: 1,
             title: 'Main Section',
             children: []
@@ -306,8 +299,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
     end
 
     it 'renders lists correctly' do
-      core_doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      core_doc = Coradoc::CoreModel::DocumentElement.new(
         children: [
           Coradoc::CoreModel::ListBlock.new(
             marker_type: 'unordered',
@@ -327,8 +319,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
     end
 
     it 'renders code blocks with language' do
-      core_doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      core_doc = Coradoc::CoreModel::DocumentElement.new(
         children: [
           Coradoc::CoreModel::SourceBlock.new(
             content: "puts 'hello'",
@@ -400,14 +391,13 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
 
       # Step 2: Transform to CoreModel (wrapping in document structure)
       # Create a document wrapper for the models
-      core_doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      core_doc = Coradoc::CoreModel::DocumentElement.new(
         title: 'Test Document',
         children: html_models.map do |model|
           Coradoc::AsciiDoc::Transform::ToCoreModel.transform(model)
         end.compact
       )
-      expect(core_doc).to be_a(Coradoc::CoreModel::StructuralElement)
+      expect(core_doc).to be_a(Coradoc::CoreModel::DocumentElement)
 
       # Step 3: Transform CoreModel to AsciiDoc model
       adoc_model = Coradoc::AsciiDoc::Transform::FromCoreModel.transform(core_doc)
@@ -423,12 +413,10 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
   describe 'Full round-trip tests' do
     it 'round-trips CoreModel through HTML serialization' do
       # Create a CoreModel document
-      core_doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      core_doc = Coradoc::CoreModel::DocumentElement.new(
         title: 'Test Document',
         children: [
-          Coradoc::CoreModel::StructuralElement.new(
-            element_type: 'section',
+          Coradoc::CoreModel::SectionElement.new(
             level: 1,
             title: 'Section 1',
             children: [
@@ -450,8 +438,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
     end
 
     it 'round-trips CoreModel through Markdown' do
-      core_doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      core_doc = Coradoc::CoreModel::DocumentElement.new(
         title: 'Test Document',
         children: [
           Coradoc::CoreModel::Block.new(
@@ -574,7 +561,6 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
         core = Coradoc::Markdown.to_core_model(attr_list)
 
         expect(core).to be_a(Coradoc::CoreModel::StructuralElement)
-        expect(core.element_type).to eq('attribute_list')
         expect(core.children.length).to eq(4) # 1 id + 2 classes + 1 attribute
       end
 
@@ -638,8 +624,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       skip 'DOCX gem not loaded' unless defined?(Coradoc::Docx)
 
       core = Coradoc::Docx.parse_to_core(docx_doc)
-      expect(core).to be_a(Coradoc::CoreModel::StructuralElement)
-      expect(core.element_type).to eq('document')
+      expect(core).to be_a(Coradoc::CoreModel::DocumentElement)
 
       md_doc = Coradoc::Markdown.from_core_model(core)
       expect(md_doc).to be_a(Coradoc::Markdown::Document)
@@ -685,8 +670,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       md_doc = Coradoc::Markdown.parse(md_content)
       core = Coradoc::Markdown.to_core_model(md_doc)
 
-      expect(core).to be_a(Coradoc::CoreModel::StructuralElement)
-      expect(core.element_type).to eq('document')
+      expect(core).to be_a(Coradoc::CoreModel::DocumentElement)
 
       docx_model = Coradoc::Docx::Transform::FromCoreModel.transform(core)
       expect(docx_model).not_to be_nil
@@ -739,8 +723,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       html_models = Coradoc::Input::Html.to_coradoc(html_content, {})
       expect(html_models).not_to be_nil
 
-      core_doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      core_doc = Coradoc::CoreModel::DocumentElement.new(
         title: 'Title',
         children: html_models.map { |m| Coradoc::AsciiDoc::Transform::ToCoreModel.transform(m) }.compact
       )
@@ -769,8 +752,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       skip 'DOCX gem not loaded' unless defined?(Coradoc::Docx)
 
       html_models = Coradoc::Input::Html.to_coradoc(html_content, {})
-      core_doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      core_doc = Coradoc::CoreModel::DocumentElement.new(
         title: 'Title',
         children: html_models.map { |m| Coradoc::AsciiDoc::Transform::ToCoreModel.transform(m) }.compact
       )

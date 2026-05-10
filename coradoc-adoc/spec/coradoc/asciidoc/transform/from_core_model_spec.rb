@@ -6,8 +6,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
   describe '.transform' do
     context 'with StructuralElement (document)' do
       it 'transforms a CoreModel document to AsciiDoc Document' do
-        core_doc = Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'document',
+        core_doc = Coradoc::CoreModel::DocumentElement.new(
           title: 'Test Document'
         )
 
@@ -19,8 +18,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
 
     context 'with StructuralElement (section)' do
       it 'transforms a CoreModel section to AsciiDoc Section' do
-        core_section = Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'section',
+        core_section = Coradoc::CoreModel::SectionElement.new(
           title: 'Test Section',
           level: 2
         )
@@ -368,8 +366,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
   describe '#transform' do
     it 'instance method delegates to class method' do
       transformer = described_class.new
-      core_doc = Coradoc::CoreModel::StructuralElement.new(
-        element_type: 'document',
+      core_doc = Coradoc::CoreModel::DocumentElement.new(
         title: 'Test'
       )
 

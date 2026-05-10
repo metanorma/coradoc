@@ -62,9 +62,7 @@ RSpec.describe Coradoc::Query do
 
       it 'matches element type' do
         selector = described_class.parse('section')
-        # StructuralElement matches "section" or "structural_element"
-        section = Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'section',
+        section = Coradoc::CoreModel::SectionElement.new(
           level: 1
         )
         expect(selector.matches?(section)).to be true
@@ -260,7 +258,7 @@ RSpec.describe Coradoc::Query do
     end
 
     it 'returns children from elements with children attribute' do
-      child = Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'text')
+      child = Coradoc::CoreModel::ParagraphBlock.new(content: 'text')
       parent = Coradoc::CoreModel::StructuralElement.new(
         element_type: 'section',
         children: [child]
@@ -270,7 +268,7 @@ RSpec.describe Coradoc::Query do
     end
 
     it 'returns empty array for element with empty children' do
-      element = Coradoc::CoreModel::Block.new(element_type: 'paragraph')
+      element = Coradoc::CoreModel::ParagraphBlock.new
       expect(described_class.get_children(element)).to eq([])
     end
 

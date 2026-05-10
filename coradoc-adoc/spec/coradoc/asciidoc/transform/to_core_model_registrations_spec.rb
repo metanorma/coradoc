@@ -107,8 +107,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModelRegistrations do
         doc = Coradoc::AsciiDoc::Model::Document.new(id: 'test-doc')
         result = Coradoc::AsciiDoc::Transform::Registry.transform(doc)
 
-        expect(result).to be_a(Coradoc::CoreModel::StructuralElement)
-        expect(result.element_type).to eq('document')
+        expect(result).to be_a(Coradoc::CoreModel::DocumentElement)
         expect(result.id).to eq('test-doc')
       end
 
@@ -123,8 +122,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModelRegistrations do
         )
         result = Coradoc::AsciiDoc::Transform::Registry.transform(section)
 
-        expect(result).to be_a(Coradoc::CoreModel::StructuralElement)
-        expect(result.element_type).to eq('section')
+        expect(result).to be_a(Coradoc::CoreModel::SectionElement)
         expect(result.level).to eq(1)
       end
 

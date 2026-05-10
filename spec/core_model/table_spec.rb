@@ -22,12 +22,10 @@ RSpec.describe Coradoc::CoreModel::Table do
 
     it 'creates a table with formatting options' do
       table = described_class.new(
-        frame: 'all',
         grid: 'all',
         width: '100%'
       )
 
-      expect(table.frame).to eq('all')
       expect(table.grid).to eq('all')
       expect(table.width).to eq('100%')
     end

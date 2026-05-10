@@ -6,10 +6,9 @@ RSpec.describe Coradoc::Html::Transform::FromCoreModel do
   describe '.transform' do
     subject(:transform) { described_class.transform(model) }
 
-    context 'with CoreModel::StructuralElement' do
+    context 'with CoreModel::DocumentElement' do
       let(:model) do
-        Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'document',
+        Coradoc::CoreModel::DocumentElement.new(
           title: 'Test Document',
           children: []
         )
@@ -23,8 +22,7 @@ RSpec.describe Coradoc::Html::Transform::FromCoreModel do
 
     context 'with CoreModel::Block' do
       let(:model) do
-        Coradoc::CoreModel::Block.new(
-          element_type: 'paragraph',
+        Coradoc::CoreModel::ParagraphBlock.new(
           content: 'Paragraph content'
         )
       end
@@ -54,7 +52,7 @@ RSpec.describe Coradoc::Html::Transform::FromCoreModel do
     context 'with Array' do
       let(:model) do
         [
-          Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Para 1')
+          Coradoc::CoreModel::ParagraphBlock.new(content: 'Para 1')
         ]
       end
 

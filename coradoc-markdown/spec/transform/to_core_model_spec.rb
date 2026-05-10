@@ -22,9 +22,9 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         )
       end
 
-      it 'transforms to CoreModel::StructuralElement' do
-        expect(transform).to be_a(Coradoc::CoreModel::StructuralElement)
-        expect(transform.element_type).to eq('document')
+      it 'transforms to CoreModel::DocumentElement' do
+        expect(transform).to be_a(Coradoc::CoreModel::DocumentElement)
+        expect(transform.document?).to be true
         expect(transform.id).to eq('test-doc')
         expect(transform.title).to eq('Title')
       end
@@ -43,9 +43,9 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         )
       end
 
-      it 'transforms to CoreModel::StructuralElement with section type' do
-        expect(transform).to be_a(Coradoc::CoreModel::StructuralElement)
-        expect(transform.element_type).to eq('section')
+      it 'transforms to CoreModel::SectionElement' do
+        expect(transform).to be_a(Coradoc::CoreModel::SectionElement)
+        expect(transform.section?).to be true
         expect(transform.level).to eq(2)
         expect(transform.title).to eq('Section Title')
       end

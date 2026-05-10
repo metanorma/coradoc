@@ -8,8 +8,7 @@ RSpec.describe Coradoc::Html::Converters::Paragraph do
     # CoreModel::Block with element_type "paragraph" should convert to HTML <p>
 
     it 'converts a basic paragraph to HTML' do
-      paragraph = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      paragraph = Coradoc::CoreModel::ParagraphBlock.new(
         content: 'This is a paragraph.'
       )
 
@@ -21,8 +20,7 @@ RSpec.describe Coradoc::Html::Converters::Paragraph do
     it 'converts paragraph with multi-line content' do
       # In CoreModel, content is already normalized (lines joined with spaces)
       # by the ToCoreModel transformer
-      paragraph = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      paragraph = Coradoc::CoreModel::ParagraphBlock.new(
         content: 'Line 1 Line 2 Line 3'
       )
 
@@ -32,8 +30,7 @@ RSpec.describe Coradoc::Html::Converters::Paragraph do
     end
 
     it 'converts paragraph with ID' do
-      paragraph = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      paragraph = Coradoc::CoreModel::ParagraphBlock.new(
         id: 'my-paragraph',
         content: 'Content here'
       )
@@ -46,8 +43,7 @@ RSpec.describe Coradoc::Html::Converters::Paragraph do
     end
 
     it 'escapes HTML in paragraph content' do
-      paragraph = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      paragraph = Coradoc::CoreModel::ParagraphBlock.new(
         content: "<script>alert('xss')</script>"
       )
 
@@ -58,8 +54,7 @@ RSpec.describe Coradoc::Html::Converters::Paragraph do
     end
 
     it 'handles empty paragraph' do
-      paragraph = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      paragraph = Coradoc::CoreModel::ParagraphBlock.new(
         content: ''
       )
 
@@ -69,8 +64,7 @@ RSpec.describe Coradoc::Html::Converters::Paragraph do
     end
 
     it 'handles paragraph with inline elements' do
-      paragraph = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      paragraph = Coradoc::CoreModel::ParagraphBlock.new(
         children: [
           'Text with ',
           Coradoc::CoreModel::InlineElement.new(format_type: 'bold', content: 'bold'),
@@ -84,8 +78,7 @@ RSpec.describe Coradoc::Html::Converters::Paragraph do
     end
 
     it 'handles paragraph with link' do
-      paragraph = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      paragraph = Coradoc::CoreModel::ParagraphBlock.new(
         children: [
           'Visit ',
           Coradoc::CoreModel::InlineElement.new(

@@ -5,13 +5,12 @@ require 'spec_helper'
 RSpec.describe Coradoc::CoreModel::ChildrenContent do
   describe 'Block with children' do
     it 'returns content when children are empty' do
-      block = Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Hello')
+      block = Coradoc::CoreModel::ParagraphBlock.new(content: 'Hello')
       expect(block.renderable_content).to eq('Hello')
     end
 
     it 'returns content when children are all strings' do
-      block = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      block = Coradoc::CoreModel::ParagraphBlock.new(
         content: 'Plain text',
         children: ['Plain text']
       )
@@ -20,8 +19,7 @@ RSpec.describe Coradoc::CoreModel::ChildrenContent do
 
     it 'returns children when they contain InlineElements' do
       inline = Coradoc::CoreModel::InlineElement.new(format_type: 'bold', content: 'bold')
-      block = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      block = Coradoc::CoreModel::ParagraphBlock.new(
         children: ['Text with ', inline, ' word']
       )
       expect(block.renderable_content).to eq(['Text with ', inline, ' word'])
@@ -79,8 +77,7 @@ RSpec.describe Coradoc::CoreModel::ChildrenContent do
   describe '#to_hash' do
     it 'includes children in hash output' do
       inline = Coradoc::CoreModel::InlineElement.new(format_type: 'bold', content: 'bold')
-      block = Coradoc::CoreModel::Block.new(
-        element_type: 'paragraph',
+      block = Coradoc::CoreModel::ParagraphBlock.new(
         content: 'Text',
         children: ['Text with ', inline]
       )
@@ -90,7 +87,7 @@ RSpec.describe Coradoc::CoreModel::ChildrenContent do
     end
 
     it 'omits children when empty' do
-      block = Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Text')
+      block = Coradoc::CoreModel::ParagraphBlock.new(content: 'Text')
       h = block.to_hash
       expect(h).not_to have_key('children')
     end

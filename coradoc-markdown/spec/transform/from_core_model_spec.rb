@@ -6,10 +6,9 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
   describe '.transform' do
     subject(:transform) { described_class.transform(core_model) }
 
-    context 'with StructuralElement (document)' do
+    context 'with DocumentElement (document)' do
       let(:core_model) do
-        Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'document',
+        Coradoc::CoreModel::DocumentElement.new(
           id: 'doc-1',
           title: 'Document Title',
           children: [
@@ -28,10 +27,9 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
       end
     end
 
-    context 'with StructuralElement (section)' do
+    context 'with SectionElement (section)' do
       let(:core_model) do
-        Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'section',
+        Coradoc::CoreModel::SectionElement.new(
           level: 2,
           title: 'Section Title',
           children: []
