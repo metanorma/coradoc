@@ -76,8 +76,7 @@ module Coradoc
           def transform_document(doc)
             children = Array(doc.blocks).map { |block| transform(block) }
 
-            Coradoc::CoreModel::StructuralElement.new(
-              element_type: 'document',
+            Coradoc::CoreModel::DocumentElement.new(
               id: doc.id,
               title: extract_title(doc),
               children: children
@@ -85,8 +84,7 @@ module Coradoc
           end
 
           def transform_heading(heading)
-            Coradoc::CoreModel::StructuralElement.new(
-              element_type: 'section',
+            Coradoc::CoreModel::SectionElement.new(
               level: heading.level,
               title: extract_text(heading.text),
               children: []
@@ -219,7 +217,6 @@ module Coradoc
               )
             else
               Coradoc::CoreModel::PassBlock.new(
-                element_type: 'block',
                 content: math.content.to_s,
                 language: 'latexmath'
               )
@@ -240,8 +237,7 @@ module Coradoc
               )
             else
               # Unknown extensions: preserve content as a generic block
-              Coradoc::CoreModel::Block.new(
-                element_type: 'paragraph',
+              Coradoc::CoreModel::ParagraphBlock.new(
                 content: ext.content.to_s
               )
             end
@@ -258,7 +254,6 @@ module Coradoc
             end
 
             Coradoc::CoreModel::StructuralElement.new(
-              element_type: 'attribute_list',
               children: attrs
             )
           end

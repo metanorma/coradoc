@@ -58,10 +58,10 @@ module Coradoc
           private
 
           def transform_structural_element(element)
-            case element.element_type
-            when 'document'
+            case element
+            when CoreModel::DocumentElement
               transform_document(element)
-            when 'section'
+            when CoreModel::SectionElement
               transform_section(element)
             else
               transform_generic_element(element)
@@ -94,10 +94,11 @@ module Coradoc
           end
 
           def transform_block(block)
-            case block.element_type
-            when 'paragraph'
+            semantic = block.resolve_semantic_type
+            case semantic
+            when :paragraph
               transform_paragraph(block)
-            when 'comment'
+            when :comment
               Coradoc::Markdown::Extension.comment(block.content.to_s)
             else
               transform_delimited_block(block)
