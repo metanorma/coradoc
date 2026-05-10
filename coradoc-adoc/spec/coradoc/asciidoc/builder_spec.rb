@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Coradoc::CoreModel::Builder do
+RSpec.describe Coradoc::AsciiDoc::Builder do
   let(:builder) { described_class.new }
 
   describe '.build' do
@@ -59,6 +59,12 @@ RSpec.describe Coradoc::CoreModel::Builder do
 
     it 'returns nil for nil input' do
       expect(builder.build_element(nil)).to be_nil
+    end
+
+    it 'builds an unknown element for unrecognized AST' do
+      result = builder.build_element({ unknown_key: 'value' })
+
+      expect(result[:type]).to eq(:unknown)
     end
   end
 

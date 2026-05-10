@@ -32,6 +32,7 @@ module Coradoc
     autoload :Transformer, "#{__dir__}/asciidoc/transformer"
     autoload :Serializer, "#{__dir__}/asciidoc/serializer"
     autoload :Transform, "#{__dir__}/asciidoc/transform"
+    autoload :Builder, "#{__dir__}/asciidoc/builder"
   end
 end
 

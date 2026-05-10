@@ -1,14 +1,13 @@
 # frozen_string_literal: true
 
 module Coradoc
-  module CoreModel
+  module AsciiDoc
     class Builder
       module BlockBuilder
         def build_annotation_block(ast)
-          AnnotationBlock.new(
+          Coradoc::CoreModel::AnnotationBlock.new(
             annotation_type: extract_annotation_type(ast),
             annotation_label: extract_annotation_label(ast),
-            block_semantic_type: :annotation,
             content: extract_block_content(ast),
             lines: extract_block_lines(ast),
             title: ast[:title],
@@ -18,8 +17,7 @@ module Coradoc
         end
 
         def build_generic_block(ast)
-          Block.new(
-            block_semantic_type: nil,
+          Coradoc::CoreModel::Block.new(
             delimiter_type: ast[:delimiter]&.to_s,
             content: extract_block_content(ast),
             lines: extract_block_lines(ast),

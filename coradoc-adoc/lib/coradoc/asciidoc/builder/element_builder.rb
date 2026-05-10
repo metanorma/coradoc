@@ -1,15 +1,9 @@
 # frozen_string_literal: true
 
 module Coradoc
-  module CoreModel
+  module AsciiDoc
     class Builder
-      # Element building module for Builder
-      #
-      # Contains methods for building miscellaneous elements from AST structures.
-      #
-      # @api private
       module ElementBuilder
-        # Build header element
         def build_header(ast)
           header_ast = ast[:header] || ast
 
@@ -22,7 +16,6 @@ module Coradoc
           }
         end
 
-        # Build section element
         def build_section(ast)
           section_ast = ast[:section] || ast
 
@@ -37,21 +30,18 @@ module Coradoc
           }
         end
 
-        # Build section contents
         def build_section_contents(contents_ast)
           return [] unless contents_ast
 
           Array(contents_ast).map { |content| build_element(content) }.compact
         end
 
-        # Build subsections
         def build_subsections(sections_ast)
           return [] unless sections_ast
 
           Array(sections_ast).map { |section| build_element(section) }.compact
         end
 
-        # Build line break element
         def build_line_break(ast)
           {
             type: :line_break,
@@ -59,7 +49,6 @@ module Coradoc
           }
         end
 
-        # Build comment line
         def build_comment_line(ast)
           comment_ast = ast[:comment_line] || ast['comment_line'] || ast
 
@@ -70,7 +59,6 @@ module Coradoc
           }
         end
 
-        # Build comment block
         def build_comment_block(ast)
           comment_ast = ast[:comment_block] || ast['comment_block'] || ast
 
@@ -80,7 +68,6 @@ module Coradoc
           }
         end
 
-        # Build include directive
         def build_include(ast)
           include_ast = ast[:include] || ast['include'] || ast
 
@@ -94,7 +81,6 @@ module Coradoc
           }
         end
 
-        # Build table element
         def build_table(ast)
           table_ast = ast[:table] || ast['table'] || ast
 
@@ -109,7 +95,6 @@ module Coradoc
           }
         end
 
-        # Build unparsed text element
         def build_unparsed(ast)
           {
             type: :unparsed,
@@ -117,7 +102,6 @@ module Coradoc
           }
         end
 
-        # Build tag element
         def build_tag(ast)
           tag_ast = ast[:tag] || ast['tag'] || ast
 
@@ -132,7 +116,6 @@ module Coradoc
           }
         end
 
-        # Build bibliography entry
         def build_bibliography_entry(ast)
           bib_ast = ast[:bibliography_entry] || ast['bibliography_entry'] || ast
 
@@ -145,7 +128,6 @@ module Coradoc
           }
         end
 
-        # Build generic element for unknown types
         def build_generic_element(ast)
           {
             type: :unknown,
@@ -153,7 +135,6 @@ module Coradoc
           }
         end
 
-        # Build single attribute
         def build_attribute(ast)
           {
             key: ast[:key],
