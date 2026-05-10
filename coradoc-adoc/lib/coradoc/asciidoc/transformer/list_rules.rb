@@ -141,14 +141,6 @@ module Coradoc
             ) do
               Model::List::Definition.new(items: list_items, attrs: attribute_list)
             end
-
-            # List containing definition_list
-            rule(
-              attribute_list: simple(:attribute_list),
-              definition_list: sequence(:list_items)
-            ) do
-              Model::List::Definition.new(items: list_items, attrs: attribute_list)
-            end
           end
         end
       end
