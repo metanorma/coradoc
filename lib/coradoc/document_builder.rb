@@ -11,8 +11,7 @@ module Coradoc
     end
 
     def initialize
-      @document = CoreModel::StructuralElement.new(
-        element_type: 'document',
+      @document = CoreModel::DocumentElement.new(
         children: []
       )
       @current_context = @document
@@ -25,8 +24,7 @@ module Coradoc
     end
 
     def section(title_text, level: 1, &block)
-      new_section = CoreModel::StructuralElement.new(
-        element_type: 'section',
+      new_section = CoreModel::SectionElement.new(
         level: level,
         title: title_text,
         children: []
@@ -44,8 +42,7 @@ module Coradoc
     end
 
     def paragraph(text)
-      @current_context.children << CoreModel::Block.new(
-        element_type: 'paragraph',
+      @current_context.children << CoreModel::ParagraphBlock.new(
         content: text
       )
       self
@@ -124,15 +121,12 @@ module Coradoc
     end
 
     def hr
-      @current_context.children << CoreModel::Block.new(
-        element_type: 'horizontal_rule'
-      )
+      @current_context.children << CoreModel::HorizontalRuleBlock.new
       self
     end
 
     def text(text_content)
       @current_context.children << CoreModel::Block.new(
-        element_type: 'text',
         content: text_content
       )
       self

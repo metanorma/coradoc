@@ -35,6 +35,10 @@ module Coradoc
     autoload :TermElement, "#{__dir__}/core_model/inline_element"
     autoload :LineBreakElement, "#{__dir__}/core_model/inline_element"
     autoload :StructuralElement, "#{__dir__}/core_model/structural_element"
+    autoload :DocumentElement, "#{__dir__}/core_model/structural_element"
+    autoload :SectionElement, "#{__dir__}/core_model/structural_element"
+    autoload :PreambleElement, "#{__dir__}/core_model/structural_element"
+    autoload :HeaderElement, "#{__dir__}/core_model/structural_element"
 
     autoload :Table, "#{__dir__}/core_model/table"
     autoload :TableCell, "#{__dir__}/core_model/table"

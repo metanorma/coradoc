@@ -253,6 +253,10 @@ module Coradoc
 
     # Self-register all CoreModel types
     register_visitor CoreModel::StructuralElement, :visit_structural_element
+    register_visitor CoreModel::DocumentElement, :visit_structural_element
+    register_visitor CoreModel::SectionElement, :visit_structural_element
+    register_visitor CoreModel::PreambleElement, :visit_structural_element
+    register_visitor CoreModel::HeaderElement, :visit_structural_element
     register_visitor CoreModel::AnnotationBlock, :visit_annotation_block
     register_visitor CoreModel::Block, :visit_block
     register_visitor CoreModel::InlineElement, :visit_inline_element

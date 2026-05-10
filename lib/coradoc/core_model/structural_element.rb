@@ -4,43 +4,13 @@ module Coradoc
   module CoreModel
     # Base class for structural elements
     #
-    # Represents document structure elements that organize content:
-    # - Sections (headings at various levels)
-    # - Document roots
-    # - Preamble
+    # Represents document structure elements that organize content.
+    # Typed subclasses (SectionElement, DocumentElement, etc.) express
+    # their role via the class hierarchy — the class IS the type.
     #
     # Structural elements can contain other elements (blocks, lists, etc.)
     # and can be nested hierarchically to represent document structure.
-    #
-    # This is a base class that can be extended in future phases to handle
-    # schema-specific structural requirements.
-    #
-    # @example Creating a section
-    #   section = CoreModel::StructuralElement.new(
-    #     element_type: "section",
-    #     level: 1,
-    #     title: "Introduction",
-    #     id: "introduction"
-    #   )
-    #
-    # @example Creating a nested section structure
-    #   subsection = CoreModel::StructuralElement.new(
-    #     element_type: "section",
-    #     level: 2,
-    #     title: "Background"
-    #   )
-    #   section = CoreModel::StructuralElement.new(
-    #     element_type: "section",
-    #     level: 1,
-    #     title: "Introduction",
-    #     children: [subsection]
-    #   )
     class StructuralElement < Base
-      # @!attribute element_type
-      #   @return [String, nil] type of structural element
-      #     (e.g., 'section', 'header', 'preamble', 'division')
-      attribute :element_type, :string
-
       # @!attribute level
       #   @return [Integer, nil] hierarchical level (1-6 for sections)
       attribute :level, :integer
@@ -57,33 +27,67 @@ module Coradoc
       #   @return [Metadata, nil] document-level attributes (typed key-value pairs)
       attribute :attributes, Metadata
 
-      # Heading level with sensible default
-      #
-      # @return [Integer] level, defaulting to 1 when unset
       def heading_level
         level || 1
       end
 
-      def section?
-        element_type == 'section'
+      def section? = false
+      def document? = false
+      def preamble? = false
+      def header? = false
+
+      # Derived element_type string for backward compatibility with
+      # templates and legacy consumers. Subclasses override this.
+      def element_type
+        self.class.element_type_name
       end
 
-      def document?
-        element_type == 'document'
+      class << self
+        def element_type_name
+          nil
+        end
       end
 
       private
 
-      # Attributes to compare for semantic equivalence
-      #
-      # Structural elements are semantically equivalent if they have the
-      # same type, level, title, and children. The id is not compared
-      # because it's often auto-generated and doesn't affect semantics.
-      #
-      # @return [Array<Symbol>] list of comparable attributes
       def comparable_attributes
-        # Don't include id from super, only title
-        [:title] + %i[element_type level children]
+        [:title] + %i[level children]
+      end
+    end
+
+    # Root document element
+    class DocumentElement < StructuralElement
+      def document? = true
+
+      class << self
+        def element_type_name = 'document'
+      end
+    end
+
+    # Section with a heading at a specific level
+    class SectionElement < StructuralElement
+      def section? = true
+
+      class << self
+        def element_type_name = 'section'
+      end
+    end
+
+    # Preamble content before the first section heading
+    class PreambleElement < StructuralElement
+      def preamble? = true
+
+      class << self
+        def element_type_name = 'preamble'
+      end
+    end
+
+    # Header / title block of a document
+    class HeaderElement < StructuralElement
+      def header? = true
+
+      class << self
+        def element_type_name = 'header'
       end
     end
   end
