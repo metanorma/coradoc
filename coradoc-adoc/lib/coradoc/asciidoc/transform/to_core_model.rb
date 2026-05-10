@@ -236,8 +236,7 @@ module Coradoc
                 # Re-parse raw text through inline parser for structured content
                 term_parts = term_content.is_a?(Array) ? term_content : [term_content]
                 parsed_terms = term_parts.flat_map do |part|
-                  remaining, _anchor = extract_dlist_anchor(part)
-                  parse_inline_text(remaining)
+                  parse_inline_text(part)
                 end
 
                 parsed_defs = parse_inline_text(def_content)
@@ -251,6 +250,7 @@ module Coradoc
                   term_children: term_children,
                   definition_children: def_children
                 )
+                di.id = item.id if item.id
                 di
               else
                 content_val = item.content
@@ -387,9 +387,13 @@ module Coradoc
           end
 
           def extract_document_attributes(doc)
-            return {} unless doc.document_attributes
+            return nil unless doc.document_attributes
 
-            doc.document_attributes.to_hash
+            metadata = Coradoc::CoreModel::Metadata.new
+            doc.document_attributes.to_hash.each do |key, value|
+              metadata[key.to_s] = value.to_s
+            end
+            metadata
           end
 
           def extract_block_language(block)
@@ -431,19 +435,6 @@ module Coradoc
             end
           rescue Parslet::ParseFailed
             [text]
-          end
-
-          # Extract anchor [[id]] prefix from raw dlist term text
-          # Returns [remaining_text, anchor_id_or_nil]
-          def extract_dlist_anchor(raw_term)
-            text = raw_term.to_s
-            if text =~ /\A\[\[([^\]]+)\]\]\s*/
-              anchor_id = ::Regexp.last_match(1)
-              remaining = ::Regexp.last_match.post_match
-              [remaining, anchor_id]
-            else
-              [text, nil]
-            end
           end
 
           def transform_inline_content(content)
