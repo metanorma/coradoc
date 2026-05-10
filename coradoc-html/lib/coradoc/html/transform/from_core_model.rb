@@ -1,28 +1,29 @@
 # frozen_string_literal: true
 
+require 'coradoc/core_model'
+
 module Coradoc
   module Html
     module Transform
-      # Transforms CoreModel models to HTML output
+      # Transforms CoreModel to HTML output
       #
-      # This transformer converts CoreModel to structures suitable for
-      # HTML rendering. Note: The HTML converters already support CoreModel
-      # directly, so this transformer primarily passes through the CoreModel.
+      # This transformer converts CoreModel to HTML strings by delegating
+      # to the existing theme/renderer pipeline.
       class FromCoreModel
         class << self
-          # Transform a CoreModel to HTML-ready structure
+          # Transform a CoreModel to HTML string
           #
-          # @param model [Coradoc::CoreModel::Base] CoreModel to transform
-          # @return [Object] HTML-ready structure
-          def transform(model)
+          # @param model [Coradoc::CoreModel::Base, Array] CoreModel to transform
+          # @param options [Hash] Renderer options (e.g., theme)
+          # @return [String] HTML output
+          def transform(model, options = {})
             case model
             when Coradoc::CoreModel::Base
-              # HTML converters already support CoreModel directly
-              model
+              Html.serialize(model, options)
             when Array
-              model.map { |item| transform(item) }
+              model.map { |item| transform(item, options) }.join("\n")
             else
-              model
+              model.to_s
             end
           end
         end
