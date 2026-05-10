@@ -62,6 +62,66 @@ jobs:
           echo "Releasing selected gems: $TARGETS"
         fi
 
+    - name: Bump versions
+      if: inputs.next_version != 'skip'
+      run: |
+        BUMP="${{ inputs.next_version }}"
+
+        bump_version() {
+          local current="$1"
+          local major minor patch pre
+          # Parse version, stripping any pre-release suffix
+          version_base="${current%%-*}"
+          pre="${current#"$version_base"}"
+          pre="${pre#-}"
+          IFS='.' read -r major minor patch <<< "$version_base"
+          case "$BUMP" in
+            major)   major=$((major + 1)); minor=0; patch=0; pre="" ;;
+            minor)   minor=$((minor + 1)); patch=0; pre="" ;;
+            patch)   patch=$((patch + 1)); pre="" ;;
+            *)       # Assume explicit version like x.y.z
+              echo "$BUMP"
+              return
+              ;;
+          esac
+          if [ -n "$pre" ]; then
+            echo "${major}.${minor}.${patch}-${pre}"
+          else
+            echo "${major}.${minor}.${patch}"
+          fi
+        }
+
+        for gem in ${{ steps.gems.outputs.targets }}; do
+          case "$gem" in
+            coradoc)        version_file="lib/coradoc/version.rb" ;;
+            coradoc-adoc)   version_file="coradoc-adoc/lib/coradoc/asciidoc/version.rb" ;;
+            coradoc-docx)   version_file="coradoc-docx/lib/coradoc/docx/version.rb" ;;
+            coradoc-html)   version_file="coradoc-html/lib/coradoc/html/version.rb" ;;
+            coradoc-markdown) version_file="coradoc-markdown/lib/coradoc/markdown/version.rb" ;;
+          esac
+
+          current=$(grep -oP "VERSION\s*=\s*'\K[^']+" "$version_file")
+          new_version=$(bump_version "$current")
+
+          if [ "$new_version" != "$current" ]; then
+            echo "Bumping $gem: $current -> $new_version"
+            sed -i "s/VERSION\s*=\s*'[^']*'/VERSION = '$new_version'/" "$version_file"
+          else
+            echo "$gem already at $current, no bump needed"
+          fi
+        done
+
+    - name: Commit version bumps
+      if: inputs.next_version != 'skip'
+      run: |
+        if git diff --quiet; then
+          echo "No version changes to commit"
+        else
+          git add '**/version.rb' 'lib/coradoc/version.rb'
+          git commit -m "chore: bump gem versions for release"
+          git push origin main
+        fi
+
     - name: Build gems
       run: |
         for gem in ${{ steps.gems.outputs.targets }}; do
