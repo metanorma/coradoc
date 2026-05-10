@@ -119,9 +119,9 @@ module Coradoc
 
       case element_type
       when :comment_line, :comment_block
-        child.element_type&.to_s&.include?('comment')
+        child.is_a?(CoreModel::CommentBlock)
       else
-        child.element_type&.to_s == element_type.to_s
+        child.resolve_semantic_type == element_type.to_sym
       end
     end
 
