@@ -58,7 +58,10 @@ module Coradoc
 
             return render_core_footnote(content, state) if content.is_a?(Coradoc::CoreModel::Footnote)
 
-            return render_core_footnote_reference(content, state) if content.is_a?(Coradoc::CoreModel::FootnoteReference)
+            if content.is_a?(Coradoc::CoreModel::FootnoteReference)
+              return render_core_footnote_reference(content,
+                                                    state)
+            end
 
             return render_core_abbreviation(content, state) if content.is_a?(Coradoc::CoreModel::Abbreviation)
             return render_core_definition_list(content, state) if content.is_a?(Coradoc::CoreModel::DefinitionList)
@@ -67,7 +70,10 @@ module Coradoc
             return render_core_toc_entry(content, state) if content.is_a?(Coradoc::CoreModel::TocEntry)
             return render_core_bibliography(content, state) if content.is_a?(Coradoc::CoreModel::Bibliography)
 
-            return render_core_bibliography_entry(content, state) if content.is_a?(Coradoc::CoreModel::BibliographyEntry)
+            if content.is_a?(Coradoc::CoreModel::BibliographyEntry)
+              return render_core_bibliography_entry(content,
+                                                    state)
+            end
 
             handle_unknown_content(content, state)
           end
@@ -418,7 +424,10 @@ module Coradoc
             attrs[:id] = bib.id if bib.id
 
             children = []
-            children << NodeBuilder.build(:h2, escape_html(bib.title), class: 'bibliography-title') if bib.title && !bib.title.to_s.empty?
+            if bib.title && !bib.title.to_s.empty?
+              children << NodeBuilder.build(:h2, escape_html(bib.title),
+                                            class: 'bibliography-title')
+            end
 
             entries_html = Array(bib.entries).map { |e| convert_content_to_html(e, state) }.join("\n")
             children << NodeBuilder.build(:div, entries_html, class: 'bibliography-entries') unless entries_html.empty?
