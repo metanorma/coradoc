@@ -1,42 +1,7 @@
 # frozen_string_literal: true
 
-require 'logger'
-
 module Coradoc
-  module CoreModel
-    # Builds CoreModel objects from generic AST
-    #
-    # This class provides a clean separation between parsing and model construction,
-    # replacing the Parslet::Transform dependency with a dedicated builder that can
-    # be independently tested and maintained.
-    #
-    # The builder uses AST detection logic to determine the appropriate CoreModel
-    # type to create, handling all current AST structures with graceful fallbacks.
-    #
-    # The builder is organized into modules for maintainability:
-    # - Detection: Element type detection and extraction methods
-    # - ListBuilder: List building methods
-    # - BlockBuilder: Block building methods
-    # - TextBuilder: Text and inline building methods
-    # - ElementBuilder: Miscellaneous element building methods
-    #
-    # @example Building a document from AST
-    #   ast = {
-    #     header: { title: "Document Title" },
-    #     sections: [{ section: { title: "Introduction" } }],
-    #     document_attributes: [{ key: "author", value: "John Doe" }]
-    #   }
-    #   document = CoreModel::Builder.build(ast)
-    #
-    # @example Building individual blocks
-    #   block_ast = {
-    #     block: {
-    #       delimiter: "****",
-    #       lines: ["This is a note"],
-    #       attribute_list: { positional: ["NOTE"] }
-    #     }
-    #   }
-    #   block = CoreModel::Builder.new.build_block(block_ast)
+  module AsciiDoc
     class Builder
       autoload :Detection, "#{__dir__}/builder/detection"
       autoload :ListBuilder, "#{__dir__}/builder/list_builder"
@@ -50,44 +15,20 @@ module Coradoc
       include TextBuilder
       include ElementBuilder
 
-      # Build document from AST
-      #
-      # @param ast [Hash] the AST representation of a document
-      # @return [Hash] document structure for compatibility with existing code
       def self.build(ast)
         new.build_document(ast)
       end
 
-      # Initialize a new builder instance
-      def initialize
-        # No logger setup needed - use Coradoc::Logger class methods
-      end
-
-      # Build document structure from AST
-      #
-      # @param ast [Hash] the document AST
-      # @return [Hash] document structure with header, sections, and attributes
       def build_document(ast)
-        case ast
-        when Hash
-          if ast.key?(:document)
-            build_document_elements(ast[:document])
-          else
-            build_document_elements(ast)
-          end
-        when Array
-          elements = ast.map { |element| build_element(element) }.compact
-          group_document_elements(elements)
+        return {} unless ast.is_a?(Hash)
+
+        if ast.key?(:document)
+          build_document_elements(ast[:document])
         else
-          Coradoc::Logger.warn("Unexpected AST format: #{ast.class}")
-          { sections: [] }
+          build_document_elements(ast)
         end
       end
 
-      # Build any element from AST based on type detection
-      #
-      # @param ast [Hash] the element AST
-      # @return [Object] the built element
       def build_element(ast)
         return nil unless ast.is_a?(Hash)
 
@@ -127,16 +68,10 @@ module Coradoc
         when :bibliography_entry
           build_bibliography_entry(ast)
         else
-          Coradoc::Logger.info("Unknown element type: #{ast.keys}")
           build_generic_element(ast)
         end
-      rescue StandardError => e
-        Coradoc::Logger.error("Error building element: #{e.message}")
-        Coradoc::Logger.info("AST: #{ast.inspect[0..200]}")
-        nil
       end
 
-      # Build a block element with type detection
       def build_block(ast)
         block_ast = ast[:block] || ast
 
@@ -150,7 +85,6 @@ module Coradoc
         end
       end
 
-      # Build list element from various AST formats
       def build_list(ast)
         if ast[:unordered]
           build_unordered_list(ast)
@@ -163,19 +97,6 @@ module Coradoc
         end
       end
 
-      # Build individual list item
-      def build_list_item(ast)
-        item_ast = ast[:list_item] || ast
-
-        ListItem.new(
-          marker: item_ast[:marker]&.to_s,
-          content: extract_item_content(item_ast),
-          nested_list: build_nested_list(item_ast[:nested]),
-          children: build_item_children(item_ast[:attached])
-        )
-      end
-
-      # Build paragraph
       def build_paragraph(ast)
         para_ast = ast[:paragraph] || ast
 
@@ -188,10 +109,9 @@ module Coradoc
         }
       end
 
-      # Build inline element
       def build_inline(ast)
         format_type = detect_inline_format(ast)
-        klass = InlineElement.format_type_class(format_type)
+        klass = Coradoc::CoreModel::InlineElement.format_type_class(format_type)
 
         klass.new(
           constrained: detect_constrained(ast, format_type),
@@ -200,7 +120,6 @@ module Coradoc
         )
       end
 
-      # Build attributes from attribute list AST (public version)
       def build_attributes(attr_ast)
         return [] unless attr_ast
 
@@ -233,7 +152,6 @@ module Coradoc
         end
       end
 
-      # Build document attributes
       def build_document_attributes(ast)
         attrs_ast = ast[:document_attributes] || ast
 
@@ -251,24 +169,29 @@ module Coradoc
 
       private
 
-      # Build document elements from AST hash
+      def build_text(ast)
+        { type: :text, content: extract_text_content(ast) }
+      end
+
+      def build_paragraph_content(lines)
+        return [] unless lines
+
+        Array(lines).map { |line| extract_text_content(line) }
+      end
+
       def build_document_elements(ast)
         elements = []
 
-        # Extract header if present
         elements << build_header(ast) if ast[:header]
 
-        # Extract sections
         if ast[:sections]
           elements.concat(
             Array(ast[:sections]).map { |s| build_element(s) }.compact
           )
         end
 
-        # Extract document attributes
         elements << build_document_attributes(ast) if ast[:document_attributes]
 
-        # Extract other content
         %i[paragraph block list table].each do |key|
           next unless ast[key]
 
@@ -280,7 +203,6 @@ module Coradoc
         group_document_elements(elements)
       end
 
-      # Group elements into document structure
       def group_document_elements(elements)
         header = elements.find { |e| e[:type] == :header }
         sections = elements.select { |e| e[:type] == :section }
@@ -290,19 +212,13 @@ module Coradoc
         end
 
         result = {}
-
         result[:header] = header if header
-
         result[:sections] = sections if sections.any?
-
         result[:content] = other_content if other_content.any?
-
         result[:document_attributes] = doc_attrs[:attributes] if doc_attrs
-
         result
       end
 
-      # Build attributes from attribute list AST (private version)
       def build_attributes_private(attr_ast)
         build_attributes(attr_ast)
       end

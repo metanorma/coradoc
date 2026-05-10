@@ -1,17 +1,12 @@
 # frozen_string_literal: true
 
 module Coradoc
-  # CoreModel namespace for schema-agnostic document models
+  # CoreModel namespace for format-agnostic document models
   #
-  # The CoreModel layer provides a clean separation between parsing (syntax recognition)
-  # and schema-specific models. It builds semantic document structure from generic AST
-  # without knowledge of specific document schemas (ISO, OSCAL, etc.).
+  # CoreModel provides the canonical document representation used as the hub
+  # in the hub-and-spoke architecture. Format-specific builders live in their
+  # respective format gems (e.g., Coradoc::AsciiDoc::Builder).
   #
-  # @example Building a document from AST
-  #   ast = parser.parse(asciidoc_text)
-  #   document = CoreModel::Builder.build(ast)
-  #
-  # @see CoreModel::Builder for AST to model conversion
   # @see CoreModel::Base for base functionality
   module CoreModel
     # Autoload submodules lazily using relative paths
@@ -40,7 +35,7 @@ module Coradoc
     autoload :TermElement, "#{__dir__}/core_model/inline_element"
     autoload :LineBreakElement, "#{__dir__}/core_model/inline_element"
     autoload :StructuralElement, "#{__dir__}/core_model/structural_element"
-    autoload :Builder, "#{__dir__}/core_model/builder"
+
     autoload :Table, "#{__dir__}/core_model/table"
     autoload :TableCell, "#{__dir__}/core_model/table"
     autoload :TableRow, "#{__dir__}/core_model/table"
