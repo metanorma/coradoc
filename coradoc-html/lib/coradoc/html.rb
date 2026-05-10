@@ -69,6 +69,7 @@ module Coradoc
     autoload :ConverterBase, 'coradoc/html/converter_base'
     autoload :Static, 'coradoc/html/static'
     autoload :Spa, 'coradoc/html/spa'
+    autoload :NodeBuilder, 'coradoc/html/node_builder'
 
     # Theme system
     autoload :Theme, 'coradoc/html/theme'

@@ -1,34 +1,27 @@
 # frozen_string_literal: true
 
+require 'nokogiri'
+require 'coradoc/html/node_builder'
+
 module Coradoc
   module Html
     module Converters
       # Base class for HTML output converters
       #
       # This class handles ONLY CoreModel types for HTML output.
-      # Source models should be transformed to CoreModel before HTML conversion:
-      #
-      #   core_model = Coradoc::Transform::SourceToCoreModel.transform(source_model)
-      #   html = Coradoc::Html::Static.convert(core_model)
-      #
+      # All HTML elements are constructed using Nokogiri — never by
+      # concatenating raw HTML strings.
       class Base
         class << self
           # Convert CoreModel to HTML
-          # @param model [Coradoc::CoreModel::Base] CoreModel to convert
-          # @param state [Hash] Conversion state
-          # @return [String] HTML string
           def to_html(model, state = {})
             raise NotImplementedError, "#{self}.to_html must be implemented"
           end
 
           # Convert content to HTML (CoreModel → HTML)
-          # @param content [various] Content to convert
-          # @param state [Hash] Conversion state
-          # @return [String] HTML string
           def convert_content_to_html(content, state = {})
             return '' if content.nil?
 
-            # Handle primitives first
             case content
             when String
               return escape_html(content)
@@ -40,352 +33,329 @@ module Coradoc
               return escape_html(content.to_s)
             end
 
-            # Handle CoreModel types
-            # NOTE: AnnotationBlock must be checked before Block since AnnotationBlock < Block.
-            # We use is_a? directly instead of defined?() because CoreModel uses autoload.
-            # The defined?() check doesn't trigger autoload, so it returns nil even when
-            # the class is available via autoload. Using is_a? triggers the autoload.
             return render_core_inline_element(content, state) if content.is_a?(Coradoc::CoreModel::InlineElement)
-
             return render_core_annotation_block(content, state) if content.is_a?(Coradoc::CoreModel::AnnotationBlock)
-
             return render_core_block(content, state) if content.is_a?(Coradoc::CoreModel::Block)
 
             if content.is_a?(Coradoc::CoreModel::StructuralElement)
-              # Use Section converter for sections
               return Coradoc::Html::Converters::Section.to_html(content, state) if content.section?
 
               return render_core_structural_element(content, state)
             end
 
             return render_core_list_block(content, state) if content.is_a?(Coradoc::CoreModel::ListBlock)
-
             return render_core_list_item(content, state) if content.is_a?(Coradoc::CoreModel::ListItem)
-
             return Coradoc::Html::Converters::Table.to_html(content, state) if content.is_a?(Coradoc::CoreModel::Table)
-
             return render_core_table_row(content, state) if content.is_a?(Coradoc::CoreModel::TableRow)
-
             return render_core_table_cell(content, state) if content.is_a?(Coradoc::CoreModel::TableCell)
-
             return render_core_term(content, state) if content.is_a?(Coradoc::CoreModel::Term)
 
             if content.is_a?(Coradoc::CoreModel::Image)
               return render_core_inline_image(content, state) if content.inline
 
               return render_core_block_image(content, state)
-
             end
 
             return render_core_footnote(content, state) if content.is_a?(Coradoc::CoreModel::Footnote)
 
-            if content.is_a?(Coradoc::CoreModel::FootnoteReference)
-              return render_core_footnote_reference(content,
-                                                    state)
-            end
+            return render_core_footnote_reference(content, state) if content.is_a?(Coradoc::CoreModel::FootnoteReference)
 
             return render_core_abbreviation(content, state) if content.is_a?(Coradoc::CoreModel::Abbreviation)
-
             return render_core_definition_list(content, state) if content.is_a?(Coradoc::CoreModel::DefinitionList)
-
             return render_core_definition_item(content, state) if content.is_a?(Coradoc::CoreModel::DefinitionItem)
-
             return render_core_toc(content, state) if content.is_a?(Coradoc::CoreModel::Toc)
-
             return render_core_toc_entry(content, state) if content.is_a?(Coradoc::CoreModel::TocEntry)
-
             return render_core_bibliography(content, state) if content.is_a?(Coradoc::CoreModel::Bibliography)
 
-            if content.is_a?(Coradoc::CoreModel::BibliographyEntry)
-              return render_core_bibliography_entry(content,
-                                                    state)
-            end
+            return render_core_bibliography_entry(content, state) if content.is_a?(Coradoc::CoreModel::BibliographyEntry)
 
-            # Handle unknown types gracefully
             handle_unknown_content(content, state)
           end
 
           # === CoreModel rendering methods ===
 
-          # Render CoreModel inline element
           def render_core_inline_element(element, state = {})
+            content_html = convert_content_to_html(element.content, state)
+
             case element.resolve_format_type
             when 'bold'
-              "<strong>#{convert_content_to_html(element.content, state)}</strong>"
+              NodeBuilder.build(:strong, content_html).to_html
             when 'italic'
-              "<em>#{convert_content_to_html(element.content, state)}</em>"
+              NodeBuilder.build(:em, content_html).to_html
             when 'monospace'
-              "<code>#{convert_content_to_html(element.content, state)}</code>"
+              NodeBuilder.build(:code, content_html).to_html
             when 'superscript'
-              "<sup>#{convert_content_to_html(element.content, state)}</sup>"
+              NodeBuilder.build(:sup, content_html).to_html
             when 'subscript'
-              "<sub>#{convert_content_to_html(element.content, state)}</sub>"
+              NodeBuilder.build(:sub, content_html).to_html
             when 'underline'
-              "<u>#{convert_content_to_html(element.content, state)}</u>"
+              NodeBuilder.build(:u, content_html).to_html
             when 'strikethrough'
-              "<del>#{convert_content_to_html(element.content, state)}</del>"
+              NodeBuilder.build(:del, content_html).to_html
             when 'highlight'
-              "<mark>#{convert_content_to_html(element.content, state)}</mark>"
+              NodeBuilder.build(:mark, content_html).to_html
             when 'link'
               href = element.target || element.metadata&.dig(:href) || '#'
-              "<a href=\"#{escape_attribute(href)}\">#{convert_content_to_html(element.content, state)}</a>"
+              NodeBuilder.build(:a, content_html, href: href).to_html
             when 'xref'
               href = element.target || element.metadata&.dig(:href) || '#'
-              "<a href=\"##{escape_attribute(href)}\">#{convert_content_to_html(element.content, state)}</a>"
+              NodeBuilder.build(:a, content_html, href: "##{href}").to_html
             when 'footnote'
               footnote_id = element.target || element.metadata&.dig(:id) || ''
-              "<sup class=\"footnote\" id=\"fn-#{escape_attribute(footnote_id)}\">#{convert_content_to_html(
-                element.content, state
-              )}</sup>"
+              NodeBuilder.build(:sup, content_html, class: 'footnote', id: "fn-#{footnote_id}").to_html
             when 'stem'
-              "<code class=\"stem\">#{escape_html(element.content)}</code>"
+              NodeBuilder.build(:code, escape_html(element.content), class: 'stem').to_html
             when 'term'
-              # Term reference: term:[text] or term:[text,display]
-              %(<span class="term" data-term-ref="#{escape_attribute(element.content)}">#{escape_html(element.content)}</span>)
+              node = NodeBuilder.build(:span, escape_html(element.content),
+                                       class: 'term')
+              node['data-term-ref'] = element.content.to_s
+              node.to_html
             when 'break'
               break_type = element.metadata&.dig(:break_type) || 'thematic'
-              break_type == 'thematic' ? '<hr>' : '<br>'
+              break_type == 'thematic' ? NodeBuilder.build(:hr).to_html : NodeBuilder.build(:br).to_html
             when 'quotation'
-              "<q>#{convert_content_to_html(element.content, state)}</q>"
+              NodeBuilder.build(:q, content_html).to_html
             when 'small'
-              "<small>#{convert_content_to_html(element.content, state)}</small>"
+              NodeBuilder.build(:small, content_html).to_html
             when 'span'
               render_core_span(element, state)
             else
-              convert_content_to_html(element.content, state)
+              content_html
             end
           end
 
-          # Render CoreModel span
           def render_core_span(element, state = {})
-            attrs = build_class_attribute(element.metadata&.dig(:class))
-            "<span#{attrs}>#{convert_content_to_html(element.content, state)}</span>"
+            class_name = element.metadata&.dig(:class)
+            content_html = convert_content_to_html(element.content, state)
+            attrs = {}
+            attrs[:class] = class_name if class_name
+            NodeBuilder.build(:span, content_html, **attrs).to_html
           end
 
-          # Render CoreModel block
           def render_core_block(block, state = {})
-            attrs = build_html_attributes(block.id, block.title)
-
-            # Get renderable content (children if present, otherwise content)
             renderable = block.renderable_content
-
             semantic = resolve_block_semantic_type(block)
 
             case semantic
             when :paragraph
               content = convert_content_to_html(renderable, state)
-              return "<p#{attrs}>#{content}</p>" if content && !content.empty?
+              return '' if content.nil? || content.empty?
 
-              ''
+              attrs = build_id_title_attrs(block.id, block.title)
+              NodeBuilder.build(:p, content, **attrs).to_html
             when :source_code
               lang = block.language || block.metadata&.dig(:language)
-              lang_attr = lang ? " data-lang=\"#{escape_attribute(lang)}\"" : ''
-              "<pre#{attrs}><code#{lang_attr}>#{escape_html(block.flat_text)}</code></pre>"
+              code_attrs = {}
+              code_attrs[:'data-lang'] = lang if lang
+              pre_attrs = build_id_title_attrs(block.id, block.title)
+              code_node = NodeBuilder.build(:code, escape_html(block.flat_text), **code_attrs)
+              NodeBuilder.build(:pre, code_node, **pre_attrs).to_html
             when :quote, :verse
-              "<blockquote#{attrs}>#{convert_content_to_html(renderable, state)}</blockquote>"
+              attrs = build_id_title_attrs(block.id, block.title)
+              NodeBuilder.build(:blockquote, convert_content_to_html(renderable, state), **attrs).to_html
             when :example
-              "<div class=\"example\"#{attrs}>#{convert_content_to_html(renderable, state)}</div>"
+              attrs = build_id_title_attrs(block.id, block.title)
+              node = NodeBuilder.build(:div, convert_content_to_html(renderable, state), **attrs)
+              node['class'] = 'example'
+              node.to_html
             when :sidebar
-              "<aside class=\"sidebar\"#{attrs}>#{convert_content_to_html(renderable, state)}</aside>"
+              attrs = build_id_title_attrs(block.id, block.title)
+              node = NodeBuilder.build(:aside, convert_content_to_html(renderable, state), **attrs)
+              node['class'] = 'sidebar'
+              node.to_html
             when :literal
-              "<pre class=\"literal\"#{attrs}>#{escape_html(block.flat_text)}</pre>"
+              attrs = build_id_title_attrs(block.id, block.title)
+              node = NodeBuilder.build(:pre, escape_html(block.flat_text), **attrs)
+              node['class'] = 'literal'
+              node.to_html
             when :pass
               block.flat_text
             when :listing
-              "<pre#{attrs}>#{escape_html(block.flat_text)}</pre>"
+              attrs = build_id_title_attrs(block.id, block.title)
+              NodeBuilder.build(:pre, escape_html(block.flat_text), **attrs).to_html
             when :open
-              "<div#{attrs}>#{convert_content_to_html(renderable, state)}</div>"
-            when :verse
-              "<blockquote#{attrs}>#{convert_content_to_html(renderable, state)}</blockquote>"
+              attrs = build_id_title_attrs(block.id, block.title)
+              NodeBuilder.build(:div, convert_content_to_html(renderable, state), **attrs).to_html
             when :comment, :reviewer
               ''
             when :horizontal_rule
-              "<hr#{attrs}>"
+              NodeBuilder.build(:hr).to_html
             else
-              "<div#{attrs}>#{convert_content_to_html(renderable, state)}</div>"
+              attrs = build_id_title_attrs(block.id, block.title)
+              NodeBuilder.build(:div, convert_content_to_html(renderable, state), **attrs).to_html
             end
           end
 
-          # Resolve the semantic type from a block via polymorphic dispatch.
           def resolve_block_semantic_type(block)
             block.resolve_semantic_type
           end
 
-          # Render CoreModel structural element
           def render_core_structural_element(element, state = {})
-            attrs = build_html_attributes(element.id, nil)
-
+            attrs = build_id_title_attrs(element.id, nil)
             children_html = (element.children || []).map { |c| convert_content_to_html(c, state) }.join
+
             case element.element_type
             when 'document'
-              "<article#{attrs}>#{children_html}</article>"
+              NodeBuilder.build(:article, children_html, **attrs).to_html
             when 'header'
-              "<header#{attrs}>#{children_html}</header>"
+              NodeBuilder.build(:header, children_html, **attrs).to_html
             when 'section'
               level = element.heading_level
               level = [level, 6].min
-              title_html = element.title ? "<h#{level}>#{escape_html(element.title)}</h#{level}>" : ''
-              "<section#{attrs}>#{title_html}#{children_html}</section>"
+              title_node = (NodeBuilder.build("h#{level}", escape_html(element.title)) if element.title)
+              children_nodes = []
+              children_nodes << title_node if title_node
+              children_nodes << children_html unless children_html.empty?
+              NodeBuilder.build(:section, children_nodes, **attrs).to_html
             else
-              "<div#{attrs}>#{children_html}</div>"
+              NodeBuilder.build(:div, children_html, **attrs).to_html
             end
           end
 
-          # Render CoreModel list block
           def render_core_list_block(list, state = {})
-            attrs = build_html_attributes(list.id, list.title)
-
+            attrs = build_id_title_attrs(list.id, list.title)
             items_html = (list.items || []).map { |i| convert_content_to_html(i, state) }.join
+
             case list.marker_type
             when 'unordered'
-              "<ul#{attrs}>#{items_html}</ul>"
+              NodeBuilder.build(:ul, items_html, **attrs).to_html
             when 'ordered'
-              "<ol#{attrs}>#{items_html}</ol>"
+              NodeBuilder.build(:ol, items_html, **attrs).to_html
             when 'definition'
-              "<dl#{attrs}>#{items_html}</dl>"
+              NodeBuilder.build(:dl, items_html, **attrs).to_html
             else
-              "<ul#{attrs}>#{items_html}</ul>"
+              NodeBuilder.build(:ul, items_html, **attrs).to_html
             end
           end
 
-          # Render CoreModel list item
           def render_core_list_item(item, state = {})
-            # Use renderable_content to get children if present
             renderable = item.renderable_content
             content = convert_content_to_html(renderable, state)
-
-            # Handle nested list
             content += convert_content_to_html(item.nested_list, state) if item.nested_list
-
-            "<li>#{content}</li>"
+            NodeBuilder.build(:li, content).to_html
           end
 
-          # Render CoreModel annotation block (admonition)
           def render_core_annotation_block(block, state = {})
-            attrs = build_html_attributes(block.id, block.title)
+            attrs = build_id_title_attrs(block.id, block.title)
             type = block.annotation_type ? block.annotation_type.to_s.downcase : 'note'
             label = block.annotation_label || type.upcase
 
-            html = "<div class=\"admonitionblock #{escape_attribute(type)}\"#{attrs}>"
-            html += "<div class=\"icon\"><span class=\"title\">#{escape_html(label)}</span></div>"
+            icon_title = NodeBuilder.build(:span, escape_html(label), class: 'title')
+            icon_div = NodeBuilder.build(:div, icon_title, class: 'icon')
+
             renderable = block.renderable_content
             content_html = convert_content_to_html(renderable, state)
             content_html = process_inline_patterns(content_html)
-            html += "<div class=\"content\">#{content_html}</div>"
-            html += '</div>'
-            html
+            content_div = NodeBuilder.build(:div, content_html, class: 'content')
+
+            NodeBuilder.build(:div, [icon_div, content_div],
+                              class: "admonitionblock #{type}", **attrs).to_html
           end
 
-          # Render CoreModel table row
           def render_core_table_row(row, state = {})
             cells = row.cells || row.columns || []
             cells_html = cells.map { |c| convert_content_to_html(c, state) }.join
-            tag = row.header ? 'thead' : 'tr'
-            "<#{tag}>#{cells_html}</#{tag}>"
+            tag = row.header ? :thead : :tr
+            NodeBuilder.build(tag, cells_html).to_html
           end
 
-          # Render CoreModel table cell
           def render_core_table_cell(cell, state = {})
-            tag = cell.header ? 'th' : 'td'
-            attrs = ''
-            attrs += " colspan=\"#{cell.colspan}\"" if cell.colspan
-            attrs += " rowspan=\"#{cell.rowspan}\"" if cell.rowspan
-            attrs += " style=\"text-align: #{escape_html(cell.alignment)}\"" if cell.alignment
+            tag = cell.header ? :th : :td
+            attrs = {}
+            attrs[:colspan] = cell.colspan.to_s if cell.colspan
+            attrs[:rowspan] = cell.rowspan.to_s if cell.rowspan
+            attrs[:style] = "text-align: #{cell.alignment}" if cell.alignment
 
-            # Use renderable_content to get children if present, otherwise content
             renderable = cell.renderable_content
             content = convert_content_to_html(renderable, state)
-            "<#{tag}#{attrs}>#{content}</#{tag}>"
+            NodeBuilder.build(tag, content, **attrs).to_html
           end
 
-          # Render CoreModel term
           def render_core_term(term, _state = {})
             term_text = term.text || ''
             term_type = term.term_type || term.type || 'term'
             display_text = term.render_text&.strip&.empty? ? false : term.render_text
             display_text ||= term_text
 
-            %(<span class="term term-#{escape_attribute(term_type)}" data-term-ref="#{escape_attribute(term_text)}">#{escape_html(display_text)}</span>)
+            node = NodeBuilder.build(:span, escape_html(display_text),
+                                     class: "term term-#{term_type}")
+            node['data-term-ref'] = term_text
+            node.to_html
           end
 
-          # Render CoreModel inline image
           def render_core_inline_image(image, _state = {})
-            attrs = "src=\"#{escape_attribute(image.src)}\""
-            attrs += " alt=\"#{escape_attribute(image.alt)}\"" if image.alt
-            attrs += " width=\"#{escape_attribute(image.width)}\"" if image.width
-            attrs += " height=\"#{escape_attribute(image.height)}\"" if image.height
-
-            %(<img #{attrs}>)
+            attrs = { src: image.src }
+            attrs[:alt] = image.alt if image.alt
+            attrs[:width] = image.width if image.width
+            attrs[:height] = image.height if image.height
+            NodeBuilder.build(:img, nil, **attrs).to_html
           end
 
-          # Render CoreModel block image
           def render_core_block_image(image, _state = {})
-            attrs = build_html_attributes(image.id, nil)
-            img_attrs = "src=\"#{escape_attribute(image.src)}\""
-            img_attrs += " alt=\"#{escape_attribute(image.alt)}\"" if image.alt
-            img_attrs += " width=\"#{escape_attribute(image.width)}\"" if image.width
-            img_attrs += " height=\"#{escape_attribute(image.height)}\"" if image.height
+            fig_attrs = build_id_title_attrs(image.id, nil)
+            img_attrs = { src: image.src }
+            img_attrs[:alt] = image.alt if image.alt
+            img_attrs[:width] = image.width if image.width
+            img_attrs[:height] = image.height if image.height
 
-            html = "<figure#{attrs}>"
-            html += %(<img #{img_attrs}>)
-            html += "<figcaption>#{escape_html(image.caption)}</figcaption>" if image.caption
-            html += '</figure>'
-            html
+            img_node = NodeBuilder.build(:img, nil, **img_attrs)
+            children = [img_node]
+            children << NodeBuilder.build(:figcaption, escape_html(image.caption)) if image.caption
+
+            NodeBuilder.build(:figure, children, **fig_attrs).to_html
           end
 
-          # Render CoreModel footnote
           def render_core_footnote(footnote, state = {})
             footnote_id = footnote.id || ''
             content = footnote.content || footnote.inline_content
 
             if footnote_id.empty?
-              # Anonymous footnote
               text = content.is_a?(Array) ? content.join : content.to_s
               title_text = text[0..50]
-              %(<sup class="footnote" title="#{escape_attribute(title_text)}">#{convert_content_to_html(content,
-                                                                                                        state)}</sup>)
+              inner = convert_content_to_html(content, state)
+              NodeBuilder.build(:sup, inner, class: 'footnote', title: title_text).to_html
             else
-              # Named footnote reference
-              %(<sup class="footnote"><a href="#fn-#{escape_attribute(footnote_id)}" id="fnref-#{escape_attribute(footnote_id)}">#{escape_html(footnote_id)}</a></sup>)
+              link = NodeBuilder.build(:a, escape_html(footnote_id),
+                                       href: "#fn-#{footnote_id}", id: "fnref-#{footnote_id}")
+              NodeBuilder.build(:sup, link, class: 'footnote').to_html
             end
           end
 
-          # Render CoreModel footnote reference
           def render_core_footnote_reference(ref, _state = {})
             footnote_id = ref.id || ''
-            %(<sup class="footnote"><a href="#fn-#{escape_attribute(footnote_id)}">[#{escape_html(footnote_id)}]</a></sup>)
+            link = NodeBuilder.build(:a, "[#{footnote_id}]", href: "#fn-#{footnote_id}")
+            NodeBuilder.build(:sup, link, class: 'footnote').to_html
           end
 
-          # Render CoreModel abbreviation
           def render_core_abbreviation(abbr, _state = {})
             term = abbr.term || ''
             definition = abbr.definition || ''
-            %(<abbr title="#{escape_attribute(definition)}">#{escape_html(term)}</abbr>)
+            NodeBuilder.build(:abbr, escape_html(term), title: definition).to_html
           end
 
-          # Render CoreModel definition list
           def render_core_definition_list(dl, state = {})
-            attrs = build_html_attributes(dl.id, dl.title)
+            attrs = build_id_title_attrs(dl.id, dl.title)
             items_html = (dl.items || []).map { |i| convert_content_to_html(i, state) }.join
-            "<dl#{attrs}>#{items_html}</dl>"
+            NodeBuilder.build(:dl, items_html, **attrs).to_html
           end
 
-          # Render CoreModel definition item
           def render_core_definition_item(item, state = {})
             term_text = item.term.to_s
             term_html, term_id = process_definition_term(term_text)
-            dt_attrs = term_id ? %( id="#{escape_attribute(term_id)}") : ''
-            definitions_html = (item.definitions || []).map do |d|
-              "<dd>#{process_inline_patterns(convert_content_to_html(d, state))}</dd>"
-            end.join
-            "<dt#{dt_attrs}>#{term_html}</dt>#{definitions_html}"
+            dt_attrs = {}
+            dt_attrs[:id] = term_id if term_id
+
+            dt_node = NodeBuilder.build(:dt, term_html, **dt_attrs)
+            dd_nodes = (item.definitions || []).map do |d|
+              dd_content = process_inline_patterns(convert_content_to_html(d, state))
+              NodeBuilder.build(:dd, dd_content)
+            end
+
+            NodeBuilder.build(:fragment, [dt_node, *dd_nodes]).to_html
           end
 
-          # Process definition list term to extract anchor and inline patterns
-          # Returns [html_string, id_or_nil]
           def process_definition_term(text)
             id = nil
-            # Extract [[anchor]] prefix
             if text =~ /\A\[\[([^\]]+)\]\]/
               id = ::Regexp.last_match(1)
               text = ::Regexp.last_match.post_match
@@ -396,69 +366,82 @@ module Coradoc
 
           # Post-process text to convert inline AsciiDoc patterns to HTML
           def process_inline_patterns(html)
-            # Convert `backtick text` to <code>text</code>
-            html = html.gsub(/`([^`]+)`/) { "<code>#{escape_html(::Regexp.last_match(1))}</code>" }
-            # Convert <<cross-reference>> to <a href="#ref">ref</a>
-            html.gsub(/&lt;&lt;([^&]+)&gt;&gt;/) do
-              ref = ::Regexp.last_match(1)
-              "<a href=\"##{escape_attribute(ref)}\">#{escape_html(ref)}</a>"
+            doc = Nokogiri::HTML::DocumentFragment.parse(html)
+            text_nodes = []
+            doc.traverse do |node|
+              text_nodes << node if node.text?
             end
+
+            text_nodes.each do |t_node|
+              original = t_node.text
+              modified = original.gsub(/`([^`]+)`/) { "<code>#{escape_html(::Regexp.last_match(1))}</code>" }
+              modified = modified.gsub(/&lt;&lt;([^&]+)&gt;&gt;/) do
+                ref = ::Regexp.last_match(1)
+                "<a href=\"##{escape_attribute(ref)}\">#{escape_html(ref)}</a>"
+              end
+              t_node.replace(Nokogiri::HTML::DocumentFragment.parse(modified)) if modified != original
+            end
+
+            doc.to_html
           end
 
-          # Render CoreModel TOC
           def render_core_toc(toc, state = {})
-            attrs = build_html_attributes(nil, nil)
-            attrs += ' class="toc"'
+            attrs = build_id_title_attrs(nil, nil)
             entries_html = (toc.entries || []).map { |e| convert_content_to_html(e, state) }.join
-            "<nav#{attrs}><h2>Table of Contents</h2><ul>#{entries_html}</ul></nav>"
+            h2 = NodeBuilder.build(:h2, 'Table of Contents')
+            ul = NodeBuilder.build(:ul, entries_html)
+            node = NodeBuilder.build(:nav, [h2, ul], class: 'toc', **attrs)
+            node.to_html
           end
 
-          # Render CoreModel TOC entry
           def render_core_toc_entry(entry, state = {})
             id = entry.id || ''
             title = entry.title || ''
-            entry.level || 1
             number = entry.number
             display_title = number ? "#{number}. #{title}" : title
 
-            item_html = if id.empty?
-                          escape_html(display_title)
+            item_node = if id.empty?
+                          NodeBuilder.build(:fragment, escape_html(display_title))
                         else
-                          %(<a href="##{escape_attribute(id)}">#{escape_html(display_title)}</a>)
+                          NodeBuilder.build(:a, escape_html(display_title), href: "##{id}")
                         end
 
             children_html = (entry.children || []).map { |c| convert_content_to_html(c, state) }.join
-            children_html = "<ul>#{children_html}</ul>" unless children_html.empty?
+            li_children = [item_node]
+            li_children << NodeBuilder.build(:ul, children_html) unless children_html.empty?
 
-            "<li>#{item_html}#{children_html}</li>"
+            NodeBuilder.build(:li, li_children).to_html
           end
 
           def render_core_bibliography(bib, state = {})
-            attrs = %( class="bibliography")
-            attrs += %( id="#{escape_attribute(bib.id)}") if bib.id
+            attrs = { class: 'bibliography' }
+            attrs[:id] = bib.id if bib.id
 
-            title_html = (%(<h2 class="bibliography-title">#{escape_html(bib.title)}</h2>) if bib.title && !bib.title.to_s.empty?)
+            children = []
+            children << NodeBuilder.build(:h2, escape_html(bib.title), class: 'bibliography-title') if bib.title && !bib.title.to_s.empty?
 
             entries_html = Array(bib.entries).map { |e| convert_content_to_html(e, state) }.join("\n")
+            children << NodeBuilder.build(:div, entries_html, class: 'bibliography-entries') unless entries_html.empty?
 
-            inner = ''
-            inner += "#{title_html}\n" if title_html
-            inner += "<div class=\"bibliography-entries\">\n#{entries_html}\n</div>" unless entries_html.empty?
-
-            "<section#{attrs}>\n#{inner}\n</section>"
+            NodeBuilder.build(:section, children, **attrs).to_html
           end
 
           def render_core_bibliography_entry(entry, _state = {})
             entry_id = entry.anchor_name || entry.document_id
-            anchor_html = entry_id ? %(<a id="#{escape_attribute(entry_id)}" class="bibliography-anchor"></a>) : ''
+            children = []
+            children << NodeBuilder.build(:a, nil, id: entry_id, class: 'bibliography-anchor') if entry_id
             label = entry.document_id || ''
+            unless label.empty?
+              label_span = NodeBuilder.build(:span, escape_html(label), class: 'bibliography-label')
+              children << label_span
+              children << NodeBuilder.text(' ')
+            end
             ref_text = entry.ref_text || ''
-            label_html = label.empty? ? '' : %(<span class="bibliography-label">#{escape_html(label)}</span> )
+            children << NodeBuilder.text(escape_html(ref_text))
 
-            "<div class=\"bibliography-entry\">#{anchor_html}#{label_html}#{escape_html(ref_text)}</div>"
+            NodeBuilder.build(:div, children, class: 'bibliography-entry').to_html
           end
 
-          # Handle unknown content types
           def handle_unknown_content(content, _state = {})
             if content.is_a?(Coradoc::CoreModel::Base)
               raise ArgumentError,
@@ -466,11 +449,9 @@ module Coradoc
                     'Expected a recognized CoreModel type.'
             end
 
-            # Handle non-CoreModel types (strings from mixed content, etc.)
             escape_html(content.to_s)
           end
 
-          # Extract text from unknown model types as a fallback
           def extract_text_fallback(content)
             if content.is_a?(Coradoc::CoreModel::Base)
               if content.class.attributes.key?(:text) && content.text
@@ -500,25 +481,17 @@ module Coradoc
 
           # === Helper methods ===
 
-          # Build HTML attributes string
-          def build_html_attributes(id, title)
-            attrs = ''
-            attrs += " id=\"#{escape_attribute(id)}\"" if id && !id.to_s.empty?
-            attrs += " title=\"#{escape_attribute(title)}\"" if title && !title.to_s.empty?
+          def build_id_title_attrs(id, title)
+            attrs = {}
+            attrs[:id] = id if id && !id.to_s.empty?
+            attrs[:title] = title if title && !title.to_s.empty?
             attrs
           end
 
-          # Build class attribute
-          def build_class_attribute(class_name)
-            class_name ? " class=\"#{escape_attribute(class_name)}\"" : ''
-          end
-
-          # Find converter for model class
           def find_converter_for_model(model_class)
             Coradoc::Html::Base.find_converter(model_class)
           end
 
-          # Type-safe lookup of converter class by name
           def find_converter_class_by_name(converter_name)
             klass = Coradoc::Html::Converters.const_get(converter_name, false)
             return klass if klass <= Coradoc::Html::Converters::Base
@@ -528,36 +501,26 @@ module Coradoc
             nil
           end
 
-          # Escape HTML entities
           def escape_html(text)
             Coradoc::Html::Base.escape_html(text)
           end
 
-          # Escape HTML attribute values
           def escape_attribute(value)
             return '' if value.nil?
 
             value.to_s.gsub(/&/, '&amp;').gsub(/"/, '&quot;').gsub(/</, '&lt;').gsub(/>/, '&gt;')
           end
 
-          # Build HTML element
           def build_element(tag, content = nil, attributes = {})
             Coradoc::Html::Base.build_element(tag, content, attributes)
           end
 
-          # Extract attributes from a CoreModel
-          # @param model [Coradoc::CoreModel::Base] Model to extract attributes from
-          # @return [Hash] Attributes hash
           def extract_model_attributes(model)
             Coradoc::Html::Base.extract_attributes(model)
           end
 
           # === HTML Input Direction (HTML → CoreModel) ===
 
-          # Process children of an HTML node
-          # @param node [Nokogiri::XML::Node] Parent node
-          # @param state [Hash] Conversion state
-          # @return [Array] Array of converted content
           def treat_children(node, state = {})
             return [] unless node&.children
 
@@ -566,10 +529,6 @@ module Coradoc
             end.compact
           end
 
-          # Convert HTML node to CoreModel
-          # @param node [Nokogiri::XML::Node] Node to convert
-          # @param state [Hash] Conversion state
-          # @return [Coradoc::CoreModel::Base, String, nil]
           def convert_node_to_core(node, state = {})
             case node.type
             when Nokogiri::XML::Node::TEXT_NODE
@@ -580,46 +539,44 @@ module Coradoc
             when Nokogiri::XML::Node::ELEMENT_NODE
               convert_element_to_core(node, state)
             when Nokogiri::XML::Node::COMMENT_NODE
-              nil # Skip comments
+              nil
             end
           end
 
-          # Convert HTML element to CoreModel
-          # @param node [Nokogiri::XML::Node] Element node
-          # @param state [Hash] Conversion state
-          # @return [Coradoc::CoreModel::Base, Array, nil]
           def convert_element_to_core(node, state = {})
-            # Delegate to Html::Input::Converters for HTML input
-            # This maintains separation between input and output converters
             if defined?(Coradoc::Html::Input::Converters)
               converter = Coradoc::Html::Input::Converters.lookup(node.name)
               if converter
                 result = converter.to_coradoc(node, state)
-                # Transform to CoreModel if needed
                 return transform_to_coremodel(result) if result
               end
             end
 
-            # Fallback: treat children
             treat_children(node, state)
           end
 
-          # Transform model to CoreModel
-          # @param model [Object] Model to transform
-          # @return [Coradoc::CoreModel::Base, Object]
           def transform_to_coremodel(model)
-            # Already a CoreModel type - return as-is
             model
           end
 
-          # Extract attributes from HTML node
-          # @param node [Nokogiri::XML::Node] HTML node
-          # @return [Hash] Attributes hash
           def extract_node_attributes(node)
             return {} unless node.is_a?(Nokogiri::XML::Node)
 
             node.attributes.each_with_object({}) do |(name, attr), hash|
               hash[name.to_sym] = attr.value
+            end
+          end
+
+          # Get plain text content from a CoreModel element
+          def get_text_content(element)
+            return element.to_s unless element.is_a?(Coradoc::CoreModel::Base)
+
+            if element.class.attributes.key?(:text) && element.text
+              element.text
+            elsif element.class.attributes.key?(:content) && element.content
+              element.content.is_a?(String) ? element.content : element.content.to_s
+            else
+              element.to_s
             end
           end
         end

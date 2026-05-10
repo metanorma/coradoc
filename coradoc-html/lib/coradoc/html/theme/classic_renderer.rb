@@ -3,32 +3,18 @@
 require 'coradoc/html'
 require 'coradoc/html/config'
 require 'coradoc/html/converters/base'
+require 'coradoc/html/node_builder'
 
 module Coradoc
   module Html
     module Theme
-      # Classic theme renderer
-      #
-      # This renderer wraps the existing Coradoc HTML generation system.
-      # It maintains backward compatibility with the classic theme while
-      # following the new theme system architecture.
-      #
-      # The classic theme is the default theme and provides the same output
-      # as the original Coradoc HTML converter.
       class ClassicRenderer < Base
-        # Register this theme automatically
         Registry.auto_register(self)
 
-        # Check if template rendering is enabled
-        #
-        # @return [Boolean]
         def use_templates?
           @options[:use_templates] == true
         end
 
-        # Get the template renderer when templates are enabled
-        #
-        # @return [Coradoc::Html::Renderer, nil]
         def template_renderer
           return nil unless use_templates?
 
@@ -38,9 +24,6 @@ module Coradoc
           end
         end
 
-        # Supported features for classic theme
-        #
-        # @return [Array<Symbol>] Supported features
         def supported_features
           features = %i[
             dark_mode
@@ -53,98 +36,52 @@ module Coradoc
           features
         end
 
-        # Render document to HTML
-        #
-        # Generates HTML body content from the document.
-        # Uses the HTML Converters directly to avoid circular dependency.
-        # When templates are enabled, uses the template renderer instead.
-        #
-        # @return [String] HTML string
         def render
           return template_renderer.render(@document) if use_templates? && template_renderer
 
-          # Use HTML converters directly to convert document model to HTML
-          # This avoids circular dependency with Coradoc::Output::Html
           Coradoc::Html::Converters::Document.to_html(@document, @options)
         end
 
-        # Render complete HTML5 document
-        #
-        # Builds the complete HTML5 document with head, body, and all assets.
-        # @return [String] Complete HTML5 document
         def render_html5
           html_body = render
 
           lang = @options[:lang] || 'en'
           body_classes = build_body_classes
 
-          # Add auto-generated IDs to headings before section numbering
-          # so IDs are generated from clean titles without number prefixes
           final_body = add_heading_ids(html_body)
-
-          # Apply section numbering if enabled
           final_body = if @options[:sectnums]
                          apply_section_numbering(final_body)
                        else
                          final_body
                        end
 
-          # Build TOC if enabled
           toc_html = build_toc
-
-          # Insert TOC based on placement
           final_body = insert_toc(final_body, toc_html)
-
-          # Add theme toggle button if enabled
           theme_button = build_theme_toggle_button
 
-          <<~HTML
-            <!DOCTYPE html>
-            <html lang="#{lang}">
-            <head>
-            #{build_head_content}
-            </head>
-            <body#{body_classes}>
-            #{final_body}
-            #{theme_button}
-            </body>
-            </html>
-          HTML
+          build_html5_document(final_body, theme_button, lang, body_classes)
         end
 
         protected
 
-        # Get global template directories from configuration
         def global_template_dirs
           Coradoc::Html.configuration.template_dirs.map(&:to_s)
         end
 
-        # Build body classes
-        #
-        # @return [String] Body class attribute
         def build_body_classes
           classes = []
-
-          # Add TOC placement class
           if @options[:toc]
             placement = @options[:toc_placement] || :auto
             classes << "toc-#{placement}" unless placement == :auto
           end
-
           classes.empty? ? '' : %( class="#{classes.join(' ')}")
         end
 
-        # Build CSS tags
-        #
-        # @return [String] CSS link or style tags
         def build_css_tags
           Coradoc::Html::Config.css_tags(@options).split("\n")
                                .map { |line| "  #{line}" }.join("\n")
         end
 
-        # Build script tags
-        #
-        # @return [String] Script tags
         def build_script_tags
           js = Coradoc::Html::Config.js_tags(@options)
           return '' if js.empty?
@@ -152,9 +89,6 @@ module Coradoc
           js.split("\n").map { |line| "  #{line}" }.join("\n")
         end
 
-        # Build syntax highlighter tags
-        #
-        # @return [String] Syntax highlighter tags HTML
         def build_head_content
           parts = []
           parts << build_meta_tags
@@ -165,9 +99,6 @@ module Coradoc
           parts.compact.reject(&:empty?).join("\n")
         end
 
-        # Build syntax highlighter tags
-        #
-        # @return [String] Syntax highlighter tags HTML
         def build_syntax_highlighter_tags
           tags = Coradoc::Html::Config.syntax_highlighter_tags(@options)
           return '' if tags.empty?
@@ -175,11 +106,6 @@ module Coradoc
           tags.split("\n").map { |line| "  #{line}" }.join("\n")
         end
 
-        # Insert TOC into body HTML based on placement
-        #
-        # @param body_html [String] Body HTML content
-        # @param toc_html [String] TOC HTML
-        # @return [String] Combined HTML
         def insert_toc(body_html, toc_html)
           return body_html if toc_html.empty?
 
@@ -187,56 +113,42 @@ module Coradoc
 
           case placement
           when :left, :right
-            # For sidebar placements, TOC is positioned via CSS
             "#{toc_html}\n#{body_html}"
           when :auto, :preamble
-            # Insert after header, before main content
             if body_html =~ %r{(</h1>)}
               body_html.sub(::Regexp.last_match(1), "#{::Regexp.last_match(1)}\n#{toc_html}")
             else
               "#{toc_html}\n#{body_html}"
             end
           else
-            # Default: prepend to body
             "#{toc_html}\n#{body_html}"
           end
         end
 
-        # Build theme toggle button HTML
-        #
-        # @return [String] Theme toggle button HTML or empty string
         def build_theme_toggle_button
           return '' unless @options[:theme_toggle]
 
-          <<~HTML
-            <button id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark/light mode">
-              <span class="theme-toggle-icon">☀️</span>
-            </button>
-          HTML
+          span = NodeBuilder.build(:span, nil, class: 'theme-toggle-icon')
+          span.inner_html = '&#x2600;'
+          NodeBuilder.build(:button, span, id: 'theme-toggle',
+                                           'aria-label' => 'Toggle dark mode',
+                                           title: 'Toggle dark/light mode').to_html
         end
 
-        # Build table of contents
-        #
-        # @return [String] TOC HTML or empty string
         def build_toc
           return '' unless @options[:toc]
-
-          toc_placement = @options[:toc_placement] || :auto
-          toc_class = toc_placement == :auto ? 'toc' : "toc toc-#{toc_placement}"
 
           sections = extract_sections(@document)
           return '' if sections.empty?
 
+          toc_placement = @options[:toc_placement] || :auto
+          toc_class = toc_placement == :auto ? 'toc' : "toc toc-#{toc_placement}"
           toc_title = @options[:toc_title] || 'Table of Contents'
           toc_levels = @options[:toclevels] || 2
 
           build_toc_html(sections, toc_levels, toc_class, toc_title)
         end
 
-        # Extract sections from document
-        #
-        # @param doc [Coradoc::CoreModel::StructuralElement] Document to extract sections from
-        # @return [Array] Array of section objects
         def extract_sections(doc)
           sections = []
           return sections unless doc.is_a?(Coradoc::CoreModel::StructuralElement)
@@ -245,11 +157,6 @@ module Coradoc
           sections
         end
 
-        # Recursively collect sections
-        #
-        # @param items [Array] Items to process
-        # @param sections [Array] Accumulated sections
-        # @param level [Integer] Current section level
         def collect_sections(items, sections, level)
           return unless items
 
@@ -262,18 +169,11 @@ module Coradoc
               level: level,
               children: []
             }
-
-            # Recursively collect subsections
             collect_sections(item.children, section_data[:children], level + 1)
-
             sections << section_data
           end
         end
 
-        # Extract section title
-        #
-        # @param section [Coradoc::CoreModel::StructuralElement] Section to extract title from
-        # @return [String] Section title
         def extract_section_title(section)
           title = section.title
           if title
@@ -291,77 +191,40 @@ module Coradoc
           end
         end
 
-        # Extract section ID
-        #
-        # @param section [Coradoc::CoreModel::StructuralElement] Section to extract ID from
-        # @return [String] Section ID
         def extract_section_id(section)
-          if section.id
-            section.id
-          else
-            # Generate ID from title
+          section.id || begin
             title = extract_section_title(section)
             "_#{title.to_s.downcase.gsub(/[^a-z0-9]+/, '_').gsub(/^_+|_+$/, '')}"
           end
         end
 
-        # Build TOC HTML
-        #
-        # @param sections [Array] Section data
-        # @param max_level [Integer] Maximum level to include
-        # @param toc_class [String] CSS class for TOC
-        # @param toc_title [String] TOC title
-        # @return [String] TOC HTML
         def build_toc_html(sections, max_level, toc_class, toc_title)
           return '' if sections.empty?
 
-          html = []
-          html << %(<div id="toc" class="#{toc_class}">)
-          html << %(  <div class="toc-title">#{escape_html(toc_title)}</div>)
-          html << build_toc_list(sections, 1, max_level)
-          html << %(</div>)
-          html.join("\n")
+          title_div = NodeBuilder.build(:div, escape_html(toc_title), class: 'toc-title')
+          list_html = build_toc_list(sections, 1, max_level)
+          NodeBuilder.build(:div, [title_div, list_html], id: 'toc', class: toc_class).to_html
         end
 
-        # Build TOC list recursively
-        #
-        # @param sections [Array] Section data
-        # @param current_level [Integer] Current level
-        # @param max_level [Integer] Maximum level
-        # @return [String] List HTML
         def build_toc_list(sections, current_level, max_level)
           return '' if sections.empty? || current_level > max_level
 
-          html = []
-          html << %(  <ul class="sectlevel#{current_level}">)
-
-          sections.each do |section|
-            html << %(    <li>)
-            html << %(      <a href="##{section[:id]}">#{escape_html(section[:title])}</a>)
-
-            # Add nested list for children
+          items = sections.map do |section|
+            link = NodeBuilder.build(:a, escape_html(section[:title]), href: "##{section[:id]}")
+            li_children = [link]
             if section[:children] && !section[:children].empty? && current_level < max_level
-              nested_html = build_toc_list(section[:children], current_level + 1, max_level)
-              html << nested_html if nested_html && !nested_html.empty?
+              nested = build_toc_list(section[:children], current_level + 1, max_level)
+              li_children << nested unless nested.empty?
             end
-
-            html << %(    </li>)
+            NodeBuilder.build(:li, li_children)
           end
 
-          html << %(  </ul>)
-          html.join("\n")
+          NodeBuilder.build(:ul, items, class: "sectlevel#{current_level}").to_html
         end
 
-        # Apply section numbering to HTML
-        #
-        # @param html [String] HTML content
-        # @return [String] HTML with section numbers
         def apply_section_numbering(html)
-          require 'nokogiri'
-
           max_level = @options[:sectnumlevels] || 3
           doc = Nokogiri::HTML::DocumentFragment.parse(html)
-
           counters = Array.new(max_level + 1, 0)
 
           doc.traverse do |node|
@@ -378,27 +241,19 @@ module Coradoc
             ((section_level + 1)..max_level).each { |i| counters[i] = 0 }
 
             section_number = counters[1..section_level].join('.')
-            number_span = %(<span class="sectnum">#{section_number}. </span>)
-            node.inner_html = number_span + node.inner_html
+            number_span = NodeBuilder.build(:span, "#{section_number}. ", class: 'sectnum')
+            node.prepend_child(number_span)
           end
 
           doc.to_html
         end
 
-        # Add auto-generated IDs to headings that lack them
-        #
-        # @param html [String] HTML content
-        # @return [String] HTML with heading IDs
         def add_heading_ids(html)
-          require 'nokogiri'
-
           doc = Nokogiri::HTML::DocumentFragment.parse(html)
           used_ids = Set.new
 
-          # First pass: collect existing IDs
           doc.css('[id]').each { |node| used_ids.add(node['id']) }
 
-          # Second pass: add IDs to headings without them
           doc.css('h1, h2, h3, h4, h5, h6').each do |node|
             next if node['id']
 
@@ -406,7 +261,6 @@ module Coradoc
             next if generated.empty?
 
             id = generated
-            # Ensure uniqueness
             if used_ids.include?(id)
               suffix = 2
               id = "#{generated}_#{suffix}" while used_ids.include?(id)
@@ -419,10 +273,6 @@ module Coradoc
           doc.to_html
         end
 
-        # Generate an ID from heading text content
-        #
-        # @param node [Nokogiri::XML::Element] Heading element
-        # @return [String] Generated ID
         def generate_heading_id(node)
           text = node.text.strip
           id = '_' + text.downcase
@@ -430,6 +280,28 @@ module Coradoc
                          .gsub(/\s+/, '_')
                          .gsub(/^_+|_+$/, '')
           id.empty? ? '_' : id
+        end
+
+        private
+
+        def build_html5_document(body_html, theme_button, lang, body_classes)
+          html = []
+          html << '<!DOCTYPE html>'
+          html << "<html lang=\"#{lang}\">"
+          html << '<head>'
+          head_content = build_head_content
+          html << head_content unless head_content.empty?
+          html << '</head>'
+          html << "<body#{body_classes}>"
+          html << body_html
+          html << theme_button unless theme_button.empty?
+          html << '</body>'
+          html << '</html>'
+          html.join("\n")
+        end
+
+        def escape_html(text)
+          Coradoc::Html::Base.escape_html(text)
         end
       end
     end
