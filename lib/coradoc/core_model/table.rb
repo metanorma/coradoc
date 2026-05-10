@@ -50,29 +50,10 @@ module Coradoc
       #     'asciidoc', 'literal', 'verse')
       attribute :style, :string
 
-      # @!attribute bgcolor
-      #   @return [String, nil] background color (CSS color value)
-      attribute :bgcolor, :string
-
-      # @!attribute color
-      #   @return [String, nil] text color (CSS color value)
-      attribute :color, :string
-
-      # @!attribute width
-      #   @return [String, nil] cell width
-      attribute :width, :string
-
-      # @!attribute height
-      #   @return [String, nil] cell height
-      attribute :height, :string
-
-      # Mixed content (strings and InlineElement objects)
-      # @return [Array] mixed content array (via ChildrenContent)
-
       private
 
       def comparable_attributes
-        %i[content alignment vertical_alignment colspan rowspan header style bgcolor color width height]
+        %i[content alignment vertical_alignment colspan rowspan header style]
       end
     end
 
@@ -142,10 +123,6 @@ module Coradoc
       #   @return [Array<TableRow>] collection of table rows
       attribute :rows, TableRow, collection: true
 
-      # @!attribute frame
-      #   @return [String, nil] table frame style ('all', 'topbot', 'sides', 'none')
-      attribute :frame, :string
-
       # @!attribute grid
       #   @return [String, nil] table grid style ('all', 'cols', 'rows', 'none')
       #   @note Not yet wired by any transformer; reserved for future use
@@ -162,7 +139,7 @@ module Coradoc
       private
 
       def comparable_attributes
-        super + %i[rows frame grid width cols]
+        super + %i[rows grid width cols]
       end
     end
   end
