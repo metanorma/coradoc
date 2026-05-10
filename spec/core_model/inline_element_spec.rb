@@ -7,24 +7,20 @@ RSpec.describe Coradoc::CoreModel::InlineElement do
     it 'creates a bold inline element' do
       element = described_class.new(
         format_type: 'bold',
-        constrained: true,
         content: 'important text'
       )
 
       expect(element.format_type).to eq('bold')
-      expect(element.constrained).to be true
       expect(element.content).to eq('important text')
     end
 
     it 'creates an italic inline element' do
       element = described_class.new(
         format_type: 'italic',
-        constrained: false,
         content: 'emphasized'
       )
 
       expect(element.format_type).to eq('italic')
-      expect(element.constrained).to be false
     end
 
     it 'creates an inline element with nested elements' do
@@ -39,10 +35,9 @@ RSpec.describe Coradoc::CoreModel::InlineElement do
       expect(element.nested_elements.first.format_type).to eq('italic')
     end
 
-    it 'defaults constrained to true' do
-      element = described_class.new(format_type: 'bold', content: 'text')
-
-      expect(element.constrained).to be true
+    it 'creates element without format_type' do
+      element = described_class.new(content: 'text')
+      expect(element.content).to eq('text')
     end
   end
 
