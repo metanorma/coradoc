@@ -3,48 +3,33 @@
 module Coradoc
   module Html
     module Converters
-      # Converter for video elements
       class Video < Base
-        # Convert CoreModel::Block (video) to HTML <video>
         def self.to_html(video, _options = {})
           return '' unless video
 
-          # Build video attributes
-          attrs = build_attributes(video)
-
-          # Get video source from metadata or content
           src = video.metadata&.dig(:src) || video.content
+          attrs = build_video_attrs(video)
 
-          # Build source element
-          source_tag = %(<source src="#{escape_attribute(src)}"#{build_type_attr(src)}>)
+          source_attrs = { src: src }
+          type = build_type_attr(src)
+          source_attrs[:type] = type if type
 
-          # Build optional caption/title
-          caption = video.title
+          source_node = NodeBuilder.build(:source, nil, **source_attrs)
+          fallback = NodeBuilder.text('Your browser does not support the video tag.')
 
-          # Determine if we need a wrapper (for block video with caption)
-          if caption
-            <<~HTML.strip
-              <figure#{build_figure_attrs(video)}>
-                <video#{attrs}>
-                  #{source_tag}
-                  Your browser does not support the video tag.
-                </video>
-                <figcaption>#{escape_html(caption)}</figcaption>
-              </figure>
-            HTML
+          video_node = NodeBuilder.build(:video, [source_node, fallback], **attrs)
+
+          if video.title
+            fig_attrs = {}
+            fig_attrs[:id] = "#{video.id}-figure" if video.id
+            caption = NodeBuilder.build(:figcaption, escape_html(video.title))
+            NodeBuilder.build(:figure, [video_node, caption], **fig_attrs).to_html
           else
-            <<~HTML.strip
-              <video#{attrs}>
-                #{source_tag}
-                Your browser does not support the video tag.
-              </video>
-            HTML
+            video_node.to_html
           end
         end
 
-        # Convert HTML <video> to CoreModel::Block (video)
         def self.to_coradoc(element, _options = {})
-          # Handle both <video> and <figure><video> structures
           video_elem = if element.name == 'figure'
                          element.at_css('video')
                        elsif element.name == 'video'
@@ -55,20 +40,14 @@ module Coradoc
 
           return nil unless video_elem
 
-          # Extract source from <source> tag or src attribute
           src = extract_video_src(video_elem)
           return nil unless src
 
-          # Extract caption if in figure
           caption = if element.name == 'figure'
                       figcaption = element.at_css('figcaption')
                       figcaption&.text&.strip
                     end
 
-          # Extract ID if present
-          id = video_elem['id'] || element['id']
-
-          # Extract video attributes
           metadata = extract_video_metadata(video_elem)
           metadata[:src] = src
 
@@ -76,78 +55,47 @@ module Coradoc
             block_semantic_type: 'video',
             content: src,
             title: caption,
-            id: id,
+            id: video_elem['id'] || element['id'],
             metadata: metadata
           )
         end
 
-        def self.build_attributes(video)
-          attrs = []
-
-          # Extract options from metadata
+        def self.build_video_attrs(video)
+          attrs = {}
           options = video.metadata&.dig(:options) || []
 
-          # Add controls by default (unless nocontrols option is set)
-          has_controls = !options.include?('nocontrols')
-          attrs << ' controls' if has_controls
+          attrs[:controls] = '' unless options.include?('nocontrols')
+          attrs[:autoplay] = '' if options.include?('autoplay')
+          attrs[:loop] = '' if options.include?('loop')
+          attrs[:muted] = '' if options.include?('muted')
 
-          # Add autoplay if specified in options
-          attrs << ' autoplay' if options.include?('autoplay')
-
-          # Add loop if specified in options
-          attrs << ' loop' if options.include?('loop')
-
-          # Add muted if specified in options
-          attrs << ' muted' if options.include?('muted')
-
-          # Add poster if specified
           poster = video.metadata&.dig(:poster)
-          attrs << %( poster="#{escape_attribute(poster)}") if poster
+          attrs[:poster] = poster if poster
 
-          # Add width and height if specified
           width = video.metadata&.dig(:width)
+          attrs[:width] = width if width
+
           height = video.metadata&.dig(:height)
+          attrs[:height] = height if height
 
-          attrs << %( width="#{escape_attribute(width)}") if width
+          attrs[:id] = video.id if video.id
 
-          attrs << %( height="#{escape_attribute(height)}") if height
-
-          # Add ID if present
-          attrs << %( id="#{escape_attribute(video.id)}") if video.id
-
-          attrs.join
+          attrs
         end
 
         def self.build_type_attr(src)
-          # Determine video MIME type from extension
-          ext = File.extname(src).downcase
-          type = case ext
-                 when '.mp4'
-                   'video/mp4'
-                 when '.webm'
-                   'video/webm'
-                 when '.ogg', '.ogv'
-                   'video/ogg'
-                 end
-
-          type ? %( type="#{type}") : ''
-        end
-
-        def self.build_figure_attrs(video)
-          attrs = []
-
-          # Add ID to figure if present
-          attrs << %( id="#{escape_attribute(video.id)}-figure") if video.id
-
-          attrs.join
+          ext = File.extname(src.to_s).downcase
+          case ext
+          when '.mp4' then 'video/mp4'
+          when '.webm' then 'video/webm'
+          when '.ogg', '.ogv' then 'video/ogg'
+          end
         end
 
         def self.extract_video_src(element)
-          # Try to get src from <source> tag first
           source = element.at_css('source')
           return source['src'] if source && source['src']
 
-          # Fall back to src attribute on <video>
           element['src']
         end
 
@@ -155,20 +103,14 @@ module Coradoc
           metadata = {}
           options = []
 
-          # Extract boolean attributes
           options << 'controls' if element.has_attribute?('controls')
           options << 'autoplay' if element.has_attribute?('autoplay')
           options << 'loop' if element.has_attribute?('loop')
           options << 'muted' if element.has_attribute?('muted')
 
           metadata[:options] = options unless options.empty?
-
-          # Extract poster
           metadata[:poster] = element['poster'] if element['poster']
-
-          # Extract dimensions
           metadata[:width] = element['width'] if element['width']
-
           metadata[:height] = element['height'] if element['height']
 
           metadata

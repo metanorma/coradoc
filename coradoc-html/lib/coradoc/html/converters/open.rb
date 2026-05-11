@@ -3,26 +3,21 @@
 module Coradoc
   module Html
     module Converters
-      # Converter for CoreModel::Block (open) to HTML
       class Open < Base
         def self.to_html(block, _options = {})
           return '' unless block
 
-          # Build content
           content = process_content(block.content)
 
-          # Build attributes
-          attrs = build_attributes(block)
+          attrs = { class: 'openblock' }
+          attrs[:id] = block.id if block.id
 
-          # Wrap in div with openblock class
-          "<div#{attrs}>\n#{content}\n</div>"
+          NodeBuilder.build(:div, content, **attrs).to_html
         end
 
-        # Convert HTML div to CoreModel::Block (open)
         def self.to_coradoc(element, _options = {})
           return nil unless element.name == 'div'
 
-          # Extract content
           content = element.children.map do |node|
             if node.text? && !node.text.strip.empty?
               node.text.strip
@@ -36,22 +31,10 @@ module Coradoc
             end
           end.compact
 
-          # Extract ID if present
-          id = element['id']
-
           Coradoc::CoreModel::OpenBlock.new(
             content: content,
-            id: id
+            id: element['id']
           )
-        end
-
-        def self.build_attributes(block)
-          attrs = []
-          attrs << %( class="openblock")
-
-          attrs << %( id="#{escape_attribute(block.id)}") if block.id
-
-          attrs.join
         end
 
         def self.process_content(content)
@@ -67,7 +50,7 @@ module Coradoc
         def self.convert_item(item)
           case item
           when String
-            "<p>#{escape_html(item)}</p>"
+            NodeBuilder.build(:p, escape_html(item)).to_html
           else
             convert_content_to_html(item)
           end

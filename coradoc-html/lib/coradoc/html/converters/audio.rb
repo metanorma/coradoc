@@ -3,48 +3,33 @@
 module Coradoc
   module Html
     module Converters
-      # Converter for audio elements
       class Audio < Base
-        # Convert CoreModel::Block (audio) to HTML <audio>
         def self.to_html(audio, _options = {})
           return '' unless audio
 
-          # Build audio attributes
-          attrs = build_attributes(audio)
-
-          # Get audio source from metadata or content
           src = audio.metadata&.dig(:src) || audio.content
+          attrs = build_audio_attrs(audio)
 
-          # Build source element
-          source_tag = %(<source src="#{escape_attribute(src)}"#{build_type_attr(src)}>)
+          source_attrs = { src: src }
+          type = build_type_attr(src)
+          source_attrs[:type] = type if type
 
-          # Build optional caption/title
-          caption = audio.title
+          source_node = NodeBuilder.build(:source, nil, **source_attrs)
+          fallback = NodeBuilder.text('Your browser does not support the audio tag.')
 
-          # Determine if we need a wrapper (for block audio with caption)
-          if caption
-            <<~HTML.strip
-              <figure#{build_figure_attrs(audio)}>
-                <audio#{attrs}>
-                  #{source_tag}
-                  Your browser does not support the audio tag.
-                </audio>
-                <figcaption>#{escape_html(caption)}</figcaption>
-              </figure>
-            HTML
+          audio_node = NodeBuilder.build(:audio, [source_node, fallback], **attrs)
+
+          if audio.title
+            fig_attrs = {}
+            fig_attrs[:id] = "#{audio.id}-figure" if audio.id
+            caption = NodeBuilder.build(:figcaption, escape_html(audio.title))
+            NodeBuilder.build(:figure, [audio_node, caption], **fig_attrs).to_html
           else
-            <<~HTML.strip
-              <audio#{attrs}>
-                #{source_tag}
-                Your browser does not support the audio tag.
-              </audio>
-            HTML
+            audio_node.to_html
           end
         end
 
-        # Convert HTML <audio> to CoreModel::Block (audio)
         def self.to_coradoc(element, _options = {})
-          # Handle both <audio> and <figure><audio> structures
           audio_elem = if element.name == 'figure'
                          element.at_css('audio')
                        elsif element.name == 'audio'
@@ -55,20 +40,14 @@ module Coradoc
 
           return nil unless audio_elem
 
-          # Extract source from <source> tag or src attribute
           src = extract_audio_src(audio_elem)
           return nil unless src
 
-          # Extract caption if in figure
           caption = if element.name == 'figure'
                       figcaption = element.at_css('figcaption')
                       figcaption&.text&.strip
                     end
 
-          # Extract ID if present
-          id = audio_elem['id'] || element['id']
-
-          # Extract audio attributes
           metadata = extract_audio_metadata(audio_elem)
           metadata[:src] = src
 
@@ -76,72 +55,40 @@ module Coradoc
             block_semantic_type: 'audio',
             content: src,
             title: caption,
-            id: id,
+            id: audio_elem['id'] || element['id'],
             metadata: metadata
           )
         end
 
-        def self.build_attributes(audio)
-          attrs = []
-
-          # Extract options from metadata
+        def self.build_audio_attrs(audio)
+          attrs = {}
           options = audio.metadata&.dig(:options) || []
 
-          # Add controls by default (unless nocontrols option is set)
-          has_controls = !options.include?('nocontrols')
-          attrs << ' controls' if has_controls
+          attrs[:controls] = '' unless options.include?('nocontrols')
+          attrs[:autoplay] = '' if options.include?('autoplay')
+          attrs[:loop] = '' if options.include?('loop')
+          attrs[:muted] = '' if options.include?('muted')
+          attrs[:id] = audio.id if audio.id
 
-          # Add autoplay if specified in options
-          attrs << ' autoplay' if options.include?('autoplay')
-
-          # Add loop if specified in options
-          attrs << ' loop' if options.include?('loop')
-
-          # Add muted if specified in options
-          attrs << ' muted' if options.include?('muted')
-
-          # Add ID if present
-          attrs << %( id="#{escape_attribute(audio.id)}") if audio.id
-
-          attrs.join
+          attrs
         end
 
         def self.build_type_attr(src)
-          # Determine audio MIME type from extension
-          ext = File.extname(src).downcase
-          type = case ext
-                 when '.mp3'
-                   'audio/mpeg'
-                 when '.ogg', '.oga'
-                   'audio/ogg'
-                 when '.wav'
-                   'audio/wav'
-                 when '.m4a'
-                   'audio/mp4'
-                 when '.aac'
-                   'audio/aac'
-                 when '.flac'
-                   'audio/flac'
-                 end
-
-          type ? %( type="#{type}") : ''
-        end
-
-        def self.build_figure_attrs(audio)
-          attrs = []
-
-          # Add ID to figure if present
-          attrs << %( id="#{escape_attribute(audio.id)}-figure") if audio.id
-
-          attrs.join
+          ext = File.extname(src.to_s).downcase
+          case ext
+          when '.mp3' then 'audio/mpeg'
+          when '.ogg', '.oga' then 'audio/ogg'
+          when '.wav' then 'audio/wav'
+          when '.m4a' then 'audio/mp4'
+          when '.aac' then 'audio/aac'
+          when '.flac' then 'audio/flac'
+          end
         end
 
         def self.extract_audio_src(element)
-          # Try to get src from <source> tag first
           source = element.at_css('source')
           return source['src'] if source && source['src']
 
-          # Fall back to src attribute on <audio>
           element['src']
         end
 
@@ -149,7 +96,6 @@ module Coradoc
           metadata = {}
           options = []
 
-          # Extract boolean attributes
           options << 'controls' if element.has_attribute?('controls')
           options << 'autoplay' if element.has_attribute?('autoplay')
           options << 'loop' if element.has_attribute?('loop')

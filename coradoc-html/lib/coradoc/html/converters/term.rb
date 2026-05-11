@@ -4,12 +4,8 @@ module Coradoc
   module Html
     module Converters
       autoload :Base, "#{__dir__}/base"
-      # Converter for CoreModel::InlineElement (term) elements
-      #
-      # Terms are used in definition lists and can have types like "acronym",
-      # "symbol", "preferred", etc.
+
       class Term < Base
-        # Convert HTML to CoreModel::InlineElement (term)
         def self.to_coradoc(node, _state = {})
           attrs = extract_node_attributes(node)
 
@@ -28,28 +24,22 @@ module Coradoc
           )
         end
 
-        # Convert CoreModel::InlineElement (term) to HTML
         def self.to_html(term, _state = {})
           term_text = term.content || ''
           term_type = term.target || 'term'
           render_text = term.metadata&.dig(:render_text)
 
-          # Use render_text if available, otherwise use term
           display_text = render_text&.strip&.empty? ? false : render_text
           display_text ||= term_text
 
-          # Build class attribute
-          classes = ['term', "term-#{escape_attribute(term_type)}"]
-          class_attr = classes.join(' ')
+          classes = "term term-#{term_type}"
+          node = NodeBuilder.build(:span, escape_html(display_text), class: classes)
+          node['data-term-ref'] = term_text.to_s
 
-          # Build data attributes
-          data_attrs = []
-          data_attrs << %( data-term-ref="#{escape_attribute(term_text)}")
           lang = term.metadata&.dig(:lang)
-          data_attrs << %( lang="#{escape_attribute(lang)}") if lang && lang != 'en'
+          node['lang'] = lang if lang && lang != 'en'
 
-          # Render as a styled span with term reference
-          %(<span class="#{class_attr}"#{data_attrs.join}>#{escape_html(display_text)}</span>)
+          node.to_html
         end
       end
     end

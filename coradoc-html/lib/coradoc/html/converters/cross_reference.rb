@@ -3,47 +3,32 @@
 module Coradoc
   module Html
     module Converters
-      # Converter for CoreModel::InlineElement with format_type "xref"
       class CrossReference < Base
         class << self
-          # Convert CoreModel::InlineElement (xref) to HTML
-          # @param model [Coradoc::CoreModel::InlineElement] CrossReference model
-          # @param state [Hash] Conversion state
-          # @return [String] HTML anchor tag
           def to_html(model, _state = {})
             href = model.target.to_s
-            # Create anchor link to internal reference
-            # Format: <a href="#section-id">section-id</a> or with text from content
             text = if model.content&.to_s&.strip != ''
                      model.content.to_s
                    else
                      href
                    end
 
-            # Ensure href starts with # for internal links
             link_href = href.start_with?('#') ? href : "##{href}"
-
-            %(<a href="#{escape_attribute(link_href)}">#{escape_html(text)}</a>)
+            NodeBuilder.build(:a, escape_html(text), href: link_href).to_html
           end
 
-          # Convert HTML anchor to CoreModel::InlineElement (xref)
-          # @param node [Nokogiri::XML::Node] HTML anchor node
-          # @param state [Hash] Conversion state
-          # @return [Coradoc::CoreModel::InlineElement] CrossReference model
           def to_coradoc(node, _state = {})
             href = node['href'].to_s
             text = node.text.strip
 
-            # Only treat internal links as cross-references
             if href.start_with?('#')
-              ref_id = href[1..] # Remove leading #
+              ref_id = href[1..]
               content = text.empty? || text == ref_id ? nil : text
               Coradoc::CoreModel::CrossReferenceElement.new(
                 target: ref_id,
                 content: content
               )
             else
-              # External links become regular links
               Coradoc::CoreModel::LinkElement.new(
                 target: href,
                 content: text

@@ -4,14 +4,10 @@ module Coradoc
   module Html
     module Converters
       class CommentLine < Base
-        # Convert CoreModel to HTML comment
         def self.to_html(comment, options = {})
           return '' unless comment
-
-          # Check if comments should be preserved
           return '' unless options[:preserve_comments]
 
-          # Get comment text - check for content or text attribute
           text = if comment.content
                    comment.content
                  elsif comment.text
@@ -21,31 +17,21 @@ module Coradoc
                  end
 
           text = text.to_s
-
-          # HTML comments cannot contain --
-          # Replace -- with - - to avoid breaking the comment
           safe_text = text.gsub('--', '- -')
 
-          # Preserve newlines in comment text
-          # Empty comments (just "//") should become newlines in HTML comments
-          if safe_text.strip.empty?
-            "<!--\n-->"
-          else
-            "<!-- #{escape_html(safe_text)} -->"
-          end
+          doc = Nokogiri::HTML::DocumentFragment.parse('')
+          comment_text = safe_text.strip.empty? ? '' : " #{escape_html(safe_text)} "
+          comment_node = Nokogiri::XML::Comment.new(doc, comment_text)
+          doc.add_child(comment_node)
+          doc.to_html
         end
 
-        # Convert HTML comment to CoreModel
         def self.to_coradoc(element, _options = {})
           return nil unless element.comment?
 
-          # Extract comment text
-          text = element.text.to_s.strip
-
-          # For now, return an InlineElement with special format_type for comment
           Coradoc::CoreModel::InlineElement.new(
             format_type: 'comment',
-            content: text
+            content: element.text.to_s.strip
           )
         end
       end

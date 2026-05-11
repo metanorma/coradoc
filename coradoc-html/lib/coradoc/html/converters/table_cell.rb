@@ -4,41 +4,23 @@ module Coradoc
   module Html
     module Converters
       class TableCell < Base
-        # Convert CoreModel::TableCell to HTML <td> or <th>
-        #
-        # @param cell [Coradoc::CoreModel::TableCell] Table cell model
-        # @param _options [Hash] Conversion options
-        # @return [String] HTML string
         def self.to_html(cell, _options = {})
           return '' unless cell
 
-          # Check if this is a header cell
-          is_header = cell.header == true
-          tag = is_header ? 'th' : 'td'
+          tag = cell.header == true ? :th : :td
 
-          # Build cell attributes
-          attrs = build_attributes(cell)
-
-          # Process cell content
+          attrs = build_attrs(cell)
           content = process_content(cell)
-
-          # Wrap content in style tags if needed
           content = wrap_with_style(content, cell)
 
-          "<#{tag}#{attrs}>#{content}</#{tag}>"
+          NodeBuilder.build(tag, content, **attrs).to_html
         end
 
-        # Convert HTML <td> or <th> to CoreModel::TableCell
         def self.to_coradoc(element, _options = {})
           return nil unless %w[td th].include?(element.name)
 
-          # Determine if this is a header cell
           is_header = element.name == 'th'
-
-          # Extract content - could be text or nested elements
           content = extract_content(element)
-
-          # Extract cell attributes
           attrs = extract_cell_attributes(element)
 
           Coradoc::CoreModel::TableCell.new(
@@ -48,43 +30,34 @@ module Coradoc
           )
         end
 
-        # Build HTML attributes from CoreModel::TableCell
-        def self.build_attributes(cell)
-          attrs = []
-
-          attrs << %( id="#{escape_attribute(cell.id)}") if cell.id
-
-          attrs << %( colspan="#{cell.colspan}") if cell.colspan
-          attrs << %( rowspan="#{cell.rowspan}") if cell.rowspan
+        def self.build_attrs(cell)
+          attrs = {}
+          attrs[:id] = cell.id if cell.id
+          attrs[:colspan] = cell.colspan.to_s if cell.colspan
+          attrs[:rowspan] = cell.rowspan.to_s if cell.rowspan
 
           style_parts = []
+          style_parts << "text-align: #{cell.alignment}" if cell.alignment
+          style_parts << "vertical-align: #{cell.vertical_alignment}" if cell.vertical_alignment
+          attrs[:style] = style_parts.join('; ') if style_parts.any?
 
-          style_parts << "text-align: #{escape_attribute(cell.alignment)}" if cell.alignment
-          style_parts << "vertical-align: #{escape_attribute(cell.vertical_alignment)}" if cell.vertical_alignment
-
-          # Add style attribute if we have any styles
-          attrs << %( style="#{style_parts.join('; ')}") if style_parts.any?
-
-          attrs.join
+          attrs
         end
 
-        # Wrap content with style tags based on cell style
         def self.wrap_with_style(content, cell)
           return content unless cell.style
 
           case cell.style.to_s.downcase
           when 'strong', 's'
-            "<strong>#{content}</strong>"
+            NodeBuilder.build(:strong, content).to_html
           when 'emphasis', 'e'
-            "<em>#{content}</em>"
+            NodeBuilder.build(:em, content).to_html
           when 'monospace', 'm'
-            "<code>#{content}</code>"
+            NodeBuilder.build(:code, content).to_html
           when 'literal', 'l'
-            # Literal content - preserve whitespace
-            "<pre>#{content}</pre>"
+            NodeBuilder.build(:pre, content).to_html
           when 'verse', 'v'
-            # Verse content - preserve formatting
-            "<div class=\"verse\">#{content}</div>"
+            NodeBuilder.build(:div, content, class: 'verse').to_html
           else
             content
           end
@@ -93,7 +66,6 @@ module Coradoc
         def self.process_content(cell)
           return '' if cell.nil?
 
-          # Use renderable_content if available (prefers children over content)
           content = if cell.renderable_content
                       cell.renderable_content
                     elsif cell.children.any?
@@ -116,25 +88,20 @@ module Coradoc
           when String
             escape_html(item)
           else
-            # Use convert_content_to_html for CoreModel types
             convert_content_to_html(item, {})
           end
         end
 
         def self.extract_content(element)
-          # Extract content from the cell
           children = element.children
 
           if children.size == 1 && children.first.text?
-            # Simple text content
             children.first.text
           else
-            # Complex content with nested elements
             children.map do |child|
               if child.text?
                 child.text
               else
-                # Convert HTML element to CoreModel
                 convert_node_to_core(child, {})
               end
             end.compact
@@ -144,49 +111,26 @@ module Coradoc
         def self.extract_cell_attributes(element)
           attrs = {}
 
-          # Extract colspan
           attrs[:colspan] = element['colspan'].to_i if element['colspan']
-
-          # Extract rowspan
           attrs[:rowspan] = element['rowspan'].to_i if element['rowspan']
 
-          # Extract styles from style attribute
           if element['style']
             style = element['style']
 
-            # Horizontal alignment
-            if style.include?('text-align')
-              align = style[/text-align:\s*(\w+)/, 1]
-              attrs[:alignment] = align if align
-            end
+            align = style[/text-align:\s*(\w+)/, 1]
+            attrs[:alignment] = align if align
 
-            # Vertical alignment
-            if style.include?('vertical-align')
-              valign = style[/vertical-align:\s*(\w+)/, 1]
-              attrs[:vertical_alignment] = valign if valign
-            end
+            valign = style[/vertical-align:\s*(\w+)/, 1]
+            attrs[:vertical_alignment] = valign if valign
 
-            # Background color
-            if style.include?('background-color')
-            end
+            color = style[/color:\s*([^;]+)/, 1]
+            attrs[:color] = color.strip if color
 
-            # Text color
-            if style.include?('color:')
-              color = style[/color:\s*([^;]+)/, 1]
-              attrs[:color] = color.strip if color
-            end
+            width = style[/width:\s*([^;]+)/, 1]
+            attrs[:width] = width.strip if width
 
-            # Width
-            if style.include?('width:')
-              width = style[/width:\s*([^;]+)/, 1]
-              attrs[:width] = width.strip if width
-            end
-
-            # Height
-            if style.include?('height:')
-              height = style[/height:\s*([^;]+)/, 1]
-              attrs[:height] = height.strip if height
-            end
+            height = style[/height:\s*([^;]+)/, 1]
+            attrs[:height] = height.strip if height
           end
 
           attrs

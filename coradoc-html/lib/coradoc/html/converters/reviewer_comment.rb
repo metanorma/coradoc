@@ -3,37 +3,24 @@
 module Coradoc
   module Html
     module Converters
-      # Converter for CoreModel::AnnotationBlock (reviewer comment) to HTML
       class ReviewerComment < Base
-        # Convert CoreModel::AnnotationBlock (reviewer comment) to HTML
         def self.to_html(comment, _options = {})
           return '' unless comment
 
-          # Build attributes
-          attrs = build_attributes(comment)
+          attrs = { class: 'reviewer-note' }
+          attrs[:id] = comment.id if comment.id
 
-          # Process content
-          content = process_content(comment.content)
+          children = []
 
-          # Parse reviewer info from metadata
+          children << NodeBuilder.build(:span, 'Reviewer Note', class: 'reviewer-note-label')
+
           reviewer_info = extract_reviewer_info(comment.metadata)
+          children << NodeBuilder.build(:fragment, reviewer_info) unless reviewer_info.empty?
 
-          %(<div#{attrs}>
-<span class="reviewer-note-label">Reviewer Note</span>
-#{reviewer_info}
-<div class="reviewer-note-content">
-#{content}
-</div>
-</div>)
-        end
+          content = process_content(comment.content)
+          children << NodeBuilder.build(:div, content, class: 'reviewer-note-content')
 
-        def self.build_attributes(comment)
-          attrs = [%( class="reviewer-note")]
-
-          # Add ID if present
-          attrs << %( id="#{escape_attribute(comment.id)}") if comment.id
-
-          attrs.join
+          NodeBuilder.build(:div, children, **attrs).to_html
         end
 
         def self.process_content(content)
@@ -60,13 +47,11 @@ module Coradoc
         def self.extract_reviewer_info(metadata)
           return '' if metadata.nil?
 
-          # Extract reviewer info from metadata
           reviewer = metadata[:reviewer]
           return '' unless reviewer
 
-          %(<div class="reviewer-note-metadata">
-<span class="metadata-item">reviewer=#{escape_html(reviewer)}</span>
-</div>)
+          span = NodeBuilder.build(:span, "reviewer=#{escape_html(reviewer)}", class: 'metadata-item')
+          NodeBuilder.build(:div, span, class: 'reviewer-note-metadata').to_html
         end
       end
     end
