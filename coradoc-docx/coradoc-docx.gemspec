@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
                      'the OOXML model tree to Coradoc::CoreModel.'
   spec.homepage = 'https://github.com/lutaml/coradoc'
   spec.license = 'MIT'
-  spec.required_ruby_version = '>= 3.1.0'
+  spec.required_ruby_version = '>= 3.3.0'
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage

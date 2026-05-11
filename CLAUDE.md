@@ -84,6 +84,6 @@ Format gems register via `Coradoc.register_format(:name, Module)` and must imple
 - **Model classes own only their native format**: No `to_adoc` in Markdown models, no `to_md` in AsciiDoc models. Cross-format conversion always routes through CoreModel transformers (ToCoreModel / FromCoreModel). This enforces SRP, OCP, and DIP.
 - **Autoload over require_relative**: Use `autoload` with `#{__dir__}` paths (see `core_model.rb` for pattern). Exception: files with load-time side effects (registrations, `apply` calls) use `require_relative`.
 - **Error-raising in serializers**: Unknown types in `serialize_content` should raise `ArgumentError`, never fall back to `to_s`. This catches missing serializers immediately rather than producing Ruby object dumps.
-- **Ruby 3.1+ target**, `TargetRubyVersion: 3.1` in RuboCop.
+- **Ruby 3.3+ target**, `TargetRubyVersion: 3.3` in RuboCop.
 - RSpec uses `--format documentation`, `--color`, `expect` syntax, `disable_monkey_patching!`.
 - Benchmark tests are excluded unless `BENCHMARK=true`.
