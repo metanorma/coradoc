@@ -11,6 +11,6 @@ jobs:
     uses: metanorma/ci/.github/workflows/monorepo-rake.yml@main
     with:
       spec-dirs: >-
-        ["spec","coradoc-adoc/spec","coradoc-html/spec","coradoc-markdown/spec"]
+        ["coradoc/spec","coradoc-adoc/spec","coradoc-html/spec","coradoc-markdown/spec"]
     secrets:
       pat_token: ${{ secrets.METANORMA_CI_PAT_TOKEN }}

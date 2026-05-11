@@ -13,7 +13,7 @@ def parse(str)
   }
 end
 
-def parse_file(file_path = 'spec/fixtures/sample.adoc')
+def parse_file(file_path = 'coradoc/spec/fixtures/sample.adoc')
   str = File.read(file_path)
   parse(str)
 end

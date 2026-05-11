@@ -7,6 +7,7 @@ SimpleCov.start do
 end
 
 require 'bundler/setup'
+require 'coradoc'
 require 'coradoc/markdown'
 require 'coradoc/markdown/parser/ast_processor'
 

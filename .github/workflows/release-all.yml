@@ -93,7 +93,7 @@ jobs:
 
         for gem in ${{ steps.gems.outputs.targets }}; do
           case "$gem" in
-            coradoc)        version_file="lib/coradoc/version.rb" ;;
+            coradoc)        version_file="coradoc/lib/coradoc/version.rb" ;;
             coradoc-adoc)   version_file="coradoc-adoc/lib/coradoc/asciidoc/version.rb" ;;
             coradoc-docx)   version_file="coradoc-docx/lib/coradoc/docx/version.rb" ;;
             coradoc-html)   version_file="coradoc-html/lib/coradoc/html/version.rb" ;;
@@ -117,7 +117,7 @@ jobs:
         if git diff --quiet; then
           echo "No version changes to commit"
         else
-          git add '**/version.rb' 'lib/coradoc/version.rb'
+          git add '**/version.rb'
           git commit -m "chore: bump gem versions for release"
           git push origin main
         fi
@@ -125,10 +125,8 @@ jobs:
     - name: Build gems
       run: |
         for gem in ${{ steps.gems.outputs.targets }}; do
-          dir="$gem"
-          if [ "$gem" = "coradoc" ]; then dir="."; fi
           echo "Building $gem..."
-          (cd "$dir" && gem build *.gemspec)
+          (cd "$gem" && gem build *.gemspec)
         done
 
     - name: Setup RubyGems credentials
@@ -145,9 +143,7 @@ jobs:
       if: ${{ !inputs.dry_run }}
       run: |
         for gem in ${{ steps.gems.outputs.targets }}; do
-          dir="$gem"
-          if [ "$gem" = "coradoc" ]; then dir="."; fi
-          gem_file=$(ls "$dir"/*.gem 2>/dev/null | head -1)
+          gem_file=$(ls "$gem"/*.gem 2>/dev/null | head -1)
           if [ -n "$gem_file" ]; then
             echo "Pushing $gem_file..."
             gem push "$gem_file"
@@ -162,9 +158,7 @@ jobs:
         echo "## Dry Run Summary"
         echo "Gems that would be released:"
         for gem in ${{ steps.gems.outputs.targets }}; do
-          dir="$gem"
-          if [ "$gem" = "coradoc" ]; then dir="."; fi
-          gem_file=$(ls "$dir"/*.gem 2>/dev/null | head -1)
+          gem_file=$(ls "$gem"/*.gem 2>/dev/null | head -1)
           if [ -n "$gem_file" ]; then
             echo "  - $(basename "$gem_file")"
           fi

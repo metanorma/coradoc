@@ -26,7 +26,7 @@ coverage/
 
 # rspec failure tracking
 .rspec_status
-spec/examples.txt
+**/spec/examples.txt
 
 # rubocop
 .rubocop-https-*
