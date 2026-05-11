@@ -1,6 +1,6 @@
 # 13: AsciiDoc parser uses `send` instead of `public_send`
 
-## Status: NOT FIXED
+## Status: FIXED
 
 - 3 `send` calls in `parser/base.rb` bypass access control
 - All target methods are public, so `public_send` is safe

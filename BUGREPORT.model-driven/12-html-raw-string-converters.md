@@ -1,6 +1,6 @@
 # 12: 23 HTML converter files use raw string concatenation instead of NodeBuilder
 
-## Status: NOT FIXED
+## Status: FIXED
 
 - 23 converter files in `coradoc-html/lib/coradoc/html/converters/` construct HTML via string interpolation
 - 26 files already use NodeBuilder correctly (bold, paragraph, section, table, etc.)

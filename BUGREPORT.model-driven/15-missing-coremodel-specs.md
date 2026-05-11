@@ -1,6 +1,6 @@
 # 15: 14 CoreModel typed Block subclasses have no specs
 
-## Status: NOT FIXED
+## Status: FIXED
 
 - 14 of 34 CoreModel classes lack dedicated spec files
 - Typed block subclasses define `semantic_type` but have no test coverage
