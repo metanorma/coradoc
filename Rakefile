@@ -14,12 +14,16 @@ def for_each_gem(&) = GEMS.each { |gem| yield gem, task_name(gem), gem }
 
 # --- Specs ---
 
+def run_specs(gem_name, dir)
+  Dir.chdir(dir) { sh 'bundle exec rspec --format progress' }
+end
+
 namespace :spec do
   for_each_gem do |gem_name, task, dir|
     next unless File.directory?("#{dir}/spec")
 
     desc "Run specs for #{gem_name}"
-    task(task) { sh "cd #{dir} && bundle exec rspec --format progress" }
+    task(task) { run_specs(gem_name, dir) }
   end
 
   desc 'Run specs for all gems in the monorepo'
@@ -29,7 +33,7 @@ namespace :spec do
       next unless File.directory?("#{dir}/spec")
 
       puts "\n=== Running specs for #{gem_name} ==="
-      ok = system("cd #{dir} && bundle exec rspec --format progress")
+      ok = Dir.chdir(dir) { system('bundle', 'exec', 'rspec', '--format', 'progress') }
       failures << gem_name unless ok || KNOWN_FAILING.include?(gem_name)
     end
     raise "Specs failed for: #{failures.join(', ')}" unless failures.empty?
