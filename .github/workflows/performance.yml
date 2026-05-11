@@ -8,8 +8,12 @@ on:
   pull_request:
     # Only run on PRs that might affect performance
     paths:
-      - 'lib/**'
-      - 'spec/**'
+      - 'coradoc/lib/**'
+      - 'coradoc-adoc/lib/**'
+      - 'coradoc-html/lib/**'
+      - 'coradoc-markdown/lib/**'
+      - 'coradoc-docx/lib/**'
+      - 'coradoc/spec/**'
       - '.github/workflows/performance.yml'
 
 permissions:
