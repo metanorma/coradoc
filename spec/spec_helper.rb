@@ -23,7 +23,7 @@ end
 # Input::HTML:
 require "coradoc/input/html"
 require "coradoc/input/html/html_converter"
-require "word-to-markdown"
+begin; require "word-to-markdown"; rescue LoadError; nil; end
 
 Dir[File.join("spec", "**", "support", "**", "*.rb")]
   .each { |f| require File.join(".", f) }

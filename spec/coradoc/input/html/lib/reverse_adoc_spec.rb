@@ -61,10 +61,10 @@ describe Coradoc::Input::Html do
         end.from([]).to(result))
     end
   end
-
   # TODO: fix github actions integration with libreoffice, currently it hangs
   # when trying to use soffice binary
-  unless Gem::Platform.local.os == "darwin" && !ENV["GITHUB_ACTION"].nil?
+  macos_ci = Gem::Platform.local.os == "darwin" && !ENV["GITHUB_ACTION"].nil?
+  unless !defined?(WordToMarkdown) || Gem.win_platform? || macos_ci
     context "when docx file input" do
       subject(:convert) do
         Coradoc::Input::Html.convert(
@@ -73,7 +73,9 @@ describe Coradoc::Input::Html do
         )
       end
       let(:input) do
-        WordToMarkdown.new("spec/coradoc/input/html/assets/external_images.docx",
+        docx_path = "spec/coradoc/input/html/assets/" \
+                    "external_images.docx"
+        WordToMarkdown.new(docx_path,
                            Coradoc::Input::Html.config.sourcedir)
       end
       it_behaves_like "converting source with external images included",
