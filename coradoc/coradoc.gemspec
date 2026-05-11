@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
                      'transformations between AsciiDoc, HTML, Markdown, and more.'
   spec.homepage = 'https://github.com/lutaml/coradoc'
   spec.license = 'MIT'
-  spec.required_ruby_version = '>= 3.0.0'
+  spec.required_ruby_version = '>= 3.3.0'
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
