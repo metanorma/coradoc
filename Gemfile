@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 
 # Load all monorepo gems
-gem 'coradoc', path: '.'
+gem 'coradoc', path: './coradoc'
 gem 'coradoc-adoc', path: './coradoc-adoc'
 gem 'coradoc-docx', path: './coradoc-docx'
 gem 'coradoc-html', path: './coradoc-html'

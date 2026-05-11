@@ -1,31 +1,22 @@
 # frozen_string_literal: true
 
-require 'bundler/gem_tasks'
 require 'fileutils'
-require 'rspec/core/rake_task'
 
 # Monorepo gems listed in dependency order.
 GEMS = %w[coradoc coradoc-adoc coradoc-docx coradoc-markdown coradoc-html].freeze
 
-def gem_dir(name) = name == 'coradoc' ? '.' : name
 def task_name(name) = name.tr('-', '_')
 
-def for_each_gem(&) = GEMS.each { |gem| yield gem, task_name(gem), gem_dir(gem) }
+def for_each_gem(&) = GEMS.each { |gem| yield gem, task_name(gem), gem }
 
 # --- Specs ---
 
-RSpec::Core::RakeTask.new(:spec)
-
 namespace :spec do
   for_each_gem do |gem_name, task, dir|
-    next if gem_name == 'coradoc'
     next unless File.directory?("#{dir}/spec")
 
     desc "Run specs for #{gem_name}"
-    RSpec::Core::RakeTask.new(task) do |t|
-      t.pattern = "#{dir}/spec/**/*_spec.rb"
-      t.rspec_opts = '--format progress'
-    end
+    task(task) { sh "cd #{dir} && bundle exec rspec --format progress" }
   end
 
   desc 'Run specs for all gems in the monorepo'
@@ -35,12 +26,13 @@ namespace :spec do
       next unless File.directory?("#{dir}/spec")
 
       puts "\n=== Running specs for #{gem_name} ==="
-      success = false unless system("bundle exec rspec #{dir}/spec --format progress")
+      success = false unless system("cd #{dir} && bundle exec rspec --format progress")
     end
     raise 'Some specs failed' unless success
   end
 end
 
+task spec: 'spec:all'
 task spec_all: 'spec:all'
 
 # --- Build / Clean ---
@@ -97,7 +89,7 @@ task default: 'spec:all'
 
 desc 'Open an irb session preloaded with this library'
 task :console do
-  sh 'irb -Ilib -rcoradoc'
+  sh 'irb -Icoradoc/lib -rcoradoc'
 end
 
 require 'bundler/audit/task'

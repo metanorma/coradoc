@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       gem_name:
-        description: Select gem to release (use "." for root gem)
+        description: Select gem to release
         required: true
         type: choice
         options:
-          - "."
+          - coradoc
           - coradoc-adoc
           - coradoc-html
           - coradoc-markdown
@@ -32,8 +32,8 @@ jobs:
   release:
     uses: metanorma/ci/.github/workflows/monorepo-rubygems-release.yml@main
     with:
-      gem_name: ${{ github.event.inputs.gem_name || '.' }}
-      gem_directory: .
+      gem_name: ${{ github.event.inputs.gem_name || 'coradoc' }}
+      gem_directory: ${{ github.event.inputs.gem_name || 'coradoc' }}
       next_version: ${{ github.event.inputs.next_version || 'skip' }}
     secrets:
       rubygems-api-key: ${{ secrets.METANORMA_CI_RUBYGEMS_API_KEY }}
