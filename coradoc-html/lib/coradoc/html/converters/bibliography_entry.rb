@@ -3,56 +3,42 @@
 module Coradoc
   module Html
     module Converters
-      # Converter for CoreModel::Block (bibliography entry) to HTML bibliography entry
       class BibliographyEntry < Base
-        # Convert CoreModel::Block (bibliography entry) to HTML bibliography entry
         def self.to_html(entry, _options = {})
           return '' unless entry
 
-          # Build entry attributes
-          attrs = build_attributes(entry)
+          children = []
 
-          # Get entry ID from metadata
           entry_id = entry.metadata&.dig(:anchor_name) || entry.metadata&.dig(:document_id) || entry.id
+          if entry_id
+            anchor = NodeBuilder.build(:a, nil, id: entry_id, class: 'bibliography-anchor')
+            children << anchor
+          end
 
-          # Build anchor if ID present
-          anchor_html = if entry_id
-                          %(<a id="#{escape_attribute(entry_id)}" class="bibliography-anchor"></a>)
-                        else
-                          ''
-                        end
-
-          # Get citation label
           label = entry.metadata&.dig(:label) || entry_id || ''
+          unless label.empty?
+            label_span = NodeBuilder.build(:span, escape_html(label), class: 'bibliography-label')
+            children << label_span
+            children << NodeBuilder.text(' ')
+          end
 
-          # Get entry reference text
           content = entry.content || ''
-
-          # Process content
           content_html = process_content(content)
+          children << NodeBuilder.build(:fragment, content_html) unless content_html.empty?
 
-          # Combine into entry
-          entry_html = anchor_html
-          entry_html += %(<span class="bibliography-label">#{escape_html(label)}</span> ) unless label.empty?
-          entry_html += content_html
-
-          %(<div#{attrs}>#{entry_html}</div>)
+          NodeBuilder.build(:div, children, class: 'bibliography-entry').to_html
         end
 
-        # Convert HTML bibliography entry to CoreModel::Block (bibliography entry)
         def self.to_coradoc(element, _options = {})
           return nil unless element.name == 'div'
           return nil unless element['class']&.include?('bibliography-entry')
 
-          # Extract anchor/ID
           anchor = element.at_css('.bibliography-anchor, a[id]')
           entry_id = anchor&.[]('id')
 
-          # Extract label
           label_elem = element.at_css('.bibliography-label')
           label = label_elem&.text&.strip
 
-          # Extract content (everything except anchor and label)
           content_nodes = element.children.reject do |node|
             node == anchor || node == label_elem || (node.text? && node.text.strip.empty?)
           end
@@ -67,10 +53,6 @@ module Coradoc
               label: label
             }
           )
-        end
-
-        def self.build_attributes(_entry)
-          %( class="bibliography-entry")
         end
 
         def self.process_content(content)
@@ -95,12 +77,7 @@ module Coradoc
         end
 
         def self.extract_content(nodes)
-          # Extract and convert content nodes
-          nodes.map do |node|
-            if node.text?
-            end
-            node.text
-          end.compact.join
+          nodes.map(&:text).compact.join
         end
       end
     end
