@@ -90,13 +90,13 @@ module Coradoc
             alias_name = :"#{rule_name}_#{dispatch_hash}"
             Coradoc::AsciiDoc::Parser::Base.class_exec do
               rule(alias_name) do
-                send(rule_name, *args, **kwargs)
+                public_send(rule_name, *args, **kwargs)
               end
             end
             @dispatch_data[dispatch_hash] = alias_name
           end
           dispatch_method = @dispatch_data[dispatch_hash]
-          send(dispatch_method)
+          public_send(dispatch_method)
         end
 
         def self.config(key)
@@ -140,7 +140,7 @@ module Coradoc
             Coradoc::AsciiDoc::Parser::Base.class_exec do
               alias_method alias_name, rule_name
               rule(rule_name) do
-                send(alias_name)
+                public_send(alias_name)
               end
             end
           elsif config(:add_dispatch) && config(:with_params)
