@@ -1,6 +1,6 @@
 # 14: DOCX from_core_model still uses element_type string dispatch
 
-## Status: NOT FIXED
+## Status: FIXED
 
 - `from_core_model.rb` uses `case element.element_type` with string matching
 - Should use class-based `case element; when DocumentElement` pattern
