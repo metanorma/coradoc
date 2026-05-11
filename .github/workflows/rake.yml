@@ -6,11 +6,25 @@ on:
     tags: [v*]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   rake:
-    uses: metanorma/ci/.github/workflows/monorepo-rake.yml@main
-    with:
-      spec-dirs: >-
-        ["coradoc/spec","coradoc-adoc/spec","coradoc-html/spec","coradoc-markdown/spec"]
-    secrets:
-      pat_token: ${{ secrets.METANORMA_CI_PAT_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ['3.2', '3.3', '3.4']
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Run tests
+        run: bundle exec rake
