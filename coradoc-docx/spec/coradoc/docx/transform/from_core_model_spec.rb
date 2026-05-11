@@ -100,11 +100,10 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
     context 'with document containing mixed types' do
       let(:core_model) do
-        Coradoc::CoreModel::StructuralElement.new(
-          element_type: 'document',
+        Coradoc::CoreModel::DocumentElement.new(
           title: 'Test Doc',
           children: [
-            Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'First para'),
+            Coradoc::CoreModel::Block.new(block_semantic_type: 'paragraph', content: 'First para'),
             Coradoc::CoreModel::DefinitionList.new(
               items: [
                 Coradoc::CoreModel::DefinitionItem.new(term: 'Foo', definitions: ['Bar'])
@@ -175,7 +174,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
     end
 
     context 'with Block (paragraph)' do
-      let(:core_model) { Coradoc::CoreModel::Block.new(element_type: 'paragraph', content: 'Hello world') }
+      let(:core_model) { Coradoc::CoreModel::Block.new(block_semantic_type: 'paragraph', content: 'Hello world') }
 
       it 'produces a Paragraph with text content' do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
@@ -184,7 +183,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
     end
 
     context 'with Block (page_break)' do
-      let(:core_model) { Coradoc::CoreModel::Block.new(element_type: 'page_break') }
+      let(:core_model) { Coradoc::CoreModel::Block.new(block_semantic_type: 'page_break') }
 
       it 'produces a Paragraph with page break' do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)

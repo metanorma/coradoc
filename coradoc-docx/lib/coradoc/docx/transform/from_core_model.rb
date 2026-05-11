@@ -82,10 +82,10 @@ module Coradoc
         private
 
         def transform_structural_element(element)
-          case element.element_type
-          when 'document'
+          case element
+          when CoreModel::DocumentElement
             transform_document(element)
-          when 'section'
+          when CoreModel::SectionElement
             transform_section(element)
           else
             transform_section(element)
@@ -127,12 +127,11 @@ module Coradoc
         end
 
         def transform_block(block)
-          case block.element_type
-          when 'page_break'
+          semantic = block.resolve_semantic_type
+          case semantic
+          when :page_break
             build_page_break
-          when 'paragraph', nil
-            build_ooxml_paragraph(block)
-          when 'comment'
+          when :comment
             nil
           else
             build_ooxml_paragraph(block)
@@ -206,8 +205,8 @@ module Coradoc
         end
 
         def add_block_to_builder(block, builder)
-          case block.element_type
-          when 'page_break'
+          case block.resolve_semantic_type
+          when :page_break
             builder.page_break
           else
             add_paragraph_to_builder(block, builder)
