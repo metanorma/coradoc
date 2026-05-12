@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
 require 'fileutils'
+require 'rspec/core/rake_task'
 
 # Monorepo gems listed in dependency order.
 GEMS = %w[coradoc coradoc-adoc coradoc-docx coradoc-markdown coradoc-html].freeze
-# Gems with known pre-existing failures (Uniword API incompatibility).
-# Their spec failures won't block CI but are still run individually.
-KNOWN_FAILING = %w[coradoc-docx].freeze
 
 def task_name(name) = name.tr('-', '_')
 
@@ -14,30 +12,19 @@ def for_each_gem(&) = GEMS.each { |gem| yield gem, task_name(gem), gem }
 
 # --- Specs ---
 
-def run_specs(gem_name, dir)
-  Dir.chdir(dir) { sh 'bundle exec rspec --format progress' }
-end
-
 namespace :spec do
   for_each_gem do |gem_name, task, dir|
     next unless File.directory?("#{dir}/spec")
 
     desc "Run specs for #{gem_name}"
-    task(task) { run_specs(gem_name, dir) }
+    RSpec::Core::RakeTask.new(task) do |t|
+      t.pattern = "#{dir}/spec/**/*_spec.rb"
+      t.rspec_opts = "-I#{dir}/spec --require spec_helper --format progress"
+    end
   end
 
   desc 'Run specs for all gems in the monorepo'
-  task :all do
-    failures = []
-    for_each_gem do |gem_name, _, dir|
-      next unless File.directory?("#{dir}/spec")
-
-      puts "\n=== Running specs for #{gem_name} ==="
-      ok = Dir.chdir(dir) { system('bundle', 'exec', 'rspec', '--format', 'progress') }
-      failures << gem_name unless ok || KNOWN_FAILING.include?(gem_name)
-    end
-    raise "Specs failed for: #{failures.join(', ')}" unless failures.empty?
-  end
+  task all: GEMS.map { |g| "spec:#{task_name(g)}" }
 end
 
 task spec: 'spec:all'
