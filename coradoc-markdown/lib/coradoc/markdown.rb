@@ -21,7 +21,9 @@
 require 'parslet'
 require 'lutaml/model'
 
+# Coradoc document transformation library.
 module Coradoc
+  # Markdown document model, parser, and serializer.
   module Markdown
     # Error classes
     autoload :Errors, 'coradoc/markdown/errors'
@@ -58,6 +60,7 @@ module Coradoc
     autoload :Superscript, 'coradoc/markdown/model/superscript'
     autoload :Underline, 'coradoc/markdown/model/underline'
     autoload :CrossReference, 'coradoc/markdown/model/cross_reference'
+    autoload :NamedValue, 'coradoc/markdown/model/named_value'
 
     # Serializer
     autoload :Serializer, 'coradoc/markdown/serializer'
@@ -86,24 +89,6 @@ module Coradoc
 
     # Shared parser utilities
     autoload :ParserUtil, 'coradoc/markdown/parser_util'
-
-    # Convenience accessors for kramdown extension models
-    class << self
-      # Access AttributeList class
-      def AttributeList
-        @AttributeList ||= const_get(:AttributeList)
-      end
-
-      # Access Math class
-      def Math
-        @Math ||= const_get(:Math)
-      end
-
-      # Access Extension class
-      def Extension
-        @Extension ||= const_get(:Extension)
-      end
-    end
 
     class << self
       # Parse Markdown content into a Document model

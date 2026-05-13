@@ -18,8 +18,8 @@ module Coradoc
       # Classes from IAL (for convenience)
       attribute :classes, :string, collection: true
 
-      # Additional attributes from IAL
-      attribute :attributes, :hash, default: {}
+      # Additional attributes from IAL (typed key-value pairs)
+      attribute :attributes, NamedValue, collection: true, default: []
 
       # Visit pattern for traversing the document tree
       def self.visit(element, &block)
@@ -48,38 +48,6 @@ module Coradoc
           public_send(:"#{attr_name}=", result) if result != child
         end
         self
-      end
-
-      # Serialize polymorphic content to Markdown string
-      def serialize_content(content)
-        case content
-        when Array
-          content.map { |elem| serialize_content(elem) }.join
-        when String
-          content
-        when nil
-          ''
-        else
-          if content.is_a?(Base)
-            content.to_md
-          else
-            raise ArgumentError,
-                  "Cannot serialize #{content.class.name} to Markdown. " \
-                  'Expected String or Base subclass.'
-          end
-        end
-      end
-
-      # Does a shallow attribute dump of the object
-      def to_h
-        self.class.attributes.keys.each_with_object({}) do |attribute, acc|
-          acc[attribute] = public_send(attribute)
-        end
-      end
-
-      # Serialize this model element to Markdown
-      def to_md
-        Coradoc::Markdown::Serializer.serialize(self)
       end
     end
   end

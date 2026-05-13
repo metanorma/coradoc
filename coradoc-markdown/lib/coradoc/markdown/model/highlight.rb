@@ -8,10 +8,6 @@ module Coradoc
     #
     class Highlight < Base
       attribute :text, :string
-
-      def to_md
-        "==#{text}=="
-      end
     end
   end
 end

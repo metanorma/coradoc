@@ -59,23 +59,23 @@ module Coradoc
         when Abbreviation
           serialize_abbreviation(element)
         when Strikethrough
-          element.to_md
+          serialize_strikethrough(element)
         when Highlight
-          element.to_md
+          serialize_highlight(element)
         when Subscript
-          element.to_md
+          serialize_subscript(element)
         when Superscript
-          element.to_md
+          serialize_superscript(element)
         when Underline
-          element.to_md
+          serialize_underline(element)
         when CrossReference
-          element.to_md
+          serialize_cross_reference(element)
         when AttributeList
-          element.to_md
+          serialize_attribute_list(element)
         when Math
-          element.to_md
+          serialize_math(element)
         when Extension
-          element.to_md
+          serialize_extension(element)
         when String
           element
         else
@@ -107,16 +107,16 @@ module Coradoc
         case element
         when String
           element
-        when Emphasis, Strong, Code, Link, Image, FootnoteReference, Math, Extension, Strikethrough, Highlight, Subscript, Superscript, Underline, CrossReference
+        when Emphasis, Strong, Code, Link, Image, FootnoteReference, Math, Extension,
+             Strikethrough, Highlight, Subscript, Superscript, Underline, CrossReference,
+             AttributeList, DefinitionList
+          serialize(element)
+        when Base
           serialize(element)
         else
-          if element.is_a?(Base)
-            element.to_md
-          else
-            raise ArgumentError,
-                  "Cannot serialize inline content of type #{element.class}. " \
-                  'Expected String, known inline model, or Base subclass.'
-          end
+          raise ArgumentError,
+                "Cannot serialize inline content of type #{element.class}. " \
+                'Expected String, known inline model, or Base subclass.'
         end
       end
 
@@ -201,6 +201,61 @@ module Coradoc
 
       def serialize_abbreviation(abbr)
         "*[#{abbr.term}]: #{abbr.definition}"
+      end
+
+      def serialize_strikethrough(elem)
+        "~~#{elem.text}~~"
+      end
+
+      def serialize_highlight(elem)
+        "==#{elem.text}=="
+      end
+
+      def serialize_subscript(elem)
+        "<sub>#{elem.text}</sub>"
+      end
+
+      def serialize_superscript(elem)
+        "<sup>#{elem.text}</sup>"
+      end
+
+      def serialize_underline(elem)
+        "<u>#{elem.text}</u>"
+      end
+
+      def serialize_cross_reference(elem)
+        "[#{elem.text}](##{elem.target})"
+      end
+
+      def serialize_attribute_list(elem)
+        return '' if elem.empty?
+
+        parts = []
+        parts << "##{elem.id}" if elem.id
+        parts += elem.classes.map { |c| ".#{c}" }
+        parts += elem.attributes.map { |nv| %(#{nv.name}="#{nv.value}") }
+        "{:#{parts.join(' ')}}"
+      end
+
+      def serialize_math(elem)
+        if elem.inline?
+          "$$#{elem.content}$$"
+        else
+          "$$\n#{elem.content}\n$$"
+        end
+      end
+
+      def serialize_extension(elem)
+        opts = elem.options.empty? ? '' : " #{extension_options_to_s(elem.options)}"
+        if elem.self_closing?
+          "{::#{elem.name}#{opts} /}"
+        else
+          "{::#{elem.name}#{opts}}#{elem.content}{:/}"
+        end
+      end
+
+      def extension_options_to_s(options)
+        options.map { |nv| %(#{nv.name}="#{nv.value}") }.join(' ')
       end
     end
   end

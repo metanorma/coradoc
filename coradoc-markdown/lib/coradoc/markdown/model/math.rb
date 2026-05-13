@@ -28,21 +28,8 @@ module Coradoc
         new(content: content, inline: true)
       end
 
-      # Create a block math element
-      # @param content [String] The math content
-      # @return [Math]
       def self.block(content)
         new(content: content, inline: false)
-      end
-
-      # Convert to Markdown
-      # @return [String]
-      def to_md
-        if inline?
-          "$$#{content}$$"
-        else
-          "$$\n#{content}\n$$"
-        end
       end
     end
   end
