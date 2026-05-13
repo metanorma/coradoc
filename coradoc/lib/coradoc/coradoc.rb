@@ -454,6 +454,7 @@ module Coradoc
   autoload :Transform, "#{__dir__}/transform"
   autoload :Input, "#{__dir__}/input"
   autoload :Output, "#{__dir__}/output"
+  autoload :PerformanceRegression, "#{__dir__}/performance_regression"
 end
 
 # Format gems self-register via Coradoc.register_format when they are required.
