@@ -82,14 +82,7 @@ module Coradoc
         private
 
         def transform_structural_element(element)
-          case element
-          when CoreModel::DocumentElement
-            transform_document(element)
-          when CoreModel::SectionElement
-            transform_section(element)
-          else
-            transform_section(element)
-          end
+          transform_document(element)
         end
 
         def transform_document(element)
@@ -99,31 +92,6 @@ module Coradoc
           transform_children(element.children, doc)
 
           doc.build
-        end
-
-        def transform_section(element)
-          paragraphs = []
-
-          paragraphs << build_heading(element.title, level: element.heading_level) if element.title
-
-          element.children&.each do |child|
-            case child
-            when Coradoc::CoreModel::StructuralElement
-              paragraphs << transform_section(child)
-            when Coradoc::CoreModel::AnnotationBlock
-              paragraphs << transform_annotation_block(child)
-            when Coradoc::CoreModel::Block
-              paragraphs << build_ooxml_paragraph(child)
-            when Coradoc::CoreModel::ListBlock
-              paragraphs.concat(build_ooxml_list(child))
-            when Coradoc::CoreModel::Table
-              paragraphs << build_ooxml_table(child)
-            when Coradoc::CoreModel::Image
-              paragraphs << build_ooxml_image(child)
-            end
-          end
-
-          paragraphs
         end
 
         def transform_block(block)
@@ -223,10 +191,12 @@ module Coradoc
         def add_paragraph_to_builder(block, builder)
           content = block.renderable_content
 
-          if content.is_a?(Array) && content.any? { |c| !c.is_a?(String) }
+          if content.is_a?(Array) && content.any? { |c| !c.is_a?(Coradoc::CoreModel::TextContent) }
             builder.paragraph do |p|
               content.each do |child|
                 case child
+                when Coradoc::CoreModel::TextContent
+                  p << child.text
                 when String
                   p << child
                 when Coradoc::CoreModel::InlineElement
@@ -299,9 +269,9 @@ module Coradoc
           if content.is_a?(Array)
             content.each do |child|
               case child
-              when String
+              when Coradoc::CoreModel::TextContent
                 run = Uniword::Wordprocessingml::Run.new
-                run.text = Uniword::Wordprocessingml::Text.new(content: child)
+                run.text = Uniword::Wordprocessingml::Text.new(content: child.text)
                 para.runs << run
               when Coradoc::CoreModel::InlineElement
                 para.runs << build_ooxml_run(child)
