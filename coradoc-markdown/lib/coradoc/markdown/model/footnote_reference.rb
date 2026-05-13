@@ -12,11 +12,6 @@ module Coradoc
     class FootnoteReference < Base
       # The footnote identifier
       attribute :id, :string
-
-      # Serialize to Markdown
-      def to_md
-        "[^#{id}]"
-      end
     end
   end
 end

@@ -16,7 +16,7 @@ module Coradoc
     class AttributeList < Base
       attribute :id, :string
       attribute :classes, :string, collection: true, default: []
-      attribute :attributes, :hash, default: {}
+      attribute :attributes, NamedValue, collection: true, default: []
       attribute :name, :string # For ALD - the reference name
 
       # Parse an IAL string into an AttributeList
@@ -50,7 +50,9 @@ module Coradoc
 
         self.id = other.id if other.id
         self.classes = (classes + other.classes).uniq
-        self.attributes = attributes.merge(other.attributes)
+        merged = {}
+        (attributes + other.attributes).each { |nv| merged[nv.name] = nv }
+        self.attributes = merged.values
         self
       end
 
@@ -67,19 +69,6 @@ module Coradoc
         id.nil? && classes.empty? && attributes.empty?
       end
 
-      # Convert to Markdown IAL syntax
-      # @return [String]
-      def to_md
-        return '' if empty?
-
-        parts = []
-        parts << "##{id}" if id
-        parts += classes.map { |c| ".#{c}" }
-        parts += attributes.map { |k, v| %(#{k}="#{v}") }
-
-        "{:#{parts.join(' ')}}"
-      end
-
       def self.parse_attributes(content, attr_list)
         # Use shared IalParser for consistent parsing
         ParserUtil::IalParser.tokenize(content).each do |token|
@@ -89,7 +78,7 @@ module Coradoc
           when :id
             attr_list.id = token[:value]
           when :attribute
-            attr_list.attributes[token[:key]] = token[:value]
+            attr_list.attributes << NamedValue.new(name: token[:key], value: token[:value])
           end
         end
       end

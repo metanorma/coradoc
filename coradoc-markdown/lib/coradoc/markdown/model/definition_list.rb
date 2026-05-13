@@ -30,18 +30,6 @@ module Coradoc
     class DefinitionList < Base
       # Terms with their definitions
       attribute :items, Coradoc::Markdown::DefinitionTerm, collection: true
-
-      # Serialize to Markdown
-      def to_md
-        items.map do |term|
-          term_text = term.text.to_s
-          defs = term.definitions.map do |defn|
-            content = defn.content.to_s
-            ": #{content}"
-          end.join("\n")
-          "#{term_text}\n#{defs}"
-        end.join("\n\n")
-      end
     end
   end
 end

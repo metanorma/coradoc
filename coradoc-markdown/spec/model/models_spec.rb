@@ -16,21 +16,13 @@ RSpec.describe Coradoc::Markdown::Base do
       expect(model.classes).to eq(%w[highlight important])
     end
 
-    it 'creates a base model with attributes hash' do
-      model = described_class.new(attributes: { 'data-role' => 'main' })
+    it 'creates a base model with attributes' do
+      nv = Coradoc::Markdown::NamedValue.new(name: 'data-role', value: 'main')
+      model = described_class.new(attributes: [nv])
 
-      expect(model.attributes).to eq({ 'data-role' => 'main' })
-    end
-  end
-
-  describe '#to_h' do
-    it 'returns a hash of attributes' do
-      model = described_class.new(id: 'test', classes: %w[a b])
-
-      hash = model.to_h
-
-      expect(hash[:id]).to eq('test')
-      expect(hash[:classes]).to eq(%w[a b])
+      expect(model.attributes.length).to eq(1)
+      expect(model.attributes.first.name).to eq('data-role')
+      expect(model.attributes.first.value).to eq('main')
     end
   end
 
@@ -342,17 +334,17 @@ RSpec.describe Coradoc::Markdown::Math do
     end
   end
 
-  describe '#to_md' do
+  describe 'serialization' do
     it 'converts inline math to markdown' do
       math = described_class.new(content: 'x^2', inline: true)
 
-      expect(math.to_md).to eq('$$x^2$$')
+      expect(Coradoc::Markdown::Serializer.serialize(math)).to eq('$$x^2$$')
     end
 
     it 'converts block math to markdown' do
       math = described_class.new(content: 'y = mx + b', inline: false)
 
-      expect(math.to_md).to eq("$$\ny = mx + b\n$$")
+      expect(Coradoc::Markdown::Serializer.serialize(math)).to eq("$$\ny = mx + b\n$$")
     end
   end
 end
@@ -370,7 +362,10 @@ RSpec.describe Coradoc::Markdown::Extension do
       ext = described_class.toc(levels: '1-3')
 
       expect(ext.name).to eq('toc')
-      expect(ext.options).to eq({ levels: '1-3' })
+      expect(ext.options).to be_an(Array)
+      expect(ext.options.first).to be_a(Coradoc::Markdown::NamedValue)
+      expect(ext.options.first.name).to eq('levels')
+      expect(ext.options.first.value).to eq('1-3')
     end
   end
 
@@ -412,13 +407,33 @@ RSpec.describe Coradoc::Markdown::AttributeList do
       expect(attr_list.id).to eq('intro')
       expect(attr_list.classes).to include('highlight')
     end
+
+    it 'parses key-value attributes as NamedValue' do
+      attr_list = described_class.parse('{:.highlight #intro data-role="main"}')
+
+      expect(attr_list.id).to eq('intro')
+      expect(attr_list.attributes).to be_an(Array)
+      expect(attr_list.attributes.length).to eq(1)
+      expect(attr_list.attributes.first).to be_a(Coradoc::Markdown::NamedValue)
+      expect(attr_list.attributes.first.name).to eq('data-role')
+      expect(attr_list.attributes.first.value).to eq('main')
+    end
   end
 
-  describe '#to_md' do
+  describe 'serialization' do
     it 'converts to markdown IAL syntax' do
       attr_list = described_class.new(id: 'test', classes: ['cls'])
 
-      expect(attr_list.to_md).to eq('{:#test .cls}')
+      expect(Coradoc::Markdown::Serializer.serialize(attr_list)).to eq('{:#test .cls}')
+    end
+
+    it 'includes key-value attributes in IAL syntax' do
+      nv = Coradoc::Markdown::NamedValue.new(name: 'data-role', value: 'main')
+      attr_list = described_class.new(id: 'test', attributes: [nv])
+
+      result = Coradoc::Markdown::Serializer.serialize(attr_list)
+      expect(result).to include('data-role="main"')
+      expect(result).to include('#test')
     end
   end
 
@@ -433,6 +448,17 @@ RSpec.describe Coradoc::Markdown::AttributeList do
       attr_list = described_class.new(id: 'test')
 
       expect(attr_list.empty?).to be false
+    end
+  end
+end
+
+RSpec.describe Coradoc::Markdown::NamedValue do
+  describe '.new' do
+    it 'creates a named value with name and value' do
+      nv = described_class.new(name: 'data-role', value: 'main')
+
+      expect(nv.name).to eq('data-role')
+      expect(nv.value).to eq('main')
     end
   end
 end

@@ -19,7 +19,7 @@ RSpec.describe Coradoc::Markdown::DefinitionList do
     end
   end
 
-  describe '#to_md' do
+  describe 'serialization' do
     it 'serializes to Markdown format' do
       term = Coradoc::Markdown::DefinitionTerm.new(
         text: 'term',
@@ -29,7 +29,7 @@ RSpec.describe Coradoc::Markdown::DefinitionList do
       )
       list = described_class.new(items: [term])
 
-      expect(list.to_md).to eq("term\n: definition")
+      expect(Coradoc::Markdown::Serializer.serialize(list)).to eq("term\n: definition")
     end
   end
 end

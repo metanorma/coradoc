@@ -16,7 +16,7 @@ RSpec.describe Coradoc::Markdown::Serializer do
     end
 
     describe 'inline content dispatch' do
-      it 'raises ArgumentError for inline content without #to_md' do
+      it 'raises ArgumentError for unknown inline content' do
         para = Coradoc::Markdown::Paragraph.new(
           children: [Object.new]
         )
@@ -25,32 +25,6 @@ RSpec.describe Coradoc::Markdown::Serializer do
           ArgumentError,
           /Cannot serialize inline content of type Object/
         )
-      end
-    end
-
-    describe 'Base#serialize_content' do
-      it 'raises ArgumentError for content without #to_md' do
-        base = Coradoc::Markdown::Base.new
-
-        expect { base.serialize_content(Object.new) }.to raise_error(
-          ArgumentError,
-          /Cannot serialize Object to Markdown/
-        )
-      end
-
-      it 'serializes strings directly' do
-        base = Coradoc::Markdown::Base.new
-        expect(base.serialize_content('hello')).to eq('hello')
-      end
-
-      it 'serializes nil as empty string' do
-        base = Coradoc::Markdown::Base.new
-        expect(base.serialize_content(nil)).to eq('')
-      end
-
-      it 'serializes arrays by joining' do
-        base = Coradoc::Markdown::Base.new
-        expect(base.serialize_content(%w[a b])).to eq('ab')
       end
     end
   end

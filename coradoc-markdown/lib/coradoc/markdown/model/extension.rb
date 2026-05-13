@@ -13,7 +13,7 @@ module Coradoc
     #
     class Extension < Base
       attribute :name, :string
-      attribute :options, :hash, default: {}
+      attribute :options, NamedValue, collection: true, default: []
       attribute :content, :string  # For block extensions with content
       attribute :body, :string     # Alias for content
 
@@ -32,14 +32,14 @@ module Coradoc
       # @param options [Hash] TOC options (levels, etc.)
       # @return [Extension]
       def self.toc(options = {})
-        new(name: :toc, options: options)
+        new(name: :toc, options: hash_to_named(options))
       end
 
       # Create an options extension
       # @param options [Hash] Parser options
       # @return [Extension]
       def self.options(options = {})
-        new(name: :options, options: options)
+        new(name: :options, options: hash_to_named(options))
       end
 
       # Create a comment extension
@@ -69,23 +69,14 @@ module Coradoc
         content.nil? || content.empty?
       end
 
-      # Convert to Markdown
-      # @return [String]
-      def to_md
-        opts = options.empty? ? '' : " #{options_to_s}"
-        if self_closing?
-          "{::#{name}#{opts} /}"
-        else
-          "{::#{name}#{opts}}#{content}{:/}"
+      class << self
+        private
+
+        def hash_to_named(hash)
+          return [] if hash.nil? || hash.empty?
+
+          hash.map { |k, v| NamedValue.new(name: k.to_s, value: v.to_s) }
         end
-      end
-
-      private
-
-      def options_to_s
-        options.map do |k, v|
-          %(#{k}="#{v}")
-        end.join(' ')
       end
     end
   end

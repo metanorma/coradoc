@@ -249,8 +249,8 @@ module Coradoc
             attr_list.classes.each do |cls|
               attrs << Coradoc::CoreModel::ElementAttribute.new(name: 'class', value: cls.to_s)
             end
-            attr_list.attributes.each do |k, v|
-              attrs << Coradoc::CoreModel::ElementAttribute.new(name: k.to_s, value: v.to_s)
+            attr_list.attributes.each do |nv|
+              attrs << Coradoc::CoreModel::ElementAttribute.new(name: nv.name, value: nv.value)
             end
 
             Coradoc::CoreModel::StructuralElement.new(

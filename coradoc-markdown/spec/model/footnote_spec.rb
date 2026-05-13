@@ -22,11 +22,11 @@ RSpec.describe Coradoc::Markdown::FootnoteReference do
     end
   end
 
-  describe '#to_md' do
+  describe 'serialization' do
     it 'serializes to Markdown format' do
       ref = described_class.new(id: '1')
 
-      expect(ref.to_md).to eq('[^1]')
+      expect(Coradoc::Markdown::Serializer.serialize(ref)).to eq('[^1]')
     end
   end
 end
