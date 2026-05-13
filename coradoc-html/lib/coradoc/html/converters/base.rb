@@ -25,6 +25,8 @@ module Coradoc
             case content
             when String
               return escape_html(content)
+            when Coradoc::CoreModel::TextContent
+              return escape_html(content.text)
             when Array
               return content.map { |item| convert_content_to_html(item, state) }.join
             when Numeric
@@ -529,6 +531,23 @@ module Coradoc
           end
 
           # === HTML Input Direction (HTML → CoreModel) ===
+
+          # Convert raw strings in a mixed array to TextContent instances.
+          # Model objects pass through unchanged.
+          #
+          # @param items [Array] mixed array of Strings and CoreModel::Base
+          # @return [Array<CoreModel::Base>] array of Base instances only
+          def wrap_children(items)
+            Array(items).flat_map do |item|
+              if item.is_a?(String)
+                Coradoc::CoreModel::TextContent.new(text: item)
+              elsif item.is_a?(Array)
+                wrap_children(item)
+              else
+                item
+              end
+            end
+          end
 
           def treat_children(node, state = {})
             return [] unless node&.children

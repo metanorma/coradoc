@@ -119,13 +119,6 @@ module Coradoc
           attrs
         end
 
-        # Wrap content with line breaks
-        def wrap_lines(content)
-          return content unless content.is_a?(String)
-
-          content.split("\n").join("<br>\n")
-        end
-
         # Process children of a node
         def treat_children(children, state = {})
           return [] if children.nil? || children.empty?

@@ -69,7 +69,9 @@ RSpec.describe Coradoc::CoreModel::InlineElement do
   describe 'ChildrenContent integration' do
     it 'has children array' do
       element = described_class.new(format_type: 'bold', content: 'text', children: ['a'])
-      expect(element.children).to eq(['a'])
+      expect(element.children.length).to eq(1)
+      expect(element.children.first).to be_a(Coradoc::CoreModel::TextContent)
+      expect(element.children.first.text).to eq('a')
     end
 
     it 'returns content via renderable_content when no children' do
@@ -84,7 +86,12 @@ RSpec.describe Coradoc::CoreModel::InlineElement do
         content: 'outer',
         children: ['prefix ', inner]
       )
-      expect(element.renderable_content).to eq(['prefix ', inner])
+      rc = element.renderable_content
+      expect(rc).to be_an(Array)
+      expect(rc.length).to eq(2)
+      expect(rc[0]).to be_a(Coradoc::CoreModel::TextContent)
+      expect(rc[0].text).to eq('prefix ')
+      expect(rc[1]).to eq(inner)
     end
 
     it 'flattens children to plain text via flat_text' do

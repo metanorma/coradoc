@@ -558,7 +558,7 @@ module Coradoc
           model_class.attributes.filter_map do |name, attr|
             next if ignored.include?(name)
 
-            type = map_type(attr.type)
+            type = collection?(attr) ? Array : map_type(attr.type)
             options = build_options(attr, custom_rules[name])
             # By default, all fields are optional unless explicitly required
             is_required = required.include?(name)

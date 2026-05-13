@@ -19,6 +19,8 @@ module Coradoc
     #     bgcolor: "#ffff00"
     #   )
     class TableCell < Base
+      attribute :children, Base, collection: true
+
       include ChildrenContent
 
       # @!attribute content

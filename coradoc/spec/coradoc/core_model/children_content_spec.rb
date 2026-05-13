@@ -9,12 +9,14 @@ RSpec.describe Coradoc::CoreModel::ChildrenContent do
       expect(block.renderable_content).to eq('Hello')
     end
 
-    it 'returns content when children are all strings' do
+    it 'returns content when children are all TextContent' do
       block = Coradoc::CoreModel::ParagraphBlock.new(
         content: 'Plain text',
         children: ['Plain text']
       )
       expect(block.renderable_content).to eq('Plain text')
+      # Verify children were auto-wrapped as TextContent
+      expect(block.children).to all(be_a(Coradoc::CoreModel::TextContent))
     end
 
     it 'returns children when they contain InlineElements' do
@@ -22,7 +24,13 @@ RSpec.describe Coradoc::CoreModel::ChildrenContent do
       block = Coradoc::CoreModel::ParagraphBlock.new(
         children: ['Text with ', inline, ' word']
       )
-      expect(block.renderable_content).to eq(['Text with ', inline, ' word'])
+      rc = block.renderable_content
+      expect(rc).to be_an(Array)
+      # First child was auto-wrapped to TextContent
+      expect(rc[0]).to be_a(Coradoc::CoreModel::TextContent)
+      expect(rc[0].text).to eq('Text with ')
+      expect(rc[1]).to eq(inline)
+      expect(rc[2]).to be_a(Coradoc::CoreModel::TextContent)
     end
   end
 
@@ -32,7 +40,7 @@ RSpec.describe Coradoc::CoreModel::ChildrenContent do
       expect(block.flat_text).to eq('Hello world')
     end
 
-    it 'joins string children' do
+    it 'joins TextContent children via content attribute' do
       block = Coradoc::CoreModel::Block.new(
         content: 'Part one Part two',
         children: ['Part one ', 'Part two']
@@ -40,7 +48,7 @@ RSpec.describe Coradoc::CoreModel::ChildrenContent do
       expect(block.flat_text).to eq('Part one Part two')
     end
 
-    it 'flattens mixed string and InlineElement children' do
+    it 'flattens mixed TextContent and InlineElement children' do
       inline = Coradoc::CoreModel::InlineElement.new(format_type: 'bold', content: 'bold')
       block = Coradoc::CoreModel::Block.new(
         children: ['Text with ', inline, ' word']
@@ -55,7 +63,7 @@ RSpec.describe Coradoc::CoreModel::ChildrenContent do
   end
 
   describe 'ListItem with children' do
-    it 'returns content when children are all strings' do
+    it 'returns content when children are all TextContent' do
       item = Coradoc::CoreModel::ListItem.new(
         marker: '*',
         content: 'Item text',
