@@ -74,7 +74,11 @@ module OoxmlHelper
       row = Uniword::Wordprocessingml::TableRow.new
       row_data.each do |cell_text|
         cell = Uniword::Wordprocessingml::TableCell.new
-        cell.text = cell_text
+        para = Uniword::Wordprocessingml::Paragraph.new
+        run = Uniword::Wordprocessingml::Run.new
+        run.text = Uniword::Wordprocessingml::Text.new(content: cell_text)
+        para.runs << run
+        cell.paragraphs << para
         row.cells << cell
       end
       table.rows << row

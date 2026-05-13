@@ -21,10 +21,22 @@ module Coradoc
           order = paragraph.is_a?(Uniword::Wordprocessingml::Paragraph) ? paragraph.element_order : nil
 
           if order && !order.empty?
-            transform_ordered(paragraph, order, context)
+            wrap_text_children(transform_ordered(paragraph, order, context))
           else
-            transform_sequential(paragraph, context)
+            wrap_text_children(transform_sequential(paragraph, context))
           end
+        end
+
+        # Wrap raw strings in TextContent so all children are Base instances.
+        #
+        # @param items [Array] mixed Strings and CoreModel::Base
+        # @return [Array<CoreModel::Base>]
+        def wrap_text_children(items)
+          items.map do |item|
+            next nil if item.nil?
+
+            item.is_a?(String) ? CoreModel::TextContent.new(text: item) : item
+          end.compact
         end
 
         # Flatten children array to plain text string.
@@ -34,7 +46,7 @@ module Coradoc
         def extract_plain_text(children)
           children.map do |c|
             case c
-            when String then c
+            when CoreModel::TextContent then c.text
             when CoreModel::InlineElement then c.content.to_s
             when CoreModel::Block then c.content.to_s
             else c.to_s
