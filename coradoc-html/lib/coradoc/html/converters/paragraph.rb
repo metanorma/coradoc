@@ -14,9 +14,11 @@ module Coradoc
             content = treat_children(node, state)
             attrs = extract_node_attributes(node)
 
+            children = wrap_children(content)
+
             # Create paragraph block with content
             paragraph = Coradoc::CoreModel::ParagraphBlock.new(
-              children: [content]
+              children: children
             )
 
             # Set ID if present

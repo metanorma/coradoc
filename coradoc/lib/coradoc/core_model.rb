@@ -43,6 +43,7 @@ module Coradoc
     autoload :Table, "#{__dir__}/core_model/table"
     autoload :TableCell, "#{__dir__}/core_model/table"
     autoload :TableRow, "#{__dir__}/core_model/table"
+    autoload :TextContent, "#{__dir__}/core_model/text_content"
     autoload :Image, "#{__dir__}/core_model/image"
     autoload :Term, "#{__dir__}/core_model/term"
     autoload :ElementAttribute, "#{__dir__}/core_model/element_attribute"

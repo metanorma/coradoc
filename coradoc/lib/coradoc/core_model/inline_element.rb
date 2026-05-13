@@ -8,6 +8,8 @@ module Coradoc
     # format identity via the class hierarchy — the class IS the format type.
     # Generic InlineElement instances use the format_type attribute for typing.
     class InlineElement < Base
+      attribute :children, Base, collection: true
+
       include ChildrenContent
 
       class << self

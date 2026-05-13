@@ -107,8 +107,8 @@ module Coradoc
 
           def transform_paragraph(block)
             content = block.renderable_content
-            if content.is_a?(Array) && content.any? { |c| !c.is_a?(String) }
-              # Mixed content with inline elements
+            has_structured = content.is_a?(Array) && content.any? { |c| !c.is_a?(CoreModel::TextContent) }
+            if has_structured
               children = content.map { |c| transform_inline_content(c) }
               Coradoc::Markdown::Paragraph.new(text: block.flat_text, children: children)
             else
@@ -120,6 +120,8 @@ module Coradoc
             case element
             when Coradoc::CoreModel::InlineElement
               transform_inline(element)
+            when CoreModel::TextContent
+              element.text
             when String
               element
             else
@@ -184,7 +186,8 @@ module Coradoc
           def transform_list(list)
             items = Array(list.items).map do |item|
               content = item.renderable_content
-              if content.is_a?(Array) && content.any? { |c| !c.is_a?(String) }
+              has_structured = content.is_a?(Array) && content.any? { |c| !c.is_a?(CoreModel::TextContent) }
+              if has_structured
                 children = content.map { |c| transform_inline_content(c) }
                 Coradoc::Markdown::ListItem.new(text: item.flat_text, children: children)
               else

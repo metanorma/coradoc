@@ -447,12 +447,12 @@ module Coradoc
                 content: content.term.to_s
               )]
             when String
-              content.empty? ? [] : [content]
+              content.empty? ? [] : [Coradoc::CoreModel::TextContent.new(text: content)]
             when Coradoc::AsciiDoc::Model::Base
               [transform(content)]
             else
               text = extract_text_content(content)
-              text.empty? ? [] : [text]
+              text.empty? ? [] : [Coradoc::CoreModel::TextContent.new(text: text)]
             end
           end
 
@@ -585,8 +585,8 @@ module Coradoc
 
               transformed = transform_inline_content(content_array)
 
-              if transformed.all? { |item| item.is_a?(String) }
-                transformed.join
+              if transformed.all? { |item| item.is_a?(Coradoc::CoreModel::TextContent) }
+                transformed.map(&:text).join
               else
                 transformed
               end

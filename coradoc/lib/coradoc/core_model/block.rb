@@ -9,6 +9,8 @@ module Coradoc
     # semantic identity via the class hierarchy — the class IS the type.
     # Generic Block instances use block_semantic_type for typing.
     class Block < Base
+      attribute :children, Base, collection: true
+
       include ChildrenContent
 
       class << self

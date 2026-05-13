@@ -27,7 +27,7 @@ module Coradoc
             span.set_metadata(:class, attrs[:class]) if attrs[:class]
 
             # If there are children (mixed content), use them
-            span.children = children if children.any?
+            span.children = wrap_children(children) if children.any?
 
             span
           end

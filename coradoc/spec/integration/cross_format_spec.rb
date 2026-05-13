@@ -553,10 +553,11 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
 
     describe 'Markdown AttributeList → CoreModel' do
       it 'transforms AttributeList to CoreModel StructuralElement with attributes' do
+        nv = Coradoc::Markdown::NamedValue.new(name: 'data-type', value: 'example')
         attr_list = Coradoc::Markdown::AttributeList.new(
           id: 'intro',
           classes: %w[highlight important],
-          attributes: { 'data-type' => 'example' }
+          attributes: [nv]
         )
         core = Coradoc::Markdown.to_core_model(attr_list)
 
@@ -628,7 +629,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
 
       md_doc = Coradoc::Markdown.from_core_model(core)
       expect(md_doc).to be_a(Coradoc::Markdown::Document)
-      md_text = md_doc.to_md
+      md_text = Coradoc::Markdown::Serializer.serialize(md_doc)
       expect(md_text).to include('Hello World')
     end
   end
@@ -731,7 +732,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       md_doc = Coradoc::Markdown.from_core_model(core_doc)
       expect(md_doc).to be_a(Coradoc::Markdown::Document)
 
-      md_text = md_doc.to_md
+      md_text = Coradoc::Markdown::Serializer.serialize(md_doc)
       expect(md_text).to include('A paragraph.')
     end
   end
