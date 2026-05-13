@@ -14,16 +14,12 @@ def for_each_gem(&) = GEMS.each { |gem| yield gem, task_name(gem), gem }
 
 # --- Specs ---
 
-def run_specs(gem_name, dir)
-  Dir.chdir(dir) { sh 'bundle exec rspec --format progress' }
-end
-
 namespace :spec do
   for_each_gem do |gem_name, task, dir|
     next unless File.directory?("#{dir}/spec")
 
     desc "Run specs for #{gem_name}"
-    task(task) { run_specs(gem_name, dir) }
+    task(task) { Dir.chdir(dir) { sh 'bundle exec rspec --format progress' } }
   end
 
   desc 'Run specs for all gems in the monorepo'
