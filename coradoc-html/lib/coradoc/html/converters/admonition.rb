@@ -16,7 +16,10 @@ module Coradoc
 
           children << NodeBuilder.build(:div, escape_html(type), class: 'admonition-label')
 
-          children << NodeBuilder.build(:div, escape_html(admonition.title.to_s), class: 'admonition-title') if admonition.title && !admonition.title.to_s.empty?
+          if admonition.title && !admonition.title.to_s.empty?
+            children << NodeBuilder.build(:div, escape_html(admonition.title.to_s),
+                                          class: 'admonition-title')
+          end
 
           content = process_content(admonition.content)
           children << content unless content.empty?

@@ -12,7 +12,10 @@ module Coradoc
 
           children = []
 
-          children << NodeBuilder.build(:h2, escape_html(bibliography.title.to_s), class: 'bibliography-title') if bibliography.title && !bibliography.title.to_s.empty?
+          if bibliography.title && !bibliography.title.to_s.empty?
+            children << NodeBuilder.build(:h2, escape_html(bibliography.title.to_s),
+                                          class: 'bibliography-title')
+          end
 
           entries = bibliography.children || []
           entries_html = entries.map do |entry|

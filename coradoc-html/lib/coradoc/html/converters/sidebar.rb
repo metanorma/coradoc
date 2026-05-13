@@ -12,7 +12,10 @@ module Coradoc
 
           children = []
 
-          children << NodeBuilder.build(:div, escape_html(sidebar.title.to_s), class: 'sidebar-title') if sidebar.title && !sidebar.title.to_s.empty?
+          if sidebar.title && !sidebar.title.to_s.empty?
+            children << NodeBuilder.build(:div, escape_html(sidebar.title.to_s),
+                                          class: 'sidebar-title')
+          end
 
           content = process_content(sidebar.content)
           children << content unless content.empty?
