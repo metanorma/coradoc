@@ -122,7 +122,12 @@ jobs:
         if git diff --quiet; then
           echo "No version changes to commit"
         else
-          git add '**/version.rb'
+          git add \
+            coradoc/lib/coradoc/version.rb \
+            coradoc-adoc/lib/coradoc/asciidoc/version.rb \
+            coradoc-docx/lib/coradoc/docx/version.rb \
+            coradoc-html/lib/coradoc/html/version.rb \
+            coradoc-markdown/lib/coradoc/markdown/version.rb
           git commit -m "chore: bump gem versions for release"
           git push origin main
         fi

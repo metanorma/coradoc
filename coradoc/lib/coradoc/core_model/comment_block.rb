@@ -4,7 +4,9 @@ module Coradoc
   module CoreModel
     # Comment block — editorial or hidden comments
     class CommentBlock < Block
-      def self.semantic_type = :comment
+      def self.semantic_type
+        :comment
+      end
     end
   end
 end

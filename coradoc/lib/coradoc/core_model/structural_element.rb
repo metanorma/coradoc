@@ -31,10 +31,21 @@ module Coradoc
         level || 1
       end
 
-      def section? = false
-      def document? = false
-      def preamble? = false
-      def header? = false
+      def section?
+        false
+      end
+
+      def document?
+        false
+      end
+
+      def preamble?
+        false
+      end
+
+      def header?
+        false
+      end
 
       # Derived element_type string for backward compatibility with
       # templates and legacy consumers. Subclasses override this.
@@ -42,10 +53,8 @@ module Coradoc
         self.class.element_type_name
       end
 
-      class << self
-        def element_type_name
-          nil
-        end
+      def self.element_type_name
+        nil
       end
 
       private
@@ -57,37 +66,45 @@ module Coradoc
 
     # Root document element
     class DocumentElement < StructuralElement
-      def document? = true
+      def document?
+        true
+      end
 
-      class << self
-        def element_type_name = 'document'
+      def self.element_type_name
+        'document'
       end
     end
 
     # Section with a heading at a specific level
     class SectionElement < StructuralElement
-      def section? = true
+      def section?
+        true
+      end
 
-      class << self
-        def element_type_name = 'section'
+      def self.element_type_name
+        'section'
       end
     end
 
     # Preamble content before the first section heading
     class PreambleElement < StructuralElement
-      def preamble? = true
+      def preamble?
+        true
+      end
 
-      class << self
-        def element_type_name = 'preamble'
+      def self.element_type_name
+        'preamble'
       end
     end
 
     # Header / title block of a document
     class HeaderElement < StructuralElement
-      def header? = true
+      def header?
+        true
+      end
 
-      class << self
-        def element_type_name = 'header'
+      def self.element_type_name
+        'header'
       end
     end
   end
