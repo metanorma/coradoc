@@ -12,14 +12,12 @@ module Coradoc
 
       include ChildrenContent
 
-      class << self
-        def format_type
-          nil
-        end
+      def self.format_type
+        nil
+      end
 
-        def format_type_class(type)
-          FORMAT_TYPE_CLASS_MAP[type] || InlineElement
-        end
+      def self.format_type_class(type)
+        FORMAT_TYPE_CLASS_MAP[type] || InlineElement
       end
 
       def resolve_format_type
@@ -50,71 +48,105 @@ module Coradoc
     # Typed InlineElement subclasses
 
     class BoldElement < InlineElement
-      def self.format_type = 'bold'
+      def self.format_type
+        'bold'
+      end
     end
 
     class ItalicElement < InlineElement
-      def self.format_type = 'italic'
+      def self.format_type
+        'italic'
+      end
     end
 
     class MonospaceElement < InlineElement
-      def self.format_type = 'monospace'
+      def self.format_type
+        'monospace'
+      end
     end
 
     class UnderlineElement < InlineElement
-      def self.format_type = 'underline'
+      def self.format_type
+        'underline'
+      end
     end
 
     class StrikethroughElement < InlineElement
-      def self.format_type = 'strikethrough'
+      def self.format_type
+        'strikethrough'
+      end
     end
 
     class SubscriptElement < InlineElement
-      def self.format_type = 'subscript'
+      def self.format_type
+        'subscript'
+      end
     end
 
     class SuperscriptElement < InlineElement
-      def self.format_type = 'superscript'
+      def self.format_type
+        'superscript'
+      end
     end
 
     class HighlightElement < InlineElement
-      def self.format_type = 'highlight'
+      def self.format_type
+        'highlight'
+      end
     end
 
     class LinkElement < InlineElement
-      def self.format_type = 'link'
+      def self.format_type
+        'link'
+      end
     end
 
     class CrossReferenceElement < InlineElement
-      def self.format_type = 'xref'
+      def self.format_type
+        'xref'
+      end
     end
 
     class StemElement < InlineElement
-      def self.format_type = 'stem'
+      def self.format_type
+        'stem'
+      end
     end
 
     class FootnoteElement < InlineElement
-      def self.format_type = 'footnote'
+      def self.format_type
+        'footnote'
+      end
     end
 
     class HardLineBreakElement < InlineElement
-      def self.format_type = 'hard_line_break'
+      def self.format_type
+        'hard_line_break'
+      end
     end
 
     class TextElement < InlineElement
-      def self.format_type = 'text'
+      def self.format_type
+        'text'
+      end
     end
 
     class SpanElement < InlineElement
-      def self.format_type = 'span'
+      def self.format_type
+        'span'
+      end
     end
 
     class TermElement < InlineElement
-      def self.format_type = 'term'
+      def self.format_type
+        'term'
+      end
     end
 
     class LineBreakElement < InlineElement
-      def self.format_type = 'line_break'
+      def self.format_type
+        'line_break'
+      end
     end
 
     FORMAT_TYPE_CLASS_MAP = {

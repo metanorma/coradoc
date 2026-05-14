@@ -4,7 +4,9 @@ module Coradoc
   module CoreModel
     # Quote block — a delimited block for quotations
     class QuoteBlock < Block
-      def self.semantic_type = :quote
+      def self.semantic_type
+        :quote
+      end
 
       attribute :attribution, :string
     end
