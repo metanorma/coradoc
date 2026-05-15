@@ -119,6 +119,9 @@ jobs:
             echo "Comparing with baseline..."
             bundle exec ruby -e "
               require 'coradoc'
+              require 'coradoc/asciidoc'
+              require 'coradoc/html'
+              require 'coradoc/markdown'
               require 'coradoc/performance_regression'
 
               results = Coradoc::PerformanceRegression.compare_with_baseline('baseline/results.json', iterations: 3)
