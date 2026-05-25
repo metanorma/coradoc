@@ -142,12 +142,12 @@ module Coradoc
             new_row_signal = newline >> (str(delim_char) | format_spec_then_delim)
 
             # A single content character - match any char that doesn't signal end of cell
+            # Handle escaped delimiter (\|) as a literal delimiter character
+            escaped_delimiter = str('\\') >> str(delim_char)
             (
               str(closing_delim).absent? >>
               new_row_signal.absent? >>
-              str(delim_char).absent? >>
-              format_spec_then_delim.absent? >>
-              any
+              (escaped_delimiter | (str(delim_char).absent? >> any))
             ).repeat(0)
           end
         end

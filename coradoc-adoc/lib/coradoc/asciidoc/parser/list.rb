@@ -41,13 +41,10 @@ module Coradoc
 
         def olist_marker(nesting_level = 1)
           # Don't match table cell format specs like ".2+^.^|"
-          # Table cells have format: [colspan][.rowspan][halign][valign][style][*]|
-          # If we see a format spec pattern followed by "|", it's a table cell, not a list
           line_start? >>
+            (nesting_level > 1 ? literal_space.maybe : str('')) >>
             str('.' * nesting_level) >>
             str('.').absent? >>
-            # Don't match if followed by table cell format spec
-            # Pattern: digits, dots, plus, alignment chars (^<>), style letters, then |
             (
               (match['0-9.<>^'] | str('+')).repeat(0, 3) >> str('|')
             ).absent?
@@ -75,11 +72,10 @@ module Coradoc
         end
 
         def ulist_marker(nesting_level = 1)
-          # Don't match table delimiters like "|==="
           line_start? >>
+            (nesting_level > 1 ? literal_space.maybe : str('')) >>
             str('*' * nesting_level) >>
             str('*').absent? >>
-            # Don't match if followed by "===" (table delimiter)
             str('===').absent?
         end
 
