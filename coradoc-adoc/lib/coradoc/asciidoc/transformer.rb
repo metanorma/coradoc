@@ -223,8 +223,11 @@ module Coradoc
           cell_opts[:repeat] = true if format_str.include?('*')
         end
 
+        # Strip escaped delimiters (\| → |) in cell content
+        unescaped_content = content.to_s.gsub(/\\([|!,:;])/, '\1')
+
         # Parse content based on style
-        parsed_content = parse_inline_content(content, style)
+        parsed_content = parse_inline_content(unescaped_content, style)
         cell_opts[:content] = parsed_content
 
         Model::TableCell.new(**cell_opts)
