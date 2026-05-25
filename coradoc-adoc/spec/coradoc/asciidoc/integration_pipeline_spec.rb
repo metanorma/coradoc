@@ -292,6 +292,170 @@ RSpec.describe 'Integration pipeline fixes' do
     end
   end
 
+  describe 'Fix 09: Nested source block inside example block' do
+    it 'parses [source] inside [example] as nested blocks' do
+      adoc = <<~ADOC
+        = Doc
+
+        [example]
+        ====
+        Some text.
+
+        [source]
+        ----
+        code here
+        ----
+        ====
+      ADOC
+
+      core = parse_to_core(adoc)
+      example = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ExampleBlock) }
+      expect(example).not_to be_nil
+      expect(example.children).not_to be_empty
+
+      source = example.children.find { |c| c.is_a?(Coradoc::CoreModel::SourceBlock) }
+      expect(source).not_to be_nil
+    end
+  end
+
+  describe 'Fix 10: Table escaped delimiters' do
+    it 'handles \\| in table cell content' do
+      adoc = <<~ADOC
+        = Doc
+
+        |===
+        | A \\| B | C
+        |===
+      ADOC
+
+      core = parse_to_core(adoc)
+      table = find_first_table(core)
+      expect(table).not_to be_nil
+      first_cell = table.rows.first.cells.first
+      expect(first_cell.content.strip).to eq('A | B')
+    end
+  end
+
+  describe 'Fix 11: Nested list parsing' do
+    it 'parses ** as nested unordered list items' do
+      adoc = <<~ADOC
+        = Doc
+
+        * First item
+        ** Nested item
+        * Second item
+      ADOC
+
+      core = parse_to_core(adoc)
+      lists = find_all_lists(core)
+      expect(lists).not_to be_empty
+      top_list = lists.first
+      expect(top_list.marker_type).to eq('unordered')
+
+      first_item = top_list.items.first
+      nested = first_item.children.find { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+      expect(nested).not_to be_nil
+      expect(nested.marker_type).to eq('unordered')
+    end
+
+    it 'parses .. as nested ordered list items' do
+      adoc = <<~ADOC
+        = Doc
+
+        . First item
+        .. Nested item
+        . Second item
+      ADOC
+
+      core = parse_to_core(adoc)
+      lists = find_all_lists(core)
+      expect(lists).not_to be_empty
+      top_list = lists.first
+      expect(top_list.marker_type).to eq('ordered')
+
+      first_item = top_list.items.first
+      nested = first_item.children.find { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+      expect(nested).not_to be_nil
+      expect(nested.marker_type).to eq('ordered')
+    end
+  end
+
+  describe 'Fix 12: Hierarchical section IDs' do
+    it 'generates unique IDs for same-titled sections under different parents' do
+      adoc = <<~ADOC
+        = Doc
+
+        == First
+
+        === Syntax
+
+        == Second
+
+        === Syntax
+      ADOC
+
+      core = parse_to_core(adoc)
+      sections = core.children.select { |c| c.is_a?(Coradoc::CoreModel::SectionElement) }
+      expect(sections.length).to eq(2)
+
+      first_sub = sections[0].children.find { |c| c.is_a?(Coradoc::CoreModel::SectionElement) }
+      second_sub = sections[1].children.find { |c| c.is_a?(Coradoc::CoreModel::SectionElement) }
+
+      expect(first_sub.id).to eq('_first_syntax')
+      expect(second_sub.id).to eq('_second_syntax')
+      expect(first_sub.id).not_to eq(second_sub.id)
+    end
+
+    it 'preserves explicit section IDs' do
+      adoc = <<~ADOC
+        = Doc
+
+        [[custom-id]]
+        == My Section
+      ADOC
+
+      core = parse_to_core(adoc)
+      section = core.children.find { |c| c.is_a?(Coradoc::CoreModel::SectionElement) }
+      expect(section.id).to eq('custom-id')
+    end
+  end
+
+  describe 'Fix 13: Inline whitespace between sentences' do
+    it 'preserves whitespace between text elements separated by newlines' do
+      adoc = <<~ADOC
+        = Doc
+
+        First sentence.
+        Second sentence.
+      ADOC
+
+      core = parse_to_core(adoc)
+      para = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ParagraphBlock) }
+      expect(para).not_to be_nil
+      text = para.content.to_s
+      expect(text).to include('First sentence.')
+      expect(text).to include('Second sentence.')
+    end
+  end
+
+  describe 'Fix 14: Definition list with anchor terms' do
+    it 'renders definition list terms and definitions with anchors' do
+      adoc = <<~ADOC
+        = Doc
+
+        [[my-term]]
+        Term text:: Definition content
+      ADOC
+
+      core = parse_to_core(adoc)
+      dlist = core.children.find { |c| c.is_a?(Coradoc::CoreModel::DefinitionList) }
+      expect(dlist).not_to be_nil
+      expect(dlist.items).not_to be_empty
+      item = dlist.items.first
+      expect(item.term).to include('Term text')
+    end
+  end
+
   private
 
   def find_first_table(el)
@@ -314,11 +478,7 @@ RSpec.describe 'Integration pipeline fixes' do
 
     xrefs << el if el.is_a?(Coradoc::CoreModel::InlineElement) && el.format_type == 'xref'
 
-    children = if el.respond_to?(:children) && el.children
-                 el.children
-               elsif el.is_a?(Coradoc::CoreModel::Base) && el.class.attributes.key?(:children)
-                 el.children
-               end
+    children = (el.children if el.is_a?(Coradoc::CoreModel::Base) && el.class.attributes.key?(:children) && el.children)
 
     children&.each { |c| xrefs.concat(find_all_xrefs(c)) }
 
