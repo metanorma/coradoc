@@ -19,11 +19,17 @@ module Coradoc
 
               # Convert nested array to proper List object if needed
               if nested.is_a?(Array) && nested.any?
-                first_marker = nested.first.is_a?(Model::List::Item) ? nested.first.marker : marker
-                nested = if first_marker.to_s.start_with?('.', '1', 'a', 'A', 'i', 'I')
-                           Model::List::Ordered.new(items: nested)
+                nested = if nested.all?(Model::List::Core)
+                           nested.first
+                         elsif nested.all?(Model::List::Item)
+                           first_marker = nested.first.marker
+                           if first_marker.to_s.lstrip.start_with?('.', '1', 'a', 'A', 'i', 'I')
+                             Model::List::Ordered.new(items: nested)
+                           else
+                             Model::List::Unordered.new(items: nested)
+                           end
                          else
-                           Model::List::Unordered.new(items: nested)
+                           nested
                          end
               end
 
@@ -71,10 +77,6 @@ module Coradoc
                 id = term_data[:id]
                 id = id.to_s if id.is_a?(Parslet::Slice)
                 { text: text.to_s, id: id }
-              when Parslet::Slice
-                { text: term_data.to_s, id: nil }
-              when String
-                { text: term_data, id: nil }
               when Model::TextElement
                 { text: term_data.content.to_s, id: term_data.id }
               else

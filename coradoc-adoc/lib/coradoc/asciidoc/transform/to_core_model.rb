@@ -13,7 +13,7 @@ module Coradoc
 
         class << self
           def transform(model)
-            return model.map { |item| transform(item) }.compact if model.is_a?(Array)
+            return model.filter_map { |item| transform(item) } if model.is_a?(Array)
             return model unless model.is_a?(Coradoc::AsciiDoc::Model::Base)
 
             transformer = Registry.lookup(model.class)
@@ -106,12 +106,16 @@ module Coradoc
             )
           end
 
-          def transform_section(section)
+          def transform_section(section, parent_id: nil)
             title_text = extract_title_text(section.title)
-            content_children = transform(section.contents || [])
-            nested_sections = transform(section.sections || [])
+            section_id = section.id || Coradoc::CoreModel::IdGenerator.generate_from_title(
+              title_text, parent_id: parent_id
+            )
 
-            section_id = section.id || Coradoc::CoreModel::IdGenerator.generate_from_title(title_text)
+            content_children = transform(section.contents || [])
+            nested_sections = (section.sections || []).map do |child|
+              transform_section(child, parent_id: section_id)
+            end
 
             Coradoc::CoreModel::SectionElement.new(
               id: section_id,
@@ -168,15 +172,32 @@ module Coradoc
           end
 
           def transform_typed_block(block, klass, extra_attrs = {})
-            content_lines = extract_block_lines(block)
+            lines = Array(block.lines).reject do |line|
+              line.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
+                line.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
+            end
 
-            klass.new(
-              id: block.id,
-              title: extract_title_text(block.title),
-              content: content_lines,
-              language: extract_block_language(block),
-              **extra_attrs
-            )
+            has_nested_blocks = lines.any?(Coradoc::AsciiDoc::Model::Block::Core)
+
+            if has_nested_blocks
+              children = lines.map { |line| transform(line) }
+              klass.new(
+                id: block.id,
+                title: extract_title_text(block.title),
+                children: children,
+                language: extract_block_language(block),
+                **extra_attrs
+              )
+            else
+              content_lines = lines.map { |line| extract_text_content(line) }.join("\n")
+              klass.new(
+                id: block.id,
+                title: extract_title_text(block.title),
+                content: content_lines,
+                language: extract_block_language(block),
+                **extra_attrs
+              )
+            end
           end
 
           def extract_block_lines(block)
@@ -224,6 +245,15 @@ module Coradoc
             )
           end
 
+          def list_marker_type(list)
+            case list
+            when Coradoc::AsciiDoc::Model::List::Ordered then 'ordered'
+            when Coradoc::AsciiDoc::Model::List::Unordered then 'unordered'
+            when Coradoc::AsciiDoc::Model::List::Definition then 'definition'
+            else 'unordered'
+            end
+          end
+
           def transform_list(list, marker_type)
             items = Array(list.items).map do |item|
               if item.is_a?(Coradoc::AsciiDoc::Model::List::DefinitionItem)
@@ -258,6 +288,18 @@ module Coradoc
                   marker: item.marker
                 )
                 li.children = children
+
+                if item.nested.is_a?(Coradoc::AsciiDoc::Model::List::Core)
+                  nested_core = transform_list(item.nested, list_marker_type(item.nested))
+                  li.children << nested_core
+                elsif item.nested.is_a?(Array)
+                  item.nested.each do |n|
+                    next unless n.is_a?(Coradoc::AsciiDoc::Model::List::Core)
+
+                    li.children << transform_list(n, list_marker_type(n))
+                  end
+                end
+
                 li
               end
             end
@@ -439,7 +481,18 @@ module Coradoc
 
             case content
             when Array
-              content.flat_map { |item| transform_inline_content(item) }
+              result = []
+              content.each_with_index do |item, idx|
+                transformed = transform_inline_content(item)
+                next if transformed.empty?
+
+                needs_space = idx.positive? &&
+                              item.is_a?(Coradoc::AsciiDoc::Model::TextElement) &&
+                              item.line_break != '+'
+                result << Coradoc::CoreModel::TextContent.new(text: ' ') if needs_space
+                result.concat(transformed)
+              end
+              result
             when Coradoc::AsciiDoc::Model::TextElement
               transform_inline_content(content.content)
             when Coradoc::AsciiDoc::Model::Term
@@ -539,6 +592,8 @@ module Coradoc
               "{#{content.name}}"
             when Coradoc::AsciiDoc::Model::Term
               content.term.to_s
+            when Coradoc::CoreModel::TextContent
+              content.text.to_s
             when Coradoc::CoreModel::Image
               content.alt || content.src || ''
             when Coradoc::AsciiDoc::Model::Base
@@ -585,7 +640,7 @@ module Coradoc
 
               transformed = transform_inline_content(content_array)
 
-              if transformed.all? { |item| item.is_a?(Coradoc::CoreModel::TextContent) }
+              if transformed.all?(Coradoc::CoreModel::TextContent)
                 transformed.map(&:text).join
               else
                 transformed
