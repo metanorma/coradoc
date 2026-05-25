@@ -74,11 +74,11 @@ module Coradoc
         end
 
         def block_content(n_deep = 3)
-          c = block_image |
-              list |
-              text_line(false, unguarded: true) |
-              empty_line.as(:line_break)
+          c = block_image
           c |= block(n_deep - 1) if n_deep.positive?
+          c |= list
+          c |= text_line(false, unguarded: true)
+          c |= empty_line.as(:line_break)
           c.repeat(1)
         end
 
@@ -111,27 +111,22 @@ module Coradoc
         # @param repeater [Integer] Minimum number of delimiter characters (default: 4)
         # @param type [Symbol] Block type for special handling (e.g., :pass)
         def block_style(n_deep = 3, delimiter = '*', repeater = 4, type = nil, verbatim: false)
-          # repeat(repeater,) means repeater or more characters
-          current_delimiter = str(delimiter).repeat(repeater).capture(:delimit)
+          capture_key = :"delimit_#{delimiter}_#{n_deep}"
+          current_delimiter = str(delimiter).repeat(repeater).capture(capture_key)
           closing_delimiter = dynamic do |_s, c|
-            str(c.captures[:delimit].to_s.strip)
+            str(c.captures[capture_key].to_s.strip)
           end
 
-          # Create a block content parser that respects the closing delimiter
-          # This prevents nested blocks from consuming the closing delimiter
           block_content_with_closing = dynamic do |_s, c|
-            delim_str = c.captures[:delimit].to_s.strip
+            delim_str = c.captures[capture_key].to_s.strip
             closing_pattern = str(delim_str) >> newline
 
-            # Build content that doesn't match the closing delimiter
-            content = block_image | list | text_line(false, unguarded: true,
-                                                            verbatim: verbatim) | empty_line.as(:line_break)
-            if n_deep.positive?
-              # For nested blocks, also prevent them from consuming the closing delimiter
-              content |= block(n_deep - 1)
-            end
+            content = block_image
+            content |= block(n_deep - 1) if n_deep.positive?
+            content |= list
+            content |= text_line(false, unguarded: true, verbatim: verbatim)
+            content |= empty_line.as(:line_break)
 
-            # Each content element must not start with the closing delimiter
             (closing_pattern.absent? >> content).repeat(1)
           end
 
@@ -142,7 +137,6 @@ module Coradoc
             if type == :pass
               (text_line(false, unguarded: true, verbatim: verbatim) | empty_line.as(:line_break)).repeat(1).as(:lines)
             else
-              # Use dynamic block content that respects closing delimiter
               block_content_with_closing.as(:lines)
             end >>
             line_start? >>
@@ -152,18 +146,21 @@ module Coradoc
         # Block style parser with EXACT delimiter length (for open blocks)
         # Open blocks use exactly 2 dashes and cannot nest within themselves
         def block_style_exact(n_deep = 3, delimiter = '-', exact_chars = 2, type = nil)
-          current_delimiter = str(delimiter).repeat(exact_chars, exact_chars).capture(:delimit)
+          capture_key = :"delimit_#{delimiter}_exact_#{exact_chars}_#{n_deep}"
+          current_delimiter = str(delimiter).repeat(exact_chars, exact_chars).capture(capture_key)
           closing_delimiter = dynamic do |_s, c|
-            str(c.captures[:delimit].to_s.strip)
+            str(c.captures[capture_key].to_s.strip)
           end
 
-          # Create a block content parser that respects the closing delimiter
           block_content_with_closing = dynamic do |_s, c|
-            delim_str = c.captures[:delimit].to_s.strip
+            delim_str = c.captures[capture_key].to_s.strip
             closing_pattern = str(delim_str) >> newline
 
-            content = block_image | list | text_line(false, unguarded: true) | empty_line.as(:line_break)
+            content = block_image
             content |= block(n_deep - 1) if n_deep.positive?
+            content |= list
+            content |= text_line(false, unguarded: true)
+            content |= empty_line.as(:line_break)
 
             (closing_pattern.absent? >> content).repeat(1)
           end
