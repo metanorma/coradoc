@@ -52,6 +52,7 @@ output/
 
 # Work in progress files
 user_templates/
+TODO.cham-iterate/
 
 # Scratch files
 sample.oscal.*
