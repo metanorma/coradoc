@@ -7,6 +7,7 @@ module Coradoc
         # Define the DSL for defining mappings in Asciidoc format
         class AsciidocMapping < Lutaml::Model::Mapping
           attr_reader :mappings
+          attr_writer :mappings
 
           def initialize
             super
@@ -28,6 +29,12 @@ module Coradoc
               field_type: :attributes,
               render_nil: render_nil
             )
+          end
+
+          def deep_dup
+            duped = self.class.new
+            duped.mappings = Lutaml::Model::Utils.deep_dup(@mappings)
+            duped
           end
 
           private
