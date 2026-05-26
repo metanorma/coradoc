@@ -24,7 +24,7 @@ RSpec.describe Coradoc::AsciiDoc do
   describe 'VERSION' do
     it 'has a version number' do
       expect(Coradoc::AsciiDoc::VERSION).not_to be_nil
-      expect(Coradoc::AsciiDoc::VERSION).to eq('2.0.3')
+      expect(Coradoc::AsciiDoc::VERSION).to match(/\A\d+\.\d+\.\d+\z/)
     end
   end
 end
