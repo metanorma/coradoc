@@ -596,6 +596,8 @@ module Coradoc
               content.text.to_s
             when Coradoc::CoreModel::Image
               content.alt || content.src || ''
+            when Coradoc::AsciiDoc::Model::Image::Core
+              content.alt || content.src || ''
             when Coradoc::AsciiDoc::Model::Base
               if content.content
                 extract_text_content(content.content)
