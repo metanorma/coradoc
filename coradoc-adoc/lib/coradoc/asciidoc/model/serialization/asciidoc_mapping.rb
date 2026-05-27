@@ -31,12 +31,6 @@ module Coradoc
             )
           end
 
-          def deep_dup
-            duped = self.class.new
-            duped.mappings = Lutaml::Model::Utils.deep_dup(@mappings)
-            duped
-          end
-
           private
 
           def add_mapping(name, to, **options)
