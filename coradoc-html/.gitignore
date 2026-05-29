@@ -1,0 +1,8 @@
+/frontend/node_modules/
+/frontend/dist/
+/coverage/
+/coverage_detail/
+/.rspec_status
+/pkg/
+/tmp/
+/TODO.html-liquid/
