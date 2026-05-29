@@ -149,6 +149,39 @@ RSpec.describe Coradoc::Html::TemplateConfig do
       expect(new_config.template_dirs.map(&:to_s)).to eq(['/first', '/second'])
     end
   end
+
+  describe '#locator' do
+    it 'returns a TemplateLocator instance' do
+      config = described_class.new(template_dirs: ['/custom'])
+      expect(config.locator).to be_a(Coradoc::Html::TemplateLocator)
+    end
+
+    it 'uses configured template_dirs as user_dirs' do
+      config = described_class.new(template_dirs: ['/custom'])
+      locator = config.locator
+      expect(locator.user_dirs.map(&:to_s)).to eq(['/custom'])
+    end
+
+    it 'caches the locator instance' do
+      config = described_class.new
+      expect(config.locator).to equal(config.locator)
+    end
+  end
+
+  describe 'delegation to TemplateLocator' do
+    let(:config) { described_class.new }
+
+    it 'delegates template_exists? to locator' do
+      expect(config.template_exists?(:bibliography)).to be true
+      expect(config.template_exists?(:non_existent_xyz)).to be false
+    end
+
+    it 'delegates find_template to locator' do
+      path = config.find_template(:bibliography)
+      expect(path).to be_a(Pathname)
+      expect(path.to_s).to end_with('bibliography.liquid')
+    end
+  end
 end
 
 RSpec.describe Coradoc::Html do

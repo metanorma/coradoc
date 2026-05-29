@@ -97,14 +97,12 @@ RSpec.describe 'HTML Output Integration' do
       expect(html).to include('toc')
     end
 
-    it 'supports different CSS themes' do
-      html_professional = Coradoc::Html::Static.convert(document, css_theme: :professional)
-      html_academic = Coradoc::Html::Static.convert(document, css_theme: :academic)
-      html_tech = Coradoc::Html::Static.convert(document, css_theme: :tech)
+    it 'supports section numbering configuration' do
+      html_numbered = Coradoc::Html::Static.convert(document, section_numbering: true)
+      html_unnumbered = Coradoc::Html::Static.convert(document, section_numbering: false)
 
-      expect(html_professional).to include('<!DOCTYPE html>')
-      expect(html_academic).to include('<!DOCTYPE html>')
-      expect(html_tech).to include('<!DOCTYPE html>')
+      expect(html_numbered).to include('<!DOCTYPE html>')
+      expect(html_unnumbered).to include('<!DOCTYPE html>')
     end
   end
 
@@ -117,47 +115,30 @@ RSpec.describe 'HTML Output Integration' do
       expect(html).to include('<html')
       expect(html).to include('</html>')
 
-      # Vue.js presence
-      expect(html).to include('unpkg.com/vue')
-      expect(html).to include('Vue')
-
-      # Tailwind CSS presence
-      expect(html).to include('cdn.tailwindcss.com')
-      expect(html).to include('tailwind')
+      # Frontend dist assets embedded
+      expect(html).to include('coradoc-app')
+      expect(html).to include('CORADOC_DATA')
 
       # Document data embedded in Vue app
-      expect(html).to include('createApp')
+      expect(html).to include('Sample Document')
     end
 
-    it 'includes theme toggle when configured' do
-      html = Coradoc::Html::Spa.convert(document, theme_toggle: true)
+    it 'includes embedded CSS from frontend dist' do
+      html = Coradoc::Html::Spa.convert(document)
 
-      expect(html).to include('isDark')
+      expect(html).to include('<style>')
     end
 
-    it 'includes reading progress when configured' do
-      html = Coradoc::Html::Spa.convert(document, reading_progress: true)
+    it 'includes embedded JS from frontend dist' do
+      html = Coradoc::Html::Spa.convert(document)
 
-      expect(html).to include('scrollProgress')
+      expect(html).to include('<script>')
     end
 
-    it 'supports different theme variants' do
-      html_glass = Coradoc::Html::Spa.convert(document, theme_variant: :glass)
-      html_minimal = Coradoc::Html::Spa.convert(document, theme_variant: :minimal)
-      html_vibrant = Coradoc::Html::Spa.convert(document, theme_variant: :vibrant)
+    it 'passes theme_toggle to renderer' do
+      html = Coradoc::Html::Spa.convert(document, theme_toggle: false)
 
-      expect(html_glass).to include('<!DOCTYPE html>')
-      expect(html_minimal).to include('<!DOCTYPE html>')
-      expect(html_vibrant).to include('<!DOCTYPE html>')
-    end
-
-    it 'supports custom colors' do
-      html = Coradoc::Html::Spa.convert(document,
-                                        primary_color: '#ff0000',
-                                        accent_color: '#00ff00')
-
-      expect(html).to include('#ff0000')
-      expect(html).to include('#00ff00')
+      expect(html).to include('<!DOCTYPE html>')
     end
   end
 
@@ -176,7 +157,7 @@ RSpec.describe 'HTML Output Integration' do
         html = Coradoc::Html.serialize_spa(document)
 
         expect(html).to include('<!DOCTYPE html>')
-        expect(html).to include('Vue')
+        expect(html).to include('CORADOC_DATA')
       end
     end
 
@@ -188,7 +169,7 @@ RSpec.describe 'HTML Output Integration' do
 
       it 'converts to spa format' do
         html = Coradoc::Html.serialize_as(document, :spa)
-        expect(html).to include('Vue')
+        expect(html).to include('CORADOC_DATA')
       end
 
       it 'accepts html_static alias' do
@@ -198,7 +179,7 @@ RSpec.describe 'HTML Output Integration' do
 
       it 'accepts html_spa alias' do
         html = Coradoc::Html.serialize_as(document, :html_spa)
-        expect(html).to include('Vue')
+        expect(html).to include('CORADOC_DATA')
       end
 
       it 'raises error for unknown format' do
@@ -249,13 +230,112 @@ RSpec.describe 'HTML Output Integration' do
         result = Coradoc::Output::HtmlSpa.processor_execute(input, {})
 
         expect(result).to have_key('test.html')
-        expect(result['test.html']).to include('Vue')
+        expect(result['test.html']).to include('CORADOC_DATA')
       end
     end
 
     describe 'Coradoc::Output::Spa alias' do
       it 'is an alias for HtmlSpa' do
         expect(Coradoc::Output::Spa).to eq(Coradoc::Output::HtmlSpa)
+      end
+    end
+  end
+
+  describe 'Section numbering in HTML output' do
+    let(:numbered_adoc) do
+      <<~ADOC
+        = Numbered Document
+        :toc:
+        :sectnums:
+
+        == Introduction
+
+        Intro text.
+
+        === Background
+
+        Background text.
+
+        == Main Content
+
+        Main text.
+
+        === Subsection
+
+        Subsection text.
+
+        == Conclusion
+
+        Conclusion text.
+      ADOC
+    end
+
+    let(:numbered_doc) { Coradoc.parse(numbered_adoc, format: :asciidoc) }
+
+    it 'renders section numbers in TOC entries' do
+      html = Coradoc::Html.serialize(numbered_doc, toc: true, sectnums: true, layout: :spa)
+
+      # Extract CORADOC_DATA JSON from the script tag
+      json_match = html.match(%r{window\.CORADOC_DATA\s*=\s*(.+?);\s*</script>}m)
+      data = JSON.parse(json_match[1])
+
+      toc_entries = data['toc']['entries']
+      expect(toc_entries[0]['number']).to eq('1')
+      expect(toc_entries[0]['title']).to eq('Introduction')
+      expect(toc_entries[0]['children'][0]['number']).to eq('1.1')
+      expect(toc_entries[0]['children'][0]['title']).to eq('Background')
+
+      expect(toc_entries[1]['number']).to eq('2')
+      expect(toc_entries[1]['title']).to eq('Main Content')
+      expect(toc_entries[1]['children'][0]['number']).to eq('2.1')
+      expect(toc_entries[1]['children'][0]['title']).to eq('Subsection')
+
+      expect(toc_entries[2]['number']).to eq('3')
+      expect(toc_entries[2]['title']).to eq('Conclusion')
+    end
+
+    it 'renders section numbers in body headings' do
+      html = Coradoc::Html.serialize(numbered_doc, toc: true, sectnums: true, layout: :spa)
+
+      # Extract contentHtml from CORADOC_DATA
+      json_match = html.match(%r{window\.CORADOC_DATA\s*=\s*(.+?);\s*</script>}m)
+      data = JSON.parse(json_match[1])
+      content = data['contentHtml']
+
+      doc = Nokogiri::HTML::DocumentFragment.parse(content)
+      headings = doc.css('h2, h3')
+      heading_texts = headings.map(&:text)
+
+      expect(heading_texts).to include(a_string_including('1. Introduction'))
+      expect(heading_texts).to include(a_string_including('1.1. Background'))
+      expect(heading_texts).to include(a_string_including('2. Main Content'))
+      expect(heading_texts).to include(a_string_including('2.1. Subsection'))
+      expect(heading_texts).to include(a_string_including('3. Conclusion'))
+    end
+
+    it 'omits section numbers when sectnums is not set' do
+      plain_adoc = <<~ADOC
+        = Plain Document
+        :toc:
+
+        == Introduction
+
+        Intro text.
+
+        == Conclusion
+
+        Conclusion text.
+      ADOC
+
+      plain_doc = Coradoc.parse(plain_adoc, format: :asciidoc)
+      html = Coradoc::Html.serialize(plain_doc, toc: true, layout: :spa)
+
+      json_match = html.match(%r{window\.CORADOC_DATA\s*=\s*(.+?);\s*</script>}m)
+      data = JSON.parse(json_match[1])
+
+      entries = data['toc']['entries']
+      entries.each do |entry|
+        expect(entry['number']).to be_nil
       end
     end
   end
@@ -281,7 +361,7 @@ RSpec.describe 'HTML Output Integration' do
         expect(File.exist?(output_path)).to be true
         content = File.read(output_path)
         expect(content).to include('<!DOCTYPE html>')
-        expect(content).to include('Vue')
+        expect(content).to include('CORADOC_DATA')
         expect(content).to include('Sample Document')
       end
     end

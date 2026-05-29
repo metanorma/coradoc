@@ -8,7 +8,7 @@ RSpec.describe Coradoc::Html::TemplateLocator do
   let(:default_dir) do
     Pathname.new(File.join(
                    File.dirname(__FILE__),
-                   '../../../../lib/coradoc/html/templates/core_model'
+                   '../../../lib/coradoc/html/templates/core_model'
                  ))
   end
 
@@ -29,7 +29,6 @@ RSpec.describe Coradoc::Html::TemplateLocator do
       let(:locator) { described_class.new(user_dirs: [], default_dir: default_dir) }
 
       it 'finds bibliography template' do
-        skip 'Default templates not yet created' unless default_dir.join('bibliography.liquid').exist?
         result = locator.find('bibliography')
         expect(result).to be_a(Pathname)
         expect(result.to_s).to end_with('bibliography.liquid')
@@ -72,7 +71,7 @@ RSpec.describe Coradoc::Html::Renderer do
     end
 
     it 'accepts options' do
-      renderer = described_class.new(options: { strict: true })
+      renderer = described_class.new(strict: true)
       expect(renderer.options[:strict]).to be true
     end
   end
@@ -165,14 +164,16 @@ RSpec.describe Coradoc::Html::Renderer do
     end
   end
 
-  describe '.register_type' do
-    after do
-      described_class.instance_variable_get(:@custom_type_map)&.delete('TestCustomClass')
-    end
+  describe 'DropFactory type mapping' do
+    it 'maps CoreModel::BibliographyEntry to the correct drop class' do
+      entry = Coradoc::CoreModel::BibliographyEntry.new(
+        anchor_name: 'TEST',
+        document_id: 'TEST 123'
+      )
 
-    it 'allows registering custom type mappings' do
-      described_class.register_type('TestCustomClass', 'test_custom')
-      expect(described_class.custom_type_map['TestCustomClass']).to eq('test_custom')
+      drop = Coradoc::Html::Drop::DropFactory.create(entry)
+      expect(drop).to be_a(Coradoc::Html::Drop::BibliographyEntryDrop)
+      expect(drop.template_type).to eq('bibliography_entry')
     end
   end
 
@@ -205,6 +206,33 @@ RSpec.describe Coradoc::Html::Renderer do
       result = custom_renderer.render(entry)
       expect(result).to include('custom-entry')
       expect(result).to include('CUSTOM:')
+    end
+
+    it 'falls back to default when user template is absent' do
+      entry = Coradoc::CoreModel::BibliographyEntry.new(
+        anchor_name: 'FALLBACK',
+        document_id: 'FB 001'
+      )
+
+      result = custom_renderer.render(entry)
+      expect(result).to include('FALLBACK')
+    end
+  end
+
+  describe 'template cascade with root-level override' do
+    let(:custom_dir) { Dir.mktmpdir }
+    let(:custom_renderer) { described_class.new(template_dirs: [custom_dir]) }
+
+    after do
+      FileUtils.rm_rf(custom_dir)
+    end
+
+    it 'finds templates in root directory without core_model/ prefix' do
+      File.write(File.join(custom_dir, 'block.liquid'), '<div class="root-override">{{ text }}</div>')
+
+      block = CoreModel::Block.new(id: 'test')
+      result = custom_renderer.render(block)
+      expect(result).to include('root-override')
     end
   end
 end

@@ -38,8 +38,10 @@ module Coradoc
         :html
       end
 
+      extend Coradoc::Html::FormatDetection
+
       def self.processor_match?(filename)
-        %w[.html .htm].any? { |i| filename.downcase.end_with?(i) }
+        html_extension?(filename)
       end
 
       def self.processor_execute(input, options = {})
