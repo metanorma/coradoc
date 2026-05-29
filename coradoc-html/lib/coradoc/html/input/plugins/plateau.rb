@@ -16,15 +16,6 @@ module Coradoc
           end
 
           def preprocess_html_tree
-            # Let's simplify the tree by removing what's extraneous
-            # html_tree_remove_by_css("script, style, img.container_imagebox:not([src])")
-            # html_tree_replace_with_children_by_css("div.container_box")
-            # html_tree_replace_with_children_by_css("div.col.col-12")
-            # html_tree_replace_with_children_by_css(".tabledatatext, .tabledatatextY")
-            # html_tree_replace_with_children_by_css("div.row")
-            #
-            # We can remove that, but it messes up the images and paragraphs.
-
             # Remove side menu, so we can generate TOC ourselves
             html_tree_remove_by_css('.sideMenu')
 
@@ -87,7 +78,7 @@ module Coradoc
 
             # Handle non-semantic lists and indentation
             html_tree_add_hook_pre_by_css '.text2data' do |node,|
-              text = html_tree_process_to_adoc(node).strip
+              text = html_tree_process_to_coremodel(node).strip
               next '' if text.empty? || text == "\u3000"
 
               if text.start_with?(/\d+\./)
@@ -101,7 +92,7 @@ module Coradoc
 
             (3..4).each do |i|
               html_tree_add_hook_pre_by_css ".text#{i}data" do |node,|
-                text = html_tree_process_to_adoc(node).strip
+                text = html_tree_process_to_coremodel(node).strip
                 next '' if text.empty? || text == "\u3000"
 
                 text = text.strip.gsub(/^/, "#{'*' * i} ")
@@ -111,7 +102,7 @@ module Coradoc
 
             (2..3).each do |i|
               html_tree_add_hook_pre_by_css ".text#{i}data_point ul" do |node,|
-                text = html_tree_process_to_adoc(node.children.first.children).strip
+                text = html_tree_process_to_coremodel(node.children.first.children).strip
 
                 "#{'*' * i} #{text}\n"
               end
@@ -119,13 +110,11 @@ module Coradoc
 
             (1..20).each do |i|
               html_tree_add_hook_pre_by_css ".numtextdata_num .list_num#{i}" do |node,|
-                text = html_tree_process_to_adoc(node).strip
+                text = html_tree_process_to_coremodel(node).strip
 
                 "[start=#{i}]\n. #{text}\n"
               end
             end
-
-            # html_tree_preview
           end
 
           IM = /[A-Z0-9]{1,3}/

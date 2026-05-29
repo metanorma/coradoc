@@ -7,11 +7,7 @@ module Coradoc
         class Ol < Base
           def to_coradoc(node, state = {})
             id = node['id']
-            ol_count = state.fetch(:ol_count, 0) + 1
-            items = treat_children_coradoc(
-              node,
-              state.merge(ol_count: ol_count)
-            )
+            items = treat_children_coradoc(node, state)
 
             marker_type = get_list_type(node, state)
 

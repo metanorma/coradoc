@@ -31,12 +31,7 @@ module Coradoc
             # For cross-references
             if href.to_s.start_with?('#')
               ref_id = href.sub(/^#/, '').gsub(/\s/, '').gsub(/__+/, '_')
-              # Convert content to string
-              content_str = if content.is_a?(Array)
-                              content.map { |c| c.is_a?(Coradoc::CoreModel::Base) ? c.content : c.to_s }.join
-                            else
-                              content.to_s
-                            end
+              content_str = extract_text_from_content(content)
               return Coradoc::CoreModel::CrossReferenceElement.new(
                 target: ref_id,
                 content: content_str.strip.empty? ? nil : content_str.strip
@@ -49,12 +44,7 @@ module Coradoc
             ambigous_characters = /[\w.?&#=%;\[\u{ff}-\u{10ffff}]/
             right_constrain = textnode_after_start_with?(node, ambigous_characters)
 
-            # Convert content to string for the link
-            content_str = if content.is_a?(Array)
-                            content.map { |c| c.is_a?(Coradoc::CoreModel::Base) && c.content ? c.content : c.to_s }.join
-                          else
-                            content.to_s
-                          end
+            content_str = extract_text_from_content(content)
 
             out = []
             # Add leading space if needed

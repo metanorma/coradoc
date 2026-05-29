@@ -9,7 +9,6 @@ module Coradoc
             id = node['id']
             content = treat_children_coradoc(node, state)
 
-            # Strip full-width spaces from paragraph content
             content = strip_fullwidth_spaces(content)
 
             Coradoc::CoreModel::ParagraphBlock.new(
@@ -23,38 +22,51 @@ module Coradoc
           def strip_fullwidth_spaces(content)
             return content unless content.is_a?(Array)
 
-            # Strip full-width spaces from all inline elements
             content.each do |item|
-              if item.is_a?(Coradoc::CoreModel::InlineElement) && item.content.is_a?(String)
-                item.content = item.content.gsub(/\A　+|　+\z/, '')
-              elsif item.is_a?(String)
-                item.gsub(/\A　+|　+\z/, '')
-              end
+              next unless item.is_a?(Coradoc::CoreModel::InlineElement)
+              next unless item.content.is_a?(String)
+
+              item.content = item.content.gsub(/\A　+|　+\z/, '')
             end
 
-            # Strip leading space from first text element
-            first_text = content.find { |item| item.is_a?(Coradoc::CoreModel::InlineElement) || item.is_a?(String) }
-            if first_text.is_a?(Coradoc::CoreModel::InlineElement) && first_text.content.is_a?(String)
-              first_text.content = first_text.content.lstrip
-            elsif first_text.is_a?(String)
-              first_text.lstrip
-            end
+            strip_edge_whitespace(content)
+            reject_empty_elements(content)
+          end
 
-            # Strip trailing space from last text element
-            last_text = content.reverse.find do |item|
-              item.is_a?(Coradoc::CoreModel::InlineElement) || item.is_a?(String)
-            end
-            if last_text.is_a?(Coradoc::CoreModel::InlineElement) && last_text.content.is_a?(String)
-              last_text.content = last_text.content.rstrip
-            elsif last_text.is_a?(String)
-              last_text.rstrip
-            end
+          def strip_edge_whitespace(content)
+            first = content.find { |item| text_element?(item) }
+            strip_left(first) if first
 
-            # Remove empty text elements after stripping
-            # But keep InlineElements that have nested_elements (e.g., bold with nested text)
+            last = content.reverse.find { |item| text_element?(item) }
+            strip_right(last) if last
+          end
+
+          def strip_left(item)
+            case item
+            when Coradoc::CoreModel::InlineElement
+              item.content = item.content.lstrip if item.content.is_a?(String)
+            when String
+              item.replace(item.lstrip)
+            end
+          end
+
+          def strip_right(item)
+            case item
+            when Coradoc::CoreModel::InlineElement
+              item.content = item.content.rstrip if item.content.is_a?(String)
+            when String
+              item.replace(item.rstrip)
+            end
+          end
+
+          def text_element?(item)
+            item.is_a?(Coradoc::CoreModel::InlineElement) || item.is_a?(String)
+          end
+
+          def reject_empty_elements(content)
             content.reject do |item|
               if item.is_a?(Coradoc::CoreModel::InlineElement)
-                item.content.to_s.empty? && !item_has_nested_content?(item)
+                item.content.to_s.empty? && !has_nested_content?(item)
               elsif item.is_a?(String)
                 item.empty?
               else
@@ -63,12 +75,9 @@ module Coradoc
             end
           end
 
-          # Check if InlineElement has meaningful nested content
-          def item_has_nested_content?(item)
-            return false unless item.is_a?(Coradoc::CoreModel::InlineElement)
-            return false if item.nested_elements.nil? || item.nested_elements.empty?
-
-            true
+          def has_nested_content?(item)
+            item.is_a?(Coradoc::CoreModel::InlineElement) &&
+              item.nested_elements && !item.nested_elements.empty?
           end
         end
 

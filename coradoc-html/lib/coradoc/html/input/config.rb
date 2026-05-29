@@ -53,11 +53,12 @@ module Coradoc
         end
 
         def self.declare_option(option)
-          define_method(option) do
-            @inline_options[option] || instance_variable_get(:"@#{option}")
-          end
+          attr_accessor option
 
-          attr_writer option
+          original_reader = instance_method(option)
+          define_method(option) do
+            @inline_options[option] || original_reader.bind_call(self)
+          end
         end
 
         declare_option :unknown_tags

@@ -24,31 +24,6 @@ module Coradoc
 
             treat_children_coradoc(title, {})
           end
-
-          # Extract text from content array
-          def extract_text_from_content(content)
-            return content if content.is_a?(String)
-            return '' if content.nil?
-
-            content.map do |item|
-              case item
-              when String
-                item
-              when Coradoc::CoreModel::InlineElement
-                item.content.to_s
-              when Coradoc::CoreModel::Base
-                if item.content
-                  item.content.to_s
-                elsif item.title
-                  item.title.to_s
-                else
-                  ''
-                end
-              else
-                item.to_s
-              end
-            end.join
-          end
         end
 
         register :figure, Figure.new
