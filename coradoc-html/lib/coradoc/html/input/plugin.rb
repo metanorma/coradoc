@@ -11,9 +11,9 @@ module Coradoc
         #   def name = "Test"
         # end
 
-        def self.new(&block)
+        def self.new(&)
           if self == Plugin
-            Class.new(Plugin, &block)
+            Class.new(Plugin, &)
           else
             super
           end
@@ -24,10 +24,14 @@ module Coradoc
           @html_tree_hooks_post = {}
         end
 
-        # define name to name a Plugin
         def name
           self.class.name
         end
+
+        # Default no-op hooks. Plugins override these as needed.
+        def preprocess_html_tree; end
+        def postprocess_coremodel_tree; end
+        def postprocess_output_string; end
 
         #### HTML Tree functionalities
 
@@ -131,7 +135,7 @@ module Coradoc
           end
         end
 
-        def html_tree_run_hooks(node, state, &_block)
+        def html_tree_run_hooks(node, state, &)
           hook_pre = @html_tree_hooks_pre[node]
           hook_post = @html_tree_hooks_post[node]
 
@@ -150,7 +154,7 @@ module Coradoc
         # @deprecated Use postprocess_coremodel_tree instead. Will be removed in v2.0.
         def postprocess_coradoc_tree
           warn '[DEPRECATION] `postprocess_coradoc_tree` is deprecated. Use `postprocess_coremodel_tree` instead.'
-          postprocess_coremodel_tree if public_methods.include?(:postprocess_coremodel_tree)
+          postprocess_coremodel_tree
         end
 
         #### Output string functionalities
@@ -161,7 +165,7 @@ module Coradoc
         # @deprecated Use postprocess_output_string instead. Will be removed in v2.0.
         def postprocess_asciidoc_string
           warn '[DEPRECATION] `postprocess_asciidoc_string` is deprecated. Use `postprocess_output_string` instead.'
-          postprocess_output_string if public_methods.include?(:postprocess_output_string)
+          postprocess_output_string
         end
       end
     end

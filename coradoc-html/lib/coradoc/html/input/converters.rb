@@ -16,19 +16,21 @@ module Coradoc
         autoload :Code, 'coradoc/html/input/converters/code'
         autoload :Div, 'coradoc/html/input/converters/div'
         autoload :Dl, 'coradoc/html/input/converters/dl'
-        autoload :Drop, 'coradoc/html/input/converters/drop'
+        autoload :Skip, 'coradoc/html/input/converters/drop'
         autoload :Em, 'coradoc/html/input/converters/em'
         autoload :Figure, 'coradoc/html/input/converters/figure'
         autoload :H, 'coradoc/html/input/converters/h'
         autoload :Head, 'coradoc/html/input/converters/head'
         autoload :Hr, 'coradoc/html/input/converters/hr'
-        autoload :Ignore, 'coradoc/html/input/converters/ignore'
         autoload :Img, 'coradoc/html/input/converters/img'
         autoload :Li, 'coradoc/html/input/converters/li'
         autoload :Mark, 'coradoc/html/input/converters/mark'
+        autoload :Math, 'coradoc/html/input/converters/math'
+        autoload :MediaBase, 'coradoc/html/input/converters/media_base'
         autoload :Ol, 'coradoc/html/input/converters/ol'
         autoload :P, 'coradoc/html/input/converters/p'
         autoload :PassThrough, 'coradoc/html/input/converters/pass_through'
+        autoload :PositionalFormatting, 'coradoc/html/input/converters/positional_formatting'
         autoload :Pre, 'coradoc/html/input/converters/pre'
         autoload :Q, 'coradoc/html/input/converters/q'
         autoload :Strong, 'coradoc/html/input/converters/strong'
@@ -37,10 +39,8 @@ module Coradoc
         autoload :Table, 'coradoc/html/input/converters/table'
         autoload :Td, 'coradoc/html/input/converters/td'
         autoload :Text, 'coradoc/html/input/converters/text'
-        autoload :Th, 'coradoc/html/input/converters/th'
         autoload :Tr, 'coradoc/html/input/converters/tr'
         autoload :Video, 'coradoc/html/input/converters/video'
-        autoload :Math, 'coradoc/html/input/converters/math'
 
         # Define class methods
         def self.register(tag_name, converter)
@@ -63,9 +63,9 @@ module Coradoc
           # Note: Some converters may have gem dependencies (e.g., Img requires marcel)
           # so we only load the essential ones here
           [
-            Base, Markup, A, Aside, Blockquote, Br, Bypass, Code, Div, Dl,
-            Drop, Em, Figure, H, Head, Hr, Ignore, Li, Mark, Ol, P,
-            PassThrough, Pre, Q, Strong, Sup, Sub, Table, Td, Text, Th, Tr
+            Base, Markup, A, Aside, Audio, Blockquote, Br, Bypass, Code, Div, Dl,
+            Skip, Em, Figure, H, Head, Hr, Img, Li, Mark, Math, Ol, P,
+            PassThrough, Pre, Q, Strong, Sup, Sub, Table, Td, Text, Tr, Video
           ].each do |converter|
             # Just accessing the constant triggers autoload
           end
@@ -106,7 +106,7 @@ module Coradoc
           when :pass_through
             PassThrough.new
           when :drop
-            Drop.new
+            Skip.new
           when :bypass
             Bypass.new
           when :raise

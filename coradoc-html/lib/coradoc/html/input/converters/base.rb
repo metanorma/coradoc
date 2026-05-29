@@ -44,15 +44,15 @@ module Coradoc
           def node_has_ancestor?(node, name)
             case name
             when String
-              node.ancestors.map(&:name).include?(name)
+              node.ancestors(name).any?
             when Array
-              (node.ancestors.map(&:name) & name).any?
+              name.any? { |n| node.ancestors(n).any? }
             end
           end
 
           def textnode_before_end_with?(node, str)
-            return nil unless [String, Regexp].include?(str.class)
-            return nil if str.is_a?(String) && str.empty?
+            return false unless [String, Regexp].include?(str.class)
+            return false if str.is_a?(String) && str.empty?
 
             str = /#{Regexp.escape(str)}/ if str.is_a?(String)
             str = /(?:#{str})\z/
@@ -62,8 +62,8 @@ module Coradoc
           end
 
           def textnode_after_start_with?(node, str)
-            return nil unless [String, Regexp].include?(str.class)
-            return nil if str.is_a?(String) && str.empty?
+            return false unless [String, Regexp].include?(str.class)
+            return false if str.is_a?(String) && str.empty?
 
             str = /#{Regexp.escape(str)}/ if str.is_a?(String)
             str = /\A(?:#{str})/
@@ -105,9 +105,29 @@ module Coradoc
               after.text[0]&.match?(/\w|,|;|"|\.\?!/)
           end
 
-          # Helper to escape text content
-          def escape_text(text)
-            text.to_s.gsub(/[<>&]/, '<' => '&lt;', '>' => '&gt;', '&' => '&amp;')
+          # Extract plain text from a mixed content array.
+          # Handles String, InlineElement (via .content), and other
+          # CoreModel::Base (via .content or .title).
+          def extract_text_from_content(content)
+            return content if content.is_a?(String)
+            return '' if content.nil?
+
+            content.map do |item|
+              case item
+              when String
+                item
+              when Coradoc::CoreModel::InlineElement
+                item.content.to_s
+              when Coradoc::CoreModel::Base
+                if item.content
+                  item.content.to_s
+                else
+                  ''
+                end
+              else
+                item.to_s
+              end
+            end.join
           end
         end
       end

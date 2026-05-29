@@ -16,7 +16,6 @@ module Coradoc
           end
 
           def table_header_row?(node)
-            # node.element_children.all? {|child| child.name.to_sym == :th}
             node.previous_element.nil?
           end
         end

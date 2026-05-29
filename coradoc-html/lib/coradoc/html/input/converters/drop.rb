@@ -4,9 +4,11 @@ module Coradoc
   module Input
     module Html
       module Converters
-        class Drop < Base
-          def to_coradoc(node, state = {})
-            convert(node, state)
+        class Skip < Base
+          INSTANCE = new
+
+          def to_coradoc(_node, _state = {})
+            ''
           end
 
           def convert(_node, _state = {})
@@ -14,14 +16,16 @@ module Coradoc
           end
         end
 
-        register :caption, Drop.new
-        register :figcaption, Drop.new
-        register :title, Drop.new
-        register :link, Drop.new
-        register :style, Drop.new
-        register :meta, Drop.new
-        register :script, Drop.new
-        register :comment, Drop.new
+        register :caption, Skip::INSTANCE
+        register :figcaption, Skip::INSTANCE
+        register :title,     Skip::INSTANCE
+        register :link,      Skip::INSTANCE
+        register :style,     Skip::INSTANCE
+        register :meta,      Skip::INSTANCE
+        register :script,    Skip::INSTANCE
+        register :comment,   Skip::INSTANCE
+        register :colgroup,  Skip::INSTANCE
+        register :col,       Skip::INSTANCE
       end
     end
   end

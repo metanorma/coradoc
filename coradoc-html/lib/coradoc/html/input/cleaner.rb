@@ -7,18 +7,10 @@ module Coradoc
         # Pre-compiled regexes for performance
         INNER_WHITESPACE_REGEX_1 = /\n stem:\[/
         INNER_WHITESPACE_REGEX_2 = /(stem:\[([^\]]|\\\])*\])\n(?=\S)/
-        INNER_WHITESPACE_REGEX_3 = /(stem:\[([^\]]|\\\])*\])\s+(?=[\^-])/
         NEWLINES_REGEX = /\n{3,}/
         LEADING_NEWLINE_REGEX = /\A\n+/
         WHITESPACE_REGEX = /[ \t\r\n]+/
         TRAILING_WHITESPACE_REGEX = /[ \t\r\n]+\z/
-        MULTIPLE_WHITESPACE_REGEX = /[ \t]{2,}/
-        TAG_BORDER_REGEXES = {
-          asterisk: /\s?\*{2,}/,
-          underscore: /\s?_{2,}/,
-          tilde: /\s?~{2,}/,
-          bracket: /\s?\[.*?\]\s?/
-        }.freeze
 
         def tidy(string)
           return string.transform_values { |i| tidy(i) } if string.is_a? Hash
@@ -74,23 +66,7 @@ module Coradoc
           result
         end
 
-        # Find non-asterisk content that is enclosed by two or
-        # more asterisks. Ensure that only one whitespace occurs
-        # in the border area.
-        # Same for underscores and brackets.
         def clean_tag_borders(string)
-          # result = string.gsub(/\s?\*{2,}.*?\*{2,}\s?/) do |match|
-          # preserve_border_whitespaces(match, default_border: Coradoc::Input::HTML.config.tag_border) do
-          #   match.strip.sub("** ", "**").sub(" **", "**")
-          # end
-          # end
-
-          # result = string.gsub(/\s?_{2,}.*?_{2,}\s?/) do |match|
-          #   preserve_border_whitespaces(match, default_border: Coradoc::Input::HTML.config.tag_border) do
-          #     match.strip.sub("__ ", "__").sub(" __", "__")
-          #   end
-          # end
-
           result = string.gsub(/\s?~{2,}.*?~{2,}\s?/) do |match|
             preserve_border_whitespaces(
               match,
@@ -111,29 +87,24 @@ module Coradoc
           string.gsub(/(\*\*|~~|__)\s([.!?'"])/, '\\1\\2')
         end
 
-        # preprocesses HTML, rather than postprocessing it
         def preprocess_word_html(string)
           clean_headings(scrub_whitespace(string.dup))
         end
 
         def scrub_whitespace(string)
-          string.gsub!(/&nbsp;|&#xA0;|\u00a0/i, '&#xA0;') # HTML encoded spaces
-          string = Coradoc.strip_unicode(string) # Strip document-level leading and trailing whitespace
-          string.gsub!(/( +)$/, ' ') # line trailing whitespace
-          string.gsub!("\n\n\n\n", "\n\n") # Quadruple line breaks
-          # string.delete!('?| ')               # Unicode non-breaking spaces, injected as tabs
+          string.gsub!(/&nbsp;|&#xA0;| /i, '&#xA0;')
+          string = Coradoc.strip_unicode(string)
+          string.gsub!(/( +)$/, ' ')
+          string.gsub!("\n\n\n\n", "\n\n")
           string
         end
 
-        # following added by me
         def clean_headings(string)
           string.gsub!(%r{<h([1-9])[^>]*></h\1>}, ' ')
-          # I don't know why Libre Office is inserting them, but they need to go
           string.gsub!(
             %r{<h([1-9])[^>]* style="vertical-align: super;[^>]*>(.+?)</h\1>},
             '<sup>\\2</sup>'
           )
-          # I absolutely don't know why Libre Office is rendering superscripts as h1
           string
         end
 

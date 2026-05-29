@@ -37,13 +37,9 @@ module Coradoc
             )
             image_dest_path = images_dir + "#{image_number}.#{ext}"
 
-            # puts "image_dest_path: #{image_dest_path.to_s}"
-            # puts "image_src_path: #{image_src_path.to_s}"
-
             if File.exist?(image_src_path)
               FileUtils.cp(image_src_path, image_dest_path)
             else
-              @annotate_missing = image_src_path
               Kernel.warn "Image #{image_src_path} does not exist"
             end
 
@@ -84,10 +80,7 @@ module Coradoc
 
             title = extract_title(node)
 
-            if Coradoc::Html::Input.config.external_images
-              # puts "external image conversion #{id}, #{src}"
-              src = datauri2file(src)
-            end
+            src = datauri2file(src) if Coradoc::Html::Input.config.external_images
 
             # Use CoreModel::Image
             return unless src
@@ -103,7 +96,7 @@ module Coradoc
           end
         end
 
-        register :img, Img
+        register :img, Img.new
       end
     end
   end

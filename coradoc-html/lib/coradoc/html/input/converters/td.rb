@@ -6,7 +6,6 @@ module Coradoc
       module Converters
         class Td < Base
           def to_coradoc(node, state = {})
-            node['id']
             colspan = node['colspan']&.to_i
             rowspan = node['rowspan']&.to_i
             alignment = extract_alignment(node)
@@ -28,37 +27,11 @@ module Coradoc
 
           def extract_alignment(node)
             align = node['align']
-            node['valign']
-            # Combine horizontal and vertical alignment
             case align
             when 'left' then 'left'
             when 'center' then 'center'
             when 'right' then 'right'
             end
-            # Return alignment string (can be extended to include vertical)
-          end
-
-          # Extract text from content array
-          def extract_text_from_content(content)
-            return content if content.is_a?(String)
-            return '' if content.nil?
-
-            content.map do |item|
-              case item
-              when String
-                item
-              when Coradoc::CoreModel::InlineElement
-                item.content.to_s
-              when Coradoc::CoreModel::Base
-                if item.content
-                  item.content.to_s
-                else
-                  ''
-                end
-              else
-                item.to_s
-              end
-            end.join
           end
         end
 
