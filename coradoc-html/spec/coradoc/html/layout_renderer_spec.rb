@@ -43,7 +43,7 @@ RSpec.describe Coradoc::Html::LayoutRenderer do
       }
     end
 
-    it 'renders SPA HTML fallback' do
+    it 'renders SPA HTML fallback', :requires_frontend_dist do
       html = described_class.new.render_spa(document,
                                             { dist_dir: File.join(__dir__, '..', '..', '..', 'frontend', 'dist') }, content_data)
       expect(html).to include('<!DOCTYPE html>')

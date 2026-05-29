@@ -37,6 +37,13 @@ RSpec.configure do |config|
   config.shared_context_metadata_behavior = :apply_to_host_groups
   config.order = :random
 
+  config.before(:context, :requires_frontend_dist) do
+    dist_dir = File.expand_path('../frontend/dist', __dir__)
+    unless File.directory?(dist_dir)
+      skip "Frontend dist not built. Run: cd frontend && npm install && npm run build"
+    end
+  end
+
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = '.rspec_status'
 
