@@ -102,15 +102,27 @@
     toc: null,
     sections: [],
     observer: null,
+    linkMap: null,
+    activeId: null,
+    pendingRaf: null,
 
     init() {
       this.toc = document.getElementById('toc');
       if (!this.toc) return;
 
+      this.buildLinkMap();
       this.findSections();
       this.setupIntersectionObserver();
       this.setupSmoothScrolling();
       this.setupCollapsible();
+    },
+
+    buildLinkMap() {
+      this.linkMap = new Map();
+      this.toc.querySelectorAll('a[href^="#"]').forEach(link => {
+        const id = link.getAttribute('href').slice(1);
+        this.linkMap.set(id, link);
+      });
     },
 
     findSections() {
@@ -127,28 +139,34 @@
       };
 
       this.observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            this.highlightTOCItem(entry.target.id);
-          }
-        });
+        const visible = entries.filter(e => e.isIntersecting);
+        if (visible.length > 0) {
+          const last = visible[visible.length - 1];
+          this.scheduleHighlight(last.target.id);
+        }
       }, options);
 
       this.sections.forEach(section => this.observer.observe(section));
     },
 
+    scheduleHighlight(id) {
+      if (this.pendingRaf) cancelAnimationFrame(this.pendingRaf);
+      this.pendingRaf = requestAnimationFrame(() => this.highlightTOCItem(id));
+    },
+
     highlightTOCItem(id) {
-      if (!this.toc) return;
+      if (!this.linkMap || this.activeId === id) return;
 
-      const links = this.toc.querySelectorAll('a');
-      links.forEach(link => {
-        const isActive = link.getAttribute('href') === `#${id}`;
-        link.classList.toggle('active', isActive);
+      const prev = this.activeId ? this.linkMap.get(this.activeId) : null;
+      if (prev) prev.classList.remove('active');
 
-        if (isActive) {
-          link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-        }
-      });
+      const link = this.linkMap.get(id);
+      if (link) {
+        link.classList.add('active');
+        link.scrollIntoView({ block: 'nearest' });
+      }
+
+      this.activeId = id;
     },
 
     setupSmoothScrolling() {
@@ -202,10 +220,20 @@
   // ========================================================================
 
   const ProgressIndicator = {
+    ticking: false,
+
     init() {
       this.createProgressBar();
       this.updateProgress();
-      window.addEventListener('scroll', () => this.updateProgress(), { passive: true });
+      window.addEventListener('scroll', () => {
+        if (!this.ticking) {
+          this.ticking = true;
+          requestAnimationFrame(() => {
+            this.updateProgress();
+            this.ticking = false;
+          });
+        }
+      }, { passive: true });
     },
 
     createProgressBar() {
@@ -249,6 +277,11 @@
 
     addCopyButtons() {
       document.querySelectorAll('pre').forEach(pre => {
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+
         const button = document.createElement('button');
         button.className = 'copy-button';
         button.textContent = 'Copy';
@@ -266,9 +299,8 @@
           transition: opacity 0.2s;
         `;
 
-        pre.style.position = 'relative';
-        pre.addEventListener('mouseenter', () => button.style.opacity = '1');
-        pre.addEventListener('mouseleave', () => button.style.opacity = '0');
+        wrapper.addEventListener('mouseenter', () => button.style.opacity = '1');
+        wrapper.addEventListener('mouseleave', () => button.style.opacity = '0');
 
         button.addEventListener('click', async () => {
           const code = pre.querySelector('code')?.textContent || pre.textContent;
@@ -282,7 +314,7 @@
           }
         });
 
-        pre.appendChild(button);
+        wrapper.appendChild(button);
       });
     },
 
