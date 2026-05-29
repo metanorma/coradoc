@@ -33,13 +33,6 @@ RSpec.describe Coradoc::Html::ConverterBase do
     end
   end
 
-  describe '#converter_name' do
-    it 'returns the converter name' do
-      converter = described_class.new(document)
-      expect(converter.converter_name).to eq(:converter_base)
-    end
-  end
-
   describe '.convert' do
     it 'creates instance and calls convert' do
       # Create a test subclass that implements convert
@@ -97,6 +90,51 @@ RSpec.describe Coradoc::Html::ConverterBase do
   describe Coradoc::Html::ConverterBase::UnsupportedDocumentError do
     it 'is a StandardError' do
       expect(described_class).to be < StandardError
+    end
+  end
+
+  describe Coradoc::Html::ConverterBase::ConfigurationBase do
+    let(:config_class) do
+      Class.new(described_class) do
+        attr_accessor :name, :level
+
+        def initialize(name: 'default', level: 1)
+          @name = name
+          @level = level
+        end
+
+        def to_h
+          { name: @name, level: @level }
+        end
+      end
+    end
+
+    describe '.defaults' do
+      it 'returns a new instance with default values' do
+        config = config_class.defaults
+        expect(config).to be_a(config_class)
+        expect(config.name).to eq('default')
+        expect(config.level).to eq(1)
+      end
+    end
+
+    describe '#merge' do
+      it 'merges with a hash' do
+        config = config_class.new(name: 'original')
+        merged = config.merge(name: 'updated')
+
+        expect(merged.name).to eq('updated')
+        expect(config.name).to eq('original')
+      end
+
+      it 'merges with another configuration instance' do
+        config1 = config_class.new(name: 'a')
+        config2 = config_class.new(name: 'b', level: 5)
+        merged = config1.merge(config2)
+
+        expect(merged.name).to eq('b')
+        expect(merged.level).to eq(5)
+      end
     end
   end
 end

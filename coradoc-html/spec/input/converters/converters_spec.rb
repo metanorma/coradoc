@@ -167,7 +167,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
 
         # May return array or single element
         elements = Array(result)
-        expect(elements.any? { |e| e.is_a?(Coradoc::CoreModel::BoldElement) }).to be true
+        expect(elements.any?(Coradoc::CoreModel::BoldElement)).to be true
       end
     end
   end
@@ -184,7 +184,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
         result = converter.to_coradoc(node, {})
 
         elements = Array(result)
-        expect(elements.any? { |e| e.is_a?(Coradoc::CoreModel::ItalicElement) }).to be true
+        expect(elements.any?(Coradoc::CoreModel::ItalicElement)).to be true
       end
     end
   end
@@ -201,9 +201,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
         result = converter.to_coradoc(node, {})
 
         elements = Array(result)
-        expect(elements.any? do |e|
-          e.is_a?(Coradoc::CoreModel::MonospaceElement)
-        end).to be true
+        expect(elements.any?(Coradoc::CoreModel::MonospaceElement)).to be true
       end
     end
   end
@@ -426,6 +424,107 @@ RSpec.describe Coradoc::Input::Html::Converters do
     end
   end
 
+  describe 'Converter::Math' do
+    let(:converter) { Coradoc::Input::Html::Converters::Math.new }
+
+    describe '#to_coradoc' do
+      it 'converts math to StemElement' do
+        html = '<math><mi>x</mi></math>'
+        doc = Nokogiri::HTML.fragment(html)
+        node = doc.at('math')
+
+        result = converter.to_coradoc(node, {})
+
+        expect(result).to be_a(Coradoc::CoreModel::StemElement)
+        expect(result.stem_type).to eq('mathml')
+      end
+    end
+  end
+
+  describe 'Converter::Audio' do
+    let(:converter) { Coradoc::Input::Html::Converters::Audio.new }
+
+    describe '#to_coradoc' do
+      it 'converts audio to Block with audio semantic type' do
+        html = '<audio src="song.mp3" controls></audio>'
+        doc = Nokogiri::HTML.fragment(html)
+        node = doc.at('audio')
+
+        result = converter.to_coradoc(node, {})
+
+        expect(result).to be_a(Coradoc::CoreModel::Block)
+        expect(result.block_semantic_type.to_s).to eq('audio')
+        expect(result.content).to eq('song.mp3')
+      end
+    end
+  end
+
+  describe 'Converter::Video' do
+    let(:converter) { Coradoc::Input::Html::Converters::Video.new }
+
+    describe '#to_coradoc' do
+      it 'converts video to Block with video semantic type' do
+        html = '<video src="movie.mp4" controls poster="thumb.jpg" width="640" height="480"></video>'
+        doc = Nokogiri::HTML.fragment(html)
+        node = doc.at('video')
+
+        result = converter.to_coradoc(node, {})
+
+        expect(result).to be_a(Coradoc::CoreModel::Block)
+        expect(result.block_semantic_type.to_s).to eq('video')
+        expect(result.content).to eq('movie.mp4')
+      end
+    end
+  end
+
+  describe 'shared MediaBase behavior' do
+    it 'Audio and Video share MediaBase superclass' do
+      expect(Coradoc::Input::Html::Converters::Audio.superclass).to eq(
+        Coradoc::Input::Html::Converters::MediaBase
+      )
+      expect(Coradoc::Input::Html::Converters::Video.superclass).to eq(
+        Coradoc::Input::Html::Converters::MediaBase
+      )
+    end
+
+    it 'both extract title from track/source elements' do
+      html = '<audio><track label="English" kind="captions" srclang="en"/></audio>'
+      doc = Nokogiri::HTML.fragment(html)
+      node = doc.at('audio')
+
+      audio_converter = Coradoc::Input::Html::Converters::Audio.new
+      result = audio_converter.to_coradoc(node, {})
+      expect(result.title).to eq('English')
+    end
+  end
+
+  describe 'Converter::A content extraction' do
+    let(:converter) { Coradoc::Input::Html::Converters::A.new }
+
+    it 'extracts text from inline content for cross-references' do
+      html = '<a href="#section1">Go to section</a>'
+      doc = Nokogiri::HTML.fragment(html)
+      node = doc.at('a')
+
+      result = converter.to_coradoc(node, {})
+
+      expect(result).to be_a(Coradoc::CoreModel::CrossReferenceElement)
+      expect(result.target).to eq('section1')
+    end
+
+    it 'extracts text from inline content for links' do
+      html = '<a href="http://example.com">Example</a>'
+      doc = Nokogiri::HTML.fragment(html)
+      node = doc.at('a')
+
+      result = converter.to_coradoc(node, {})
+
+      elements = Array(result)
+      link = elements.find { |e| e.is_a?(Coradoc::CoreModel::LinkElement) }
+      expect(link).not_to be_nil
+    end
+  end
+
   describe 'complex HTML processing' do
     it 'handles mixed inline formatting' do
       html = '<p><strong>Bold</strong> and <em>italic</em></p>'
@@ -491,5 +590,49 @@ RSpec.describe Coradoc::Input::Html::Converters do
         c.to_s
       end
     end.join
+  end
+
+  describe 'Base#node_has_ancestor?' do
+    let(:base) { Coradoc::Input::Html::Converters::Base.new }
+
+    it 'finds a string ancestor name' do
+      html = '<div><p><strong>Bold</strong></p></div>'
+      doc = Nokogiri::HTML.fragment(html)
+      node = doc.at('strong')
+
+      expect(base.node_has_ancestor?(node, 'div')).to be true
+      expect(base.node_has_ancestor?(node, 'table')).to be false
+    end
+
+    it 'finds an array of ancestor names' do
+      html = '<div><p><strong>Bold</strong></p></div>'
+      doc = Nokogiri::HTML.fragment(html)
+      node = doc.at('strong')
+
+      expect(base.node_has_ancestor?(node, %w[table div])).to be true
+      expect(base.node_has_ancestor?(node, %w[table ul])).to be false
+    end
+
+    it 'returns false when no ancestors match' do
+      html = '<p>Plain</p>'
+      doc = Nokogiri::HTML.fragment(html)
+      node = doc.at('p')
+
+      expect(base.node_has_ancestor?(node, 'div')).to be false
+    end
+  end
+
+  describe 'singleton converter instances' do
+    it 'Bypass::INSTANCE is reused across registrations' do
+      instance = Coradoc::Input::Html::Converters::Bypass::INSTANCE
+      converter = described_class.lookup(:span)
+      expect(converter).to equal(instance)
+    end
+
+    it 'Skip::INSTANCE is reused across registrations' do
+      instance = Coradoc::Input::Html::Converters::Skip::INSTANCE
+      converter = described_class.lookup(:script)
+      expect(converter).to equal(instance)
+    end
   end
 end

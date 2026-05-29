@@ -1,14 +1,12 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'coradoc/html/theme/classic_renderer'
-require 'coradoc/html/theme/modern_renderer'
-require 'coradoc/html/template_config'
+require 'coradoc/html/renderer'
 require 'coradoc/core_model'
 require 'tmpdir'
 require 'fileutils'
 
-RSpec.describe Coradoc::Html::Theme::ClassicRenderer do
+RSpec.describe 'Template Integration' do
   let(:document) do
     Coradoc::CoreModel::DocumentElement.new(
       id: 'test-doc',
@@ -16,68 +14,7 @@ RSpec.describe Coradoc::Html::Theme::ClassicRenderer do
     )
   end
 
-  after do
-    Coradoc::Html.reset_configuration!
-  end
-
-  describe '#use_templates?' do
-    it 'returns false by default' do
-      renderer = described_class.new(document)
-      expect(renderer.use_templates?).to be false
-    end
-
-    it 'returns true when use_templates option is set' do
-      renderer = described_class.new(document, use_templates: true)
-      expect(renderer.use_templates?).to be true
-    end
-  end
-
-  describe '#template_renderer' do
-    it 'returns nil when templates not enabled' do
-      renderer = described_class.new(document)
-      expect(renderer.template_renderer).to be_nil
-    end
-
-    it 'returns Renderer when templates enabled' do
-      renderer = described_class.new(document, use_templates: true)
-      expect(renderer.template_renderer).to be_a(Coradoc::Html::Renderer)
-    end
-
-    it 'uses global configuration for template_dirs' do
-      Coradoc::Html.configure do |config|
-        config.template_dirs = ['/global/templates']
-      end
-
-      renderer = described_class.new(document, use_templates: true)
-      expect(renderer.template_renderer.template_dirs).to eq(['/global/templates'])
-    end
-
-    it 'uses per-render template_dirs over global' do
-      Coradoc::Html.configure do |config|
-        config.template_dirs = ['/global/templates']
-      end
-
-      renderer = described_class.new(document,
-                                     use_templates: true,
-                                     template_dirs: ['/override/templates'])
-
-      expect(renderer.template_renderer.template_dirs).to eq(['/override/templates'])
-    end
-  end
-
-  describe '#supported_features' do
-    it 'includes template_rendering when templates enabled' do
-      renderer = described_class.new(document, use_templates: true)
-      expect(renderer.supported_features).to include(:template_rendering)
-    end
-
-    it 'excludes template_rendering when templates disabled' do
-      renderer = described_class.new(document)
-      expect(renderer.supported_features).not_to include(:template_rendering)
-    end
-  end
-
-  describe '#render with templates' do
+  describe 'Renderer template customization' do
     let(:tmpdir) { Dir.mktmpdir }
     let(:bibliography) do
       Coradoc::CoreModel::Bibliography.new(
@@ -95,12 +32,11 @@ RSpec.describe Coradoc::Html::Theme::ClassicRenderer do
     end
 
     before do
-      # Create custom template
       FileUtils.mkdir_p(tmpdir)
       File.write(File.join(tmpdir, 'bibliography.liquid'), <<~LIQUID)
-        <section id="{{ id }}" class="custom-bib">
-          <h1>{{ title }}</h1>
-          {% for entry in entries %}{{ entry | render_element }}{% endfor %}
+        <section id="{{ element.id }}" class="custom-bib">
+          <h1>{{ element.title }}</h1>
+          {% for entry in element.entries %}{{ entry | render_element }}{% endfor %}
         </section>
       LIQUID
     end
@@ -109,71 +45,69 @@ RSpec.describe Coradoc::Html::Theme::ClassicRenderer do
       FileUtils.rm_rf(tmpdir)
     end
 
-    it 'renders using templates when enabled' do
-      renderer = described_class.new(bibliography,
-                                     use_templates: true,
-                                     template_dirs: [tmpdir])
-
-      result = renderer.render
+    it 'renders using custom templates from template_dirs' do
+      renderer = Coradoc::Html::Renderer.new(template_dirs: [tmpdir])
+      result = renderer.render(bibliography)
       expect(result).to include('custom-bib')
       expect(result).to include('TEST1')
     end
-  end
-end
 
-RSpec.describe Coradoc::Html::Theme::ModernRenderer do
-  let(:document) do
-    Coradoc::CoreModel::DocumentElement.new(
-      id: 'test-doc',
-      title: 'Test Document'
-    )
-  end
-
-  after do
-    Coradoc::Html.reset_configuration!
-  end
-
-  describe '#template_dirs' do
-    it 'returns empty array by default' do
-      renderer = described_class.new(document)
-      expect(renderer.template_dirs).to eq([])
+    it 'falls back to default templates when custom not found' do
+      renderer = Coradoc::Html::Renderer.new(template_dirs: [tmpdir])
+      # Block has no custom template, should use default
+      block = Coradoc::CoreModel::Block.new(
+        content: [Coradoc::CoreModel::TextContent.new(text: 'Hello')]
+      )
+      result = renderer.render(block)
+      expect(result).to include('Hello')
     end
 
-    it 'uses option template_dirs when provided' do
-      renderer = described_class.new(document, template_dirs: ['/custom'])
-      expect(renderer.template_dirs).to eq(['/custom'])
-    end
+    it 'cascades from user dirs to default templates' do
+      # Only override bibliography, other types use defaults
+      renderer = Coradoc::Html::Renderer.new(template_dirs: [tmpdir])
 
-    it 'uses global configuration when no option' do
-      Coradoc::Html.configure do |config|
-        config.template_dirs = ['/global']
-      end
+      # Bibliography uses custom template
+      bib_result = renderer.render(bibliography)
+      expect(bib_result).to include('custom-bib')
 
-      renderer = described_class.new(document)
-      expect(renderer.template_dirs).to eq(['/global'])
+      # Block uses default template
+      block = Coradoc::CoreModel::Block.new(
+        content: [Coradoc::CoreModel::TextContent.new(text: 'World')]
+      )
+      block_result = renderer.render(block)
+      expect(block_result).to include('World')
+      expect(block_result).not_to include('custom-bib')
     end
   end
 
-  describe '#use_custom_templates?' do
-    let(:tmpdir) { Dir.mktmpdir }
-
+  describe 'Renderer with template_dirs from global configuration' do
     after do
-      FileUtils.rm_rf(tmpdir)
+      Coradoc::Html.reset_configuration!
     end
 
-    it 'returns false when no template_dirs configured' do
-      renderer = described_class.new(document)
-      expect(renderer.use_custom_templates?).to be false
-    end
+    it 'uses template_dirs from global config' do
+      tmpdir = Dir.mktmpdir
+      begin
+        FileUtils.mkdir_p(tmpdir)
+        File.write(File.join(tmpdir, 'bibliography.liquid'), <<~LIQUID)
+          <div class="global-template">{{ element.id }}</div>
+        LIQUID
 
-    it 'returns true when template_dirs has existing directory' do
-      renderer = described_class.new(document, template_dirs: [tmpdir])
-      expect(renderer.use_custom_templates?).to be true
-    end
+        Coradoc::Html.configure do |config|
+          config.template_dirs = [tmpdir]
+        end
 
-    it 'returns false when template_dirs has non-existing directory' do
-      renderer = described_class.new(document, template_dirs: ['/nonexistent'])
-      expect(renderer.use_custom_templates?).to be false
+        renderer = Coradoc::Html::Renderer.new(
+          template_dirs: Coradoc::Html.configuration.template_dirs
+        )
+        expect(renderer.template_dirs).to eq([tmpdir])
+
+        bib = Coradoc::CoreModel::Bibliography.new(id: 'test', level: 1)
+        result = renderer.render(bib)
+        expect(result).to include('global-template')
+      ensure
+        FileUtils.rm_rf(tmpdir)
+      end
     end
   end
 end
