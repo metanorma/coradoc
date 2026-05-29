@@ -90,7 +90,7 @@ RSpec.describe Coradoc::Html::Spa do
     end
   end
 
-  describe described_class do
+  describe described_class, :requires_frontend_dist do
     describe '.convert' do
       it 'converts a document to SPA HTML' do
         html = described_class.convert(document)

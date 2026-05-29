@@ -106,7 +106,7 @@ RSpec.describe 'HTML Output Integration' do
     end
   end
 
-  describe 'Coradoc::Html::Spa' do
+  describe 'Coradoc::Html::Spa', :requires_frontend_dist do
     it 'converts a real AsciiDoc document to SPA HTML' do
       html = Coradoc::Html::Spa.convert(document)
 
@@ -152,7 +152,7 @@ RSpec.describe 'HTML Output Integration' do
       end
     end
 
-    describe '.serialize_spa' do
+    describe '.serialize_spa', :requires_frontend_dist do
       it 'converts using Spa converter' do
         html = Coradoc::Html.serialize_spa(document)
 
@@ -167,7 +167,7 @@ RSpec.describe 'HTML Output Integration' do
         expect(html).to include('<!DOCTYPE html>')
       end
 
-      it 'converts to spa format' do
+      it 'converts to spa format', :requires_frontend_dist do
         html = Coradoc::Html.serialize_as(document, :spa)
         expect(html).to include('CORADOC_DATA')
       end
@@ -177,7 +177,7 @@ RSpec.describe 'HTML Output Integration' do
         expect(html).to include('<!DOCTYPE html>')
       end
 
-      it 'accepts html_spa alias' do
+      it 'accepts html_spa alias', :requires_frontend_dist do
         html = Coradoc::Html.serialize_as(document, :html_spa)
         expect(html).to include('CORADOC_DATA')
       end
@@ -225,7 +225,7 @@ RSpec.describe 'HTML Output Integration' do
         expect(Coradoc::Output::HtmlSpa.processor_match?('test.txt')).to be false
       end
 
-      it 'processes documents' do
+      it 'processes documents', :requires_frontend_dist do
         input = { 'test.html' => document }
         result = Coradoc::Output::HtmlSpa.processor_execute(input, {})
 
@@ -241,7 +241,7 @@ RSpec.describe 'HTML Output Integration' do
     end
   end
 
-  describe 'Section numbering in HTML output' do
+  describe 'Section numbering in HTML output', :requires_frontend_dist do
     let(:numbered_adoc) do
       <<~ADOC
         = Numbered Document
@@ -353,7 +353,7 @@ RSpec.describe 'HTML Output Integration' do
       end
     end
 
-    it 'writes SPA HTML to file' do
+    it 'writes SPA HTML to file', :requires_frontend_dist do
       Dir.mktmpdir do |dir|
         output_path = File.join(dir, 'output.html')
         Coradoc::Html::Spa.to_file(document, output_path)
