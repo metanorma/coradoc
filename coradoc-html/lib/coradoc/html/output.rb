@@ -16,18 +16,15 @@ module Coradoc
     #   result = Coradoc::Output.process(document, format: :html_static)
     #
     class HtmlStatic
+      extend Coradoc::Html::FormatDetection
+
       class << self
-        # Processor identifier for registration
-        # @return [Symbol] the processor ID
         def processor_id
           :html_static
         end
 
-        # Check if this processor matches a given filename
-        # @param filename [String] the filename to check
-        # @return [Boolean] true if this processor handles the file type
         def processor_match?(filename)
-          %w[.html .htm].any? { |ext| filename.downcase.end_with?(ext) }
+          html_extension?(filename)
         end
 
         # Process documents to static HTML
@@ -56,18 +53,15 @@ module Coradoc
     #   result = Coradoc::Output.process(document, format: :html_spa)
     #
     class HtmlSpa
+      extend Coradoc::Html::FormatDetection
+
       class << self
-        # Processor identifier for registration
-        # @return [Symbol] the processor ID
         def processor_id
           :html_spa
         end
 
-        # Check if this processor matches a given filename
-        # @param filename [String] the filename to check
-        # @return [Boolean] true if this processor handles the file type
         def processor_match?(filename)
-          %w[.html .htm].any? { |ext| filename.downcase.end_with?(ext) }
+          html_extension?(filename)
         end
 
         # Process documents to SPA HTML

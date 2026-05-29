@@ -1,5 +1,17 @@
 # frozen_string_literal: true
 
+module Coradoc
+  module Html
+    HTML_EXTENSIONS = %w[.html .htm].freeze
+
+    module FormatDetection
+      def html_extension?(filename)
+        HTML_EXTENSIONS.any? { |ext| filename.downcase.end_with?(ext) }
+      end
+    end
+  end
+end
+
 # Load HTML input module to register with Coradoc::Input
 require 'coradoc/html/input'
 # Load HTML output module to register with Coradoc::Output
@@ -7,76 +19,25 @@ require 'coradoc/html/output'
 
 module Coradoc
   module Html
-    module Converters
-      # Autoload HTML converters - they will be loaded when accessed
-      autoload :Base, 'coradoc/html/converters/base'
-      autoload :Admonition, 'coradoc/html/converters/admonition'
-      autoload :AttributeReference, 'coradoc/html/converters/attribute_reference'
-      autoload :Attribute, 'coradoc/html/converters/attribute'
-      autoload :Audio, 'coradoc/html/converters/audio'
-      autoload :BibliographyEntry, 'coradoc/html/converters/bibliography_entry'
-      autoload :Bibliography, 'coradoc/html/converters/bibliography'
-      autoload :BlockImage, 'coradoc/html/converters/block_image'
-      autoload :Bold, 'coradoc/html/converters/bold'
-      autoload :Break, 'coradoc/html/converters/break'
-      autoload :CommentBlock, 'coradoc/html/converters/comment_block'
-      autoload :CommentLine, 'coradoc/html/converters/comment_line'
-      autoload :CrossReference, 'coradoc/html/converters/cross_reference'
-      autoload :Document, 'coradoc/html/converters/document'
-      autoload :Example, 'coradoc/html/converters/example'
-      autoload :Highlight, 'coradoc/html/converters/highlight'
-      autoload :Include, 'coradoc/html/converters/include'
-      autoload :InlineImage, 'coradoc/html/converters/inline_image'
-      autoload :Italic, 'coradoc/html/converters/italic'
-      autoload :LineBreak, 'coradoc/html/converters/line_break'
-      autoload :Link, 'coradoc/html/converters/link'
-      autoload :ListItem, 'coradoc/html/converters/list_item'
-      autoload :Listing, 'coradoc/html/converters/listing'
-      autoload :Literal, 'coradoc/html/converters/literal'
-      autoload :Monospace, 'coradoc/html/converters/monospace'
-      autoload :Ordered, 'coradoc/html/converters/ordered'
-      autoload :Open, 'coradoc/html/converters/open'
-      autoload :Paragraph, 'coradoc/html/converters/paragraph'
-      autoload :Quote, 'coradoc/html/converters/quote'
-      autoload :ReviewerComment, 'coradoc/html/converters/reviewer_comment'
-      autoload :ReviewerNote, 'coradoc/html/converters/reviewer_note'
-      autoload :Section, 'coradoc/html/converters/section'
-      autoload :Sidebar, 'coradoc/html/converters/sidebar'
-      autoload :Source, 'coradoc/html/converters/source'
-      autoload :SourceCode, 'coradoc/html/converters/source_code'
-      autoload :Span, 'coradoc/html/converters/span'
-      autoload :Strikethrough, 'coradoc/html/converters/strikethrough'
-      autoload :Subscript, 'coradoc/html/converters/subscript'
-      autoload :Superscript, 'coradoc/html/converters/superscript'
-      autoload :TableCell, 'coradoc/html/converters/table_cell'
-      autoload :TableRow, 'coradoc/html/converters/table_row'
-      autoload :Table, 'coradoc/html/converters/table'
-      autoload :Term, 'coradoc/html/converters/term'
-      autoload :TextElement, 'coradoc/html/converters/text_element'
-      autoload :Underline, 'coradoc/html/converters/underline'
-      autoload :Unordered, 'coradoc/html/converters/unordered'
-      autoload :Verse, 'coradoc/html/converters/verse'
-      autoload :Video, 'coradoc/html/converters/video'
-    end
-
     # Autoload HTML components
     autoload :Config, 'coradoc/html/config'
-    autoload :Base, 'coradoc/html/base'
-    autoload :Entity, 'coradoc/html/entity'
-    autoload :ElementMapping, 'coradoc/html/element_mapping'
+    autoload :Escape, 'coradoc/html/escape'
+    autoload :SectionNumberable, 'coradoc/html/section_numberable'
 
     # Autoload HTML output converters
     autoload :ConverterBase, 'coradoc/html/converter_base'
     autoload :Static, 'coradoc/html/static'
     autoload :Spa, 'coradoc/html/spa'
-    autoload :NodeBuilder, 'coradoc/html/node_builder'
+    autoload :TocBuilder, 'coradoc/html/toc_builder'
 
     # Theme system
     autoload :Theme, 'coradoc/html/theme'
     autoload :TemplateLocator, 'coradoc/html/template_locator'
     autoload :TemplateConfig, 'coradoc/html/template_config'
-    autoload :TemplateHelpers, 'coradoc/html/template_helpers'
+    autoload :TemplateFilters, 'coradoc/html/template_helpers'
     autoload :Renderer, 'coradoc/html/renderer'
+    autoload :LayoutRenderer, 'coradoc/html/layout_renderer'
+    autoload :TocSerializer, 'coradoc/html/toc_serializer'
 
     # CoreModel transformers
     module Transform
@@ -141,31 +102,24 @@ module Coradoc
     end
 
     # Parse HTML file
-    def self.from_file(filename, **options)
+    def self.from_file(filename, **)
       content = File.read(filename)
-      parse(content, **options)
+      parse(content, **)
     end
 
     # Serialize CoreModel document to HTML
     #
-    # Uses the theme system to render HTML. Default theme is :classic.
+    # Uses the unified Liquid template renderer.
     #
     # @param document [Coradoc::CoreModel::Base] CoreModel document to serialize
     # @param options [Hash] Output options
     # @return [String] HTML output
     def self.serialize(document, options = {})
-      # Validate input is CoreModel
       validate_core_model!(document)
 
-      # Trigger theme autoloads to ensure renderers are registered
-      Theme::ClassicRenderer if options[:theme].nil? || options[:theme] == :classic
-      Theme::ModernRenderer if options[:theme] == :modern
-
-      # Use theme registry to find and use the appropriate renderer
-      theme = options[:theme] || :classic
-      renderer_class = Theme::Registry.find(theme)
-      renderer = renderer_class.new(document, options)
-      renderer.render_html5
+      layout = options.delete(:layout) || :static
+      renderer = Renderer.new(template_dirs: options.delete(:template_dirs))
+      renderer.render_html5(document, layout: layout, **options)
     end
 
     # Serialize CoreModel document to static HTML
@@ -176,9 +130,6 @@ module Coradoc
     # @param config [Hash, Static::Configuration] Static converter configuration
     # @return [String] HTML output
     def self.serialize_static(document, config = {})
-      # Validate input is CoreModel
-      validate_core_model!(document)
-
       Static.convert(document, config)
     end
 
@@ -190,9 +141,6 @@ module Coradoc
     # @param config [Hash, Spa::Configuration] SPA converter configuration
     # @return [String] HTML output
     def self.serialize_spa(document, config = {})
-      # Validate input is CoreModel
-      validate_core_model!(document)
-
       Spa.convert(document, config)
     end
 
@@ -203,9 +151,6 @@ module Coradoc
     # @param options [Hash] Converter options
     # @return [String] HTML output
     def self.serialize_as(document, format, options = {})
-      # Validate input is CoreModel
-      validate_core_model!(document)
-
       case format.to_sym
       when :static, :html_static, :classic
         serialize_static(document, options)
@@ -213,7 +158,7 @@ module Coradoc
         serialize_spa(document, options)
       else
         raise ArgumentError, "Unknown output format: #{format}. " \
-          'Valid formats: :static, :spa'
+                             'Valid formats: :static, :spa'
       end
     end
 

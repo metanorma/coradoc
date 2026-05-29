@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'escape'
+
 module Coradoc
   module Html
     # Abstract base class for HTML output converters
@@ -22,6 +24,21 @@ module Coradoc
 
       # Error class for unsupported document types
       class UnsupportedDocumentError < Coradoc::Error; end
+
+      # Base class for output converter configurations.
+      #
+      # Provides shared `merge` and `defaults` patterns.
+      # Subclasses define `initialize`, `to_h`, and `validate!`.
+      class ConfigurationBase
+        def self.defaults
+          new
+        end
+
+        def merge(other)
+          other_hash = other.is_a?(self.class) ? other.to_h : other.to_h.transform_keys(&:to_sym)
+          self.class.new(**to_h, **other_hash)
+        end
+      end
 
       attr_reader :document, :config
 
@@ -80,24 +97,8 @@ module Coradoc
         new(document, config).to_file(output_path)
       end
 
-      # Get the converter name
-      #
-      # @return [Symbol] Converter name (e.g., :static, :spa)
-      def converter_name
-        @converter_name ||= self.class.name.split('::').last
-                                .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
-                                .gsub(/([a-z\d])([A-Z])/, '\1_\2')
-                                .downcase
-                                .to_sym
-      end
-
       protected
 
-      # Validate the input document
-      #
-      # @param document [Object] The document to validate
-      # @return [Coradoc::CoreModel::Base] The validated document
-      # @raise [UnsupportedDocumentError] if document is not valid
       def validate_input(document)
         # Handle transformer hash output
         document = Coradoc::Transformer.transform(document) if document.is_a?(Hash) && document.key?(:document)
@@ -113,64 +114,23 @@ module Coradoc
         document
       end
 
-      # Build configuration from options
-      #
-      # @param config [Hash, Object] Configuration options or object
-      # @return [Object] Built configuration object
       def build_config(config)
-        if config.public_methods.include?(:validate!)
+        klass = configuration_class
+        return config unless klass
+
+        case config
+        when klass
           config.validate!
-          return config
-        end
-
-        config
-      end
-
-      def extract_document_title
-        if @document.is_a?(Coradoc::CoreModel::StructuralElement) && @document.title
-          title = @document.title
-          return title if title.is_a?(String)
-          return title.text if title.is_a?(Coradoc::CoreModel::Base) && title.text
-
-          return title.to_s
-        end
-
-        'Untitled Document'
-      end
-
-      def extract_text_from_content(content)
-        case content
-        when Array
-          content.map { |item| extract_text_from_content(item) }.join
-        when String
-          content
-        when Coradoc::CoreModel::InlineElement
-          content.content.to_s
-        when Coradoc::CoreModel::Base
-          if content.content
-            extract_text_from_content(content.content)
-          else
-            content.to_s
-          end
+          config
+        when Hash
+          klass.new(**config)
         else
-          content.to_s
+          klass.defaults
         end
       end
 
-      # Escape HTML content
-      #
-      # @param text [String] Text to escape
-      # @return [String] Escaped text
-      def escape_html(text)
-        Coradoc::Html::Base.escape_html(text.to_s)
-      end
-
-      # Escape HTML attribute value
-      #
-      # @param value [String] Value to escape
-      # @return [String] Escaped value
-      def escape_attr(value)
-        value.to_s.gsub('"', '&quot;').gsub('<', '&lt;').gsub('>', '&gt;')
+      def configuration_class
+        nil
       end
     end
   end

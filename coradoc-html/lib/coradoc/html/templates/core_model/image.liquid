@@ -1,17 +1,10 @@
-{%- comment -%}
-Image template
-
-Handles block and inline images with captions.
-{%- endcomment -%}
-
-{%- if inline -%}
-  <img src="{{ src }}" alt="{{ alt }}" class="inline-image"
-  {% elsif %}
-    <figure id="{{ id }}" class="image{% if caption %}<figcaption>{{ caption }}</figcaption>{% endif %}
-  </figure>
-{%- else -%}
-  <img src="{{ src }}" alt="{{ alt }}" class="block-image"
-  {% if width %} width="{{ width }}"{% endif %}
-  {% if height %} height="{{ height }}"{% endif %}
-</img>
-{%- endif -%}
+{% if element.inline? %}
+<img src="{{ element.src }}"{% if element.alt %} alt="{{ element.alt }}"{% endif %}{% if element.width %} width="{{ element.width }}"{% endif %}{% if element.height %} height="{{ element.height }}"{% endif %}>
+{% else %}
+<figure{% if element.id %} id="{{ element.id }}"{% endif %}>
+<img src="{{ element.src }}"{% if element.alt %} alt="{{ element.alt }}"{% endif %}{% if element.width %} width="{{ element.width }}"{% endif %}{% if element.height %} height="{{ element.height }}"{% endif %}>
+{% if element.caption %}
+<figcaption>{{ element.caption }}</figcaption>
+{% endif %}
+</figure>
+{% endif %}

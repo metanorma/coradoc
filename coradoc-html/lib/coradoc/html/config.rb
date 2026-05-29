@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
+require 'nokogiri'
+
 module Coradoc
   module Html
-    # HTML configuration and options
     module Config
       # Default HTML output options
       DEFAULT_OPTIONS = {
@@ -225,7 +226,11 @@ module Coradoc
         # Build CSS link tag
         def css_link_tag(options = {})
           href = stylesheet_path(options)
-          %(<link rel="stylesheet" href="#{href}">)
+          doc = Nokogiri::HTML::Document.new
+          node = Nokogiri::XML::Node.new('link', doc)
+          node['rel'] = 'stylesheet'
+          node['href'] = href
+          node.to_html
         end
 
         # Build CSS style tag with embedded content
@@ -236,14 +241,14 @@ module Coradoc
           content = css_content
           content += "\n\n#{custom_css}" if custom_css && !custom_css.empty?
 
-          %(<style>\n#{content}\n</style>)
+          build_text_element('style', content)
         end
 
         # Build custom CSS style tag
         def custom_css_tag(custom_css)
           return '' unless custom_css && !custom_css.empty?
 
-          %(<style>\n#{custom_css}\n</style>)
+          build_text_element('style', custom_css)
         end
 
         # Determine whether to embed or link CSS
@@ -305,7 +310,11 @@ module Coradoc
         # Build JavaScript link tag
         def js_link_tag(options = {})
           src = javascript_path(options)
-          %(<script src="#{src}" defer></script>)
+          doc = Nokogiri::HTML::Document.new
+          node = Nokogiri::XML::Node.new('script', doc)
+          node['src'] = src
+          node['defer'] = ''
+          node.to_html
         end
 
         # Build JavaScript script tag with embedded content
@@ -313,7 +322,7 @@ module Coradoc
           js_content = embedded_javascript(options)
           return '' if js_content.empty?
 
-          %(<script>\n#{js_content}\n</script>)
+          build_text_element('script', js_content)
         end
 
         # Build complete JavaScript tags (link or embedded)
@@ -378,14 +387,19 @@ module Coradoc
         # @return [String] HTML tags for Highlight.js
         def highlightjs_tags(options = {})
           theme = options[:highlightjs_theme] || DEFAULT_OPTIONS[:highlightjs_theme]
-          tags = []
+          doc = Nokogiri::HTML::Document.new
 
-          # Add Highlight.js library
-          tags << %(<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/#{theme}.min.css">)
-          tags << %(<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>)
-          tags << %(<script>hljs.highlightAll();</script>)
+          link_node = Nokogiri::XML::Node.new('link', doc)
+          link_node['rel'] = 'stylesheet'
+          link_node['href'] = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/#{theme}.min.css"
 
-          tags.join("\n")
+          script_node = Nokogiri::XML::Node.new('script', doc)
+          script_node['src'] = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js'
+
+          init_node = Nokogiri::XML::Node.new('script', doc)
+          init_node.content = 'hljs.highlightAll();'
+
+          [link_node.to_html, script_node.to_html, init_node.to_html].join("\n")
         end
 
         # Get data attributes for code block
@@ -461,6 +475,13 @@ module Coradoc
           line_break: 'br',
           admonition: 'div'
         }.freeze
+
+        def build_text_element(tag_name, content)
+          doc = Nokogiri::HTML::Document.new
+          node = Nokogiri::XML::Node.new(tag_name, doc)
+          node.content = content
+          node.to_html
+        end
       end
     end
   end

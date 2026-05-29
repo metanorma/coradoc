@@ -1,11 +1,19 @@
-{%- comment -%}
-Table template for CoreModel::Table
-{%- endcomment -%}
-<table id="{{ id }}" class="table">
-  {% if title %}<caption>{{ title }}</caption>{% endif %}
-  {% if rows %}
-    {% for row in rows %}
-      {{ row | render_element }}
-    {% endfor %}
-  {% endif %}
+<table{% if element.id %} id="{{ element.id }}"{% endif %}{% if element.title %} title="{{ element.title }}"{% endif %}>
+{% for row in element.rows %}
+{% if row.header? %}
+<thead>
+<tr>
+{% for cell in row.cells %}
+<th>{{ cell.content | render_element }}</th>
+{% endfor %}
+</tr>
+</thead>
+{% else %}
+<tr>
+{% for cell in row.cells %}
+<td{% if cell.colspan %} colspan="{{ cell.colspan }}"{% endif %}{% if cell.rowspan %} rowspan="{{ cell.rowspan }}"{% endif %}{% if cell.style %} style="{{ cell.style }}"{% endif %}>{{ cell.content | render_element }}</td>
+{% endfor %}
+</tr>
+{% endif %}
+{% endfor %}
 </table>

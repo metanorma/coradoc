@@ -1,16 +1,10 @@
-{%- comment -%}
-  Bibliography section template for CoreModel::Bibliography
-  Renders a bibliography section with optional title and list of entries
-{%- endcomment -%}
-<section id="{{ id }}" class="bibliography">
-  {% if title %}
-    {%- assign heading_level = level | default: 2 -%}
-    {%- capture heading_tag -%}h{{ heading_level }}{%- endcapture -%}
-    <{{ heading_tag }}>{{ title }}</{{ heading_tag }}>
-  {% endif %}
-  <div class="bibliography-entries">
-    {% for entry in entries %}
-      {{ entry | render_element }}
-    {% endfor %}
-  </div>
+<section class="bibliography"{% if element.id %} id="{{ element.id }}"{% endif %}>
+{% if element.title %}
+<h2 class="bibliography-title">{{ element.title }}</h2>
+{% endif %}
+<div class="bibliography-entries">
+{% for entry in element.entries %}
+{{ entry | render_element }}
+{% endfor %}
+</div>
 </section>

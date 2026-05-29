@@ -1,23 +1,5 @@
-{%- comment -%}
-List block template (ordered, unordered, definition lists)
-{%- endcomment -%}
-
-{%- if marker_type == "ordered" -%}
-<ol id="{{ id }}" class="ordered-list">
-  {%- for item in items -%}
-    <li>{{ item | render_element: renderer }}</li>
-  {%- endfor -%}
-</ol>
-{%- elsif marker_type == "definition" -%}
-<dl id="{{ id }}" class="definition-list">
-  {%- for item in items -%}
-    {{ item | render_element: renderer }}
-  {%- endfor -%}
-</dl>
-{%- else -%}
-<ul id="{{ id }}" class="unordered-list">
-  {%- for item in items -%}
-    <li>{{ item | render_element: renderer }}</li>
-  {%- endfor -%}
-</ul>
-{%- endif -%}
+<{{ element.html_tag }}{% if element.id %} id="{{ element.id }}"{% endif %}{% if element.title %} title="{{ element.title }}"{% endif %}>
+{% for item in element.items %}
+<li>{{ item.content | render_element }}{% if item.nested_list %}{{ item.nested_list | render_element }}{% endif %}</li>
+{% endfor %}
+</{{ element.html_tag }}>

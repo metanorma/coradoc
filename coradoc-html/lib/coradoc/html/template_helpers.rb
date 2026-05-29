@@ -1,58 +1,67 @@
 # frozen_string_literal: true
 
 require 'liquid'
+require_relative 'escape'
 
 module Coradoc
   module Html
     # Liquid filters for template rendering
     module TemplateFilters
-      # Render a CoreModel element by looking up its template
+      # Render a CoreModel element or Drop by looking up its template.
       #
       # Usage in templates:
       #   {{ child | render_element }}
       #   {% for item in children %}{{ item | render_element }}{% endfor %}
       #
-      def render_element(input, renderer = nil)
+      def render_element(input)
         return '' if input.nil?
-        return input.map { |i| render_element(i, renderer) }.join("\n") if input.is_a?(Array)
 
-        # Get the renderer from context registers
-        renderer ||= @context.registers[:renderer]
+        renderer = @context.registers[:renderer]
+        return '' unless renderer
 
-        # If input is a Liquid::Drop, extract the original model object.
-        # Liquid::Drop stores the wrapped object as @object with no public
-        # reader — this is the only way to unwrap it.
-        original = if input.is_a?(::Liquid::Drop)
-                     input.instance_variable_get(:@object)
-                   else
-                     input
-                   end
-
-        # Renderer is always a Coradoc::Html::Renderer which has a render method
-        renderer.render(original)
+        case input
+        when Drop::Base
+          renderer.render_drop(input)
+        when Array
+          input.map { |i| render_element(i) }.join("\n")
+        when Hash
+          render_hash_data(input, renderer)
+        when String
+          input
+        else
+          drop = Drop::DropFactory.create(input)
+          drop.is_a?(Drop::Base) ? renderer.render_drop(drop) : drop.to_s
+        end
       end
 
-      # Escape HTML entities
       def escape_html(input)
-        input.to_s
-             .gsub(/&/, '&amp;')
-             .gsub(/</, '&lt;')
-             .gsub(/>/, '&gt;')
-             .gsub(/"/, '&quot;')
-             .gsub(/'/, '&#39;')
+        Escape.escape_html(input)
       end
 
       # Escape HTML attribute values
       def escape_attr(input)
-        input.to_s
-             .gsub(/&/, '&amp;')
-             .gsub(/"/, '&quot;')
-             .gsub(/</, '&lt;')
-             .gsub(/>/, '&gt;')
+        Escape.escape_attr(input)
+      end
+
+      # JSON-encode with </script protection for inline JS
+      def safe_json(input)
+        Escape.safe_json(input)
+      end
+
+      private
+
+      def render_hash_data(data, renderer)
+        drop_type = data['drop_type']
+        return data.to_s unless drop_type
+
+        template = renderer.find_template(drop_type)
+        return data.to_s unless template
+
+        template.render(data, registers: { renderer: renderer }).strip
       end
     end
   end
 end
 
-# Register filters with Liquid (using the non-deprecated API)
+# Register filters with Liquid
 Liquid::Environment.default.register_filter(Coradoc::Html::TemplateFilters)
