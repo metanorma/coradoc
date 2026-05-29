@@ -6,3 +6,121 @@ plugins:
   - rubocop-performance
   - rubocop-rake
   - rubocop-rspec
+
+Gemspec/DevelopmentDependencies:
+  Exclude:
+    - 'coradoc-html.gemspec'
+
+Lint/DuplicateBranch:
+  Exclude:
+    - 'lib/coradoc/html/config.rb'
+    - 'lib/coradoc/html/input/converters/ol.rb'
+    - 'lib/coradoc/html/input/converters/text.rb'
+    - 'lib/coradoc/html/input/plugins/plateau.rb'
+    - 'lib/coradoc/html/transform/to_core_model.rb'
+    - 'spec/input/converters/converters_spec.rb'
+
+Lint/MissingSuper:
+  Exclude:
+    - 'lib/coradoc/html/drop/base.rb'
+    - 'lib/coradoc/html/spa.rb'
+    - 'lib/coradoc/html/static.rb'
+    - 'spec/coradoc/html/converter_base_spec.rb'
+
+Lint/NoReturnInBeginEndBlocks:
+  Exclude:
+    - 'lib/coradoc/html/template_config.rb'
+
+Metrics/AbcSize:
+  Max: 73
+
+Metrics/BlockLength:
+  Max: 37
+
+Metrics/ClassLength:
+  Max: 241
+
+Metrics/CyclomaticComplexity:
+  Max: 19
+
+Metrics/MethodLength:
+  Max: 74
+
+Metrics/ModuleLength:
+  Max: 311
+
+Metrics/PerceivedComplexity:
+  Max: 20
+
+Naming/PredicateName:
+  Exclude:
+    - 'spec/**/*'
+    - 'lib/coradoc/html/input/converters/p.rb'
+
+Performance/CollectionLiteralInLoop:
+  Exclude:
+    - 'lib/coradoc/html/input/converters/dl.rb'
+
+Performance/MethodObjectAsBlock:
+  Exclude:
+    - 'lib/coradoc/html/input/plugins/plateau.rb'
+
+RSpec/DescribeClass:
+  Exclude:
+    - 'spec/coradoc/html/escape_spec.rb'
+    - 'spec/coradoc/html/output_integration_spec.rb'
+    - 'spec/coradoc/html/theme/template_integration_spec.rb'
+
+RSpec/DescribeMethod:
+  Exclude:
+    - 'spec/coradoc/html/renderer/**/*'
+
+RSpec/ExampleLength:
+  Max: 22
+
+RSpec/MultipleDescribes:
+  Exclude:
+    - 'spec/coradoc/html/drop/bibliography_drop_spec.rb'
+    - 'spec/coradoc/html/drop/definition_drop_spec.rb'
+    - 'spec/coradoc/html/drop/list_drop_spec.rb'
+    - 'spec/coradoc/html/drop/table_drop_spec.rb'
+    - 'spec/coradoc/html/drop/toc_drop_spec.rb'
+    - 'spec/coradoc/html/escape_spec.rb'
+    - 'spec/coradoc/html/template_config_spec.rb'
+    - 'spec/coradoc/html/template_renderer_spec.rb'
+    - 'spec/coradoc/html/transform_spec.rb'
+
+RSpec/MultipleExpectations:
+  Max: 11
+
+RSpec/SpecFilePathFormat:
+  Exclude:
+    - 'spec/coradoc/html/renderer/inline_rendering_spec.rb'
+    - 'spec/coradoc/html/renderer/structure_rendering_spec.rb'
+    - 'spec/coradoc/html/renderer/toc_rendering_spec.rb'
+    - 'spec/input/converters/converters_spec.rb'
+    - 'spec/input/converters/missing_converters_part1_spec.rb'
+    - 'spec/input/converters/missing_converters_part2_spec.rb'
+    - 'spec/input/converters/missing_converters_part3_spec.rb'
+    - 'spec/input/html_converter_spec.rb'
+    - 'spec/transform/from_core_model_spec.rb'
+    - 'spec/transform/to_core_model_spec.rb'
+
+Style/ClassVars:
+  Exclude:
+    - 'lib/coradoc/html/input/converters.rb'
+
+Style/Documentation:
+  Enabled: false
+
+Style/EmptyElse:
+  Exclude:
+    - 'lib/coradoc/html/input/converters/text.rb'
+
+Style/HashLikeCase:
+  Exclude:
+    - 'lib/coradoc/html/input/converters/table.rb'
+    - 'lib/coradoc/html/input/converters/td.rb'
+
+Layout/LineLength:
+  Max: 129
