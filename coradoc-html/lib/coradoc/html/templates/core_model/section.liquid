@@ -1,0 +1,22 @@
+{% if element.structural_type == "section" %}
+<section{% if element.id %} id="{{ element.id }}"{% endif %}>
+{% if element.title %}
+<h{{ element.heading_level }}>{{ element.title }}</h{{ element.heading_level }}>
+{% endif %}
+{% for child in element.children %}{{ child | render_element }}
+{% endfor %}
+</section>
+{% elsif element.structural_type == "header" %}
+<header{% if element.id %} id="{{ element.id }}"{% endif %}>
+{% for child in element.children %}{{ child | render_element }}
+{% endfor %}
+</header>
+{% else %}
+<div{% if element.id %} id="{{ element.id }}"{% endif %}>
+{% if element.title %}
+<h1>{{ element.title }}</h1>
+{% endif %}
+{% for child in element.children %}{{ child | render_element }}
+{% endfor %}
+</div>
+{% endif %}

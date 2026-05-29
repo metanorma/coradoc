@@ -1,0 +1,7 @@
+<div class="document">
+{% if element.title %}
+<h1>{{ element.title }}</h1>
+{% endif %}
+{% for child in element.children %}{{ child | render_element }}
+{% endfor %}
+</div>

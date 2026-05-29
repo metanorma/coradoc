@@ -5,4 +5,14 @@ require 'rspec/core/rake_task'
 
 RSpec::Core::RakeTask.new(:spec)
 
+desc 'Build frontend assets (frontend/dist/)'
+task :build_frontend do
+  frontend_dir = File.join(__dir__, 'frontend')
+  puts 'Building frontend...'
+  system("cd #{frontend_dir} && npm install && npm run build") || raise('Frontend build failed')
+end
+
+# Hook into bundler's release task to ensure frontend is built
+Rake::Task['release'].enhance(['build_frontend']) if Rake::Task.task_defined?('release')
+
 task default: :spec

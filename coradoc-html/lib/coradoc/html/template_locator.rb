@@ -23,6 +23,9 @@ module Coradoc
       # Default template subdirectory within each template root
       CORE_MODEL_DIR = 'core_model'
 
+      # Canonical default template directory within the gem
+      DEFAULT_TEMPLATE_DIR = Pathname.new(File.join(File.dirname(__FILE__), 'templates', CORE_MODEL_DIR)).freeze
+
       attr_reader :user_dirs, :default_dir
 
       # Initialize the locator
@@ -42,12 +45,14 @@ module Coradoc
       def find(type_name)
         return @cache[type_name] if @cache.key?(type_name)
 
-        # First check user directories
+        # First check user directories (core_model/ subdir, then root)
         @user_dirs.each do |dir|
-          template_path = dir / CORE_MODEL_DIR / "#{type_name}.liquid"
-          if template_path.exist?
-            @cache[type_name] = template_path
-            return template_path
+          %W[#{dir}/#{CORE_MODEL_DIR}/#{type_name}.liquid #{dir}/#{type_name}.liquid].each do |template_path|
+            path = Pathname.new(template_path)
+            if path.exist?
+              @cache[type_name] = path
+              return path
+            end
           end
         end
 
@@ -78,13 +83,14 @@ module Coradoc
       def available_templates
         types = Set.new
 
-        # Collect from user directories
+        # Collect from user directories (root and core_model/ subdir)
         @user_dirs.each do |dir|
-          core_model_path = dir / CORE_MODEL_DIR
-          next unless core_model_path.exist? && core_model_path.directory?
+          [dir, dir / CORE_MODEL_DIR].each do |scan_dir|
+            next unless scan_dir.exist? && scan_dir.directory?
 
-          core_model_path.glob('*.liquid') do |f|
-            types.add(f.basename('.liquid').to_s)
+            scan_dir.glob('*.liquid') do |f|
+              types.add(f.basename('.liquid').to_s)
+            end
           end
         end
 
@@ -102,7 +108,7 @@ module Coradoc
       #
       # @return [Pathname] Path to default templates
       def default_template_dir
-        Pathname.new(File.join(File.dirname(__FILE__), 'templates', CORE_MODEL_DIR))
+        DEFAULT_TEMPLATE_DIR
       end
 
       # Clear the template cache (useful when template directories change)

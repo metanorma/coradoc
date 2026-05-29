@@ -1,251 +1,190 @@
 # frozen_string_literal: true
 
 require 'liquid'
+require 'nokogiri'
+require_relative 'escape'
 require_relative 'template_locator'
 require_relative 'template_helpers'
+require_relative 'section_numberable'
+require_relative 'drop/drop_factory'
+require_relative 'toc_builder'
+require_relative 'toc_serializer'
+require_relative 'layout_renderer'
 
 module Coradoc
   module Html
-    # Unified template renderer using Liquid templates for CoreModel types
-    #
-    # This class provides a template-based rendering system where:
-    # - Users provide template directories (checked in order, first wins)
-    # - System falls back to default templates if enabled
-    # - CoreModel objects are automatically converted to Liquid drops via to_liquid
-    #
-    # @example Basic usage with default templates only
-    #   renderer = Coradoc::Html::Renderer.new
-    #   html = renderer.render(bibliography_element)
-    #
-    # @example With custom template directory (falls back to defaults)
-    #   renderer = Coradoc::Html::Renderer.new(
-    #     template_dirs: ["./my_templates"]
-    #   )
-    #   html = renderer.render(bibliography_element)
-    #
-    # @example Multiple template dirs with priority (first wins)
-    #   renderer = Coradoc::Html::Renderer.new(
-    #     template_dirs: ["./project_templates", "./shared_templates"],
-    #     include_default_templates: true
-    #   )
-    #
-    # @example Custom templates only, no defaults
-    #   renderer = Coradoc::Html::Renderer.new(
-    #     template_dirs: ["./my_templates"],
-    #     include_default_templates: false
-    #   )
-    #
+    # Renders CoreModel documents to HTML using Liquid templates.
     class Renderer
-      # Mapping of CoreModel class names to template type names
-      TEMPLATE_TYPE_MAP = {
-        'Coradoc::CoreModel::Bibliography' => 'bibliography',
-        'Coradoc::CoreModel::BibliographyEntry' => 'bibliography_entry',
-        'Coradoc::CoreModel::StructuralElement' => 'structural_element',
-        'Coradoc::CoreModel::Block' => 'block',
-        'Coradoc::CoreModel::SourceBlock' => 'source_block',
-        'Coradoc::CoreModel::ExampleBlock' => 'example_block',
-        'Coradoc::CoreModel::QuoteBlock' => 'quote_block',
-        'Coradoc::CoreModel::SidebarBlock' => 'sidebar_block',
-        'Coradoc::CoreModel::LiteralBlock' => 'literal_block',
-        'Coradoc::CoreModel::PassBlock' => 'pass_block',
-        'Coradoc::CoreModel::ListingBlock' => 'listing_block',
-        'Coradoc::CoreModel::OpenBlock' => 'open_block',
-        'Coradoc::CoreModel::VerseBlock' => 'verse_block',
-        'Coradoc::CoreModel::ReviewerBlock' => 'reviewer_block',
-        'Coradoc::CoreModel::AnnotationBlock' => 'annotation_block',
-        'Coradoc::CoreModel::ParagraphBlock' => 'paragraph',
-        'Coradoc::CoreModel::CommentBlock' => 'comment_block',
-        'Coradoc::CoreModel::HorizontalRuleBlock' => 'horizontal_rule',
-        'Coradoc::CoreModel::ListBlock' => 'list_block',
-        'Coradoc::CoreModel::ListItem' => 'list_item',
-        'Coradoc::CoreModel::Table' => 'table',
-        'Coradoc::CoreModel::TableRow' => 'table_row',
-        'Coradoc::CoreModel::TableCell' => 'table_cell',
-        'Coradoc::CoreModel::Image' => 'image',
-        'Coradoc::CoreModel::InlineElement' => 'inline_element',
-        'Coradoc::CoreModel::Paragraph' => 'paragraph',
-        'Coradoc::CoreModel::Term' => 'term',
-        'Coradoc::CoreModel::Footnote' => 'footnote',
-        'Coradoc::CoreModel::FootnoteReference' => 'footnote_reference',
-        'Coradoc::CoreModel::Toc' => 'toc',
-        'Coradoc::CoreModel::TocEntry' => 'toc_entry',
-        'Coradoc::CoreModel::DefinitionList' => 'definition_list',
-        'Coradoc::CoreModel::DefinitionItem' => 'definition_item',
-        'Coradoc::CoreModel::Abbreviation' => 'abbreviation'
-      }.freeze
+      DEFAULT_TEMPLATE_DIR = TemplateLocator::DEFAULT_TEMPLATE_DIR
 
-      # Default template directory (built-in templates)
-      DEFAULT_TEMPLATE_DIR = Pathname.new(File.join(File.dirname(__FILE__), 'templates', 'core_model'))
+      attr_reader :template_dirs, :options
 
-      attr_reader :template_dirs, :include_default_templates, :options
-
-      # Initialize the renderer
-      #
-      # @param template_dirs [Array<String>, String, nil] Custom template directories
-      #   Searched in order (first match wins). Can be a single path or array.
-      # @param include_default_templates [Boolean] Whether to fall back to built-in
-      #   templates when not found in template_dirs. Default: true
-      # @param options [Hash] Additional options
-      # @option options [Boolean] :strict Raise error if template not found (default: false)
-      # @option options [Boolean] :cache_templates Cache parsed templates (default: true)
-      #
-      def initialize(template_dirs: nil, include_default_templates: true, options: {})
-        @template_dirs = normalize_template_dirs(template_dirs)
-        @include_default_templates = include_default_templates
-        @options = { cache_templates: true, strict: false }.merge(options)
+      def initialize(template_dirs: nil, **options)
+        @template_dirs = normalize_dirs(template_dirs)
+        @options = options
         @template_cache = {}
-        ensure_core_model_drops
+        @locator = TemplateLocator.new(
+          user_dirs: @template_dirs,
+          default_dir: DEFAULT_TEMPLATE_DIR
+        )
+        @section_numbers = {}
+        @layout_renderer = LayoutRenderer.new
       end
 
-      # Render a CoreModel element to HTML
-      #
-      # @param element [Coradoc::CoreModel::Base] The element to render
-      # @param context [Hash] Additional context for the template
-      # @return [String] Rendered HTML
-      def render(element, context = {})
-        return '' if element.nil?
-
-        # Ensure liquid drop class exists for lutaml-model elements
-        ensure_drop_class(element)
-
-        # Handle arrays
-        return element.map { |e| render(e, context) }.join("\n") if element.is_a?(Array)
-
-        # Handle primitives
-        case element
-        when String
-          return escape_html(element)
-        when Numeric, TrueClass, FalseClass
-          return element.to_s
-        when NilClass
-          return ''
+      def render(element)
+        result = Drop::DropFactory.create(element)
+        case result
+        when Drop::Base then render_drop(result)
+        when Array then result.map { |r| r.is_a?(Drop::Base) ? render_drop(r) : r }.join("\n")
+        when nil then ''
+        else result
         end
+      end
 
-        # Get template type name for this element
-        type_name = template_type_for(element)
-        return render_fallback(element, context) unless type_name
+      def render_drop(drop)
+        return '' if drop.nil?
+        return drop.to_s unless drop.is_a?(Drop::Base)
 
-        # Find the template file
-        template_path = find_template(type_name)
-        return render_fallback(element, context) if template_path.nil?
+        annotate_section_number(drop)
 
-        # Load and render the template
-        template = load_template(template_path)
-        if template
-          render_with_template(template, element, context)
+        template_type = drop.template_type
+        template = find_and_load_template(template_type)
+        return render_fallback_drop(drop) unless template
+
+        assigns = { 'element' => drop }
+        template.render(assigns, registers: { renderer: self, section_numbers: @section_numbers }).strip
+      end
+
+      def render_html5(document, **options)
+        @section_numbers = compute_section_numbers(document, options)
+        body_html = render(document)
+
+        if options[:layout] == :spa
+          render_spa_layout(document, body_html, options)
         else
-          render_fallback(element, context)
+          render_static_layout(document, body_html, options)
         end
       end
 
-      # Render a CoreModel element as a complete HTML5 document
-      #
-      # Wraps the fragment output of #render in a proper HTML5 document
-      # with DOCTYPE, charset, and viewport meta tags.
-      #
-      # @param element [Coradoc::CoreModel::Base] The element to render
-      # @param options [Hash] Document-level options
-      # @option options [String] :lang Document language (default: "en")
-      # @option options [String] :title Document title (default: extracted from element)
-      # @return [String] Complete HTML5 document
-      def render_html5(element, options = {})
-        body_html = render(element)
-
-        lang = options[:lang] || 'en'
-        title = options[:title] || extract_title(element) || 'Untitled Document'
-
-        <<~HTML
-          <!DOCTYPE html>
-          <html lang="#{lang}">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>#{escape_html(title)}</title>
-          </head>
-          <body>
-          #{body_html}
-          </body>
-          </html>
-        HTML
-      end
-
-      # Get list of all available template names
-      #
-      # @return [Array<String>] List of template names (without .liquid extension)
       def available_templates
-        templates = Set.new
-
-        # Scan user template directories
-        @template_dirs.each do |dir|
-          core_model_dir = File.join(dir, 'core_model')
-          next unless File.directory?(core_model_dir)
-
-          Dir.glob(File.join(core_model_dir, '*.liquid')).each do |file|
-            templates << File.basename(file, '.liquid')
-          end
-        end
-
-        # Scan default templates if included
-        if @include_default_templates && File.directory?(DEFAULT_TEMPLATE_DIR)
-          Dir.glob(File.join(DEFAULT_TEMPLATE_DIR, '*.liquid')).each do |file|
-            templates << File.basename(file, '.liquid')
-          end
-        end
-
-        templates.to_a.sort
+        @locator.available_templates
       end
 
-      # Check if a template exists for a given type
-      #
-      # @param type_name [String] Template type name (e.g., "bibliography")
-      # @return [Boolean] True if template exists
       def template_exists?(type_name)
-        !find_template(type_name).nil?
+        @locator.exists?(type_name)
       end
 
-      # Register a custom template type mapping
-      #
-      # @param class_name [String] Full class name (e.g., "Coradoc::CoreModel::Bibliography")
-      # @param type_name [String] Template type name (e.g., "bibliography")
-      def self.register_type(class_name, type_name)
-        @custom_type_map ||= {}
-        @custom_type_map[class_name] = type_name
-      end
-
-      # Get custom type mappings
-      def self.custom_type_map
-        @custom_type_map ||= {}
+      def find_template(type_name)
+        find_and_load_template(type_name)
       end
 
       private
 
-      # Ensure liquid drop class exists for lutaml-model elements
-      # (lutaml-model may not create drops if Liquid was loaded after the model class)
-      def ensure_drop_class(element)
-        klass = element.class
-        if klass.public_methods.include?(:register_class_if_liquid_defined) &&
-           klass.public_methods.include?(:base_drop_class) && !klass.base_drop_class
-          klass.register_class_if_liquid_defined
+      def build_toc(_document, options)
+        TocBuilder.from_options(options)
+      end
+
+      def compute_section_numbers(document, options)
+        if options[:sectnums] && document.is_a?(CoreModel::StructuralElement)
+          build_toc(document, options).section_number_map(document)
+        else
+          {}
         end
       end
 
-      def ensure_core_model_drops
-        return unless defined?(Coradoc::CoreModel)
-
-        CoreModel.constants(false).each do |const_name|
-          klass = CoreModel.const_get(const_name)
-          next unless klass.is_a?(Class)
-          next unless klass.public_methods.include?(:register_class_if_liquid_defined)
-          next if klass.public_methods.include?(:base_drop_class) && klass.base_drop_class
-
-          klass.register_class_if_liquid_defined
-        rescue StandardError
-          nil
-        end
+      def render_toc_for(document, options)
+        toc = build_toc(document, options).build(document)
+        render(toc)
       end
 
-      # Normalize template_dirs to an array of absolute paths
-      def normalize_template_dirs(dirs)
+      def render_static_layout(document, body_html, options)
+        if options[:toc] && document.is_a?(CoreModel::StructuralElement)
+          toc_html = render_toc_for(document, options)
+          body_html = "#{toc_html}\n#{body_html}" unless toc_html.empty?
+        end
+        @layout_renderer.render_static(document, body_html, options)
+      end
+
+      def render_spa_layout(document, body_html, options)
+        toc_data = TocSerializer.new.build_json(document, options)
+        content_data = build_spa_content_data(document, body_html, options, toc_data)
+        @layout_renderer.render_spa(document, options, content_data)
+      end
+
+      def build_spa_content_data(document, body_html, options, toc_data)
+        {
+          mode: 'classic',
+          contentHtml: body_html,
+          toc: toc_data,
+          meta: build_spa_meta(document, options),
+          options: build_spa_options(options)
+        }
+      end
+
+      def build_spa_meta(document, options)
+        {
+          title: extract_title(document) || 'Untitled',
+          author: options[:author],
+          date: options[:revdate],
+          generator: "Coradoc #{Coradoc::VERSION}"
+        }
+      end
+
+      def build_spa_options(options)
+        {
+          toc: options[:toc] ? true : false,
+          tocPlacement: (options[:toc_placement] || :auto).to_s,
+          sectnums: options[:sectnums] == true,
+          themeToggle: options[:theme_toggle] != false,
+          readingProgress: options[:reading_progress] != false,
+          lang: options[:lang] || 'en'
+        }
+      end
+
+      def extract_title(document)
+        return nil unless document.is_a?(CoreModel::StructuralElement)
+
+        TitleText.resolve(document.title)
+      end
+
+      def find_and_load_template(type_name)
+        cache_key = type_name.to_s
+        return @template_cache[cache_key] if @template_cache.key?(cache_key)
+
+        path = @locator.find(type_name)
+        return nil unless path
+
+        template_content = File.read(path)
+        template = Liquid::Template.parse(template_content)
+        @template_cache[cache_key] = template
+        template
+      rescue Liquid::SyntaxError => e
+        warn "Template syntax error in #{path}: #{e.message}"
+        nil
+      end
+
+      def annotate_section_number(drop)
+        return unless drop.is_a?(SectionNumberable)
+        return if @section_numbers.empty?
+
+        id = drop.id
+        number = @section_numbers[id]
+        drop.section_number = number if number
+      end
+
+      def render_fallback_drop(drop)
+        type = drop.template_type
+        resolved = TitleText.resolve(drop.model)
+        text = resolved ? Escape.escape_html(resolved) : ''
+
+        doc = Nokogiri::HTML::Document.new
+        fragment = Nokogiri::HTML::Builder.with(doc) do |builder|
+          builder.div(class: "element element-#{type}") { builder.text text }
+        end
+        fragment.at_css('div').to_html
+      end
+
+      def normalize_dirs(dirs)
         return [] if dirs.nil?
 
         Array(dirs).map do |dir|
@@ -253,160 +192,6 @@ module Coradoc
           path.absolute? ? path.to_s : File.expand_path(dir)
         end
       end
-
-      # Find template file for a type name
-      # Searches template_dirs in order, then defaults if enabled
-      #
-      # @param type_name [String] Template type name
-      # @return [String, nil] Path to template file or nil
-      def find_template(type_name)
-        template_file = "#{type_name}.liquid"
-
-        # Search user template directories in order
-        @template_dirs.each do |dir|
-          # Check core_model subdirectory first
-          core_model_dir = File.join(dir, 'core_model')
-          path = File.join(core_model_dir, template_file)
-          return path if File.file?(path)
-
-          # Also check the directory itself
-          path = File.join(dir, template_file)
-          return path if File.file?(path)
-        end
-
-        # Fall back to default templates if enabled
-        if @include_default_templates
-          path = File.join(DEFAULT_TEMPLATE_DIR, template_file)
-          return path if File.file?(path)
-        end
-
-        nil
-      end
-
-      # Get template type name for an element
-      #
-      # @param element [Object] The element
-      # @return [String, nil] Template type name or nil
-      def template_type_for(element)
-        class_name = element.class.name
-
-        # Check custom registrations first
-        self.class.custom_type_map[class_name] ||
-          TEMPLATE_TYPE_MAP[class_name] ||
-          derive_type_name(class_name)
-      end
-
-      # Derive template type name from class name
-      #
-      # @param class_name [String] Full class name
-      # @return [String] Derived type name
-      def derive_type_name(class_name)
-        parts = class_name.split('::')
-        return nil unless parts.length >= 2
-
-        # Just use the class name, underscored
-        parts.last
-             .gsub(/([A-Z])/, '_\1')
-             .downcase
-             .sub(/^_/, '')
-      end
-
-      # Load a template from file
-      #
-      # @param path [String] Path to template file
-      # @return [Liquid::Template, nil] Parsed template or nil
-      def load_template(path)
-        cache_key = path.to_s
-        return @template_cache[cache_key] if @template_cache.key?(cache_key)
-
-        template_content = File.read(path)
-        template = Liquid::Template.parse(template_content)
-        @template_cache[cache_key] = template if @options[:cache_templates]
-        template
-      rescue Liquid::SyntaxError => e
-        warn "Template syntax error in #{path}: #{e.message}"
-        nil
-      end
-
-      # Render element with template
-      #
-      # @param template [Liquid::Template] The template
-      # @param element [Object] The element to render
-      # @param context [Hash] Additional context
-      # @return [String] Rendered HTML
-      def render_with_template(template, element, context)
-        # Convert element to Liquid Drop
-        liquid_drop = element.to_liquid
-
-        # If no extra context, render with drop directly
-        if context.empty?
-          return template.render(liquid_drop, {
-                                   registers: { renderer: self }
-                                 }).strip
-        end
-
-        # Build hash from drop's known attributes
-        # The Drop exposes attributes via method calls
-        assigns = build_assigns_from_drop(liquid_drop).merge(context)
-
-        # Render with registers containing renderer for recursive calls
-        template.render(assigns, {
-                          registers: { renderer: self }
-                        }).strip
-      end
-
-      # Build a hash from a Liquid Drop's accessible attributes
-      def build_assigns_from_drop(drop)
-        # Get all attribute names from the drop's class
-        # These are defined by the Lutaml::Model attributes
-        assigns = {}
-
-        # Common attributes that most CoreModel types have
-        %w[id title content children block_semantic_type language lines
-           metadata_entries element_attributes
-           text href alt src level entries items rows cells
-           anchor term definition abbreviations delimiter_type].each do |key|
-          assigns[key] = drop[key] if drop.key?(key)
-        end
-
-        assigns
-      end
-
-      # Fallback rendering when no template found
-      #
-      # @param element [Object] The element
-      # @param context [Hash] Context
-      # @return [String] Rendered HTML
-      def render_fallback(element, _context)
-        raise "No template found for #{element.class.name}" if @options[:strict]
-
-        # Simple fallback - convert to string
-        class_name = element.class.name
-        simple_name = class_name.split('::').last
-        underscored = simple_name&.gsub(/([A-Z])/, '_\1')&.downcase&.sub(/^_/, '') || 'unknown'
-
-        "<div class=\"element element-#{underscored}\">#{escape_html(element.to_s)}</div>"
-      end
-
-      # Escape HTML entities
-      def escape_html(text)
-        text.to_s
-            .gsub(/&/, '&amp;')
-            .gsub(/</, '&lt;')
-            .gsub(/>/, '&gt;')
-            .gsub(/"/, '&quot;')
-            .gsub(/'/, '&#39;')
-      end
-
-      def extract_title(element)
-        return nil unless element
-        return element.title if element.is_a?(Coradoc::CoreModel::StructuralElement) && element.title
-
-        nil
-      end
     end
-
-    # Backwards compatibility alias
-    TemplateRenderer = Renderer
   end
 end

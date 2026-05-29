@@ -1,11 +1,8 @@
-{%- comment -%}
-Definition list template
-{%- endcomment -%}
-<dl id="{{ id }}" class="definition-list">
-  {%- for item in items -%}
-    <dt>{{ item.term }}</dt>
-    {%- for def in item.definitions -%}
-    <dd>{{ def }}</dd>
-    {%- endfor -%}
-  {%- endfor -%}
+<dl{% if element.id %} id="{{ element.id }}"{% endif %}{% if element.title %} title="{{ element.title }}"{% endif %}>
+{% for item in element.items %}
+<dt{% if item.term_id %} id="{{ item.term_id }}"{% endif %}>{{ item.term }}</dt>
+{% for defn in item.definitions %}
+<dd>{{ defn | render_element }}</dd>
+{% endfor %}
+{% endfor %}
 </dl>

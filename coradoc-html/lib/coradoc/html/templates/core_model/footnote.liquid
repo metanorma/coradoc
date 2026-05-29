@@ -1,0 +1,5 @@
+{% if element.inline? %}
+<sup class="footnote" title="{{ element.content }}">{{ element.content }}</sup>
+{% else %}
+<sup class="footnote"><a href="#fn-{{ element.footnote_id }}" id="fnref-{{ element.footnote_id }}">{{ element.footnote_id }}</a></sup>
+{% endif %}
