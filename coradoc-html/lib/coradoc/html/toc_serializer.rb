@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'title_text'
-
 module Coradoc
   module Html
     # Serializes a document's TOC structure to JSON for inline embedding.

@@ -51,4 +51,13 @@ RSpec.describe Coradoc::Input::Html do
       expect(result).to be_a(Array)
     end
   end
+
+  describe '.clean_output' do
+    it 'cleans up extra whitespace' do
+      input = "Hello\n\n\n\nWorld"
+      result = described_class.clean_output(input, {})
+
+      expect(result).not_to include("\n\n\n")
+    end
+  end
 end

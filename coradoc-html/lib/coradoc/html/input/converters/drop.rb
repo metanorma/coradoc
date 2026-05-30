@@ -10,10 +10,6 @@ module Coradoc
           def to_coradoc(_node, _state = {})
             ''
           end
-
-          def convert(_node, _state = {})
-            ''
-          end
         end
 
         register :caption, Skip::INSTANCE

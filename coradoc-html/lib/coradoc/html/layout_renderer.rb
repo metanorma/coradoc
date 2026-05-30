@@ -2,9 +2,6 @@
 
 require 'nokogiri'
 require 'liquid'
-require_relative 'escape'
-require_relative 'title_text'
-require_relative 'template_caching'
 
 module Coradoc
   module Html

@@ -50,32 +50,6 @@ RSpec.describe Coradoc::Input::Html::HtmlConverter do
     end
   end
 
-  describe '.to_coradoc' do
-    it 'delegates to to_core_model' do
-      html = '<p>Test</p>'
-      result = described_class.to_coradoc(html)
-
-      expect(result).to be_a(Array)
-    end
-  end
-
-  describe '.convert' do
-    it 'delegates to to_core_model and serialize' do
-      # The convert method chains to_core_model + serialize.
-      # Full serialization requires DocumentElement wrapping.
-      skip 'Legacy convert method needs DocumentElement wrapping for array results'
-    end
-  end
-
-  describe '.cleanup_result' do
-    it 'cleans up extra whitespace' do
-      input = "Hello\n\n\n\nWorld"
-      result = described_class.cleanup_result(input, {})
-
-      expect(result).not_to include("\n\n\n")
-    end
-  end
-
   describe '.track_time' do
     it 'returns the block result when timing is disabled' do
       result = described_class.track_time('test task') { 42 }

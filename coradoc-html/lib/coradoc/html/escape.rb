@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'cgi'
 require 'json'
 
 module Coradoc
@@ -8,12 +9,7 @@ module Coradoc
       module_function
 
       def escape_html(text)
-        text.to_s
-            .gsub('&', '&amp;')
-            .gsub('<', '&lt;')
-            .gsub('>', '&gt;')
-            .gsub('"', '&quot;')
-            .gsub('\'', '&#39;')
+        CGI.escapeHTML(text.to_s)
       end
 
       def escape_attr(value)

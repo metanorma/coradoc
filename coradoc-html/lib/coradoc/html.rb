@@ -24,6 +24,13 @@ module Coradoc
     autoload :Escape, 'coradoc/html/escape'
     autoload :SectionNumberable, 'coradoc/html/section_numberable'
     autoload :TemplateCaching, 'coradoc/html/template_caching'
+    autoload :TitleText, 'coradoc/html/title_text'
+
+    # Autoload Drop namespace (DropFactory loads Base + all drops)
+    module Drop
+      autoload :DropFactory, 'coradoc/html/drop/drop_factory'
+      autoload :Base, 'coradoc/html/drop/base'
+    end
 
     # Autoload HTML output converters
     autoload :ConverterBase, 'coradoc/html/converter_base'
@@ -66,8 +73,7 @@ module Coradoc
 
     # Parse HTML content and return CoreModel elements (may be an Array)
     def self.parse(html, options = {})
-      # Input::Html is autoloaded via Coradoc::Input
-      ::Coradoc::Html::Input.to_coradoc(html, options)
+      ::Coradoc::Input::Html.to_coradoc(html, options)
     end
 
     # Parse HTML content directly into a CoreModel document

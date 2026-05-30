@@ -5,12 +5,10 @@ module Coradoc
     module Html
       module Converters
         class PassThrough < Base
+          INSTANCE = new
+
           def to_coradoc(node, _state = {})
             node.to_s
-          end
-
-          def convert(node, state = {})
-            to_coradoc(node, state)
           end
         end
       end

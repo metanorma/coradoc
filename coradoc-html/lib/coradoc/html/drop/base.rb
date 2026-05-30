@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require 'liquid'
-require_relative '../escape'
-require_relative '../title_text'
 
 module Coradoc
   module Html
@@ -53,7 +51,7 @@ module Coradoc
           when CoreModel::TextContent
             content.text.to_s
           when CoreModel::Base
-            extract_text_from_model(content)
+            TitleText.resolve(content).to_s
           else
             content.to_s
           end
@@ -67,12 +65,6 @@ module Coradoc
           return [] unless children
 
           children.map { |child| DropFactory.create(child) }
-        end
-
-        private
-
-        def extract_text_from_model(model)
-          TitleText.resolve(model).to_s
         end
       end
     end
