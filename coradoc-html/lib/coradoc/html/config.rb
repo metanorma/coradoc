@@ -5,6 +5,9 @@ require 'nokogiri'
 module Coradoc
   module Html
     module Config
+      DEFAULT_LANG = 'en'
+      DEFAULT_TITLE = 'Untitled'
+
       # Default HTML output options
       DEFAULT_OPTIONS = {
         # Theme system options

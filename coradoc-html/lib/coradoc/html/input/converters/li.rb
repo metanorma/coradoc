@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Li < Base
+          INSTANCE = new
+
           def to_coradoc(node, state = {})
             id = node['id']
 
@@ -28,7 +30,7 @@ module Coradoc
           end
         end
 
-        register :li, Li.new
+        register :li, Li::INSTANCE
       end
     end
   end

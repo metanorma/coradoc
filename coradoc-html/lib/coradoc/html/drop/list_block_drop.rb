@@ -18,6 +18,8 @@ module Coradoc
           children_to_liquid(@model.items)
         end
       end
+
+      DropFactory.register(CoreModel::ListBlock, ListBlockDrop)
     end
   end
 end

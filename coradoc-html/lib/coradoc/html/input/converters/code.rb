@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Code < Markup
+          INSTANCE = new
+
           def coradoc_format_type
             'monospace'
           end
@@ -14,11 +16,11 @@ module Coradoc
           end
         end
 
-        register :code, Code.new
-        register :tt, Code.new
-        register :kbd, Code.new
-        register :samp, Code.new
-        register :var, Code.new
+        register :code, Code::INSTANCE
+        register :tt,   Code::INSTANCE
+        register :kbd,  Code::INSTANCE
+        register :samp, Code::INSTANCE
+        register :var,  Code::INSTANCE
       end
     end
   end

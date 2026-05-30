@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Math < Base
+          INSTANCE = new
+
           def to_coradoc(node, _state = {})
             stem = node.to_s.tr("\n", ' ')
             if Coradoc::Html::Input.config.mathml2asciimath
@@ -30,7 +32,7 @@ module Coradoc
           end
         end
 
-        register :math, Math.new
+        register :math, Math::INSTANCE
       end
     end
   end

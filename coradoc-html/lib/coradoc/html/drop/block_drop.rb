@@ -64,6 +64,8 @@ module Coradoc
           @resolved_semantic_type ||= @model.resolve_semantic_type || :paragraph
         end
       end
+
+      DropFactory.register(CoreModel::Block, BlockDrop)
     end
   end
 end

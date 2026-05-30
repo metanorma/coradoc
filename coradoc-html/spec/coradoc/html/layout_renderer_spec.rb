@@ -6,6 +6,7 @@ require 'coradoc/html/layout_renderer'
 RSpec.describe Coradoc::Html::LayoutRenderer do
   let(:document) { CoreModel::DocumentElement.new(title: 'Test Doc') }
   let(:body_html) { '<div>Content</div>' }
+  let(:toc_data) { { entries: [], numbered: false } }
 
   describe '#render_static' do
     it 'renders static HTML fallback when no layout template' do
@@ -33,19 +34,13 @@ RSpec.describe Coradoc::Html::LayoutRenderer do
   end
 
   describe '#render_spa' do
-    let(:content_data) do
-      {
-        mode: 'classic',
-        contentHtml: body_html,
-        toc: { entries: [], numbered: false },
-        meta: { title: 'Test Doc', generator: 'Coradoc Test' },
-        options: { toc: true, lang: 'en' }
-      }
-    end
-
     it 'renders SPA HTML fallback', :requires_frontend_dist do
-      html = described_class.new.render_spa(document,
-                                            { dist_dir: File.join(__dir__, '..', '..', '..', 'frontend', 'dist') }, content_data)
+      html = described_class.new.render_spa(
+        document,
+        { dist_dir: File.join(__dir__, '..', '..', '..', 'frontend', 'dist') },
+        body_html,
+        toc_data
+      )
       expect(html).to include('<!DOCTYPE html>')
       expect(html).to include('coradoc-app')
       expect(html).to include('window.CORADOC_DATA')
@@ -53,7 +48,12 @@ RSpec.describe Coradoc::Html::LayoutRenderer do
 
     it 'raises when dist_dir is missing' do
       expect do
-        described_class.new.render_spa(document, { dist_dir: '/nonexistent' }, content_data)
+        described_class.new.render_spa(
+          document,
+          { dist_dir: '/nonexistent' },
+          body_html,
+          toc_data
+        )
       end.to raise_error(ArgumentError, /dist directory not found/)
     end
   end

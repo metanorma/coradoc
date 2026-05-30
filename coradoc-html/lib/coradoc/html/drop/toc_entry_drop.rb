@@ -28,6 +28,8 @@ module Coradoc
           n ? "#{n}. #{title}" : title
         end
       end
+
+      DropFactory.register(CoreModel::TocEntry, TocEntryDrop)
     end
   end
 end

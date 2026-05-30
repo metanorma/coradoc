@@ -5,20 +5,20 @@ module Coradoc
     module Html
       module Converters
         class Div < Base
+          INSTANCE = new
+
           def to_coradoc(node, state = {})
             id = node['id']
             contents = treat_children_coradoc(node, state)
 
             Coradoc::CoreModel::OpenBlock.new(
-              content: contents,
+              children: contents,
               id: id
             )
           end
         end
 
-        register :div,     Div.new
-        register :article, Div.new
-        register :center,  Div.new
+        register :div, Div::INSTANCE
       end
     end
   end

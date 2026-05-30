@@ -19,6 +19,8 @@ module Coradoc
           "term term-#{t}"
         end
       end
+
+      DropFactory.register(CoreModel::Term, TermDrop)
     end
   end
 end

@@ -88,4 +88,87 @@ RSpec.describe Coradoc::Html::Config do
       expect(described_class.html_tag_for(:unknown_xyz)).to eq('div')
     end
   end
+
+  describe 'DEFAULT constants' do
+    it 'defines DEFAULT_LANG as en' do
+      expect(described_class::DEFAULT_LANG).to eq('en')
+    end
+
+    it 'defines DEFAULT_TITLE as Untitled' do
+      expect(described_class::DEFAULT_TITLE).to eq('Untitled')
+    end
+  end
+
+  describe '.css_tags' do
+    it 'returns embedded style when linkcss is false' do
+      tags = described_class.css_tags(linkcss: false)
+      expect(tags).to include('<style>')
+    end
+
+    it 'returns link tag when linkcss is true' do
+      tags = described_class.css_tags(linkcss: true)
+      expect(tags).to include('rel="stylesheet"')
+    end
+  end
+
+  describe '.syntax_highlighter_tags' do
+    it 'returns empty string when no highlighter specified' do
+      expect(described_class.syntax_highlighter_tags({})).to eq('')
+    end
+
+    it 'returns highlightjs tags for highlightjs' do
+      tags = described_class.syntax_highlighter_tags(source_highlighter: :highlightjs)
+      expect(tags).to include('highlight.min.js')
+    end
+
+    it 'returns empty string for pygments' do
+      expect(described_class.syntax_highlighter_tags(source_highlighter: :pygments)).to eq('')
+    end
+
+    it 'returns empty string for rouge' do
+      expect(described_class.syntax_highlighter_tags(source_highlighter: :rouge)).to eq('')
+    end
+  end
+
+  describe '.embed_css?' do
+    it 'embeds when linkcss is false' do
+      expect(described_class.embed_css?(linkcss: false)).to be true
+    end
+
+    it 'links when linkcss is true' do
+      expect(described_class.embed_css?(linkcss: true)).to be false
+    end
+
+    it 'embeds when embedded mode is true' do
+      expect(described_class.embed_css?(embedded: true, linkcss: true)).to be true
+    end
+  end
+
+  describe '.js_tags' do
+    it 'returns empty string when javascript is false' do
+      expect(described_class.js_tags(javascript: false)).to eq('')
+    end
+
+    it 'returns embedded script when linkjs is false' do
+      tags = described_class.js_tags(linkjs: false)
+      expect(tags).to include('<script')
+    end
+
+    it 'returns link tag when linkjs is true' do
+      tags = described_class.js_tags(linkjs: true, linkcss: true)
+      expect(tags).to include('src=')
+    end
+  end
+
+  describe '.code_block_attributes' do
+    it 'includes language class' do
+      attrs = described_class.code_block_attributes('ruby', {})
+      expect(attrs[:class]).to include('language-ruby')
+    end
+
+    it 'includes line-numbers class when linenums is set' do
+      attrs = described_class.code_block_attributes('ruby', linenums: true)
+      expect(attrs[:class]).to include('line-numbers')
+    end
+  end
 end

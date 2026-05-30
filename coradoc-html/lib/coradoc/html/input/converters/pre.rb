@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Pre < Base
+          INSTANCE = new
+
           def to_coradoc(node, _state = {})
             id = node['id']
             lang = language(node)
@@ -50,7 +52,7 @@ module Coradoc
           end
         end
 
-        register :pre, Pre.new
+        register :pre, Pre::INSTANCE
       end
     end
   end

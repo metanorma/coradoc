@@ -10,6 +10,8 @@ module Coradoc
           children_to_liquid(@model.entries)
         end
       end
+
+      DropFactory.register(CoreModel::Toc, TocDrop)
     end
   end
 end

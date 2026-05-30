@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Head < Base
+          INSTANCE = new
+
           def to_coradoc(node, _state = {})
             title = extract_title(node)
             # Use DocumentElement for document header
@@ -22,7 +24,7 @@ module Coradoc
           end
         end
 
-        register :head, Head.new
+        register :head, Head::INSTANCE
       end
     end
   end

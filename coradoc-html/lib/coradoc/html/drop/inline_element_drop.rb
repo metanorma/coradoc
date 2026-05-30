@@ -59,6 +59,8 @@ module Coradoc
           @model.content.to_s if format_type == 'term'
         end
       end
+
+      DropFactory.register(CoreModel::InlineElement, InlineElementDrop)
     end
   end
 end

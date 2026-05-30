@@ -5,24 +5,6 @@ module Coradoc
     module Html
       module Converters
         class Base
-          # Default implementation to convert a given Nokogiri node
-          # to a CoreModel type.
-          # Can be overriden by subclasses.
-          def convert(node, state = {})
-            to_coradoc(node, state)
-          end
-
-          # NOTE: treat_children won't run plugin hooks
-          def treat_children(node, state)
-            node.children.map do |child|
-              treat(child, state)
-            end
-          end
-
-          def treat(node, state)
-            Converters.process(node, state)
-          end
-
           def treat_children_coradoc(node, state)
             results = node.children.map do |child|
               treat_coradoc(child, state)

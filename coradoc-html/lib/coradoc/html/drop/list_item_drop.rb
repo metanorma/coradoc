@@ -15,6 +15,8 @@ module Coradoc
           DropFactory.create(child) if child
         end
       end
+
+      DropFactory.register(CoreModel::ListItem, ListItemDrop)
     end
   end
 end

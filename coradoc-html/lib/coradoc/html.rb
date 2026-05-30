@@ -23,6 +23,7 @@ module Coradoc
     autoload :Config, 'coradoc/html/config'
     autoload :Escape, 'coradoc/html/escape'
     autoload :SectionNumberable, 'coradoc/html/section_numberable'
+    autoload :TemplateCaching, 'coradoc/html/template_caching'
 
     # Autoload HTML output converters
     autoload :ConverterBase, 'coradoc/html/converter_base'

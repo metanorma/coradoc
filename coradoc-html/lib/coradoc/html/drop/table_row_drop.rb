@@ -18,6 +18,8 @@ module Coradoc
           children_to_liquid(@model.cells)
         end
       end
+
+      DropFactory.register(CoreModel::TableRow, TableRowDrop)
     end
   end
 end

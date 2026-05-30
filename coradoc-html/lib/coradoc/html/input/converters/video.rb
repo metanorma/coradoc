@@ -7,6 +7,8 @@ module Coradoc
     module Html
       module Converters
         class Video < MediaBase
+          INSTANCE = new
+
           private
 
           def semantic_type
@@ -22,7 +24,7 @@ module Coradoc
           end
         end
 
-        register :video, Video.new
+        register :video, Video::INSTANCE
       end
     end
   end

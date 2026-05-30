@@ -7,6 +7,8 @@ module Coradoc
     module Html
       module Converters
         class Audio < MediaBase
+          INSTANCE = new
+
           private
 
           def semantic_type
@@ -14,7 +16,7 @@ module Coradoc
           end
         end
 
-        register :audio, Audio.new
+        register :audio, Audio::INSTANCE
       end
     end
   end

@@ -49,6 +49,8 @@ module Coradoc
           end
         end
       end
+
+      DropFactory.register(CoreModel::StructuralElement, DocumentDrop)
     end
   end
 end
