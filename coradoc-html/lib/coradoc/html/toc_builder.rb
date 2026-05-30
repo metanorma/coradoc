@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'title_text'
-
 module Coradoc
   module Html
     # Builds a CoreModel::Toc from a document's StructuralElement tree.

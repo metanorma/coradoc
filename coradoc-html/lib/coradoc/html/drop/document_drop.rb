@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-require_relative '../section_numberable'
-require_relative '../title_text'
-
 module Coradoc
   module Html
     module Drop

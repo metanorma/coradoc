@@ -173,18 +173,6 @@ RSpec.describe Coradoc::Input::Html::Converters do
         expect(result).to include('<inner>nested</inner>')
       end
     end
-
-    describe '#convert' do
-      it 'delegates to to_coradoc' do
-        html = '<custom>Test</custom>'
-        doc = Nokogiri::HTML.fragment(html)
-        node = doc.at('custom')
-
-        result = converter.convert(node, {})
-
-        expect(result).to eq(converter.to_coradoc(node, {}))
-      end
-    end
   end
 
   describe 'Converter::Sub' do

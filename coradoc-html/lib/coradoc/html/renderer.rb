@@ -2,16 +2,6 @@
 
 require 'liquid'
 require 'nokogiri'
-require_relative 'escape'
-require_relative 'title_text'
-require_relative 'template_locator'
-require_relative 'template_helpers'
-require_relative 'template_caching'
-require_relative 'section_numberable'
-require_relative 'drop/drop_factory'
-require_relative 'toc_builder'
-require_relative 'toc_serializer'
-require_relative 'layout_renderer'
 
 module Coradoc
   module Html

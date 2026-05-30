@@ -205,10 +205,6 @@ module Coradoc
 
             self.output_string = str
           end
-
-          # Legacy alias for backward compatibility
-          # @deprecated Use postprocess_output_string instead. Will be removed in v2.0.
-          alias postprocess_asciidoc_string postprocess_output_string
         end
       end
     end

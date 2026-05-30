@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'escape'
-
 module Coradoc
   module Html
     # Abstract base class for HTML output converters

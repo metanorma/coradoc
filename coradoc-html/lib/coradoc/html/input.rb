@@ -17,11 +17,11 @@ module Coradoc
       autoload :HtmlConverter, 'coradoc/html/input/html_converter'
 
       def self.convert(input, options = {})
-        HtmlConverter.convert(input, options)
+        HtmlConverter.to_core_model(input, options)
       end
 
       def self.to_coradoc(input, options = {})
-        HtmlConverter.to_coradoc(input, options)
+        HtmlConverter.to_core_model(input, options)
       end
 
       def self.config
@@ -50,11 +50,29 @@ module Coradoc
 
       def self.processor_postprocess(data, options)
         if options[:output_processor] == :adoc
-          data.transform_values do |v|
-            Input::Html::HtmlConverter.cleanup_result(v, options)
-          end
+          data.transform_values { |v| clean_output(v, options) }
         else
           data
+        end
+      end
+
+      def self.clean_output(result, options = {})
+        config.with(options) do
+          plugin_instances = HtmlConverter.prepare_plugin_instances(options)
+
+          result = HtmlConverter.track_time('Cleaning up the result') do
+            cleaner.tidy(result)
+          end
+
+          plugin_instances.each do |plugin|
+            plugin.output_string = result
+            HtmlConverter.track_time("Postprocessing output string with #{plugin.name} plugin") do
+              plugin.postprocess_output_string
+            end
+            result = plugin.output_string
+          end
+
+          result
         end
       end
 
@@ -62,8 +80,6 @@ module Coradoc
     end
   end
 
-  # Backward compatibility alias
-  # Some legacy code references Coradoc::Html::Input instead of Coradoc::Input::Html
   module Html
     Input = Coradoc::Input::Html
   end
