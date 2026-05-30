@@ -42,50 +42,32 @@ module Coradoc
         autoload :Tr, 'coradoc/html/input/converters/tr'
         autoload :Video, 'coradoc/html/input/converters/video'
 
-        # Define class methods
+        @converters = {}
+        @converters_loaded = false
+
         def self.register(tag_name, converter)
-          @@converters ||= {}
-          @@converters[tag_name.to_sym] = converter
+          @converters[tag_name.to_sym] = converter
         end
 
         def self.unregister(tag_name)
-          @@converters.delete(tag_name.to_sym)
+          @converters.delete(tag_name.to_sym)
         end
 
-        # Ensure all converters are loaded and registered before first use
         def self.ensure_converters_loaded
           return if @converters_loaded
 
           @converters_loaded = true
 
-          # Access each autoloaded constant to trigger file load + registration
-          # Only load converters that register HTML tag handlers
-          # Note: Some converters may have gem dependencies (e.g., Img requires marcel)
-          # so we only load the essential ones here
           [
             Base, Markup, A, Aside, Audio, Blockquote, Br, Bypass, Code, Div, Dl,
             Skip, Em, Figure, H, Head, Hr, Img, Li, Mark, Math, Ol, P,
             PassThrough, Pre, Q, Strong, Sup, Sub, Table, Td, Text, Tr, Video
-          ].each do |converter|
-            # Just accessing the constant triggers autoload
-          end
+          ].each { |converter| _ = converter }
         end
 
         def self.lookup(tag_name)
           ensure_converters_loaded
-          converter = @@converters[tag_name.to_sym] || default_converter(tag_name)
-          converter.is_a?(Class) ? converter.new : converter
-        end
-
-        # NOTE: process won't run plugin hooks
-        def self.process(node, state)
-          node = node.to_a if node.is_a? Nokogiri::XML::NodeSet
-          if node.is_a? Array
-            return node.map { |i| process(i, state) }
-                       .join
-          end
-
-          lookup(node.name).convert(node, state)
+          @converters[tag_name.to_sym] || default_converter(tag_name)
         end
 
         def self.process_coradoc(node, state)
@@ -104,11 +86,11 @@ module Coradoc
         def self.default_converter(tag_name)
           case Html.config.unknown_tags.to_sym
           when :pass_through
-            PassThrough.new
+            PassThrough::INSTANCE
           when :drop
-            Skip.new
+            Skip::INSTANCE
           when :bypass
-            Bypass.new
+            Bypass::INSTANCE
           when :raise
             raise Errors::UnknownTagError, "unknown tag: #{tag_name}"
           else

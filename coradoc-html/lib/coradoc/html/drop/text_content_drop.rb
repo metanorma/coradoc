@@ -10,6 +10,8 @@ module Coradoc
           Escape.escape_html(@model.text.to_s)
         end
       end
+
+      DropFactory.register(CoreModel::TextContent, TextContentDrop)
     end
   end
 end

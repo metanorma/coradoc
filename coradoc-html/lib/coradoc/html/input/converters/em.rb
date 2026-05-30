@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Em < Markup
+          INSTANCE = new
+
           def coradoc_format_type
             'italic'
           end
@@ -14,9 +16,9 @@ module Coradoc
           end
         end
 
-        register :em, Em.new
-        register :i,  Em.new
-        register :cite, Em.new
+        register :em,   Em::INSTANCE
+        register :i,    Em::INSTANCE
+        register :cite, Em::INSTANCE
       end
     end
   end

@@ -47,7 +47,7 @@ Metrics/MethodLength:
   Max: 74
 
 Metrics/ModuleLength:
-  Max: 311
+  Max: 315
 
 Metrics/PerceivedComplexity:
   Max: 20
@@ -69,7 +69,12 @@ RSpec/DescribeClass:
   Exclude:
     - 'spec/coradoc/html/escape_spec.rb'
     - 'spec/coradoc/html/output_integration_spec.rb'
+    - 'spec/coradoc/html/output_spec.rb'
     - 'spec/coradoc/html/theme/template_integration_spec.rb'
+
+RSpec/DescribedClass:
+  Exclude:
+    - 'spec/coradoc/html/output_spec.rb'
 
 RSpec/DescribeMethod:
   Exclude:
@@ -95,6 +100,7 @@ RSpec/MultipleExpectations:
 
 RSpec/SpecFilePathFormat:
   Exclude:
+    - 'spec/coradoc/html/html_module_spec.rb'
     - 'spec/coradoc/html/renderer/inline_rendering_spec.rb'
     - 'spec/coradoc/html/renderer/structure_rendering_spec.rb'
     - 'spec/coradoc/html/renderer/toc_rendering_spec.rb'
@@ -103,12 +109,9 @@ RSpec/SpecFilePathFormat:
     - 'spec/input/converters/missing_converters_part2_spec.rb'
     - 'spec/input/converters/missing_converters_part3_spec.rb'
     - 'spec/input/html_converter_spec.rb'
+    - 'spec/input/input_module_spec.rb'
     - 'spec/transform/from_core_model_spec.rb'
     - 'spec/transform/to_core_model_spec.rb'
-
-Style/ClassVars:
-  Exclude:
-    - 'lib/coradoc/html/input/converters.rb'
 
 Style/Documentation:
   Enabled: false

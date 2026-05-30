@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Table < Base
+          INSTANCE = new
+
           def to_coradoc(node, state = {})
             id = node['id']
             title = extract_title(node)
@@ -57,7 +59,7 @@ module Coradoc
           end
         end
 
-        register :table, Table.new
+        register :table, Table::INSTANCE
       end
     end
   end

@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Text < Base
+          INSTANCE = new
+
           def to_coradoc(node, state = {})
             return treat_empty(node, state) if node.text.strip.empty?
 
@@ -59,7 +61,7 @@ module Coradoc
           end
         end
 
-        register :text, Text.new
+        register :text, Text::INSTANCE
       end
     end
   end

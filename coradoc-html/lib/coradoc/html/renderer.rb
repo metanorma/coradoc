@@ -3,8 +3,10 @@
 require 'liquid'
 require 'nokogiri'
 require_relative 'escape'
+require_relative 'title_text'
 require_relative 'template_locator'
 require_relative 'template_helpers'
+require_relative 'template_caching'
 require_relative 'section_numberable'
 require_relative 'drop/drop_factory'
 require_relative 'toc_builder'
@@ -13,9 +15,10 @@ require_relative 'layout_renderer'
 
 module Coradoc
   module Html
-    # Renders CoreModel documents to HTML using Liquid templates.
     class Renderer
       DEFAULT_TEMPLATE_DIR = TemplateLocator::DEFAULT_TEMPLATE_DIR
+
+      include TemplateCaching
 
       attr_reader :template_dirs, :options
 
@@ -107,60 +110,13 @@ module Coradoc
 
       def render_spa_layout(document, body_html, options)
         toc_data = TocSerializer.new.build_json(document, options)
-        content_data = build_spa_content_data(document, body_html, options, toc_data)
-        @layout_renderer.render_spa(document, options, content_data)
-      end
-
-      def build_spa_content_data(document, body_html, options, toc_data)
-        {
-          mode: 'classic',
-          contentHtml: body_html,
-          toc: toc_data,
-          meta: build_spa_meta(document, options),
-          options: build_spa_options(options)
-        }
-      end
-
-      def build_spa_meta(document, options)
-        {
-          title: extract_title(document) || 'Untitled',
-          author: options[:author],
-          date: options[:revdate],
-          generator: "Coradoc #{Coradoc::VERSION}"
-        }
-      end
-
-      def build_spa_options(options)
-        {
-          toc: options[:toc] ? true : false,
-          tocPlacement: (options[:toc_placement] || :auto).to_s,
-          sectnums: options[:sectnums] == true,
-          themeToggle: options[:theme_toggle] != false,
-          readingProgress: options[:reading_progress] != false,
-          lang: options[:lang] || 'en'
-        }
-      end
-
-      def extract_title(document)
-        return nil unless document.is_a?(CoreModel::StructuralElement)
-
-        TitleText.resolve(document.title)
+        @layout_renderer.render_spa(document, options, body_html, toc_data)
       end
 
       def find_and_load_template(type_name)
         cache_key = type_name.to_s
-        return @template_cache[cache_key] if @template_cache.key?(cache_key)
-
         path = @locator.find(type_name)
-        return nil unless path
-
-        template_content = File.read(path)
-        template = Liquid::Template.parse(template_content)
-        @template_cache[cache_key] = template
-        template
-      rescue Liquid::SyntaxError => e
-        warn "Template syntax error in #{path}: #{e.message}"
-        nil
+        load_template(cache: @template_cache, cache_key: cache_key, path: path)
       end
 
       def annotate_section_number(drop)

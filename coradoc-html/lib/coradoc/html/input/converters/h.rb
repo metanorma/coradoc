@@ -5,14 +5,14 @@ module Coradoc
     module Html
       module Converters
         class H < Base
+          INSTANCE = new
+
           def to_coradoc(node, state = {})
             id = node['id']
             internal_anchor = treat_children_anchors(node, state)
 
-            # Check if it has id attribute
             if id.to_s.empty? && internal_anchor.size.positive?
               first_model = internal_anchor.first
-              # InlineElement (anchor) has a target attribute
               id = first_model.target if first_model.is_a?(Coradoc::CoreModel::InlineElement) && first_model.target
             end
 
@@ -46,7 +46,6 @@ module Coradoc
           def extract_title_text(content)
             return '' if content.nil? || content.empty?
 
-            # Extract text from content
             if content.is_a?(Array)
               content.map do |c|
                 if c.is_a?(Coradoc::CoreModel::InlineElement)
@@ -63,12 +62,12 @@ module Coradoc
           end
         end
 
-        register :h1, H.new
-        register :h2, H.new
-        register :h3, H.new
-        register :h4, H.new
-        register :h5, H.new
-        register :h6, H.new
+        register :h1, H::INSTANCE
+        register :h2, H::INSTANCE
+        register :h3, H::INSTANCE
+        register :h4, H::INSTANCE
+        register :h5, H::INSTANCE
+        register :h6, H::INSTANCE
       end
     end
   end

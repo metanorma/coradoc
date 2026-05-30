@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Dl < Base
+          INSTANCE = new
+
           def to_coradoc(node, state = {})
             items = process_dl(node, state)
 
@@ -75,7 +77,7 @@ module Coradoc
           end
         end
 
-        register :dl, Dl.new
+        register :dl, Dl::INSTANCE
       end
     end
   end

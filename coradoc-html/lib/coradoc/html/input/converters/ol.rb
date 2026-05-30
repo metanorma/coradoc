@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Ol < Base
+          INSTANCE = new
+
           def to_coradoc(node, state = {})
             id = node['id']
             items = treat_children_coradoc(node, state)
@@ -33,9 +35,9 @@ module Coradoc
           end
         end
 
-        register :ol, Ol.new
-        register :ul, Ol.new
-        register :dir, Ol.new
+        register :ol,  Ol::INSTANCE
+        register :ul,  Ol::INSTANCE
+        register :dir, Ol::INSTANCE
       end
     end
   end

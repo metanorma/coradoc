@@ -31,6 +31,8 @@ module Coradoc
           term_text.sub(/\A\[\[[^\]]+\]\]/, '')
         end
       end
+
+      DropFactory.register(CoreModel::DefinitionItem, DefinitionItemDrop)
     end
   end
 end

@@ -7,6 +7,7 @@ module Coradoc
     module Html
       module Converters
         class Sub < Base
+          INSTANCE = new
           include PositionalFormatting
 
           private
@@ -16,7 +17,7 @@ module Coradoc
           end
         end
 
-        register :sub, Sub.new
+        register :sub, Sub::INSTANCE
       end
     end
   end

@@ -10,6 +10,8 @@ module Coradoc
           children_to_liquid(@model.items)
         end
       end
+
+      DropFactory.register(CoreModel::DefinitionList, DefinitionListDrop)
     end
   end
 end

@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Strong < Markup
+          INSTANCE = new
+
           def coradoc_format_type
             'bold'
           end
@@ -14,8 +16,8 @@ module Coradoc
           end
         end
 
-        register :strong, Strong.new
-        register :b,      Strong.new
+        register :strong, Strong::INSTANCE
+        register :b,      Strong::INSTANCE
       end
     end
   end

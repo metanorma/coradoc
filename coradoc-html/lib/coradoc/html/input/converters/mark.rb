@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Mark < Markup
+          INSTANCE = new
+
           def coradoc_format_type
             'highlight'
           end
@@ -14,7 +16,7 @@ module Coradoc
           end
         end
 
-        register :mark, Mark.new
+        register :mark, Mark::INSTANCE
       end
     end
   end

@@ -7,6 +7,8 @@ module Coradoc
     module Html
       module Converters
         class A < Base
+          INSTANCE = new
+
           def to_coradoc(node, state = {})
             # Use treat_children_coradoc to get CoreModel elements
             content = treat_children_coradoc(node, state)
@@ -70,7 +72,7 @@ module Coradoc
           end
         end
 
-        register :a, A.new
+        register :a, A::INSTANCE
       end
     end
   end

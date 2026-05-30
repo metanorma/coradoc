@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Aside < Base
+          INSTANCE = new
+
           def to_coradoc(node, state = {})
             content = treat_children_coradoc(node, state)
             Coradoc::CoreModel::SidebarBlock.new(
@@ -13,7 +15,7 @@ module Coradoc
           end
         end
 
-        register :aside, Aside.new
+        register :aside, Aside::INSTANCE
       end
     end
   end

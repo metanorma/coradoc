@@ -19,6 +19,8 @@ module Coradoc
           optional_text(@model.ref_text)
         end
       end
+
+      DropFactory.register(CoreModel::BibliographyEntry, BibliographyEntryDrop)
     end
   end
 end

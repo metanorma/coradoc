@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Td < Base
+          INSTANCE = new
+
           def to_coradoc(node, state = {})
             colspan = node['colspan']&.to_i
             rowspan = node['rowspan']&.to_i
@@ -15,7 +17,6 @@ module Coradoc
 
             content = treat_children_coradoc(node, state)
 
-            # Use CoreModel::TableCell
             Coradoc::CoreModel::TableCell.new(
               content: extract_text_from_content(content),
               alignment: alignment,
@@ -35,8 +36,8 @@ module Coradoc
           end
         end
 
-        register :td, Td.new
-        register :th, Td.new
+        register :td, Td::INSTANCE
+        register :th, Td::INSTANCE
       end
     end
   end

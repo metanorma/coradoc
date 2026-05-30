@@ -11,6 +11,8 @@ module Coradoc
     module Html
       module Converters
         class Img < Base
+          INSTANCE = new
+
           def image_number
             format(
               Coradoc::Html::Input.config.image_counter_pattern,
@@ -96,7 +98,7 @@ module Coradoc
           end
         end
 
-        register :img, Img.new
+        register :img, Img::INSTANCE
       end
     end
   end

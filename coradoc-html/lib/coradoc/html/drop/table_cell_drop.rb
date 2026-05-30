@@ -30,6 +30,8 @@ module Coradoc
           content_to_liquid(@model.renderable_content)
         end
       end
+
+      DropFactory.register(CoreModel::TableCell, TableCellDrop)
     end
   end
 end

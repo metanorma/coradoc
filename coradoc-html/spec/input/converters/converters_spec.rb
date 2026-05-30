@@ -47,15 +47,14 @@ RSpec.describe Coradoc::Input::Html::Converters do
     end
   end
 
-  describe '.process' do
+  describe '.process_coradoc paragraph' do
     it 'processes a simple paragraph' do
       html = '<p>Hello World</p>'
       doc = Nokogiri::HTML.fragment(html)
       node = doc.at('p')
 
-      result = converter_module.process(node, {})
+      result = converter_module.process_coradoc(node, {})
 
-      # Returns CoreModel::Block
       expect(result).to be_a(Coradoc::CoreModel::Block)
     end
 
@@ -64,9 +63,8 @@ RSpec.describe Coradoc::Input::Html::Converters do
       doc = Nokogiri::HTML.fragment(html)
       node = doc.at('h1')
 
-      result = converter_module.process(node, {})
+      result = converter_module.process_coradoc(node, {})
 
-      # Returns CoreModel::StructuralElement
       expect(result).to be_a(Coradoc::CoreModel::StructuralElement)
     end
   end
@@ -283,6 +281,88 @@ RSpec.describe Coradoc::Input::Html::Converters do
         result = converter.to_coradoc(node, {})
 
         expect(result).to be_a(Coradoc::CoreModel::Table)
+      end
+
+      it 'extracts title from caption' do
+        html = '<table><caption>My Table</caption><tr><td>Cell</td></tr></table>'
+        doc = Nokogiri::HTML.fragment(html)
+        node = doc.at('table')
+
+        result = converter.to_coradoc(node, {})
+
+        expect(result.title).to eq('My Table')
+      end
+
+      it 'extracts id attribute' do
+        html = '<table id="t1"><tr><td>Cell</td></tr></table>'
+        doc = Nokogiri::HTML.fragment(html)
+        node = doc.at('table')
+
+        result = converter.to_coradoc(node, {})
+
+        expect(result.id).to eq('t1')
+      end
+    end
+
+    describe '#frame' do
+      let(:table_node) do
+        lambda { |attr|
+          html = "<table frame=\"#{attr}\"><tr><td>X</td></tr></table>"
+          Nokogiri::HTML.fragment(html).at('table')
+        }
+      end
+
+      it 'maps void to none' do
+        expect(converter.frame(table_node.call('void'))).to eq('none')
+      end
+
+      it 'maps hsides to topbot' do
+        expect(converter.frame(table_node.call('hsides'))).to eq('topbot')
+      end
+
+      it 'maps vsides to sides' do
+        expect(converter.frame(table_node.call('vsides'))).to eq('sides')
+      end
+
+      it 'maps box to all' do
+        expect(converter.frame(table_node.call('box'))).to eq('all')
+      end
+
+      it 'maps border to all' do
+        expect(converter.frame(table_node.call('border'))).to eq('all')
+      end
+
+      it 'returns nil for unknown values' do
+        expect(converter.frame(table_node.call('unknown'))).to be_nil
+      end
+    end
+
+    describe '#rules' do
+      let(:table_node) do
+        lambda { |attr|
+          html = "<table rules=\"#{attr}\"><tr><td>X</td></tr></table>"
+          Nokogiri::HTML.fragment(html).at('table')
+        }
+      end
+
+      it 'maps all to all' do
+        expect(converter.rules(table_node.call('all'))).to eq('all')
+      end
+
+      it 'maps rows to rows' do
+        expect(converter.rules(table_node.call('rows'))).to eq('rows')
+      end
+
+      it 'maps cols to cols' do
+        expect(converter.rules(table_node.call('cols'))).to eq('cols')
+      end
+
+      it 'maps none to none' do
+        expect(converter.rules(table_node.call('none'))).to eq('none')
+      end
+
+      it 'returns nil for unknown values' do
+        expect(converter.rules(table_node.call('groups'))).to be_nil
       end
     end
   end

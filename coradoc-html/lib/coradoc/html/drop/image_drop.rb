@@ -30,6 +30,8 @@ module Coradoc
           optional_text(@model.caption)
         end
       end
+
+      DropFactory.register(CoreModel::Image, ImageDrop)
     end
   end
 end

@@ -18,6 +18,9 @@ module Coradoc
           footnote_id.empty?
         end
       end
+
+      DropFactory.register(CoreModel::FootnoteReference, FootnoteDrop)
+      DropFactory.register(CoreModel::Footnote, FootnoteDrop)
     end
   end
 end

@@ -4,15 +4,13 @@ require 'nokogiri'
 require 'liquid'
 require_relative 'escape'
 require_relative 'title_text'
+require_relative 'template_caching'
 
 module Coradoc
   module Html
-    # Handles layout rendering for static and SPA HTML output.
-    #
-    # Renders the outer HTML shell (head, body wrapper, assets) around
-    # the document body content. Falls back to Nokogiri::HTML::Builder
-    # when layout templates are unavailable.
     class LayoutRenderer
+      include TemplateCaching
+
       LAYOUT_DIR = Pathname.new(File.join(File.dirname(__FILE__), 'templates', 'layouts'))
 
       def initialize
@@ -27,10 +25,11 @@ module Coradoc
         layout_template.render(build_static_layout_data(document, body_html, options)).strip
       end
 
-      def render_spa(document, options, content_data)
+      def render_spa(document, options, body_html, toc_data)
         dist_dir = options[:dist_dir] || File.expand_path('../../../frontend/dist', __dir__)
         assets = load_dist_assets(dist_dir)
 
+        content_data = build_spa_content_data(document, body_html, options, toc_data)
         safe_json = Escape.safe_json(content_data)
 
         layout_template = load_layout('spa')
@@ -44,16 +43,20 @@ module Coradoc
       private
 
       def resolve_title(document)
-        TitleText.resolve(document&.title) || 'Untitled'
+        TitleText.resolve(document&.title) || Config::DEFAULT_TITLE
       end
 
       def resolve_escaped_title(document)
-        TitleText.escape(document&.title) || 'Untitled'
+        TitleText.escape(document&.title) || Config::DEFAULT_TITLE
+      end
+
+      def resolve_lang(options)
+        options[:lang] || Config::DEFAULT_LANG
       end
 
       def build_static_layout_data(document, body_html, options)
         {
-          'lang' => options[:lang] || 'en',
+          'lang' => resolve_lang(options),
           'title' => resolve_escaped_title(document),
           'author' => options[:author],
           'description' => options[:description],
@@ -64,9 +67,8 @@ module Coradoc
       end
 
       def build_static_fallback(document, body_html, options)
-        lang = options[:lang] || 'en'
         Nokogiri::HTML::Builder.new do |doc|
-          doc.html(lang: lang) do
+          doc.html(lang: resolve_lang(options)) do
             doc.head do
               doc.meta(charset: 'UTF-8')
               doc.meta(name: 'viewport', content: 'width=device-width, initial-scale=1.0')
@@ -77,9 +79,39 @@ module Coradoc
         end.to_html
       end
 
+      def build_spa_content_data(document, body_html, options, toc_data)
+        {
+          mode: 'classic',
+          contentHtml: body_html,
+          toc: toc_data,
+          meta: build_spa_meta(document, options),
+          options: build_spa_options(options)
+        }
+      end
+
+      def build_spa_meta(document, options)
+        {
+          title: TitleText.resolve(document&.title) || Config::DEFAULT_TITLE,
+          author: options[:author],
+          date: options[:revdate],
+          generator: "Coradoc #{Coradoc::VERSION}"
+        }
+      end
+
+      def build_spa_options(options)
+        {
+          toc: options[:toc] ? true : false,
+          tocPlacement: (options[:toc_placement] || :auto).to_s,
+          sectnums: options[:sectnums] == true,
+          themeToggle: options[:theme_toggle] != false,
+          readingProgress: options[:reading_progress] != false,
+          lang: resolve_lang(options)
+        }
+      end
+
       def build_spa_layout_data(document, options, assets, safe_json)
         {
-          'lang' => options[:lang] || 'en',
+          'lang' => resolve_lang(options),
           'title' => resolve_escaped_title(document),
           'author' => options[:author],
           'description' => options[:description],
@@ -91,15 +123,13 @@ module Coradoc
       end
 
       def build_spa_fallback(document, options, assets, safe_json)
-        title = resolve_title(document)
-        lang = options[:lang] || 'en'
         Nokogiri::HTML::Builder.new do |doc|
-          doc.html(lang: lang) do
+          doc.html(lang: resolve_lang(options)) do
             doc.head do
               doc.meta(charset: 'UTF-8')
               doc.meta(name: 'viewport', content: 'width=device-width, initial-scale=1.0')
               doc.meta(name: 'generator', content: "Coradoc #{Coradoc::VERSION}")
-              doc.title title
+              doc.title resolve_title(document)
               doc.style { doc.text assets[:css] } if assets[:css]
             end
             doc.body do
@@ -113,18 +143,8 @@ module Coradoc
 
       def load_layout(name)
         cache_key = "layout:#{name}"
-        return @template_cache[cache_key] if @template_cache.key?(cache_key)
-
-        path = LAYOUT_DIR.join("#{name}.liquid")
-        return nil unless path.exist?
-
-        template_content = File.read(path)
-        template = Liquid::Template.parse(template_content)
-        @template_cache[cache_key] = template
-        template
-      rescue Liquid::SyntaxError => e
-        warn "Layout template syntax error: #{e.message}"
-        nil
+        path = LAYOUT_DIR.join("#{name}.liquid").to_s
+        load_template(cache: @template_cache, cache_key: cache_key, path: path)
       end
 
       def load_dist_assets(dist_dir)

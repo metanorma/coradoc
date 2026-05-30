@@ -26,6 +26,8 @@ module Coradoc
           "admonitionblock #{annotation_type}"
         end
       end
+
+      DropFactory.register(CoreModel::AnnotationBlock, AnnotationDrop)
     end
   end
 end

@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class Figure < Base
+          INSTANCE = new
+
           def to_coradoc(node, state = {})
             id = node['id']
             title_content = extract_title(node)
@@ -26,7 +28,7 @@ module Coradoc
           end
         end
 
-        register :figure, Figure.new
+        register :figure, Figure::INSTANCE
       end
     end
   end

@@ -5,6 +5,8 @@ module Coradoc
     module Html
       module Converters
         class P < Base
+          INSTANCE = new
+
           def to_coradoc(node, state = {})
             id = node['id']
             content = treat_children_coradoc(node, state)
@@ -81,7 +83,7 @@ module Coradoc
           end
         end
 
-        register :p, P.new
+        register :p, P::INSTANCE
       end
     end
   end
