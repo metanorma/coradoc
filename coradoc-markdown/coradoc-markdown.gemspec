@@ -31,8 +31,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   # Core dependencies
-  spec.add_dependency 'coradoc'
-  spec.add_dependency 'lutaml-model'
+  spec.add_dependency 'coradoc', '~> 2.0'
+  spec.add_dependency 'lutaml-model', '~> 0.8.0'
   spec.add_dependency 'parslet'
 
   # Development dependencies
