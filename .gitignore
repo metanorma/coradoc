@@ -60,3 +60,12 @@ sample.oscal.*
 /x.yaml
 
 .claude/
+
+# Typo directory
+coradodoc-html/
+
+# Work in progress
+TODO.html-liquid/
+
+# Frontend build artifacts
+coradoc-html/frontend/node_modules/

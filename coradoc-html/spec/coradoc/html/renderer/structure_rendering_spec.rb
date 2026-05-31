@@ -51,7 +51,7 @@ RSpec.describe Coradoc::Html::Renderer, 'document structure rendering' do
     it 'includes section numbers when set via render_html5' do
       section = CoreModel::SectionElement.new(id: 's1', title: 'Intro', level: 1, children: [])
       doc = CoreModel::DocumentElement.new(children: [section])
-      html = renderer.render_html5(doc, sectnums: true)
+      html = renderer.render_html5(doc, section_numbers: true)
       expect(html).to include('1. Intro')
     end
   end

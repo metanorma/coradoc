@@ -99,7 +99,7 @@ module Coradoc
         {
           toc: options[:toc] ? true : false,
           tocPlacement: (options[:toc_placement] || :auto).to_s,
-          sectnums: options[:sectnums] == true,
+          sectnums: options[:section_numbers] == true,
           themeToggle: options[:theme_toggle] != false,
           readingProgress: options[:reading_progress] != false,
           lang: resolve_lang(options)

@@ -50,8 +50,8 @@ module Coradoc
           layout: :spa,
           lang: @config.lang,
           toc: @config.toc_sticky,
-          toclevels: @config.toc_levels,
-          sectnums: false,
+          toc_levels: @config.toc_levels,
+          section_numbers: false,
           dist_dir: @config.dist_dir,
           theme_toggle: @config.theme_toggle,
           reading_progress: @config.reading_progress

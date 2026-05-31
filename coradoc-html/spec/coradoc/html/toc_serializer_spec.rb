@@ -28,7 +28,7 @@ RSpec.describe Coradoc::Html::TocSerializer do
       )
       doc = CoreModel::DocumentElement.new(children: [section])
 
-      result = serializer.build_json(doc, { sectnums: true })
+      result = serializer.build_json(doc, { section_numbers: true })
       expect(result[:numbered]).to be true
       expect(result[:entries].size).to eq(1)
       expect(result[:entries][0][:id]).to eq('s1')
@@ -45,7 +45,7 @@ RSpec.describe Coradoc::Html::TocSerializer do
       )
       doc = CoreModel::DocumentElement.new(children: [section])
 
-      result = serializer.build_json(doc, { toclevels: 2 })
+      result = serializer.build_json(doc, { toc_levels: 2 })
       entry = result[:entries][0]
       expect(entry[:children].size).to eq(1)
       expect(entry[:children][0][:id]).to eq('s1-1')
@@ -57,7 +57,7 @@ RSpec.describe Coradoc::Html::TocSerializer do
       section = CoreModel::SectionElement.new(id: 's1', title: 'Parent', level: 1, children: [child])
       doc = CoreModel::DocumentElement.new(children: [section])
 
-      result = serializer.build_json(doc, { toclevels: 1 })
+      result = serializer.build_json(doc, { toc_levels: 1 })
       entry = result[:entries][0]
       expect(entry[:children]).to eq([])
     end
@@ -66,7 +66,7 @@ RSpec.describe Coradoc::Html::TocSerializer do
       section = CoreModel::SectionElement.new(id: 's1', title: 'Test', level: 1)
       doc = CoreModel::DocumentElement.new(children: [section])
 
-      result = serializer.build_json(doc, { sectnums: true, sectnumlevels: 1, toclevels: 3 })
+      result = serializer.build_json(doc, { section_numbers: true, section_number_levels: 1, toc_levels: 3 })
       expect(result[:entries][0][:number]).to eq('1')
     end
   end

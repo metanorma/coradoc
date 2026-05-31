@@ -273,7 +273,7 @@ RSpec.describe 'HTML Output Integration' do
     let(:numbered_doc) { Coradoc.parse(numbered_adoc, format: :asciidoc) }
 
     it 'renders section numbers in TOC entries' do
-      html = Coradoc::Html.serialize(numbered_doc, toc: true, sectnums: true, layout: :spa)
+      html = Coradoc::Html.serialize(numbered_doc, toc: true, section_numbers: true, layout: :spa)
 
       # Extract CORADOC_DATA JSON from the script tag
       json_match = html.match(%r{window\.CORADOC_DATA\s*=\s*(.+?);\s*</script>}m)
@@ -295,7 +295,7 @@ RSpec.describe 'HTML Output Integration' do
     end
 
     it 'renders section numbers in body headings' do
-      html = Coradoc::Html.serialize(numbered_doc, toc: true, sectnums: true, layout: :spa)
+      html = Coradoc::Html.serialize(numbered_doc, toc: true, section_numbers: true, layout: :spa)
 
       # Extract contentHtml from CORADOC_DATA
       json_match = html.match(%r{window\.CORADOC_DATA\s*=\s*(.+?);\s*</script>}m)

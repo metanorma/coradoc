@@ -16,7 +16,12 @@ module Coradoc
     option :from, aliases: '-f', desc: 'Source format (auto-detected from extension)', type: :string
     option :theme, desc: 'HTML theme (classic, modern)', type: :string, default: 'classic'
     option :verbose, desc: 'Enable verbose output', type: :boolean, default: false
-    option :"asset-delivery", desc: 'Asset delivery mode (embedded, external)', type: :string, default: 'embedded'
+    option :asset_delivery, desc: 'Asset delivery mode (embedded, external)', type: :string, default: 'embedded'
+    option :toc, desc: 'Include table of contents', type: :boolean, default: false
+    option :toc_levels, desc: 'TOC depth (1-5)', type: :numeric, default: 2
+    option :section_numbers, desc: 'Enable section numbering', type: :boolean, default: false
+    option :section_number_levels, desc: 'Section numbering depth (1-6)', type: :numeric, default: 3
+    option :lang, desc: 'Document language code', type: :string, default: 'en'
     def convert(file)
       source_format = resolve_format(file, :from)
       target_format = options[:to] ? Coradoc.normalize_format(options[:to]) : Coradoc.resolve_output_format(options[:output])
@@ -33,10 +38,7 @@ module Coradoc
 
       verbose_log "Converting #{file} (#{source_format}) to #{target_format}"
 
-      opts = {}
-      opts[:theme] = options[:theme].to_sym if options[:theme]
-      opts[:asset_delivery] = options[:"asset-delivery"].to_sym if options[:"asset-delivery"]
-
+      opts = build_convert_options
       result = Coradoc.convert_file(file, from: source_format, to: target_format, **opts)
       write_output(result, options[:output])
     rescue Coradoc::Error => e
@@ -194,6 +196,24 @@ module Coradoc
 
     def error(message)
       warn message
+    end
+
+    CONVERT_OPTIONS = %i[
+      toc toc_levels section_numbers section_number_levels
+      lang theme asset_delivery
+    ].freeze
+    private_constant :CONVERT_OPTIONS
+
+    SYMBOL_OPTIONS = %i[theme asset_delivery].freeze
+    private_constant :SYMBOL_OPTIONS
+
+    def build_convert_options
+      CONVERT_OPTIONS.each_with_object({}) do |key, opts|
+        value = options[key]
+        next unless value
+
+        opts[key] = SYMBOL_OPTIONS.include?(key) ? value.to_sym : value
+      end
     end
   end
 end

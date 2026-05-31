@@ -9,7 +9,7 @@ module Coradoc
       def build_json(document, options)
         return { entries: [], numbered: false } unless document.is_a?(CoreModel::StructuralElement)
 
-        numbered = options[:sectnums] == true
+        numbered = options[:section_numbers] == true
         builder = TocBuilder.from_options(options)
         toc = builder.build(document)
         { entries: serialize_entries(toc.entries), numbered: numbered }
