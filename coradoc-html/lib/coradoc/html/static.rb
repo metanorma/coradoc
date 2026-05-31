@@ -67,9 +67,9 @@ module Coradoc
             description: @config.meta_tags[:description],
             custom_css: @config.custom_css,
             toc: @config.include_toc,
-            sectnums: @config.section_numbering,
-            sectnumlevels: @config.section_numbering_levels,
-            toclevels: @config.toc_levels
+            section_numbers: @config.section_numbering,
+            section_number_levels: @config.section_numbering_levels,
+            toc_levels: @config.toc_levels
           )
         end
       end

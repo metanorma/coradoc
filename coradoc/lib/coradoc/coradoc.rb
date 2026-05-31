@@ -132,12 +132,12 @@ module Coradoc
     #
     # @example Convert HTML to AsciiDoc
     #   adoc = Coradoc.convert(html_text, from: :html, to: :asciidoc)
-    def convert(text, from:, to:, **options)
+    def convert(text, from:, to:, **)
       # Parse to CoreModel
       core = parse(text, format: from)
 
       # Convert to target format
-      serialize(core, to: to, **options)
+      serialize(core, to: to, **)
     end
 
     # Transform a model to CoreModel
@@ -162,12 +162,12 @@ module Coradoc
     # @param to [Symbol] the target format
     # @param options [Hash] additional options
     # @return [String] the serialized document
-    def serialize(model, to:, **options)
+    def serialize(model, to:, **)
       format_module = get_format(to)
       raise UnsupportedFormatError, "Format '#{to}' is not registered" unless format_module
 
       model = Hooks.invoke(:before_serialize, model, format: to)
-      result = format_module.serialize(model, **options)
+      result = format_module.serialize(model, **)
       Hooks.invoke(:after_serialize, result, format: to)
     end
 
@@ -228,7 +228,9 @@ module Coradoc
         format_module.parse_to_core(path)
       else
         content = File.read(path)
-        parse(content, format: source_format)
+        content = Hooks.invoke(:before_parse, content, format: source_format)
+        result = format_module.parse_file_to_core(path, content)
+        Hooks.invoke(:after_parse, result, format: source_format)
       end
     end
 
@@ -243,12 +245,12 @@ module Coradoc
     # @example
     #   html = Coradoc.convert_file("document.adoc", to: :html)
     #   adoc = Coradoc.convert_file("report.docx", to: :asciidoc)
-    def convert_file(path, to:, from: nil, **options)
+    def convert_file(path, to:, from: nil, **)
       source_format = from || detect_format(path)
       raise UnsupportedFormatError, "Could not detect format for: #{path}" unless source_format
 
       core = parse_file(path, format: source_format)
-      serialize(core, to: to, **options)
+      serialize(core, to: to, **)
     end
 
     # Check if a format requires binary (file path) input
@@ -332,7 +334,7 @@ module Coradoc
     def file_info(path)
       fmt = detect_format(path)
       info = { size: File.size(path), format: fmt }
-      info[:lines] = File.read(path).lines.count unless binary_format?(fmt)
+      info[:lines] = File.foreach(path).count unless binary_format?(fmt)
       info
     end
 
@@ -454,6 +456,8 @@ module Coradoc
   autoload :Transform, "#{__dir__}/transform"
   autoload :Input, "#{__dir__}/input"
   autoload :Output, "#{__dir__}/output"
+  autoload :DocumentManipulator, "#{__dir__}/document_manipulator"
+  autoload :Visitor, "#{__dir__}/visitor"
   autoload :PerformanceRegression, "#{__dir__}/performance_regression"
 end
 

@@ -33,7 +33,7 @@ RSpec.describe Coradoc::Html::TocBuilder do
   describe '.from_options' do
     it 'builds a TocBuilder from renderer options hash' do
       builder = described_class.from_options(
-        sectnums: true, sectnumlevels: 3, toclevels: 2
+        section_numbers: true, section_number_levels: 3, toc_levels: 2
       )
       toc = builder.build(document)
 
@@ -51,7 +51,7 @@ RSpec.describe Coradoc::Html::TocBuilder do
     end
 
     it 'uses min of toclevels and sectnumlevels as max_level' do
-      builder = described_class.from_options(toclevels: 1, sectnumlevels: 6)
+      builder = described_class.from_options(toc_levels: 1, section_number_levels: 6)
       toc = builder.build(document)
 
       expect(toc.entries[0].children).to be_empty
@@ -67,7 +67,7 @@ RSpec.describe Coradoc::Html::TocBuilder do
     end
 
     it 'assigns section numbers when numbered is true' do
-      toc = described_class.new(max_level: 3, numbered: true, sectnumlevels: 3).build(document)
+      toc = described_class.new(max_level: 3, numbered: true, section_number_levels: 3).build(document)
 
       expect(toc.entries[0].number).to eq('1')
       expect(toc.entries[0].title).to eq('Introduction')
@@ -90,7 +90,7 @@ RSpec.describe Coradoc::Html::TocBuilder do
     end
 
     it 'respects max_level to limit TOC depth' do
-      toc = described_class.new(max_level: 1, numbered: true, sectnumlevels: 3).build(document)
+      toc = described_class.new(max_level: 1, numbered: true, section_number_levels: 3).build(document)
 
       expect(toc.entries.length).to eq(3)
       expect(toc.entries[0].children).to be_empty
@@ -104,7 +104,7 @@ RSpec.describe Coradoc::Html::TocBuilder do
 
   describe '#section_number_map' do
     it 'returns a mapping of section IDs to number strings' do
-      map = described_class.new(max_level: 3, sectnumlevels: 3).section_number_map(document)
+      map = described_class.new(max_level: 3, section_number_levels: 3).section_number_map(document)
 
       expect(map['intro']).to eq('1')
       expect(map['background']).to eq('1.1')
@@ -133,7 +133,7 @@ RSpec.describe Coradoc::Html::TocBuilder do
         ]
       )
 
-      map = described_class.new(max_level: 6, sectnumlevels: 2).section_number_map(deep_doc)
+      map = described_class.new(max_level: 6, section_number_levels: 2).section_number_map(deep_doc)
 
       expect(map['s1']).to eq('1')
       expect(map['s1-1']).to eq('1.1')

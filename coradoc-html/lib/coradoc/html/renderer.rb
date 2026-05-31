@@ -78,7 +78,7 @@ module Coradoc
       end
 
       def compute_section_numbers(document, options)
-        if options[:sectnums] && document.is_a?(CoreModel::StructuralElement)
+        if options[:section_numbers] && document.is_a?(CoreModel::StructuralElement)
           build_toc(document, options).section_number_map(document)
         else
           {}

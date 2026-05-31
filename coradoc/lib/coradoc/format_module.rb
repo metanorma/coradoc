@@ -29,6 +29,17 @@ module Coradoc
       def serialize?
         true
       end
+
+      # Parse a file to CoreModel, handling file-specific concerns like include resolution.
+      # Format modules that support include directives or file-relative references
+      # should override this method.
+      #
+      # @param path [String] path to the source file
+      # @param content [String, nil] pre-read file content (hooks may have modified it)
+      # @return [Coradoc::CoreModel::Base] CoreModel document
+      def parse_file_to_core(path, content = nil)
+        parse_to_core(content || File.read(path))
+      end
     end
 
     # Validate that a format module implements the minimum interface.

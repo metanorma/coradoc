@@ -9,21 +9,21 @@ module Coradoc
     # derived from tree position — single source of truth for both
     # TOC rendering and heading numbering.
     class TocBuilder
-      def initialize(max_level: 6, numbered: false, sectnumlevels: 3)
+      def initialize(max_level: 6, numbered: false, section_number_levels: 3)
         @max_level = max_level
         @numbered = numbered
-        @sectnumlevels = sectnumlevels
+        @section_number_levels = section_number_levels
       end
 
       # Build a TocBuilder from renderer-style options hash.
       #
-      # @param options [Hash] options with :sectnumlevels, :toclevels, :sectnums
+      # @param options [Hash] options with :section_number_levels, :toc_levels, :section_numbers
       # @return [TocBuilder]
       def self.from_options(options)
-        sectnumlevels = options[:sectnumlevels] || 3
-        toclevels = options[:toclevels] || 2
-        max_level = [toclevels, sectnumlevels].min
-        new(max_level: max_level, numbered: options[:sectnums] == true, sectnumlevels: sectnumlevels)
+        section_number_levels = options[:section_number_levels] || 3
+        toc_levels = options[:toc_levels] || 2
+        max_level = [toc_levels, section_number_levels].min
+        new(max_level: max_level, numbered: options[:section_numbers] == true, section_number_levels: section_number_levels)
       end
 
       # Build a Toc model from a document.
@@ -68,10 +68,10 @@ module Coradoc
           next unless item.section? || item.header?
 
           counters[level] = (counters[level] || 0) + 1
-          ((level + 1)..@sectnumlevels).each { |i| counters[i] = 0 }
+          ((level + 1)..@section_number_levels).each { |i| counters[i] = 0 }
 
           use_number = always_number || @numbered
-          number = use_number && level <= @sectnumlevels ? counters[1..level].join('.') : nil
+          number = use_number && level <= @section_number_levels ? counters[1..level].join('.') : nil
 
           children = []
           collect_entries(item.children, children, level + 1, counters, always_number: always_number) if item.children
