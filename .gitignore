@@ -66,6 +66,7 @@ coradodoc-html/
 
 # Work in progress
 TODO.html-liquid/
+TODO.bugfixes/
 
 # Frontend build artifacts
-coradoc-html/frontend/node_modules/
+coradoc-html/frontend/

@@ -49,7 +49,13 @@ module Coradoc
       end
 
       def render_html5(document, **options)
-        @section_numbers = compute_section_numbers(document, options)
+        builder = TocBuilder.from_options(options)
+        @toc, @section_numbers = if document.is_a?(CoreModel::StructuralElement)
+                                   builder.build_with_numbers(document)
+                                 else
+                                   [nil, {}]
+                                 end
+
         body_html = render(document)
 
         if options[:layout] == :spa
@@ -73,33 +79,21 @@ module Coradoc
 
       private
 
-      def build_toc(_document, options)
-        TocBuilder.from_options(options)
-      end
-
-      def compute_section_numbers(document, options)
-        if options[:section_numbers] && document.is_a?(CoreModel::StructuralElement)
-          build_toc(document, options).section_number_map(document)
-        else
-          {}
-        end
-      end
-
-      def render_toc_for(document, options)
-        toc = build_toc(document, options).build(document)
-        render(toc)
-      end
-
       def render_static_layout(document, body_html, options)
-        if options[:toc] && document.is_a?(CoreModel::StructuralElement)
-          toc_html = render_toc_for(document, options)
+        if options[:toc] && @toc
+          toc_html = render(@toc)
           body_html = "#{toc_html}\n#{body_html}" unless toc_html.empty?
         end
         @layout_renderer.render_static(document, body_html, options)
       end
 
       def render_spa_layout(document, body_html, options)
-        toc_data = TocSerializer.new.build_json(document, options)
+        numbered = options[:section_numbers] == true
+        toc_data = if @toc
+                     { entries: TocSerializer.new.serialize_entries(@toc.entries), numbered: numbered }
+                   else
+                     { entries: [], numbered: false }
+                   end
         @layout_renderer.render_spa(document, options, body_html, toc_data)
       end
 
@@ -123,11 +117,12 @@ module Coradoc
         resolved = TitleText.resolve(drop.model)
         text = resolved ? Escape.escape_html(resolved) : ''
 
-        doc = Nokogiri::HTML::Document.new
-        fragment = Nokogiri::HTML::Builder.with(doc) do |builder|
-          builder.div(class: "element element-#{type}") { builder.text text }
-        end
-        fragment.at_css('div').to_html
+        fragment = Nokogiri::HTML.fragment
+        div = Nokogiri::XML::Node.new('div', fragment.document)
+        div['class'] = "element element-#{type}"
+        div.content = text
+        fragment.add_child(div)
+        fragment.to_html
       end
 
       def normalize_dirs(dirs)

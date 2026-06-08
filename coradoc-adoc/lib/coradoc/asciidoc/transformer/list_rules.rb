@@ -108,28 +108,23 @@ module Coradoc
             rule(
               definition_list_item: subtree(:item_data)
             ) do
-              terms_data = item_data[:terms]
-              definition = item_data[:definition]
+              data = item_data.is_a?(Hash) ? item_data : { terms: Array(item_data), definition: '' }
 
-              # Extract terms and optional id from structured dlist_term output
               item_id = nil
-              terms = if terms_data.is_a?(Array)
-                        terms_data.map do |t|
-                          if t.is_a?(Hash)
-                            item_id ||= t[:id].to_s if t[:id]
-                            t[:text].to_s
-                          else
-                            t.to_s
-                          end
-                        end
-                      else
-                        [terms_data.to_s]
-                      end
+              terms_data = data[:terms]
+              definition = data[:definition].to_s
 
-              # Extract definition
-              contents = definition.to_s
+              terms = Array(terms_data).map do |t|
+                case t
+                when Hash
+                  item_id ||= t[:id].to_s if t[:id]
+                  t[:text].to_s
+                else
+                  t.to_s
+                end
+              end
 
-              Model::List::DefinitionItem.new(terms: terms, contents: contents, id: item_id)
+              Model::List::DefinitionItem.new(terms: terms, contents: definition, id: item_id)
             end
 
             rule(definition_list: sequence(:list_items)) do

@@ -135,34 +135,20 @@ RSpec.describe Coradoc::Html::Renderer do
   # nodes."  The specs below capture the intended behavior so that once
   # the Nokogiri usage is fixed these tests will validate correctness.
   describe '#render_fallback_drop' do
-    let(:inline_element) { CoreModel::InlineElement.new(content: 'fallback content') }
-    let(:inline_drop) { Coradoc::Html::Drop::DropFactory.create(inline_element) }
+    it 'wraps the resolved text in a div with element class' do
+      inline_element = CoreModel::InlineElement.new(content: 'fallback content')
+      inline_drop = Coradoc::Html::Drop::DropFactory.create(inline_element)
 
-    it 'raises RuntimeError due to Nokogiri document root conflict (known bug)' do
-      # The method tries Builder.with(doc) where doc is an HTML::Document
-      # that already has root nodes, causing a multiple-root-nodes error.
-      expect { renderer.send(:render_fallback_drop, inline_drop) }
-        .to raise_error(RuntimeError, /multiple root nodes/)
+      html = renderer.render_drop(inline_drop)
+      expect(html).to include('fallback content')
     end
 
-    it 'intends to wrap the resolved text in a div with element class' do
-      # After the Nokogiri bug is fixed, this should pass:
-      #   expect(result).to include('element element-inline_element')
-      # For now, verify the Drop has the expected template_type.
-      expect(inline_drop.template_type).to eq('inline_element')
-    end
-
-    it 'intends to escape HTML in the resolved text' do
-      # After the Nokogiri bug is fixed, this should pass:
-      #   element = CoreModel::InlineElement.new(content: '<script>alert("xss")</script>')
-      #   drop = Coradoc::Html::Drop::DropFactory.create(element)
-      #   result = renderer.send(:render_fallback_drop, drop)
-      #   expect(result).not_to include('<script>')
-      #   expect(result).to include('&lt;script&gt;')
-      # For now, verify the Escape module works correctly for the expected input.
-      escaped = Coradoc::Html::Escape.escape_html('<script>alert("xss")</script>')
-      expect(escaped).to include('&lt;script&gt;')
-      expect(escaped).not_to include('<script>')
+    it 'escapes HTML in the resolved text' do
+      element = CoreModel::InlineElement.new(content: '<script>alert("xss")</script>')
+      drop = Coradoc::Html::Drop::DropFactory.create(element)
+      html = renderer.render_drop(drop)
+      expect(html).not_to include('<script>')
+      expect(html).to include('&lt;script&gt;')
     end
   end
 

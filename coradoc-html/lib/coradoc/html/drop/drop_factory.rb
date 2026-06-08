@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Coradoc
   module Html
     module Drop
@@ -51,23 +49,24 @@ module Coradoc
   end
 end
 
-# Load all drops — each self-registers with DropFactory
-require_relative 'annotation_drop'
-require_relative 'block_drop'
-require_relative 'list_block_drop'
-require_relative 'list_item_drop'
-require_relative 'table_drop'
-require_relative 'table_row_drop'
-require_relative 'table_cell_drop'
-require_relative 'image_drop'
-require_relative 'inline_element_drop'
-require_relative 'bibliography_entry_drop'
-require_relative 'bibliography_drop'
-require_relative 'toc_entry_drop'
-require_relative 'toc_drop'
-require_relative 'definition_item_drop'
-require_relative 'definition_list_drop'
-require_relative 'term_drop'
-require_relative 'footnote_drop'
-require_relative 'text_content_drop'
-require_relative 'document_drop'
+# Load all drops — each self-registers with DropFactory.
+# Registration order doesn't matter (sorted by ancestor depth).
+require 'coradoc/html/drop/annotation_drop'
+require 'coradoc/html/drop/block_drop'
+require 'coradoc/html/drop/list_block_drop'
+require 'coradoc/html/drop/list_item_drop'
+require 'coradoc/html/drop/table_drop'
+require 'coradoc/html/drop/table_row_drop'
+require 'coradoc/html/drop/table_cell_drop'
+require 'coradoc/html/drop/image_drop'
+require 'coradoc/html/drop/inline_element_drop'
+require 'coradoc/html/drop/bibliography_entry_drop'
+require 'coradoc/html/drop/bibliography_drop'
+require 'coradoc/html/drop/toc_entry_drop'
+require 'coradoc/html/drop/toc_drop'
+require 'coradoc/html/drop/definition_item_drop'
+require 'coradoc/html/drop/definition_list_drop'
+require 'coradoc/html/drop/term_drop'
+require 'coradoc/html/drop/footnote_drop'
+require 'coradoc/html/drop/text_content_drop'
+require 'coradoc/html/drop/document_drop'

@@ -44,7 +44,7 @@ RSpec.describe Coradoc::Html::TocBuilder do
 
     it 'uses defaults when options are empty' do
       builder = described_class.from_options({})
-      toc = builder.build(document)
+      toc, = builder.build_with_numbers(document)
 
       expect(toc.numbered).to be false
       expect(toc.entries[0].number).to be_nil
@@ -84,7 +84,7 @@ RSpec.describe Coradoc::Html::TocBuilder do
     end
 
     it 'does not assign numbers when numbered is false' do
-      toc = described_class.new(max_level: 3, numbered: false).build(document)
+      toc, = described_class.new(max_level: 3, numbered: false).build_with_numbers(document)
 
       expect(toc.entries[0].number).to be_nil
     end
@@ -102,9 +102,9 @@ RSpec.describe Coradoc::Html::TocBuilder do
     end
   end
 
-  describe '#section_number_map' do
+  describe '#build_with_numbers' do
     it 'returns a mapping of section IDs to number strings' do
-      map = described_class.new(max_level: 3, section_number_levels: 3).section_number_map(document)
+      _, map = described_class.new(max_level: 3, section_number_levels: 3).build_with_numbers(document)
 
       expect(map['intro']).to eq('1')
       expect(map['background']).to eq('1.1')
@@ -113,7 +113,7 @@ RSpec.describe Coradoc::Html::TocBuilder do
       expect(map['conclusion']).to eq('3')
     end
 
-    it 'excludes sections beyond sectnumlevels' do
+    it 'excludes sections beyond section_number_levels' do
       deep_doc = Coradoc::CoreModel::DocumentElement.new(
         title: 'Deep',
         children: [
@@ -133,7 +133,7 @@ RSpec.describe Coradoc::Html::TocBuilder do
         ]
       )
 
-      map = described_class.new(max_level: 6, section_number_levels: 2).section_number_map(deep_doc)
+      _, map = described_class.new(max_level: 6, section_number_levels: 2).build_with_numbers(deep_doc)
 
       expect(map['s1']).to eq('1')
       expect(map['s1-1']).to eq('1.1')

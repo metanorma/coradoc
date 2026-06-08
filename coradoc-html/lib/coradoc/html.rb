@@ -26,11 +26,8 @@ module Coradoc
     autoload :TemplateCaching, 'coradoc/html/template_caching'
     autoload :TitleText, 'coradoc/html/title_text'
 
-    # Autoload Drop namespace (DropFactory loads Base + all drops)
-    module Drop
-      autoload :DropFactory, 'coradoc/html/drop/drop_factory'
-      autoload :Base, 'coradoc/html/drop/base'
-    end
+    # Drop layer — self-registering drops loaded via parent namespace file
+    require 'coradoc/html/drop'
 
     # Autoload HTML output converters
     autoload :ConverterBase, 'coradoc/html/converter_base'
@@ -42,7 +39,8 @@ module Coradoc
     autoload :Theme, 'coradoc/html/theme'
     autoload :TemplateLocator, 'coradoc/html/template_locator'
     autoload :TemplateConfig, 'coradoc/html/template_config'
-    autoload :TemplateFilters, 'coradoc/html/template_helpers'
+    # Side-effect: registers Liquid filters on load
+    require 'coradoc/html/template_helpers'
     autoload :Renderer, 'coradoc/html/renderer'
     autoload :LayoutRenderer, 'coradoc/html/layout_renderer'
     autoload :TocSerializer, 'coradoc/html/toc_serializer'

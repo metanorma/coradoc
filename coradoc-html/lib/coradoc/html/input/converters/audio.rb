@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'media_base'
-
 module Coradoc
   module Input
     module Html
