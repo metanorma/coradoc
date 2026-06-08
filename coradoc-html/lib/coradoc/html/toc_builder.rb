@@ -31,31 +31,31 @@ module Coradoc
       # @param document [CoreModel::StructuralElement] the root document
       # @return [CoreModel::Toc] the built TOC with entries and section numbers
       def build(document)
+        toc, = build_with_numbers(document)
+        toc
+      end
+
+      # Build TOC and section number map in a single tree walk.
+      #
+      # @param document [CoreModel::StructuralElement] the root document
+      # @return [Array(CoreModel::Toc, Hash)] tuple of TOC model and section number map
+      def build_with_numbers(document)
         entries = []
         counters = [0]
-        collect_entries(document.children, entries, 1, counters) if document.children
+        collect_entries(document.children, entries, 1, counters, always_number: true) if document.children
 
-        CoreModel::Toc.new(
+        map = {}
+        flatten_numbers(entries, map)
+
+        strip_numbers(entries) unless @numbered
+
+        toc = CoreModel::Toc.new(
           entries: entries,
           min_level: 1,
           max_level: @max_level,
           numbered: @numbered
         )
-      end
-
-      # Compute a mapping of section_id => section_number_string.
-      # Always computes numbers regardless of the +numbered+ flag,
-      # since this is used for heading annotation in the body.
-      #
-      # @param document [CoreModel::StructuralElement] the root document
-      # @return [Hash{String => String}] mapping of section ID to number (e.g., "2.1")
-      def section_number_map(document)
-        map = {}
-        entries = []
-        counters = [0]
-        collect_entries(document.children, entries, 1, counters, always_number: true) if document.children
-        flatten_numbers(entries, map)
-        map
+        [toc, map]
       end
 
       private
@@ -90,6 +90,13 @@ module Coradoc
         entries.each do |entry|
           map[entry.id] = entry.number if entry.id && entry.number
           flatten_numbers(entry.children, map) if entry.children
+        end
+      end
+
+      def strip_numbers(entries)
+        entries.each do |entry|
+          entry.number = nil
+          strip_numbers(entry.children) if entry.children
         end
       end
 

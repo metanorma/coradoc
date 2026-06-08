@@ -4,43 +4,51 @@ module Coradoc
   module Input
     module Html
       module Converters
-        # Autoload converter classes - they will register themselves when first accessed
-        autoload :Base, 'coradoc/html/input/converters/base'
-        autoload :Markup, 'coradoc/html/input/converters/markup'
-        autoload :A, 'coradoc/html/input/converters/a'
-        autoload :Aside, 'coradoc/html/input/converters/aside'
-        autoload :Audio, 'coradoc/html/input/converters/audio'
-        autoload :Blockquote, 'coradoc/html/input/converters/blockquote'
-        autoload :Br, 'coradoc/html/input/converters/br'
-        autoload :Bypass, 'coradoc/html/input/converters/bypass'
-        autoload :Code, 'coradoc/html/input/converters/code'
-        autoload :Div, 'coradoc/html/input/converters/div'
-        autoload :Dl, 'coradoc/html/input/converters/dl'
-        autoload :Skip, 'coradoc/html/input/converters/drop'
-        autoload :Em, 'coradoc/html/input/converters/em'
-        autoload :Figure, 'coradoc/html/input/converters/figure'
-        autoload :H, 'coradoc/html/input/converters/h'
-        autoload :Head, 'coradoc/html/input/converters/head'
-        autoload :Hr, 'coradoc/html/input/converters/hr'
-        autoload :Img, 'coradoc/html/input/converters/img'
-        autoload :Li, 'coradoc/html/input/converters/li'
-        autoload :Mark, 'coradoc/html/input/converters/mark'
-        autoload :Math, 'coradoc/html/input/converters/math'
-        autoload :MediaBase, 'coradoc/html/input/converters/media_base'
-        autoload :Ol, 'coradoc/html/input/converters/ol'
-        autoload :P, 'coradoc/html/input/converters/p'
-        autoload :PassThrough, 'coradoc/html/input/converters/pass_through'
-        autoload :PositionalFormatting, 'coradoc/html/input/converters/positional_formatting'
-        autoload :Pre, 'coradoc/html/input/converters/pre'
-        autoload :Q, 'coradoc/html/input/converters/q'
-        autoload :Strong, 'coradoc/html/input/converters/strong'
-        autoload :Sup, 'coradoc/html/input/converters/sup'
-        autoload :Sub, 'coradoc/html/input/converters/sub'
-        autoload :Table, 'coradoc/html/input/converters/table'
-        autoload :Td, 'coradoc/html/input/converters/td'
-        autoload :Text, 'coradoc/html/input/converters/text'
-        autoload :Tr, 'coradoc/html/input/converters/tr'
-        autoload :Video, 'coradoc/html/input/converters/video'
+        # Autoload converter classes — they self-register when loaded.
+        # Adding a new converter requires only adding one entry here.
+        CONVERTERS = {
+          Base: 'coradoc/html/input/converters/base',
+          Markup: 'coradoc/html/input/converters/markup',
+          A: 'coradoc/html/input/converters/a',
+          Aside: 'coradoc/html/input/converters/aside',
+          Audio: 'coradoc/html/input/converters/audio',
+          Blockquote: 'coradoc/html/input/converters/blockquote',
+          Br: 'coradoc/html/input/converters/br',
+          Bypass: 'coradoc/html/input/converters/bypass',
+          Code: 'coradoc/html/input/converters/code',
+          Div: 'coradoc/html/input/converters/div',
+          Dl: 'coradoc/html/input/converters/dl',
+          Skip: 'coradoc/html/input/converters/drop',
+          Em: 'coradoc/html/input/converters/em',
+          Figure: 'coradoc/html/input/converters/figure',
+          H: 'coradoc/html/input/converters/h',
+          Head: 'coradoc/html/input/converters/head',
+          Hr: 'coradoc/html/input/converters/hr',
+          Img: 'coradoc/html/input/converters/img',
+          Li: 'coradoc/html/input/converters/li',
+          Mark: 'coradoc/html/input/converters/mark',
+          Math: 'coradoc/html/input/converters/math',
+          MediaBase: 'coradoc/html/input/converters/media_base',
+          Ol: 'coradoc/html/input/converters/ol',
+          P: 'coradoc/html/input/converters/p',
+          PassThrough: 'coradoc/html/input/converters/pass_through',
+          PositionalFormatting: 'coradoc/html/input/converters/positional_formatting',
+          Pre: 'coradoc/html/input/converters/pre',
+          Q: 'coradoc/html/input/converters/q',
+          Strong: 'coradoc/html/input/converters/strong',
+          Sup: 'coradoc/html/input/converters/sup',
+          Sub: 'coradoc/html/input/converters/sub',
+          Table: 'coradoc/html/input/converters/table',
+          Td: 'coradoc/html/input/converters/td',
+          Text: 'coradoc/html/input/converters/text',
+          Tr: 'coradoc/html/input/converters/tr',
+          Video: 'coradoc/html/input/converters/video'
+        }.freeze
+        private_constant :CONVERTERS
+
+        CONVERTERS.each do |name, path|
+          autoload name, path
+        end
 
         @converters = {}
         @converters_loaded = false
@@ -57,12 +65,7 @@ module Coradoc
           return if @converters_loaded
 
           @converters_loaded = true
-
-          [
-            Base, Markup, A, Aside, Audio, Blockquote, Br, Bypass, Code, Div, Dl,
-            Skip, Em, Figure, H, Head, Hr, Img, Li, Mark, Math, Ol, P,
-            PassThrough, Pre, Q, Strong, Sup, Sub, Table, Td, Text, Tr, Video
-          ].each { |converter| _ = converter }
+          CONVERTERS.each_key { |name| const_get(name) }
         end
 
         def self.lookup(tag_name)

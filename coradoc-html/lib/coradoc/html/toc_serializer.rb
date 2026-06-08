@@ -15,8 +15,6 @@ module Coradoc
         { entries: serialize_entries(toc.entries), numbered: numbered }
       end
 
-      private
-
       def serialize_entries(entries)
         entries.map do |entry|
           {

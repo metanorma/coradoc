@@ -70,8 +70,3 @@ module Coradoc
     end
   end
 end
-
-# Load DropFactory and all drops after Base is fully defined.
-# Each drop self-registers; DropFactory sorts by type specificity
-# so registration order doesn't matter.
-require_relative 'drop_factory'

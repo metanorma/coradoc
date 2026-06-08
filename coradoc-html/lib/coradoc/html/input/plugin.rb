@@ -65,13 +65,6 @@ module Coradoc
           Coradoc::Html::Input::Converters.process_coradoc(tree, state)
         end
 
-        def html_tree_preview
-          Tempfile.open(%w[coradoc .html]) do |i|
-            i << html_tree.to_html
-            system 'chromium-browser', '--no-sandbox', i.path
-          end
-        end
-
         # define preprocess_html_tree to process HTML trees
 
         # Creates a hook to be called instead of converting an element

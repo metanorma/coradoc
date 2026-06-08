@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'positional_formatting'
-
 module Coradoc
   module Input
     module Html
