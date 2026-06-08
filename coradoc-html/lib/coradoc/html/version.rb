@@ -2,6 +2,6 @@
 
 module Coradoc
   module Html
-    VERSION = '1.1.13'
+    VERSION = '1.1.14'
   end
 end
