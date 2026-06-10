@@ -21,6 +21,8 @@ module Coradoc
   module Html
     # Autoload HTML components
     autoload :Config, 'coradoc/html/config'
+    autoload :AssetResolver, 'coradoc/html/asset_resolver'
+    autoload :TagMapping, 'coradoc/html/tag_mapping'
     autoload :Escape, 'coradoc/html/escape'
     autoload :SectionNumberable, 'coradoc/html/section_numberable'
     autoload :TemplateCaching, 'coradoc/html/template_caching'
@@ -43,6 +45,7 @@ module Coradoc
     require 'coradoc/html/template_helpers'
     autoload :Renderer, 'coradoc/html/renderer'
     autoload :LayoutRenderer, 'coradoc/html/layout_renderer'
+    autoload :RenderOptions, 'coradoc/html/render_options'
     autoload :TocSerializer, 'coradoc/html/toc_serializer'
 
     # CoreModel transformers

@@ -5,11 +5,7 @@ module Coradoc
     module Drop
       class ListBlockDrop < Base
         def html_tag
-          case @model.marker_type
-          when 'ordered' then 'ol'
-          when 'definition' then 'dl'
-          else 'ul'
-          end
+          TagMapping.tag_for(@model.marker_type)
         end
 
         def items

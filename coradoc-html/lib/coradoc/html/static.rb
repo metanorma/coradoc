@@ -12,44 +12,19 @@ module Coradoc
     # the unified Liquid template pipeline.
     class Static < ConverterBase
       class Configuration < ConverterBase::ConfigurationBase
-        attr_accessor :include_toc, :toc_levels,
-                      :section_numbering, :section_numbering_levels,
-                      :lang, :meta_tags, :custom_css, :embedded,
-                      :template_dirs
-
-        def initialize(**options)
-          @include_toc = options.fetch(:include_toc, false)
-          @toc_levels = options[:toc_levels] || 2
-          @section_numbering = options.fetch(:section_numbering, false)
-          @section_numbering_levels = options[:section_numbering_levels] || 3
-          @lang = options[:lang] || 'en'
-          @meta_tags = options[:meta_tags] || {}
-          @custom_css = options[:custom_css]
-          @embedded = options.fetch(:embedded, false)
-          @template_dirs = options[:template_dirs]
-        end
-
-        def to_h
-          {
-            include_toc: @include_toc, toc_levels: @toc_levels,
-            section_numbering: @section_numbering,
-            section_numbering_levels: @section_numbering_levels,
-            lang: @lang, meta_tags: @meta_tags, custom_css: @custom_css,
-            embedded: @embedded, template_dirs: @template_dirs
-          }
-        end
+        attribute :include_toc, default: false
+        attribute :toc_levels, default: 2
+        attribute :section_numbering, default: false
+        attribute :section_numbering_levels, default: 3
+        attribute :lang, default: 'en'
+        attribute :meta_tags, default: {}
+        attribute :custom_css
+        attribute :embedded, default: false
+        attribute :template_dirs
 
         def validate!
-          unless @toc_levels.is_a?(Integer) && @toc_levels.between?(1, 5)
-            raise ConverterBase::ValidationError,
-                  'TOC levels must be an integer between 1 and 5'
-          end
-
-          unless @section_numbering_levels.is_a?(Integer) &&
-                 @section_numbering_levels.between?(1, 6)
-            raise ConverterBase::ValidationError,
-                  'Section numbering levels must be an integer between 1 and 6'
-          end
+          range_check(:toc_levels, 1, 5, label: 'TOC levels')
+          range_check(:section_numbering_levels, 1, 6, label: 'Section numbering levels')
         end
       end
 

@@ -9,7 +9,7 @@ module Coradoc
         end
 
         def html_tag
-          header? ? 'th' : 'td'
+          TagMapping.tag_for(header? ? :table_header : :table_cell)
         end
 
         def colspan

@@ -3,11 +3,15 @@
 module Coradoc
   module AsciiDoc
     module Transform
-      autoload :Registry, "#{__dir__}/transform/registry"
+      autoload :TransformerRegistry, "#{__dir__}/transform/transformer_registry"
+      autoload :Registry, "#{__dir__}/transform/transformer_registry"
       autoload :ToCoreModel, "#{__dir__}/transform/to_core_model"
       autoload :ToCoreModelRegistrations, "#{__dir__}/transform/to_core_model_registrations"
       autoload :FromCoreModel, "#{__dir__}/transform/from_core_model"
       autoload :FromCoreModelRegistrations, "#{__dir__}/transform/from_core_model_registrations"
+      autoload :TextExtractVisitor, "#{__dir__}/transform/text_extract_visitor"
+      autoload :InlineTransformVisitor, "#{__dir__}/transform/inline_transform_visitor"
+      autoload :ElementTransformers, "#{__dir__}/transform/element_transformers"
     end
   end
 end

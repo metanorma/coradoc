@@ -6,11 +6,12 @@ module Coradoc
     #
     # Used by the SPA layout to provide client-side navigation data.
     class TocSerializer
-      def build_json(document, options)
+      def build_json(document, opts)
         return { entries: [], numbered: false } unless document.is_a?(CoreModel::StructuralElement)
 
-        numbered = options[:section_numbers] == true
-        builder = TocBuilder.from_options(options)
+        opts = RenderOptions.new(**opts) unless opts.is_a?(RenderOptions)
+        numbered = opts.section_numbers == true
+        builder = TocBuilder.from_options(opts)
         toc = builder.build(document)
         { entries: serialize_entries(toc.entries), numbered: numbered }
       end

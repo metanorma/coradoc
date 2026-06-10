@@ -2,13 +2,15 @@
 
 require 'spec_helper'
 
-RSpec.describe Coradoc::AsciiDoc::Transform::Registry do
+RSpec.describe Coradoc::AsciiDoc::Transform::TransformerRegistry do
   before do
     described_class.clear
   end
 
   after do
     described_class.clear
+    Coradoc::AsciiDoc::Transform::ToCoreModelRegistrations.register_all!
+    Coradoc::AsciiDoc::Transform::FromCoreModelRegistrations.register_all!
   end
 
   describe '.register' do

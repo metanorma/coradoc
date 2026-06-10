@@ -3,8 +3,14 @@
 module Coradoc
   module AsciiDoc
     module Transform
-      # Registers all default AsciiDoc -> CoreModel transformers
       module ToCoreModelRegistrations
+        Doc = ElementTransformers::DocumentTransformer
+        Blk = ElementTransformers::BlockTransformer
+        Lst = ElementTransformers::ListTransformer
+        Inl = ElementTransformers::InlineTransformer
+        Tbl = ElementTransformers::TableTransformer
+        Oth = ElementTransformers::OtherTransformer
+
         class << self
           def register_all!
             register_document_transformers!
@@ -20,24 +26,24 @@ module Coradoc
           def register_document_transformers!
             Registry.register(
               Coradoc::AsciiDoc::Model::Document,
-              method_wrapper(:transform_document)
+              ->(model) { Doc.transform_document(model) }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Section,
-              method_wrapper(:transform_section)
+              ->(model) { Doc.transform_section(model) }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Paragraph,
-              method_wrapper(:transform_paragraph)
+              ->(model) { Blk.transform_paragraph(model) }
             )
           end
 
           def register_block_transformers!
             Registry.register_with_priority(
               Coradoc::AsciiDoc::Model::Block::SourceCode,
-              METHOD_DISPATCH[:transform_source_block],
+              ->(model) { Blk.transform_source_block(model) },
               priority: 10
             )
 
@@ -51,14 +57,14 @@ module Coradoc
             }.each do |block_class, core_model_class|
               Registry.register_with_priority(
                 block_class,
-                typed_block_wrapper(core_model_class),
+                ->(model) { Blk.transform_typed_block(model, core_model_class) },
                 priority: 10
               )
             end
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Block::Core,
-              block_model_wrapper
+              ->(model) { Blk.transform_block(model, model.delimiter.to_s) }
             )
 
             Registry.register(
@@ -74,17 +80,17 @@ module Coradoc
           def register_list_transformers!
             Registry.register(
               Coradoc::AsciiDoc::Model::List::Unordered,
-              list_wrapper('unordered')
+              ->(model) { Lst.transform_list(model, 'unordered') }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::List::Ordered,
-              list_wrapper('ordered')
+              ->(model) { Lst.transform_list(model, 'ordered') }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::List::Definition,
-              list_wrapper('definition')
+              ->(model) { Lst.transform_list(model, 'definition') }
             )
           end
 
@@ -100,33 +106,33 @@ module Coradoc
             ].each do |inline_class, format_type|
               Registry.register(
                 inline_class,
-                inline_wrapper(format_type)
+                ->(model) { Inl.transform_inline(model, format_type) }
               )
             end
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Inline::Underline,
-              inline_text_wrapper('underline')
+              ->(model) { Inl.transform_inline_text(model, 'underline') }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Inline::Link,
-              method_wrapper(:transform_link)
+              ->(model) { Inl.transform_link(model) }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Inline::CrossReference,
-              method_wrapper(:transform_cross_reference)
+              ->(model) { Inl.transform_cross_reference(model) }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Inline::Footnote,
-              method_wrapper(:transform_inline_footnote)
+              ->(model) { Inl.transform_inline_footnote(model) }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Inline::Stem,
-              method_wrapper(:transform_stem)
+              ->(model) { Inl.transform_stem(model) }
             )
 
             Registry.register(
@@ -143,47 +149,46 @@ module Coradoc
           def register_table_transformers!
             Registry.register(
               Coradoc::AsciiDoc::Model::Table,
-              method_wrapper(:transform_table)
+              ->(model) { Tbl.transform_table(model) }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::TableRow,
-              method_wrapper(:transform_table_row)
+              ->(model) { Tbl.transform_table_row(model) }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::TableCell,
-              method_wrapper(:transform_table_cell)
+              ->(model) { Tbl.transform_table_cell(model) }
             )
           end
 
           def register_other_transformers!
             Registry.register(
               Coradoc::AsciiDoc::Model::Term,
-              method_wrapper(:transform_term)
+              ->(model) { Oth.transform_term(model) }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Admonition,
-              method_wrapper(:transform_admonition)
+              ->(model) { Oth.transform_admonition(model) }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Image::BlockImage,
-              method_wrapper(:transform_image)
+              ->(model) { Oth.transform_image(model) }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Bibliography,
-              method_wrapper(:transform_bibliography)
+              ->(model) { Oth.transform_bibliography(model) }
             )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::BibliographyEntry,
-              method_wrapper(:transform_bibliography_entry)
+              ->(model) { Oth.transform_bibliography_entry(model) }
             )
 
-            # Passthrough types (no CoreModel equivalent)
             [
               Coradoc::AsciiDoc::Model::TextElement,
               Coradoc::AsciiDoc::Model::Include,
@@ -195,56 +200,12 @@ module Coradoc
               Registry.register(klass, ->(model) { model })
             end
 
-            # Filtered types (layout-only, no CoreModel representation)
             [
               Coradoc::AsciiDoc::Model::LineBreak,
               Coradoc::AsciiDoc::Model::Break::PageBreak
             ].each do |klass|
-              Registry.register(klass, ->(_model) { nil })
+              Registry.register(klass, ->(_model) {})
             end
-          end
-
-          METHOD_DISPATCH = {
-            transform_document: ->(model) { ToCoreModel.transform_document(model) },
-            transform_section: ->(model) { ToCoreModel.transform_section(model) },
-            transform_paragraph: ->(model) { ToCoreModel.transform_paragraph(model) },
-            transform_source_block: ->(model) { ToCoreModel.transform_source_block(model) },
-            transform_link: ->(model) { ToCoreModel.transform_link(model) },
-            transform_cross_reference: ->(model) { ToCoreModel.transform_cross_reference(model) },
-            transform_inline_footnote: ->(model) { ToCoreModel.transform_inline_footnote(model) },
-            transform_stem: ->(model) { ToCoreModel.transform_stem(model) },
-            transform_table: ->(model) { ToCoreModel.transform_table(model) },
-            transform_table_row: ->(model) { ToCoreModel.transform_table_row(model) },
-            transform_table_cell: ->(model) { ToCoreModel.transform_table_cell(model) },
-            transform_term: ->(model) { ToCoreModel.transform_term(model) },
-            transform_admonition: ->(model) { ToCoreModel.transform_admonition(model) },
-            transform_image: ->(model) { ToCoreModel.transform_image(model) },
-            transform_bibliography: ->(model) { ToCoreModel.transform_bibliography(model) },
-            transform_bibliography_entry: ->(model) { ToCoreModel.transform_bibliography_entry(model) }
-          }.freeze
-
-          def method_wrapper(method_name)
-            METHOD_DISPATCH.fetch(method_name)
-          end
-
-          def typed_block_wrapper(klass)
-            ->(model) { ToCoreModel.transform_typed_block(model, klass) }
-          end
-
-          def block_model_wrapper
-            ->(model) { ToCoreModel.transform_block(model, model.delimiter.to_s) }
-          end
-
-          def list_wrapper(marker_type)
-            ->(model) { ToCoreModel.transform_list(model, marker_type) }
-          end
-
-          def inline_wrapper(format_type)
-            ->(model) { ToCoreModel.transform_inline(model, format_type) }
-          end
-
-          def inline_text_wrapper(format_type)
-            ->(model) { ToCoreModel.transform_inline_text(model, format_type) }
           end
         end
       end

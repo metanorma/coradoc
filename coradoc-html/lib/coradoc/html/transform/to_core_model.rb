@@ -12,6 +12,8 @@ module Coradoc
       # Nokogiri::XML::Document or Nokogiri::XML::Node objects into CoreModel
       # by delegating to the existing input converter pipeline.
       class ToCoreModel
+        include Coradoc::Transform::Base
+
         class << self
           # Transform an HTML model (Nokogiri node) to CoreModel
           #

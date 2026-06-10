@@ -10,6 +10,8 @@ module Coradoc
       # This transformer converts CoreModel to HTML strings by delegating
       # to the existing theme/renderer pipeline.
       class FromCoreModel
+        include Coradoc::Transform::Base
+
         class << self
           # Transform a CoreModel to HTML string
           #

@@ -4,31 +4,12 @@ module Coradoc
   module Html
     module Drop
       class InlineElementDrop < Base
-        FORMAT_TAG_MAP = {
-          'bold' => 'strong',
-          'italic' => 'em',
-          'monospace' => 'code',
-          'superscript' => 'sup',
-          'subscript' => 'sub',
-          'underline' => 'u',
-          'strikethrough' => 'del',
-          'highlight' => 'mark',
-          'quotation' => 'q',
-          'small' => 'small',
-          'stem' => 'code'
-        }.freeze
-
         def format_type
           @model.resolve_format_type
         end
 
         def html_tag
-          case format_type
-          when 'link', 'xref' then 'a'
-          when 'footnote' then 'sup'
-          when 'span', 'term' then 'span'
-          else FORMAT_TAG_MAP[format_type]
-          end
+          TagMapping.tag_for(format_type)
         end
 
         def href
