@@ -7,9 +7,7 @@ module Coradoc
     module Transform
       # Transforms CoreModel to AsciiDoc models
       class FromCoreModel
-        def transform(model)
-          self.class.transform(model)
-        end
+        include Coradoc::Transform::Base
 
         class << self
           def transform(model)
@@ -17,52 +15,7 @@ module Coradoc
             return model unless model.is_a?(Coradoc::CoreModel::Base)
 
             transformer = Registry.lookup(model.class)
-            return transformer.call(model) if transformer
-
-            transform_with_case(model)
-          end
-
-          def transform_with_case(model)
-            case model
-            when Coradoc::CoreModel::StructuralElement
-              transform_structural_element(model)
-            when Coradoc::CoreModel::AnnotationBlock
-              transform_annotation(model)
-            when Coradoc::CoreModel::Block
-              transform_block(model)
-            when Coradoc::CoreModel::Table
-              transform_table(model)
-            when Coradoc::CoreModel::ListBlock
-              transform_list(model)
-            when Coradoc::CoreModel::ListItem
-              transform_list_item(model)
-            when Coradoc::CoreModel::Term
-              transform_term(model)
-            when Coradoc::CoreModel::InlineElement
-              transform_inline(model)
-            when Coradoc::CoreModel::Image
-              transform_image(model)
-            when Coradoc::CoreModel::Footnote
-              transform_footnote(model)
-            when Coradoc::CoreModel::FootnoteReference
-              transform_footnote_reference(model)
-            when Coradoc::CoreModel::Abbreviation
-              transform_abbreviation(model)
-            when Coradoc::CoreModel::DefinitionList
-              transform_definition_list(model)
-            when Coradoc::CoreModel::DefinitionItem
-              transform_definition_item(model)
-            when Coradoc::CoreModel::Toc
-              transform_toc(model)
-            when Coradoc::CoreModel::TocEntry
-              transform_toc_entry(model)
-            when Coradoc::CoreModel::Bibliography
-              transform_bibliography(model)
-            when Coradoc::CoreModel::BibliographyEntry
-              transform_bibliography_entry(model)
-            else
-              model
-            end
+            transformer ? transformer.call(model) : model
           end
 
           def transform_structural_element(element)
@@ -173,7 +126,8 @@ module Coradoc
               Coradoc::AsciiDoc::Model::Block::Quote.new(
                 id: block.id,
                 title: block.title,
-                lines: content_text.split("\n")
+                lines: content_text.split("\n"),
+                delimiter: '[verse]'
               )
             when :reviewer
               Coradoc::AsciiDoc::Model::Block::ReviewerComment.new(
@@ -183,7 +137,7 @@ module Coradoc
               )
             else
               delim = block.delimiter_type.to_s
-              delim_char = delim.chars.first
+              delim_char = delim[0]
               delim_len = delim.length
 
               Coradoc::AsciiDoc::Model::Block::Core.new(
@@ -376,35 +330,10 @@ module Coradoc
 
           private
 
-          # Reverse mapping: semantic type → AsciiDoc delimiter generation
-          SEMANTIC_TO_ADOC_BLOCK = {
-            source_code: :source_code,
-            quote: :quote,
-            example: :example,
-            sidebar: :sidebar,
-            literal: :literal,
-            pass: :pass,
-            open: :open,
-            verse: :open,
-            paragraph: :paragraph,
-            comment: :comment
-          }.freeze
-
-          # Map raw delimiter_type string → semantic type (backward compat)
-          DELIMITER_CHAR_TO_SEMANTIC = {
-            '-' => :source_code,
-            '=' => :example,
-            '_' => :quote,
-            '*' => :sidebar,
-            '.' => :literal,
-            '+' => :pass
-          }.freeze
-
           def resolve_semantic_type(block)
             semantic = block.resolve_semantic_type
             return semantic if semantic
 
-            # Format-specific fallback from delimiter_type
             delim = block.delimiter_type
             return nil unless delim && !delim.empty?
 
@@ -415,7 +344,7 @@ module Coradoc
             when "'''", '---', '___', '***' then :horizontal_rule
             else
               char = delim[0]
-              DELIMITER_CHAR_TO_SEMANTIC[char] || nil
+              DelimiterMapping::CHAR_TO_SEMANTIC[char] || nil
             end
           end
 

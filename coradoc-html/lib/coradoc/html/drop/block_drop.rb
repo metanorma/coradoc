@@ -4,23 +4,12 @@ module Coradoc
   module Html
     module Drop
       class BlockDrop < Base
-        SEMANTIC_TAG_MAP = {
-          paragraph: 'p', source_code: 'pre', quote: 'blockquote',
-          verse: 'blockquote', example: 'div', sidebar: 'aside',
-          literal: 'pre', listing: 'pre', open: 'div',
-          horizontal_rule: 'hr'
-        }.freeze
-
-        SEMANTIC_CLASS_MAP = {
-          example: 'example', sidebar: 'sidebar', literal: 'literal'
-        }.freeze
-
         def semantic_type
           resolved_semantic_type.to_s
         end
 
         def html_tag
-          SEMANTIC_TAG_MAP[resolved_semantic_type] || 'div'
+          TagMapping.tag_for(resolved_semantic_type)
         end
 
         def language
@@ -28,7 +17,7 @@ module Coradoc
         end
 
         def css_class
-          cls = SEMANTIC_CLASS_MAP[resolved_semantic_type]
+          cls = TagMapping.css_class_for(resolved_semantic_type)
           cls ? "block-#{semantic_type} #{cls}" : "block-#{semantic_type}"
         end
 

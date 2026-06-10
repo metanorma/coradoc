@@ -28,13 +28,52 @@ module Coradoc
       # Provides shared `merge` and `defaults` patterns.
       # Subclasses define `initialize`, `to_h`, and `validate!`.
       class ConfigurationBase
-        def self.defaults
-          new
+        class << self
+          # Declare a configuration attribute with an optional default.
+          # Replaces manual attr_accessor + initialize + to_h boilerplate.
+          def attribute(name, default: nil)
+            attr_accessor name
+
+            configuration_attributes[name] = default
+          end
+
+          # Registry of declared attributes and their defaults
+          def configuration_attributes
+            @configuration_attributes ||= {}
+          end
+
+          def defaults
+            new
+          end
+        end
+
+        def initialize(**options)
+          self.class.configuration_attributes.each do |name, default|
+            value = options.fetch(name) { default.respond_to?(:call) ? default.call : default }
+            public_send(:"#{name}=", value)
+          end
+        end
+
+        def to_h
+          self.class.configuration_attributes.each_with_object({}) do |(name, _), hash|
+            hash[name] = public_send(name)
+          end
         end
 
         def merge(other)
           other_hash = other.is_a?(self.class) ? other.to_h : other.to_h.transform_keys(&:to_sym)
           self.class.new(**to_h, **other_hash)
+        end
+
+        protected
+
+        def range_check(name, min, max, label: nil)
+          value = public_send(name)
+          return if value.is_a?(Integer) && value.between?(min, max)
+
+          display = label || name.to_s.tr('_', ' ').gsub(/\b\w/, &:upcase)
+          raise ConverterBase::ValidationError,
+                "#{display} must be an integer between #{min} and #{max}"
         end
       end
 

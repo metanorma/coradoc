@@ -48,8 +48,9 @@ module Coradoc
         template.render(assigns, registers: { renderer: self, section_numbers: @section_numbers }).strip
       end
 
-      def render_html5(document, **options)
-        builder = TocBuilder.from_options(options)
+      def render_html5(document, **)
+        opts = RenderOptions.new(**)
+        builder = TocBuilder.from_options(opts)
         @toc, @section_numbers = if document.is_a?(CoreModel::StructuralElement)
                                    builder.build_with_numbers(document)
                                  else
@@ -58,10 +59,10 @@ module Coradoc
 
         body_html = render(document)
 
-        if options[:layout] == :spa
-          render_spa_layout(document, body_html, options)
+        if opts.spa?
+          render_spa_layout(document, body_html, opts)
         else
-          render_static_layout(document, body_html, options)
+          render_static_layout(document, body_html, opts)
         end
       end
 
@@ -79,22 +80,22 @@ module Coradoc
 
       private
 
-      def render_static_layout(document, body_html, options)
-        if options[:toc] && @toc
+      def render_static_layout(document, body_html, opts)
+        if opts.toc && @toc
           toc_html = render(@toc)
           body_html = "#{toc_html}\n#{body_html}" unless toc_html.empty?
         end
-        @layout_renderer.render_static(document, body_html, options)
+        @layout_renderer.render_static(document, body_html, opts)
       end
 
-      def render_spa_layout(document, body_html, options)
-        numbered = options[:section_numbers] == true
+      def render_spa_layout(document, body_html, opts)
+        numbered = opts.section_numbers == true
         toc_data = if @toc
                      { entries: TocSerializer.new.serialize_entries(@toc.entries), numbered: numbered }
                    else
                      { entries: [], numbered: false }
                    end
-        @layout_renderer.render_spa(document, options, body_html, toc_data)
+        @layout_renderer.render_spa(document, opts, body_html, toc_data)
       end
 
       def find_and_load_template(type_name)

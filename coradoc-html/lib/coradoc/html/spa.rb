@@ -12,33 +12,16 @@ module Coradoc
     # Uses the unified Liquid template pipeline.
     class Spa < ConverterBase
       class Configuration < ConverterBase::ConfigurationBase
-        attr_accessor :theme_toggle, :reading_progress,
-                      :toc_sticky, :toc_levels, :lang,
-                      :template_dirs, :dist_dir
-
-        def initialize(**options)
-          @theme_toggle = options.fetch(:theme_toggle, true)
-          @reading_progress = options.fetch(:reading_progress, true)
-          @toc_sticky = options.fetch(:toc_sticky, true)
-          @toc_levels = options[:toc_levels] || 2
-          @lang = options[:lang] || 'en'
-          @template_dirs = options[:template_dirs]
-          @dist_dir = options[:dist_dir]
-        end
-
-        def to_h
-          {
-            theme_toggle: @theme_toggle, reading_progress: @reading_progress,
-            toc_sticky: @toc_sticky, toc_levels: @toc_levels,
-            lang: @lang, template_dirs: @template_dirs, dist_dir: @dist_dir
-          }
-        end
+        attribute :theme_toggle, default: true
+        attribute :reading_progress, default: true
+        attribute :toc_sticky, default: true
+        attribute :toc_levels, default: 2
+        attribute :lang, default: 'en'
+        attribute :template_dirs
+        attribute :dist_dir
 
         def validate!
-          return if @toc_levels.is_a?(Integer) && @toc_levels.between?(1, 5)
-
-          raise ConverterBase::ValidationError,
-                'TOC levels must be an integer between 1 and 5'
+          range_check(:toc_levels, 1, 5, label: 'TOC levels')
         end
       end
 

@@ -19,11 +19,12 @@ module Coradoc
       #
       # @param options [Hash] options with :section_number_levels, :toc_levels, :section_numbers
       # @return [TocBuilder]
-      def self.from_options(options)
-        section_number_levels = options[:section_number_levels] || 3
-        toc_levels = options[:toc_levels] || 2
+      def self.from_options(opts)
+        opts = RenderOptions.new(**opts) unless opts.is_a?(RenderOptions)
+        section_number_levels = opts.section_number_levels || 3
+        toc_levels = opts.toc_levels || 2
         max_level = [toc_levels, section_number_levels].min
-        new(max_level: max_level, numbered: options[:section_numbers] == true, section_number_levels: section_number_levels)
+        new(max_level: max_level, numbered: opts.section_numbers == true, section_number_levels: section_number_levels)
       end
 
       # Build a Toc model from a document.
