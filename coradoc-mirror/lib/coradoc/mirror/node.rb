@@ -15,18 +15,12 @@ module Coradoc
     # Subclasses declare typed attributes via +node_attr+ and a +PM_TYPE+
     # constant for their canonical type string. New node types are added by
     # subclassing Node — no modification of existing code needed (OCP).
-    #
     class Node
       PM_TYPE = "node"
 
       attr_accessor :content, :marks
 
       class << self
-        # Declare a typed attribute for this node type.
-        #
-        # Generates an +attr_accessor+ and tracks the name for serialization
-        # and deserialization. Attributes default to +nil+ unless +default:+
-        # is specified.
         def node_attr(*names, default: nil)
           @node_attr_names ||= []
           @node_attr_defaults ||= {}
@@ -39,12 +33,10 @@ module Coradoc
           attr_accessor(*names)
         end
 
-        # Ordered list of attribute names declared via +node_attr+.
         def node_attr_names
           @node_attr_names ||= []
         end
 
-        # Default values for declared attributes.
         def node_attr_defaults
           @node_attr_defaults ||= {}
         end
@@ -70,7 +62,6 @@ module Coradoc
         @type_override || self.class::PM_TYPE
       end
 
-      # Serialize to ProseMirror-compatible Hash.
       def to_h
         result = { "type" => type }
         attrs = serialize_attrs
@@ -97,7 +88,6 @@ module Coradoc
         YAML.dump(to_h)
       end
 
-      # Reconstruct a Node tree from a ProseMirror-compatible Hash.
       def self.from_h(hash)
         return nil unless hash
 
@@ -121,7 +111,6 @@ module Coradoc
         end
       end
 
-      # Collect all text content from this node and its descendants.
       def text_content
         return "" unless content
 
@@ -130,9 +119,6 @@ module Coradoc
         end.join
       end
 
-      # Auto-registry: maps PM_TYPE → class for all declared subclasses.
-      NODES = {}
-
       # ── Node type subclasses ────────────────────────────────────
 
       class Text < Node
@@ -140,8 +126,8 @@ module Coradoc
 
         node_attr :text
 
-        def initialize(text: "", **kwargs)
-          super(**kwargs)
+        def initialize(text: "", **)
+          super(**)
           @text = text
         end
 
@@ -161,7 +147,7 @@ module Coradoc
           new(
             text: hash["text"] || "",
             attrs: (hash["attrs"] || {}).transform_keys(&:to_sym),
-            marks: (hash["marks"] || []).map { |m| Mark.from_h(m) },
+            marks: (hash["marks"] || []).map { |m| Mark.from_h(m) }
           )
         end
       end
@@ -329,19 +315,21 @@ module Coradoc
         PM_TYPE = "soft_break"
       end
 
-      # Generic typed block for unrecognized semantic types.
       class GenericBlock < Node
         PM_TYPE = "generic_block"
         node_attr :semantic_type, :title, :id
       end
 
-      # Auto-register all nested subclasses by PM_TYPE.
-      constants.each do |name|
-        klass = const_get(name)
-        next unless klass.is_a?(Class) && klass < Node && klass::PM_TYPE != "node"
-
-        NODES[klass::PM_TYPE] = klass
-      end
+      # Auto-registry: maps PM_TYPE → class for all declared subclasses.
+      NODES = begin
+                registry = {}
+                constants.each do |name|
+                  k = const_get(name)
+                  next unless k.is_a?(Class) && k < Node && k::PM_TYPE != "node"
+                  registry[k::PM_TYPE] = k
+                end
+                registry.freeze
+              end
 
       private
 
@@ -352,8 +340,6 @@ module Coradoc
         end
       end
 
-      # Build keyword arguments from a ProseMirror attrs hash,
-      # matching only attributes declared via +node_attr+ on the class.
       def self.build_kwargs(klass, attrs)
         return {} if attrs.empty?
 
@@ -362,6 +348,7 @@ module Coradoc
           kwargs[name] = symbolized[name] if symbolized.key?(name)
         end
       end
+      private_class_method :build_kwargs
     end
   end
 end

@@ -4,7 +4,7 @@ module Coradoc
   module Mirror
     module Handlers
       module Image
-        def self.call(element, context:)
+        def self.call(element, *)
           Node::Image.new(
             id: element.id,
             src: element.src,
@@ -13,7 +13,7 @@ module Coradoc
             caption: element.caption,
             width: element.width,
             height: element.height,
-            inline: element.inline || nil,
+            inline: element.inline || nil
           )
         end
       end

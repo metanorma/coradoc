@@ -13,14 +13,14 @@ module Coradoc
       class << self
         # Output-only format — parsing from mirror YAML is not supported via
         # the format registry. Use Mirror::Node.from_h directly.
-        def parse_to_core(input, options = {})
+        def parse_to_core(_input, _options = {})
           raise Coradoc::UnsupportedFormatError,
                 "Parsing from mirror YAML is not supported via the format registry. " \
                 "Use Coradoc::Mirror::Node.from_h(YAML.safe_load(input)) directly."
         end
 
         # Accept CoreModel, serialize to Mirror YAML.
-        def serialize(document, options = {})
+        def serialize(document, _options = {})
           node = Coradoc::Mirror.transform(document)
           node.to_yaml
         end

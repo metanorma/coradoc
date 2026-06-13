@@ -5,7 +5,7 @@ module Coradoc
     module Handlers
       # Handles ReviewerBlock → omitted (reviewer notes are not rendered).
       module Reviewer
-        def self.call(_element, context:)
+        def self.call(_element, *)
           nil
         end
       end

@@ -43,7 +43,7 @@ module Coradoc
             filename.downcase.end_with?(".mirror.yaml", ".mirror.yml")
           end
 
-          def processor_execute(input, options = {})
+          def processor_execute(input, _options = {})
             input.each_with_object({}) do |(filename, document), result|
               node = Coradoc::Mirror.transform(document)
               result[filename] = node.to_yaml

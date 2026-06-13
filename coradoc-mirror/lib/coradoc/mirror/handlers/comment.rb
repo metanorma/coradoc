@@ -5,7 +5,7 @@ module Coradoc
     module Handlers
       # Handles CommentBlock → omitted (comments are not rendered).
       module Comment
-        def self.call(_element, context:)
+        def self.call(_element, *)
           nil
         end
       end

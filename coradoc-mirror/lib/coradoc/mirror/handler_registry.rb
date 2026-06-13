@@ -55,15 +55,15 @@ module Coradoc
       #
       # @param element [CoreModel::Base] element to find handler for
       # @return [Entry, nil]
+      TERMINAL_ANCESTORS = [Object, BasicObject].freeze
+
       def entry_for(element)
-        # Exact class match first
         entry = @handlers[element.class]
         return entry if entry
 
-        # Walk ancestors for inherited handler (most specific first)
         element.class.ancestors.each do |ancestor|
           next if ancestor == element.class
-          break if ancestor == Object || ancestor == BasicObject
+          break if TERMINAL_ANCESTORS.include?(ancestor)
 
           entry = @handlers[ancestor]
           return entry if entry
