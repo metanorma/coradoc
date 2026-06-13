@@ -10,7 +10,7 @@ RSpec.describe "End-to-end integration" do
       doc = Coradoc::CoreModel::DocumentElement.new(
         title: "YAML Test",
         children: [
-          Coradoc::CoreModel::ParagraphBlock.new(content: "Hello"),
+          Coradoc::CoreModel::ParagraphBlock.new(content: "Hello")
         ],
       )
 
@@ -28,9 +28,9 @@ RSpec.describe "End-to-end integration" do
             title: "Section",
             level: 1,
             children: [
-              Coradoc::CoreModel::ParagraphBlock.new(content: "Text"),
+              Coradoc::CoreModel::ParagraphBlock.new(content: "Text")
             ],
-          ),
+          )
         ],
       )
 
@@ -48,7 +48,7 @@ RSpec.describe "End-to-end integration" do
       doc = Coradoc::CoreModel::DocumentElement.new(
         title: "Test",
         children: [
-          Coradoc::CoreModel::ParagraphBlock.new(content: "Content"),
+          Coradoc::CoreModel::ParagraphBlock.new(content: "Content")
         ],
       )
 
@@ -71,9 +71,9 @@ RSpec.describe "End-to-end integration" do
             level: 1,
             id: "intro",
             children: [
-              Coradoc::CoreModel::ParagraphBlock.new(content: "Hello"),
+              Coradoc::CoreModel::ParagraphBlock.new(content: "Hello")
             ],
-          ),
+          )
         ],
       )
 

@@ -25,7 +25,7 @@ RSpec.describe Coradoc::Mirror do
       doc = Coradoc::CoreModel::DocumentElement.new(
         title: "Quick Test",
         children: [
-          Coradoc::CoreModel::ParagraphBlock.new(content: "Hello"),
+          Coradoc::CoreModel::ParagraphBlock.new(content: "Hello")
         ],
       )
 
@@ -40,7 +40,7 @@ RSpec.describe Coradoc::Mirror do
       doc = Coradoc::CoreModel::DocumentElement.new(
         title: "JSON Test",
         children: [
-          Coradoc::CoreModel::ParagraphBlock.new(content: "World"),
+          Coradoc::CoreModel::ParagraphBlock.new(content: "World")
         ],
       )
 

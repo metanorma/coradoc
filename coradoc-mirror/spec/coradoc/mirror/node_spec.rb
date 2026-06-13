@@ -65,17 +65,17 @@ RSpec.describe Coradoc::Mirror::Node do
     it "includes typed attrs when set" do
       node = described_class::Heading.new(level: 1)
       expect(node.to_h).to eq({
-        "type" => "heading",
-        "attrs" => { "level" => 1 },
-      })
+                                "type" => "heading",
+        "attrs" => { "level" => 1 }
+                              })
     end
 
     it "omits nil attrs" do
       node = described_class::Section.new(title: "Intro")
       expect(node.to_h).to eq({
-        "type" => "section",
-        "attrs" => { "title" => "Intro" },
-      })
+                                "type" => "section",
+        "attrs" => { "title" => "Intro" }
+                              })
     end
 
     it "includes content when present" do
@@ -126,9 +126,9 @@ RSpec.describe Coradoc::Mirror::Node do
         "attrs" => { "title" => "Intro", "level" => 1 },
         "content" => [
           { "type" => "paragraph", "content" => [
-            { "type" => "text", "text" => "Hello" },
-          ]},
-        ],
+            { "type" => "text", "text" => "Hello" }
+          ] }
+        ]
       }
 
       node = described_class.from_h(hash)
@@ -196,7 +196,7 @@ RSpec.describe Coradoc::Mirror::Node do
       hash = {
         "type" => "text",
         "text" => "bold text",
-        "marks" => [{ "type" => "bold" }],
+        "marks" => [{ "type" => "bold" }]
       }
       node = described_class::Text.from_h(hash)
       expect(node.text).to eq("bold text")
@@ -218,11 +218,11 @@ RSpec.describe Coradoc::Mirror::Node do
                     text: "Hello ",
                     marks: [Coradoc::Mirror::Mark::Bold.new],
                   ),
-                  described_class::Text.new(text: "world"),
+                  described_class::Text.new(text: "world")
                 ],
-              ),
+              )
             ],
-          ),
+          )
         ],
       )
 

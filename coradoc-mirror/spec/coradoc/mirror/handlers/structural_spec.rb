@@ -26,7 +26,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Structural do
         level: 2,
         children: [Coradoc::CoreModel::ParagraphBlock.new(content: "Content")]
       )
-      
+
       node = described_class.section(element, context: context)
       expect(node).to be_a(Coradoc::Mirror::Node::Section)
       expect(node.type).to eq("section")
@@ -57,7 +57,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Structural do
         level: 1,
         children: [Coradoc::CoreModel::ParagraphBlock.new(content: "Author info")]
       )
-      
+
       node = described_class.header(element, context: context)
       expect(node).to be_a(Coradoc::Mirror::Node::Header)
       expect(node.type).to eq("header")

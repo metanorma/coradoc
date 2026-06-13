@@ -24,9 +24,9 @@ RSpec.describe Coradoc::Mirror::Mark do
     it "includes attrs when present" do
       mark = Coradoc::Mirror::Mark::Link.new(href: "https://example.com")
       expect(mark.to_h).to eq({
-        "type" => "link",
-        "attrs" => { "href" => "https://example.com" },
-      })
+                                "type" => "link",
+        "attrs" => { "href" => "https://example.com" }
+                              })
     end
   end
 
@@ -51,7 +51,7 @@ RSpec.describe Coradoc::Mirror::Mark do
     it "deserializes link with href" do
       hash = {
         "type" => "link",
-        "attrs" => { "href" => "https://example.com" },
+        "attrs" => { "href" => "https://example.com" }
       }
       mark = described_class.from_h(hash)
       expect(mark).to be_a(Coradoc::Mirror::Mark::Link)

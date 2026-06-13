@@ -15,7 +15,7 @@ RSpec.describe Coradoc::Mirror::MirrorJsonFormat do
     it "serializes a CoreModel document to Mirror JSON" do
       json = described_class.serialize(document)
       parsed = JSON.parse(json)
-      
+
       expect(parsed["type"]).to eq("doc")
       expect(parsed["attrs"]["title"]).to eq("Test")
       expect(parsed["content"].first["type"]).to eq("paragraph")
@@ -24,9 +24,9 @@ RSpec.describe Coradoc::Mirror::MirrorJsonFormat do
 
   describe ".parse_to_core" do
     it "raises UnsupportedFormatError" do
-      expect {
+      expect do
         described_class.parse_to_core("{}")
-      }.to raise_error(Coradoc::UnsupportedFormatError, /Parsing from mirror JSON is not supported/)
+      end.to raise_error(Coradoc::UnsupportedFormatError, /Parsing from mirror JSON is not supported/)
     end
   end
 
