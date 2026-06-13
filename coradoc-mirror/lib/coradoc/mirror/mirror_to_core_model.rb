@@ -2,9 +2,12 @@
 
 module Coradoc
   module Mirror
+    # Transforms ProseMirror-compatible Mirror nodes back into CoreModel.
+    #
+    # Uses a frozen TYPE_BUILDERS dispatch table (OCP): new node types
+    # are supported by adding entries.
     class MirrorToCoreModel
       # Dispatch table: Mirror node type string → builder lambda.
-      # New node types are supported by adding entries (OCP).
       TYPE_BUILDERS = {
         "doc" => ->(t, n) { t.build_document(n) },
         "section" => ->(t, n) { t.build_section(n) },
@@ -23,8 +26,8 @@ module Coradoc
         "ordered_list" => ->(t, n) { t.build_ordered_list(n) },
         "list_item" => ->(t, n) { t.build_list_item(n) },
         "definition_list" => ->(t, n) { t.build_definition_list(n) },
-        "definition_term" => ->(t, n) { t.build_definition_term(n) },
-        "definition_description" => ->(t, n) { t.build_definition_description(n) },
+        "definition_term" => ->(t, n) { t.build_inline_text(n) },
+        "definition_description" => ->(t, n) { t.build_inline_text(n) },
         "image" => ->(t, n) { t.build_image(n) },
         "table" => ->(t, n) { t.build_table(n) },
         "table_head" => ->(t, n) { t.build_table_head(n) },
@@ -38,8 +41,22 @@ module Coradoc
         "toc" => ->(t, n) { t.build_toc(n) },
         "toc_entry" => ->(t, n) { t.build_toc_entry(n) },
         "text" => ->(t, n) { t.build_text(n) },
-        "soft_break" => ->(t, _n) { t.build_soft_break },
+        "soft_break" => ->(t, _n) { t.build_soft_break }
       }.freeze
+
+      # Mark type → CoreModel class mapping (OCP: add new marks here).
+      SIMPLE_MARKS = {
+        "bold" => CoreModel::BoldElement,
+        "italic" => CoreModel::ItalicElement,
+        "code" => CoreModel::MonospaceElement,
+        "underline" => CoreModel::UnderlineElement,
+        "strikethrough" => CoreModel::StrikethroughElement,
+        "subscript" => CoreModel::SubscriptElement,
+        "superscript" => CoreModel::SuperscriptElement,
+        "highlight" => CoreModel::HighlightElement
+      }.freeze
+
+      LIST_TYPES = %w[bullet_list ordered_list].freeze
 
       def call(mirror_node)
         build_node(mirror_node)
@@ -64,7 +81,7 @@ module Coradoc
         CoreModel::DocumentElement.new(
           title: node.title,
           id: node.id,
-          children: build_content(node),
+          children: build_content(node)
         )
       end
 
@@ -73,7 +90,7 @@ module Coradoc
           title: node.title,
           level: node.level,
           id: node.id,
-          children: build_content(node),
+          children: build_content(node)
         )
       end
 
@@ -81,64 +98,59 @@ module Coradoc
         CoreModel::HeaderElement.new(
           title: node.title,
           level: node.level,
-          children: build_content(node),
+          children: build_content(node)
         )
       end
 
       def build_preamble(node)
         CoreModel::PreambleElement.new(
-          children: build_content(node),
+          children: build_content(node)
         )
       end
 
       # ── Blocks ──
 
       def build_paragraph(node)
-        children = build_inline_children(node)
-        CoreModel::ParagraphBlock.new(children: children)
+        CoreModel::ParagraphBlock.new(children: build_inline_children(node))
       end
 
       def build_code_block(node)
-        text = extract_text(node)
         CoreModel::SourceBlock.new(
-          content: text,
+          content: extract_text(node),
           language: node.language,
-          title: node.title,
+          title: node.title
         )
       end
 
       def build_blockquote(node)
         CoreModel::QuoteBlock.new(
           attribution: node.attribution,
-          children: build_content(node),
+          children: build_content(node)
         )
       end
 
       def build_example(node)
         CoreModel::ExampleBlock.new(
           title: node.title,
-          children: build_content(node),
+          children: build_content(node)
         )
       end
 
       def build_sidebar(node)
         CoreModel::SidebarBlock.new(
           title: node.title,
-          children: build_content(node),
+          children: build_content(node)
         )
       end
 
       def build_open_block(node)
-        CoreModel::OpenBlock.new(
-          children: build_content(node),
-        )
+        CoreModel::OpenBlock.new(children: build_content(node))
       end
 
       def build_verse(node)
-        text = extract_text(node)
         CoreModel::VerseBlock.new(
-          content: text,
-          attribution: node.attribution,
+          content: extract_text(node),
+          attribution: node.attribution
         )
       end
 
@@ -147,12 +159,13 @@ module Coradoc
       end
 
       def build_admonition(node)
-        content = build_content(node)
-        text = content.map { |c| c.is_a?(CoreModel::InlineElement) ? c.content.to_s : "" }.join
+        text = build_content(node).map do |c|
+          c.is_a?(CoreModel::InlineElement) ? c.content.to_s : ""
+        end.join
 
         CoreModel::AnnotationBlock.new(
           annotation_type: node.admonition_type,
-          content: text,
+          content: text
         )
       end
 
@@ -160,37 +173,20 @@ module Coradoc
 
       def build_bullet_list(node)
         items = build_content(node).select { |c| c.is_a?(CoreModel::ListItem) }
-        CoreModel::ListBlock.new(
-          marker_type: "unordered",
-          items: items,
-        )
+        CoreModel::ListBlock.new(marker_type: "unordered", items: items)
       end
 
       def build_ordered_list(node)
         items = build_content(node).select { |c| c.is_a?(CoreModel::ListItem) }
-        CoreModel::ListBlock.new(
-          marker_type: "ordered",
-          items: items,
-        )
+        CoreModel::ListBlock.new(marker_type: "ordered", items: items)
       end
 
       def build_list_item(node)
         children = build_inline_children(node)
         text = children.map { |c| c.is_a?(CoreModel::TextContent) ? c.text : "" }.join
 
-        nested_list = nil
-        node.content&.each do |child|
-          next unless child.is_a?(Node)
-          if child.type == "bullet_list" || child.type == "ordered_list"
-            nested_list = build_node(child)
-          end
-        end
-
-        CoreModel::ListItem.new(
-          content: text,
-          children: children.empty? ? children : children,
-          nested_list: nested_list,
-        )
+        nested_list = find_nested_list(node)
+        CoreModel::ListItem.new(content: text, children: children, nested_list: nested_list)
       end
 
       def build_definition_list(node)
@@ -198,34 +194,21 @@ module Coradoc
         descriptions = []
         node.content&.each do |child|
           next unless child.is_a?(Node)
+
           case child.type
-          when "definition_term"
-            terms << build_node(child)
-          when "definition_description"
-            descriptions << build_node(child)
+          when "definition_term" then terms << build_node(child)
+          when "definition_description" then descriptions << build_node(child)
           end
         end
 
         items = terms.zip(descriptions).map do |term, desc|
           CoreModel::DefinitionItem.new(
-            term: term.is_a?(CoreModel::InlineElement) ? term.content : term.to_s,
-            definitions: [desc.is_a?(CoreModel::InlineElement) ? desc.content : desc.to_s],
+            term: inline_content(term),
+            definitions: [inline_content(desc)]
           )
         end
 
         CoreModel::DefinitionList.new(items: items)
-      end
-
-      def build_definition_term(node)
-        children = build_inline_children(node)
-        text = children.map { |c| c.is_a?(CoreModel::TextContent) ? c.text : "" }.join
-        CoreModel::InlineElement.new(content: text)
-      end
-
-      def build_definition_description(node)
-        children = build_inline_children(node)
-        text = children.map { |c| c.is_a?(CoreModel::TextContent) ? c.text : "" }.join
-        CoreModel::InlineElement.new(content: text)
       end
 
       # ── Media ──
@@ -237,7 +220,7 @@ module Coradoc
           title: node.title,
           caption: node.caption,
           width: node.width,
-          height: node.height,
+          height: node.height
         )
       end
 
@@ -247,18 +230,14 @@ module Coradoc
         rows = []
         node.content&.each do |child|
           next unless child.is_a?(Node)
-          case child.type
-          when "table_head", "table_body"
-            child.content&.each do |row_node|
-              rows << build_node(row_node) if row_node.is_a?(Node)
-            end
+          next unless %w[table_head table_body].include?(child.type)
+
+          child.content&.each do |row_node|
+            rows << build_node(row_node) if row_node.is_a?(Node)
           end
         end
 
-        CoreModel::Table.new(
-          title: node.title,
-          rows: rows,
-        )
+        CoreModel::Table.new(title: node.title, rows: rows)
       end
 
       def build_table_head(node)
@@ -275,13 +254,12 @@ module Coradoc
       end
 
       def build_table_cell(node)
-        text = extract_text(node)
         CoreModel::TableCell.new(
-          content: text,
+          content: extract_text(node),
           header: node.header || false,
           colspan: node.colspan,
           rowspan: node.rowspan,
-          alignment: node.alignment,
+          alignment: node.alignment
         )
       end
 
@@ -289,42 +267,31 @@ module Coradoc
 
       def build_bibliography(node)
         entries = build_content(node).select { |c| c.is_a?(CoreModel::BibliographyEntry) }
-        CoreModel::Bibliography.new(
-          title: node.title,
-          entries: entries,
-        )
+        CoreModel::Bibliography.new(title: node.title, entries: entries)
       end
 
       def build_biblio_entry(node)
-        text = extract_text(node)
         CoreModel::BibliographyEntry.new(
           anchor_name: node.anchor_name,
           document_id: node.document_id,
-          ref_text: text,
+          ref_text: extract_text(node)
         )
       end
 
       # ── Footnotes ──
 
       def build_footnote_entry(node)
-        text = extract_text(node)
-        CoreModel::Footnote.new(
-          id: node.id,
-          content: text,
-        )
+        CoreModel::Footnote.new(id: node.id, content: extract_text(node))
       end
 
       # ── TOC ──
 
-      def build_toc(node)
+      def build_toc(_node)
         CoreModel::Toc.new
       end
 
       def build_toc_entry(node)
-        CoreModel::TocEntry.new(
-          id: node.id,
-          title: node.title,
-        )
+        CoreModel::TocEntry.new(id: node.id, title: node.title)
       end
 
       # ── Inline ──
@@ -347,25 +314,14 @@ module Coradoc
       # ── Helpers ──
 
       def apply_mark(inner, mark)
+        klass = SIMPLE_MARKS[mark.type]
+        return klass.new(children: Array(inner)) if klass
+
         case mark.type
-        when "bold" then CoreModel::BoldElement.new(children: Array(inner))
-        when "italic" then CoreModel::ItalicElement.new(children: Array(inner))
-        when "code" then CoreModel::MonospaceElement.new(children: Array(inner))
-        when "underline" then CoreModel::UnderlineElement.new(children: Array(inner))
-        when "strikethrough" then CoreModel::StrikethroughElement.new(children: Array(inner))
-        when "subscript" then CoreModel::SubscriptElement.new(children: Array(inner))
-        when "superscript" then CoreModel::SuperscriptElement.new(children: Array(inner))
-        when "highlight" then CoreModel::HighlightElement.new(children: Array(inner))
         when "link"
-          CoreModel::LinkElement.new(
-            target: mark.href,
-            children: Array(inner),
-          )
+          CoreModel::LinkElement.new(target: mark.href, children: Array(inner))
         when "xref"
-          CoreModel::CrossReferenceElement.new(
-            target: mark.target,
-            children: Array(inner),
-          )
+          CoreModel::CrossReferenceElement.new(target: mark.target, children: Array(inner))
         else
           inner
         end
@@ -380,6 +336,12 @@ module Coradoc
         end
       end
 
+      def build_inline_text(node)
+        children = build_inline_children(node)
+        text = children.map { |c| c.is_a?(CoreModel::TextContent) ? c.text : "" }.join
+        CoreModel::InlineElement.new(content: text)
+      end
+
       def extract_text(node)
         return node.text.to_s if node.is_a?(Node::Text)
         return "" unless node.content
@@ -387,6 +349,19 @@ module Coradoc
         node.content.filter_map do |child|
           child.is_a?(Node) ? extract_text(child) : ""
         end.join
+      end
+
+      private
+
+      def find_nested_list(node)
+        node.content&.each do |child|
+          return build_node(child) if child.is_a?(Node) && LIST_TYPES.include?(child.type)
+        end
+        nil
+      end
+
+      def inline_content(element)
+        element.is_a?(CoreModel::InlineElement) ? element.content : element.to_s
       end
     end
   end

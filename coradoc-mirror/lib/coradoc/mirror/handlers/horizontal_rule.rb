@@ -5,7 +5,7 @@ module Coradoc
     module Handlers
       # Handles HorizontalRuleBlock → horizontal_rule node.
       module HorizontalRule
-        def self.call(_element, context:)
+        def self.call(_element, *)
           Node::HorizontalRule.new
         end
       end

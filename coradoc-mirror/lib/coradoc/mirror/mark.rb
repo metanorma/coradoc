@@ -12,7 +12,6 @@ module Coradoc
     #
     # New mark types are added by subclassing Mark — no modification of
     # existing code needed (OCP).
-    #
     class Mark
       PM_TYPE = "mark"
 
@@ -69,9 +68,6 @@ module Coradoc
         end
       end
 
-      # Auto-registry: maps PM_TYPE → class for all declared subclasses.
-      MARKS = {}
-
       # ── Mark type subclasses ────────────────────────────────────
 
       class Bold < Mark
@@ -119,7 +115,7 @@ module Coradoc
           return nil unless hash
 
           attrs = hash["attrs"] || {}
-          new(href: attrs[:href] || attrs["href"])
+          new(href: attrs["href"])
         end
       end
 
@@ -154,13 +150,16 @@ module Coradoc
         end
       end
 
-      # Auto-register all mark subclasses by PM_TYPE.
-      constants.each do |name|
-        klass = const_get(name)
-        next unless klass.is_a?(Class) && klass < Mark && klass::PM_TYPE != "mark"
-
-        MARKS[klass::PM_TYPE] = klass
-      end
+      # Populate and freeze the registry after all subclasses are defined.
+      MARKS = begin
+                registry = {}
+                constants.each do |name|
+                  k = const_get(name)
+                  next unless k.is_a?(Class) && k < Mark && k::PM_TYPE != "mark"
+                  registry[k::PM_TYPE] = k
+                end
+                registry.freeze
+              end
 
       private
 
@@ -179,6 +178,7 @@ module Coradoc
           kwargs[name] = symbolized[name] if symbolized.key?(name)
         end
       end
+      private_class_method :build_kwargs
     end
   end
 end

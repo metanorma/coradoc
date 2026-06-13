@@ -2,8 +2,23 @@
 
 module Coradoc
   module Mirror
+    # Transforms CoreModel documents into ProseMirror-compatible Mirror nodes.
+    #
+    # Uses a HandlerRegistry for OCP-compliant dispatch: each CoreModel type
+    # maps to a handler module/class that produces the corresponding Mirror node.
     class CoreModelToMirror
       attr_reader :registry
+
+      # Typed struct for pending footnote data (model-driven, not hash bags).
+      FootnoteData = Struct.new(:id, :ref_id, :number, :content, keyword_init: true)
+
+      # Maps element types to their children accessors.
+      COLLECTION_ACCESSORS = {
+        CoreModel::ListBlock => :items,
+        CoreModel::DefinitionList => :items,
+        CoreModel::Table => :rows,
+        CoreModel::Bibliography => :entries
+      }.freeze
 
       def initialize(registry: Coradoc::Mirror.default_registry)
         @registry = registry
@@ -23,7 +38,7 @@ module Coradoc
         Node::Document.new(
           title: attrs[:title],
           id: attrs[:id],
-          content: content,
+          content: content
         )
       end
 
@@ -32,9 +47,7 @@ module Coradoc
 
         if children && !children.empty?
           content = []
-          children.each do |child|
-            handle_element(child, content)
-          end
+          children.each { |child| handle_element(child, content) }
           content.compact
         elsif element_has_text_content?(element)
           process_inline_content(element)
@@ -57,34 +70,26 @@ module Coradoc
         fn_id = footnote.id || "fn-#{num}"
         ref_id = "fn-ref-#{num}"
 
-        fn_content = if footnote.content
-                       [text_node(footnote.content)]
-                     else
-                       []
-                     end
-
-        @footnotes << {
-          id: fn_id,
-          ref_id: ref_id,
-          number: num,
-          content: fn_content,
-        }
+        fn_content = footnote.content ? [text_node(footnote.content)] : []
+        @footnotes << FootnoteData.new(
+          id: fn_id, ref_id: ref_id, number: num, content: fn_content
+        )
 
         Node::FootnoteMarker.new(id: fn_id, ref_id: ref_id, number: num)
       end
 
       def resolve_footnote_reference(ref)
         target_id = ref.id
-        fn_entry = @footnotes.find { |fn| fn[:id] == target_id } if target_id
+        entry = @footnotes.find { |fn| fn.id == target_id } if target_id
 
-        if fn_entry
+        if entry
           Node::FootnoteMarker.new(
-            id: fn_entry[:id],
-            ref_id: "fn-ref-#{fn_entry[:number]}-dup-#{@footnote_counter}",
-            number: fn_entry[:number],
+            id: entry.id,
+            ref_id: "fn-ref-#{entry.number}-dup-#{@footnote_counter}",
+            number: entry.number
           )
         else
-          text_node("[#{target_id || "footnote"}]")
+          text_node("[#{target_id || 'footnote'}]")
         end
       end
 
@@ -93,10 +98,7 @@ module Coradoc
 
         entries = @footnotes.map do |fn|
           Node::FootnoteEntry.new(
-            id: fn[:id],
-            ref_id: fn[:ref_id],
-            number: fn[:number],
-            content: fn[:content],
+            id: fn.id, ref_id: fn.ref_id, number: fn.number, content: fn.content
           )
         end
 
@@ -115,25 +117,14 @@ module Coradoc
       def element_children(element)
         if element.is_a?(CoreModel::StructuralElement) ||
            element.is_a?(CoreModel::InlineElement) ||
-           element.is_a?(CoreModel::TableCell)
-          children = element.children
-          return children if children && !children.empty?
-        elsif element.is_a?(CoreModel::Block)
+           element.is_a?(CoreModel::TableCell) ||
+           element.is_a?(CoreModel::Block)
           children = element.children
           return children if children && !children.empty?
         end
 
-        if element.is_a?(CoreModel::ListBlock)
-          element.items
-        elsif element.is_a?(CoreModel::DefinitionList)
-          element.items
-        elsif element.is_a?(CoreModel::Table)
-          element.rows
-        elsif element.is_a?(CoreModel::Bibliography)
-          element.entries
-        else
-          nil
-        end
+        accessor = COLLECTION_ACCESSORS[element.class]
+        element.public_send(accessor) if accessor
       end
 
       def handle_element(element, content)
@@ -143,11 +134,7 @@ module Coradoc
         value, concat = result
         return unless value
 
-        if concat
-          content.concat(Array(value))
-        else
-          content << value
-        end
+        concat ? content.concat(Array(value)) : content << value
       end
 
       def build_document_attrs(document)
@@ -156,7 +143,6 @@ module Coradoc
         attrs[:id] = document.id if document.id
 
         if document.is_a?(CoreModel::DocumentElement) &&
-           document.attributes &&
            document.attributes.is_a?(CoreModel::Metadata)
           document.attributes.to_h.each do |key, value|
             attrs[key.to_sym] = value

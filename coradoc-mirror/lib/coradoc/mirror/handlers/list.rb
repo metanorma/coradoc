@@ -55,6 +55,7 @@ module Coradoc
             case child
             when CoreModel::TextContent
               return nil if child.text.nil? || child.text.empty?
+
               context.text_node(child.text)
             when CoreModel::InlineElement
               Handlers::Inline.call(child, context: context)

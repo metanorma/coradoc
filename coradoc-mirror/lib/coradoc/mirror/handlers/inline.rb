@@ -14,7 +14,7 @@ module Coradoc
           CoreModel::SubscriptElement => Mark::Subscript,
           CoreModel::SuperscriptElement => Mark::Superscript,
           CoreModel::HighlightElement => Mark::Highlight,
-          CoreModel::TermElement => Mark::Bold,
+          CoreModel::TermElement => Mark::Bold
         }.freeze
 
         def self.process(element, context:)
@@ -31,6 +31,7 @@ module Coradoc
           case child
           when CoreModel::TextContent
             return [] if child.text.nil? || child.text.empty?
+
             [context.text_node(child.text)]
           when CoreModel::InlineElement
             [dispatch_inline(child, context)].compact
@@ -61,6 +62,7 @@ module Coradoc
 
         def self.text_content(element, context:)
           return nil if element.text.nil? || element.text.empty?
+
           context.text_node(element.text)
         end
 
@@ -100,9 +102,7 @@ module Coradoc
               build_span_mark(element, context)
             when CoreModel::FootnoteElement
               build_footnote_node(element, context)
-            when CoreModel::HardLineBreakElement
-              Node::SoftBreak.new
-            when CoreModel::LineBreakElement
+            when CoreModel::HardLineBreakElement, CoreModel::LineBreakElement
               Node::SoftBreak.new
             when CoreModel::TextElement
               build_text_only(element, context)
@@ -121,6 +121,7 @@ module Coradoc
           def build_simple_mark(element, context, mark_class)
             text = extract_inline_text(element)
             return nil if text.empty?
+
             context.text_node(text, marks: [mark_class.new])
           end
 
@@ -176,6 +177,7 @@ module Coradoc
           def build_text_only(element, context)
             text = extract_inline_text(element)
             return nil if text.empty?
+
             context.text_node(text)
           end
 
