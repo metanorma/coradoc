@@ -137,12 +137,12 @@ module Coradoc
             text = extract_inline_text(element)
             target = element.target
 
-            display_text = text.empty? ? (target || "") : text
+            display_text = text.empty? ? (target || '') : text
             return nil if display_text.empty?
 
             context.text_node(display_text, marks: [Mark::CrossReference.new(
               target: target,
-              resolved: text.empty? ? nil : text,
+              resolved: text.empty? ? nil : text
             )])
           end
 
@@ -157,17 +157,17 @@ module Coradoc
             text = extract_inline_text(element)
             return nil if text.empty?
 
-            role = element.attr("role")
+            role = element.attr('role')
             context.text_node(text, marks: [Mark::Span.new(role: role)])
           end
 
           def build_footnote_node(element, context)
             footnote = nil
             if element.is_a?(CoreModel::InlineElement) && element.content
-              fn_id = element.attr("id")
+              fn_id = element.attr('id')
               footnote = CoreModel::Footnote.new(
                 id: fn_id,
-                content: element.content.to_s,
+                content: element.content.to_s
               )
             end
 
@@ -193,12 +193,12 @@ module Coradoc
                 case child
                 when CoreModel::TextContent then child.text.to_s
                 when CoreModel::InlineElement then extract_inline_text(child)
-                else ""
+                else ''
                 end
               end.join
             end
 
-            ""
+            ''
           end
         end
       end

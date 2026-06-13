@@ -14,7 +14,7 @@ module Coradoc
           node_class.new(
             id: element.id,
             start: element.is_a?(CoreModel::ListBlock) ? element.start : nil,
-            content: items,
+            content: items
           )
         end
 
@@ -66,7 +66,7 @@ module Coradoc
           end
 
           def ordered?(element)
-            element.marker_type == "ordered"
+            element.marker_type == 'ordered'
           end
         end
       end

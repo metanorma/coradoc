@@ -9,7 +9,7 @@ module Coradoc
           Node::Document.new(
             title: element.title,
             id: element.id,
-            content: content,
+            content: content
           )
         end
 
@@ -19,7 +19,7 @@ module Coradoc
             id: element.id,
             title: element.title,
             level: element.heading_level,
-            content: content,
+            content: content
           )
         end
 
@@ -33,7 +33,7 @@ module Coradoc
           Node::Header.new(
             title: element.title,
             level: element.heading_level,
-            content: content,
+            content: content
           )
         end
       end

@@ -20,7 +20,7 @@ module Coradoc
             id: element.id,
             title: element.title,
             width: element.width,
-            content: content,
+            content: content
           )
         end
 
@@ -55,7 +55,7 @@ module Coradoc
               rowspan: cell.rowspan,
               alignment: cell.alignment,
               header: cell.header || nil,
-              content: content,
+              content: content
             )
           end
 

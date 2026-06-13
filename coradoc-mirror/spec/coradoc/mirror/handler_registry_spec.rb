@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require "spec_helper"
+require 'spec_helper'
 
 RSpec.describe Coradoc::Mirror::HandlerRegistry do
-  describe "#register and #entry_for" do
-    it "finds a registered handler by exact class" do
+  describe '#register and #entry_for' do
+    it 'finds a registered handler by exact class' do
       registry = described_class.new
       handler = ->(el, _ctx) { el }
       registry.register(Coradoc::CoreModel::ParagraphBlock, handler)
@@ -13,7 +13,7 @@ RSpec.describe Coradoc::Mirror::HandlerRegistry do
       expect(entry.handler).to eq(handler)
     end
 
-    it "finds a handler via ancestor walk" do
+    it 'finds a handler via ancestor walk' do
       registry = described_class.new
       handler = ->(el, _ctx) { el }
       registry.register(Coradoc::CoreModel::Block, handler)
@@ -23,7 +23,7 @@ RSpec.describe Coradoc::Mirror::HandlerRegistry do
       expect(entry.handler).to eq(handler)
     end
 
-    it "prefers exact match over ancestor" do
+    it 'prefers exact match over ancestor' do
       registry = described_class.new
       base_handler = ->(_el, _ctx) { :base }
       specific_handler = ->(_el, _ctx) { :specific }
@@ -34,28 +34,28 @@ RSpec.describe Coradoc::Mirror::HandlerRegistry do
       expect(entry.handler).to eq(specific_handler)
     end
 
-    it "returns nil for unregistered class" do
+    it 'returns nil for unregistered class' do
       registry = described_class.new
       entry = registry.entry_for(Coradoc::CoreModel::ParagraphBlock.new)
       expect(entry).to be_nil
     end
   end
 
-  describe "#registered?" do
-    it "returns true for registered class" do
+  describe '#registered?' do
+    it 'returns true for registered class' do
       registry = described_class.new
       registry.register(Coradoc::CoreModel::Block, ->(el, _ctx) { el })
       expect(registry.registered?(Coradoc::CoreModel::Block)).to be true
     end
 
-    it "returns false for unregistered class" do
+    it 'returns false for unregistered class' do
       registry = described_class.new
       expect(registry.registered?(Coradoc::CoreModel::Block)).to be false
     end
   end
 
-  describe "#handle" do
-    it "dispatches to handler and returns result with concat flag" do
+  describe '#handle' do
+    it 'dispatches to handler and returns result with concat flag' do
       registry = described_class.new
       handler = Module.new do
         # rubocop:disable Lint/UnusedMethodArgument
@@ -68,34 +68,34 @@ RSpec.describe Coradoc::Mirror::HandlerRegistry do
 
       element = Coradoc::CoreModel::ParagraphBlock.new
       result = registry.handle(element, context: nil)
-      expect(result).to eq(["handled: Coradoc::CoreModel::ParagraphBlock", false])
+      expect(result).to eq(['handled: Coradoc::CoreModel::ParagraphBlock', false])
     end
 
-    it "dispatches to Proc handler" do
+    it 'dispatches to Proc handler' do
       registry = described_class.new
       handler = ->(element, _context) { "proc: #{element.class}" }
       registry.register(Coradoc::CoreModel::Block, handler)
 
       element = Coradoc::CoreModel::Block.new
       result = registry.handle(element, context: nil)
-      expect(result).to eq(["proc: Coradoc::CoreModel::Block", false])
+      expect(result).to eq(['proc: Coradoc::CoreModel::Block', false])
     end
 
-    it "dispatches to specific method name" do
+    it 'dispatches to specific method name' do
       registry = described_class.new
       handler = Module.new do
         def self.convert(_element, *)
-          "converted"
+          'converted'
         end
       end
       registry.register(Coradoc::CoreModel::Block, handler, method_name: :convert)
 
       element = Coradoc::CoreModel::Block.new
       result = registry.handle(element, context: nil)
-      expect(result).to eq(["converted", false])
+      expect(result).to eq(['converted', false])
     end
 
-    it "passes extra_kwargs to handler" do
+    it 'passes extra_kwargs to handler' do
       registry = described_class.new
       handler = Module.new do
         # rubocop:disable Lint/UnusedMethodArgument
@@ -104,21 +104,21 @@ RSpec.describe Coradoc::Mirror::HandlerRegistry do
         end
         # rubocop:enable Lint/UnusedMethodArgument
       end
-      registry.register(Coradoc::CoreModel::Block, handler, extra_kwargs: { extra_option: "yes" })
+      registry.register(Coradoc::CoreModel::Block, handler, extra_kwargs: { extra_option: 'yes' })
 
       element = Coradoc::CoreModel::Block.new
       result = registry.handle(element, context: nil)
-      expect(result).to eq(["extra: yes", false])
+      expect(result).to eq(['extra: yes', false])
     end
 
-    it "returns nil for unregistered element" do
+    it 'returns nil for unregistered element' do
       registry = described_class.new
       element = Coradoc::CoreModel::Block.new
       result = registry.handle(element, context: nil)
       expect(result).to be_nil
     end
 
-    it "supports concat flag" do
+    it 'supports concat flag' do
       registry = described_class.new
       handler = ->(_element, _context) { [1, 2, 3] }
       registry.register(Coradoc::CoreModel::Block, handler, concat: true)

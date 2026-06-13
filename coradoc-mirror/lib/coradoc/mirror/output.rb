@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "json"
-require "yaml"
+require 'json'
+require 'yaml'
 
 module Coradoc
   module Mirror
@@ -19,7 +19,7 @@ module Coradoc
           end
 
           def processor_match?(filename)
-            filename.downcase.end_with?(".mirror.json")
+            filename.downcase.end_with?('.mirror.json')
           end
 
           def processor_execute(input, options = {})
@@ -40,7 +40,7 @@ module Coradoc
           end
 
           def processor_match?(filename)
-            filename.downcase.end_with?(".mirror.yaml", ".mirror.yml")
+            filename.downcase.end_with?('.mirror.yaml', '.mirror.yml')
           end
 
           def processor_execute(input, _options = {})

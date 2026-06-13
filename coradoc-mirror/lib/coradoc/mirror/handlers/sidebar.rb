@@ -11,7 +11,7 @@ module Coradoc
           Node::Sidebar.new(
             id: element.id,
             title: element.title,
-            content: content,
+            content: content
           )
         end
       end

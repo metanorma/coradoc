@@ -15,7 +15,7 @@ module Coradoc
 
           Node::Toc.new(
             title: element.title,
-            content: entries,
+            content: entries
           )
         end
 
@@ -36,7 +36,7 @@ module Coradoc
               id: entry.is_a?(CoreModel::TocEntry) ? entry.id : nil,
               title: entry.is_a?(CoreModel::TocEntry) ? entry.title : nil,
               level: entry.is_a?(CoreModel::TocEntry) ? entry.level : nil,
-              content: content,
+              content: content
             )
           end
         end

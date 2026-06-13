@@ -10,7 +10,7 @@ module Coradoc
 
           Node::Blockquote.new(
             attribution: element.attribution,
-            content: content,
+            content: content
           )
         end
       end

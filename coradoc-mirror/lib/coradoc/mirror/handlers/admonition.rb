@@ -13,7 +13,7 @@ module Coradoc
             admonition_type: element.annotation_type,
             title: element.title,
             label: element.annotation_label,
-            content: content,
+            content: content
           )
         end
       end

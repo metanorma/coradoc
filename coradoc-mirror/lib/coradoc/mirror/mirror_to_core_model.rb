@@ -9,51 +9,51 @@ module Coradoc
     class MirrorToCoreModel
       # Dispatch table: Mirror node type string → builder lambda.
       TYPE_BUILDERS = {
-        "doc" => ->(t, n) { t.build_document(n) },
-        "section" => ->(t, n) { t.build_section(n) },
-        "header" => ->(t, n) { t.build_header(n) },
-        "preamble" => ->(t, n) { t.build_preamble(n) },
-        "paragraph" => ->(t, n) { t.build_paragraph(n) },
-        "code_block" => ->(t, n) { t.build_code_block(n) },
-        "blockquote" => ->(t, n) { t.build_blockquote(n) },
-        "example" => ->(t, n) { t.build_example(n) },
-        "sidebar" => ->(t, n) { t.build_sidebar(n) },
-        "open_block" => ->(t, n) { t.build_open_block(n) },
-        "verse" => ->(t, n) { t.build_verse(n) },
-        "horizontal_rule" => ->(t, _n) { t.build_horizontal_rule },
-        "admonition" => ->(t, n) { t.build_admonition(n) },
-        "bullet_list" => ->(t, n) { t.build_bullet_list(n) },
-        "ordered_list" => ->(t, n) { t.build_ordered_list(n) },
-        "list_item" => ->(t, n) { t.build_list_item(n) },
-        "definition_list" => ->(t, n) { t.build_definition_list(n) },
-        "definition_term" => ->(t, n) { t.build_inline_text(n) },
-        "definition_description" => ->(t, n) { t.build_inline_text(n) },
-        "image" => ->(t, n) { t.build_image(n) },
-        "table" => ->(t, n) { t.build_table(n) },
-        "table_head" => ->(t, n) { t.build_table_head(n) },
-        "table_body" => ->(t, n) { t.build_table_body(n) },
-        "table_row" => ->(t, n) { t.build_table_row(n) },
-        "table_cell" => ->(t, n) { t.build_table_cell(n) },
-        "bibliography" => ->(t, n) { t.build_bibliography(n) },
-        "biblio_entry" => ->(t, n) { t.build_biblio_entry(n) },
-        "footnotes" => ->(_t, _n) { nil },
-        "footnote_entry" => ->(t, n) { t.build_footnote_entry(n) },
-        "toc" => ->(t, n) { t.build_toc(n) },
-        "toc_entry" => ->(t, n) { t.build_toc_entry(n) },
-        "text" => ->(t, n) { t.build_text(n) },
-        "soft_break" => ->(t, _n) { t.build_soft_break }
+        'doc' => ->(t, n) { t.build_document(n) },
+        'section' => ->(t, n) { t.build_section(n) },
+        'header' => ->(t, n) { t.build_header(n) },
+        'preamble' => ->(t, n) { t.build_preamble(n) },
+        'paragraph' => ->(t, n) { t.build_paragraph(n) },
+        'code_block' => ->(t, n) { t.build_code_block(n) },
+        'blockquote' => ->(t, n) { t.build_blockquote(n) },
+        'example' => ->(t, n) { t.build_example(n) },
+        'sidebar' => ->(t, n) { t.build_sidebar(n) },
+        'open_block' => ->(t, n) { t.build_open_block(n) },
+        'verse' => ->(t, n) { t.build_verse(n) },
+        'horizontal_rule' => ->(t, _n) { t.build_horizontal_rule },
+        'admonition' => ->(t, n) { t.build_admonition(n) },
+        'bullet_list' => ->(t, n) { t.build_bullet_list(n) },
+        'ordered_list' => ->(t, n) { t.build_ordered_list(n) },
+        'list_item' => ->(t, n) { t.build_list_item(n) },
+        'definition_list' => ->(t, n) { t.build_definition_list(n) },
+        'definition_term' => ->(t, n) { t.build_inline_text(n) },
+        'definition_description' => ->(t, n) { t.build_inline_text(n) },
+        'image' => ->(t, n) { t.build_image(n) },
+        'table' => ->(t, n) { t.build_table(n) },
+        'table_head' => ->(t, n) { t.build_table_head(n) },
+        'table_body' => ->(t, n) { t.build_table_body(n) },
+        'table_row' => ->(t, n) { t.build_table_row(n) },
+        'table_cell' => ->(t, n) { t.build_table_cell(n) },
+        'bibliography' => ->(t, n) { t.build_bibliography(n) },
+        'biblio_entry' => ->(t, n) { t.build_biblio_entry(n) },
+        'footnotes' => ->(_t, _n) {},
+        'footnote_entry' => ->(t, n) { t.build_footnote_entry(n) },
+        'toc' => ->(t, n) { t.build_toc(n) },
+        'toc_entry' => ->(t, n) { t.build_toc_entry(n) },
+        'text' => ->(t, n) { t.build_text(n) },
+        'soft_break' => ->(t, _n) { t.build_soft_break }
       }.freeze
 
       # Mark type → CoreModel class mapping (OCP: add new marks here).
       SIMPLE_MARKS = {
-        "bold" => CoreModel::BoldElement,
-        "italic" => CoreModel::ItalicElement,
-        "code" => CoreModel::MonospaceElement,
-        "underline" => CoreModel::UnderlineElement,
-        "strikethrough" => CoreModel::StrikethroughElement,
-        "subscript" => CoreModel::SubscriptElement,
-        "superscript" => CoreModel::SuperscriptElement,
-        "highlight" => CoreModel::HighlightElement
+        'bold' => CoreModel::BoldElement,
+        'italic' => CoreModel::ItalicElement,
+        'code' => CoreModel::MonospaceElement,
+        'underline' => CoreModel::UnderlineElement,
+        'strikethrough' => CoreModel::StrikethroughElement,
+        'subscript' => CoreModel::SubscriptElement,
+        'superscript' => CoreModel::SuperscriptElement,
+        'highlight' => CoreModel::HighlightElement
       }.freeze
 
       LIST_TYPES = %w[bullet_list ordered_list].freeze
@@ -160,7 +160,7 @@ module Coradoc
 
       def build_admonition(node)
         text = build_content(node).map do |c|
-          c.is_a?(CoreModel::InlineElement) ? c.content.to_s : ""
+          c.is_a?(CoreModel::InlineElement) ? c.content.to_s : ''
         end.join
 
         CoreModel::AnnotationBlock.new(
@@ -173,17 +173,17 @@ module Coradoc
 
       def build_bullet_list(node)
         items = build_content(node).select { |c| c.is_a?(CoreModel::ListItem) }
-        CoreModel::ListBlock.new(marker_type: "unordered", items: items)
+        CoreModel::ListBlock.new(marker_type: 'unordered', items: items)
       end
 
       def build_ordered_list(node)
         items = build_content(node).select { |c| c.is_a?(CoreModel::ListItem) }
-        CoreModel::ListBlock.new(marker_type: "ordered", items: items)
+        CoreModel::ListBlock.new(marker_type: 'ordered', items: items)
       end
 
       def build_list_item(node)
         children = build_inline_children(node)
-        text = children.map { |c| c.is_a?(CoreModel::TextContent) ? c.text : "" }.join
+        text = children.map { |c| c.is_a?(CoreModel::TextContent) ? c.text : '' }.join
 
         nested_list = find_nested_list(node)
         CoreModel::ListItem.new(content: text, children: children, nested_list: nested_list)
@@ -196,8 +196,8 @@ module Coradoc
           next unless child.is_a?(Node)
 
           case child.type
-          when "definition_term" then terms << build_node(child)
-          when "definition_description" then descriptions << build_node(child)
+          when 'definition_term' then terms << build_node(child)
+          when 'definition_description' then descriptions << build_node(child)
           end
         end
 
@@ -297,7 +297,7 @@ module Coradoc
       # ── Inline ──
 
       def build_text(node)
-        text = node.text || ""
+        text = node.text || ''
         marks = node.marks || []
 
         return CoreModel::TextContent.new(text: text) if marks.empty?
@@ -318,9 +318,9 @@ module Coradoc
         return klass.new(children: Array(inner)) if klass
 
         case mark.type
-        when "link"
+        when 'link'
           CoreModel::LinkElement.new(target: mark.href, children: Array(inner))
-        when "xref"
+        when 'xref'
           CoreModel::CrossReferenceElement.new(target: mark.target, children: Array(inner))
         else
           inner
@@ -332,22 +332,23 @@ module Coradoc
 
         node.content.filter_map do |child|
           next unless child.is_a?(Node)
+
           build_node(child)
         end
       end
 
       def build_inline_text(node)
         children = build_inline_children(node)
-        text = children.map { |c| c.is_a?(CoreModel::TextContent) ? c.text : "" }.join
+        text = children.map { |c| c.is_a?(CoreModel::TextContent) ? c.text : '' }.join
         CoreModel::InlineElement.new(content: text)
       end
 
       def extract_text(node)
         return node.text.to_s if node.is_a?(Node::Text)
-        return "" unless node.content
+        return '' unless node.content
 
         node.content.filter_map do |child|
-          child.is_a?(Node) ? extract_text(child) : ""
+          child.is_a?(Node) ? extract_text(child) : ''
         end.join
       end
 
