@@ -1,0 +1,170 @@
+# frozen_string_literal: true
+
+module Coradoc
+  module Mirror
+    class CoreModelToMirror
+      attr_reader :registry
+
+      def initialize(registry: Coradoc::Mirror.default_registry)
+        @registry = registry
+        @footnote_counter = 0
+        @footnotes = []
+      end
+
+      def call(document)
+        @footnote_counter = 0
+        @footnotes = []
+
+        content = extract_content(document)
+        fn_block = flush_footnotes
+        content << fn_block if fn_block
+
+        attrs = build_document_attrs(document)
+        Node::Document.new(
+          title: attrs[:title],
+          id: attrs[:id],
+          content: content,
+        )
+      end
+
+      def extract_content(element)
+        children = element_children(element)
+
+        if children && !children.empty?
+          content = []
+          children.each do |child|
+            handle_element(child, content)
+          end
+          content.compact
+        elsif element_has_text_content?(element)
+          process_inline_content(element)
+        else
+          []
+        end
+      end
+
+      def process_inline_content(element)
+        Handlers::Inline.process(element, context: self)
+      end
+
+      def text_node(text, marks: [])
+        Node::Text.new(text: text, marks: marks)
+      end
+
+      def register_footnote(footnote)
+        @footnote_counter += 1
+        num = @footnote_counter
+        fn_id = footnote.id || "fn-#{num}"
+        ref_id = "fn-ref-#{num}"
+
+        fn_content = if footnote.content
+                       [text_node(footnote.content)]
+                     else
+                       []
+                     end
+
+        @footnotes << {
+          id: fn_id,
+          ref_id: ref_id,
+          number: num,
+          content: fn_content,
+        }
+
+        Node::FootnoteMarker.new(id: fn_id, ref_id: ref_id, number: num)
+      end
+
+      def resolve_footnote_reference(ref)
+        target_id = ref.id
+        fn_entry = @footnotes.find { |fn| fn[:id] == target_id } if target_id
+
+        if fn_entry
+          Node::FootnoteMarker.new(
+            id: fn_entry[:id],
+            ref_id: "fn-ref-#{fn_entry[:number]}-dup-#{@footnote_counter}",
+            number: fn_entry[:number],
+          )
+        else
+          text_node("[#{target_id || "footnote"}]")
+        end
+      end
+
+      def flush_footnotes
+        return nil if @footnotes.empty?
+
+        entries = @footnotes.map do |fn|
+          Node::FootnoteEntry.new(
+            id: fn[:id],
+            ref_id: fn[:ref_id],
+            number: fn[:number],
+            content: fn[:content],
+          )
+        end
+
+        @footnotes = []
+        Node::Footnotes.new(content: entries)
+      end
+
+      private
+
+      def element_has_text_content?(element)
+        element.is_a?(CoreModel::Block) &&
+          element.content &&
+          !element.content.to_s.empty?
+      end
+
+      def element_children(element)
+        if element.is_a?(CoreModel::StructuralElement) ||
+           element.is_a?(CoreModel::InlineElement) ||
+           element.is_a?(CoreModel::TableCell)
+          children = element.children
+          return children if children && !children.empty?
+        elsif element.is_a?(CoreModel::Block)
+          children = element.children
+          return children if children && !children.empty?
+        end
+
+        if element.is_a?(CoreModel::ListBlock)
+          element.items
+        elsif element.is_a?(CoreModel::DefinitionList)
+          element.items
+        elsif element.is_a?(CoreModel::Table)
+          element.rows
+        elsif element.is_a?(CoreModel::Bibliography)
+          element.entries
+        else
+          nil
+        end
+      end
+
+      def handle_element(element, content)
+        result = @registry.handle(element, context: self)
+        return unless result
+
+        value, concat = result
+        return unless value
+
+        if concat
+          content.concat(Array(value))
+        else
+          content << value
+        end
+      end
+
+      def build_document_attrs(document)
+        attrs = {}
+        attrs[:title] = document.title if document.title
+        attrs[:id] = document.id if document.id
+
+        if document.is_a?(CoreModel::DocumentElement) &&
+           document.attributes &&
+           document.attributes.is_a?(CoreModel::Metadata)
+          document.attributes.to_h.each do |key, value|
+            attrs[key.to_sym] = value
+          end
+        end
+
+        attrs
+      end
+    end
+  end
+end
