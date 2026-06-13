@@ -13,7 +13,7 @@ module Coradoc
             id: element.id,
             title: element.title,
             semantic_type: semantic_type&.to_s,
-            content: content,
+            content: content
           )
         end
       end

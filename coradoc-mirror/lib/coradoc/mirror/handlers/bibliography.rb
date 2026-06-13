@@ -14,7 +14,7 @@ module Coradoc
             id: element.id,
             title: element.title,
             level: element.level,
-            content: entries,
+            content: entries
           )
         end
 
@@ -29,7 +29,7 @@ module Coradoc
               anchor_name: entry.anchor_name,
               document_id: entry.document_id,
               url: entry.url,
-              content: [context.text_node(text)],
+              content: [context.text_node(text)]
             )
           end
         end

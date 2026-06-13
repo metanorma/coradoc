@@ -30,7 +30,7 @@ module Coradoc
               title: element.title,
               language: element.language,
               passthrough: passthrough || nil,
-              content: [context.text_node(text)],
+              content: [context.text_node(text)]
             )
           end
 
@@ -40,7 +40,7 @@ module Coradoc
             elsif element.is_a?(CoreModel::Block) && element.lines && !element.lines.empty?
               Array(element.lines).join("\n")
             else
-              ""
+              ''
             end
           end
         end

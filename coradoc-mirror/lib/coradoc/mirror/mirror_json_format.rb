@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "json"
+require 'json'
 
 module Coradoc
   module Mirror
@@ -15,8 +15,8 @@ module Coradoc
         # the format registry. Use Mirror::Node.from_h directly.
         def parse_to_core(_input, _options = {})
           raise Coradoc::UnsupportedFormatError,
-                "Parsing from mirror JSON is not supported via the format registry. " \
-                "Use Coradoc::Mirror::Node.from_h(JSON.parse(input)) directly."
+                'Parsing from mirror JSON is not supported via the format registry. ' \
+                'Use Coradoc::Mirror::Node.from_h(JSON.parse(input)) directly.'
         end
 
         # Accept CoreModel, serialize to Mirror JSON.

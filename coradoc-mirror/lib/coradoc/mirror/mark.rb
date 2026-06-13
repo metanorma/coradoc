@@ -13,7 +13,7 @@ module Coradoc
     # New mark types are added by subclassing Mark — no modification of
     # existing code needed (OCP).
     class Mark
-      PM_TYPE = "mark"
+      PM_TYPE = 'mark'
 
       class << self
         def mark_attr(*names)
@@ -39,9 +39,9 @@ module Coradoc
       end
 
       def to_h
-        result = { "type" => type }
+        result = { 'type' => type }
         attrs = serialize_attrs
-        result["attrs"] = attrs unless attrs.empty?
+        result['attrs'] = attrs unless attrs.empty?
         result
       end
 
@@ -54,13 +54,13 @@ module Coradoc
       def self.from_h(hash)
         return nil unless hash
 
-        type_str = hash["type"]
+        type_str = hash['type']
         mark_class = MARKS[type_str]
 
         if mark_class && mark_class != self
           mark_class.from_h(hash)
         else
-          attrs = hash["attrs"] || {}
+          attrs = hash['attrs'] || {}
           base = mark_class || self
           kwargs = build_kwargs(base, attrs)
           kwargs[:type] = type_str if mark_class.nil?
@@ -71,39 +71,39 @@ module Coradoc
       # ── Mark type subclasses ────────────────────────────────────
 
       class Bold < Mark
-        PM_TYPE = "bold"
+        PM_TYPE = 'bold'
       end
 
       class Italic < Mark
-        PM_TYPE = "italic"
+        PM_TYPE = 'italic'
       end
 
       class Monospace < Mark
-        PM_TYPE = "code"
+        PM_TYPE = 'code'
       end
 
       class Underline < Mark
-        PM_TYPE = "underline"
+        PM_TYPE = 'underline'
       end
 
       class Strikethrough < Mark
-        PM_TYPE = "strikethrough"
+        PM_TYPE = 'strikethrough'
       end
 
       class Subscript < Mark
-        PM_TYPE = "subscript"
+        PM_TYPE = 'subscript'
       end
 
       class Superscript < Mark
-        PM_TYPE = "superscript"
+        PM_TYPE = 'superscript'
       end
 
       class Highlight < Mark
-        PM_TYPE = "highlight"
+        PM_TYPE = 'highlight'
       end
 
       class Link < Mark
-        PM_TYPE = "link"
+        PM_TYPE = 'link'
         mark_attr :href
 
         def initialize(href: nil)
@@ -114,13 +114,13 @@ module Coradoc
         def self.from_h(hash)
           return nil unless hash
 
-          attrs = hash["attrs"] || {}
-          new(href: attrs["href"])
+          attrs = hash['attrs'] || {}
+          new(href: attrs['href'])
         end
       end
 
       class CrossReference < Mark
-        PM_TYPE = "xref"
+        PM_TYPE = 'xref'
         mark_attr :target, :resolved
 
         def initialize(target: nil, resolved: nil)
@@ -131,7 +131,7 @@ module Coradoc
       end
 
       class Stem < Mark
-        PM_TYPE = "stem"
+        PM_TYPE = 'stem'
         mark_attr :stem_type
 
         def initialize(stem_type: nil)
@@ -141,7 +141,7 @@ module Coradoc
       end
 
       class Span < Mark
-        PM_TYPE = "span"
+        PM_TYPE = 'span'
         mark_attr :role
 
         def initialize(role: nil)
@@ -155,11 +155,12 @@ module Coradoc
                 registry = {}
                 constants.each do |name|
                   k = const_get(name)
-                  next unless k.is_a?(Class) && k < Mark && k::PM_TYPE != "mark"
+                  next unless k.is_a?(Class) && k < Mark && k::PM_TYPE != 'mark'
+
                   registry[k::PM_TYPE] = k
                 end
                 registry.freeze
-              end
+      end
 
       private
 

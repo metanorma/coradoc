@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "json"
+require 'json'
 
 module Coradoc
   module Mirror
@@ -16,7 +16,7 @@ module Coradoc
     # constant for their canonical type string. New node types are added by
     # subclassing Node — no modification of existing code needed (OCP).
     class Node
-      PM_TYPE = "node"
+      PM_TYPE = 'node'
 
       attr_accessor :content, :marks
 
@@ -63,13 +63,13 @@ module Coradoc
       end
 
       def to_h
-        result = { "type" => type }
+        result = { 'type' => type }
         attrs = serialize_attrs
-        result["attrs"] = attrs unless attrs.empty?
-        result["marks"] = marks.map(&:to_h) unless marks.empty?
+        result['attrs'] = attrs unless attrs.empty?
+        result['marks'] = marks.map(&:to_h) unless marks.empty?
         unless content.empty?
           items = content.is_a?(Array) ? content : [content]
-          result["content"] = items.map(&:to_h)
+          result['content'] = items.map(&:to_h)
         end
         result
       end
@@ -91,17 +91,17 @@ module Coradoc
       def self.from_h(hash)
         return nil unless hash
 
-        type_str = hash["type"]
+        type_str = hash['type']
         klass = NODES[type_str]
 
         if klass && klass != self
           klass.from_h(hash)
         else
           base = klass || self
-          content = (hash["content"] || []).map { |c| Node.from_h(c) }
-          marks = (hash["marks"] || []).map { |m| Mark.from_h(m) }
+          content = (hash['content'] || []).map { |c| Node.from_h(c) }
+          marks = (hash['marks'] || []).map { |m| Mark.from_h(m) }
 
-          attrs = hash["attrs"] || {}
+          attrs = hash['attrs'] || {}
           kwargs = build_kwargs(base, attrs)
           kwargs[:content] = content
           kwargs[:marks] = marks
@@ -112,28 +112,28 @@ module Coradoc
       end
 
       def text_content
-        return "" unless content
+        return '' unless content
 
         content.map do |item|
-          item.is_a?(Node) ? item.text_content : ""
+          item.is_a?(Node) ? item.text_content : ''
         end.join
       end
 
       # ── Node type subclasses ────────────────────────────────────
 
       class Text < Node
-        PM_TYPE = "text"
+        PM_TYPE = 'text'
 
         node_attr :text
 
-        def initialize(text: "", **)
+        def initialize(text: '', **)
           super(**)
           @text = text
         end
 
         def to_h
           result = super
-          result["text"] = text.to_s
+          result['text'] = text.to_s
           result
         end
 
@@ -145,178 +145,178 @@ module Coradoc
           return nil unless hash
 
           new(
-            text: hash["text"] || "",
-            attrs: (hash["attrs"] || {}).transform_keys(&:to_sym),
-            marks: (hash["marks"] || []).map { |m| Mark.from_h(m) }
+            text: hash['text'] || '',
+            attrs: (hash['attrs'] || {}).transform_keys(&:to_sym),
+            marks: (hash['marks'] || []).map { |m| Mark.from_h(m) }
           )
         end
       end
 
       class Document < Node
-        PM_TYPE = "doc"
+        PM_TYPE = 'doc'
         node_attr :title, :id
       end
 
       class Paragraph < Node
-        PM_TYPE = "paragraph"
+        PM_TYPE = 'paragraph'
       end
 
       class Heading < Node
-        PM_TYPE = "heading"
+        PM_TYPE = 'heading'
         node_attr :level
       end
 
       class Section < Node
-        PM_TYPE = "section"
+        PM_TYPE = 'section'
         node_attr :title, :id, :level
       end
 
       class Preamble < Node
-        PM_TYPE = "preamble"
+        PM_TYPE = 'preamble'
       end
 
       class Header < Node
-        PM_TYPE = "header"
+        PM_TYPE = 'header'
         node_attr :title, :level
       end
 
       class CodeBlock < Node
-        PM_TYPE = "code_block"
+        PM_TYPE = 'code_block'
         node_attr :language, :title, :passthrough
       end
 
       class Blockquote < Node
-        PM_TYPE = "blockquote"
+        PM_TYPE = 'blockquote'
         node_attr :attribution
       end
 
       class Example < Node
-        PM_TYPE = "example"
+        PM_TYPE = 'example'
         node_attr :title, :id
       end
 
       class Sidebar < Node
-        PM_TYPE = "sidebar"
+        PM_TYPE = 'sidebar'
         node_attr :title, :id
       end
 
       class OpenBlock < Node
-        PM_TYPE = "open_block"
+        PM_TYPE = 'open_block'
       end
 
       class Verse < Node
-        PM_TYPE = "verse"
+        PM_TYPE = 'verse'
         node_attr :attribution
       end
 
       class HorizontalRule < Node
-        PM_TYPE = "horizontal_rule"
+        PM_TYPE = 'horizontal_rule'
       end
 
       class BulletList < Node
-        PM_TYPE = "bullet_list"
+        PM_TYPE = 'bullet_list'
         node_attr :id, :start
       end
 
       class OrderedList < Node
-        PM_TYPE = "ordered_list"
+        PM_TYPE = 'ordered_list'
         node_attr :id, :start
       end
 
       class ListItem < Node
-        PM_TYPE = "list_item"
+        PM_TYPE = 'list_item'
         node_attr :id
       end
 
       class DefinitionList < Node
-        PM_TYPE = "definition_list"
+        PM_TYPE = 'definition_list'
         node_attr :id
       end
 
       class DefinitionTerm < Node
-        PM_TYPE = "definition_term"
+        PM_TYPE = 'definition_term'
       end
 
       class DefinitionDescription < Node
-        PM_TYPE = "definition_description"
+        PM_TYPE = 'definition_description'
       end
 
       class Image < Node
-        PM_TYPE = "image"
+        PM_TYPE = 'image'
         node_attr :src, :alt, :title, :caption, :width, :height, :inline
       end
 
       class Table < Node
-        PM_TYPE = "table"
+        PM_TYPE = 'table'
         node_attr :title, :id, :width
       end
 
       class TableHead < Node
-        PM_TYPE = "table_head"
+        PM_TYPE = 'table_head'
       end
 
       class TableBody < Node
-        PM_TYPE = "table_body"
+        PM_TYPE = 'table_body'
       end
 
       class TableRow < Node
-        PM_TYPE = "table_row"
+        PM_TYPE = 'table_row'
       end
 
       class TableCell < Node
-        PM_TYPE = "table_cell"
+        PM_TYPE = 'table_cell'
         node_attr :colspan, :rowspan, :alignment, :header
       end
 
       class Admonition < Node
-        PM_TYPE = "admonition"
+        PM_TYPE = 'admonition'
         node_attr :admonition_type, :title, :label, :id
       end
 
       class Bibliography < Node
-        PM_TYPE = "bibliography"
+        PM_TYPE = 'bibliography'
         node_attr :title, :id, :level
       end
 
       class BibliographyEntry < Node
-        PM_TYPE = "biblio_entry"
+        PM_TYPE = 'biblio_entry'
         node_attr :anchor_name, :document_id, :url
       end
 
       class Footnotes < Node
-        PM_TYPE = "footnotes"
+        PM_TYPE = 'footnotes'
       end
 
       class FootnoteMarker < Node
-        PM_TYPE = "footnote_marker"
+        PM_TYPE = 'footnote_marker'
         node_attr :id, :ref_id, :number
       end
 
       class FootnoteEntry < Node
-        PM_TYPE = "footnote_entry"
+        PM_TYPE = 'footnote_entry'
         node_attr :id, :ref_id, :number
       end
 
       class Toc < Node
-        PM_TYPE = "toc"
+        PM_TYPE = 'toc'
         node_attr :title
       end
 
       class TocEntry < Node
-        PM_TYPE = "toc_entry"
+        PM_TYPE = 'toc_entry'
         node_attr :id, :title, :level
       end
 
       class ThematicBreak < Node
-        PM_TYPE = "thematic_break"
+        PM_TYPE = 'thematic_break'
       end
 
       class SoftBreak < Node
-        PM_TYPE = "soft_break"
+        PM_TYPE = 'soft_break'
       end
 
       class GenericBlock < Node
-        PM_TYPE = "generic_block"
+        PM_TYPE = 'generic_block'
         node_attr :semantic_type, :title, :id
       end
 
@@ -325,11 +325,12 @@ module Coradoc
                 registry = {}
                 constants.each do |name|
                   k = const_get(name)
-                  next unless k.is_a?(Class) && k < Node && k::PM_TYPE != "node"
+                  next unless k.is_a?(Class) && k < Node && k::PM_TYPE != 'node'
+
                   registry[k::PM_TYPE] = k
                 end
                 registry.freeze
-              end
+      end
 
       private
 

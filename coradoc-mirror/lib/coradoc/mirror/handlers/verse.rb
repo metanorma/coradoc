@@ -8,12 +8,12 @@ module Coradoc
           text = if element.content && !element.content.to_s.empty?
                    element.flat_text || element.content.to_s
                  else
-                   ""
+                   ''
                  end
 
           Node::Verse.new(
             attribution: element.attribution,
-            content: [context.text_node(text)],
+            content: [context.text_node(text)]
           )
         end
       end
