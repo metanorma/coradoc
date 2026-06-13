@@ -41,10 +41,10 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
 
     it "transforms a document with sections" do
       doc = make_document(title: "Doc", children: [
-        make_section(title: "Introduction", level: 1, children: [
-          make_paragraph("Hello world"),
-        ]),
-      ])
+                            make_section(title: "Introduction", level: 1, children: [
+                                           make_paragraph("Hello world")
+                                         ])
+                          ])
       result = transformer.call(doc)
 
       expect(result.content.length).to eq(1)
@@ -60,8 +60,8 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
 
     it "produces valid JSON" do
       doc = make_document(title: "Test", children: [
-        make_paragraph("Content"),
-      ])
+                            make_paragraph("Content")
+                          ])
       result = transformer.call(doc)
       json = result.to_json
 
@@ -188,7 +188,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
         marker_type: "unordered",
         items: [
           Coradoc::CoreModel::ListItem.new(content: "First"),
-          Coradoc::CoreModel::ListItem.new(content: "Second"),
+          Coradoc::CoreModel::ListItem.new(content: "Second")
         ],
       )
       doc = make_document(children: [list])
@@ -206,7 +206,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
         marker_type: "ordered",
         items: [
           Coradoc::CoreModel::ListItem.new(content: "Step 1"),
-          Coradoc::CoreModel::ListItem.new(content: "Step 2"),
+          Coradoc::CoreModel::ListItem.new(content: "Step 2")
         ],
       )
       doc = make_document(children: [list])
@@ -228,7 +228,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
           Coradoc::CoreModel::ListItem.new(
             content: "Parent",
             nested_list: inner,
-          ),
+          )
         ],
       )
       doc = make_document(children: [list])
@@ -246,7 +246,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
           Coradoc::CoreModel::DefinitionItem.new(
             term: "API",
             definitions: ["Application Programming Interface"],
-          ),
+          )
         ],
       )
       doc = make_document(children: [dl])
@@ -269,15 +269,15 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
             header: true,
             cells: [
               Coradoc::CoreModel::TableCell.new(content: "Name", header: true),
-              Coradoc::CoreModel::TableCell.new(content: "Value", header: true),
+              Coradoc::CoreModel::TableCell.new(content: "Value", header: true)
             ],
           ),
           Coradoc::CoreModel::TableRow.new(
             cells: [
               Coradoc::CoreModel::TableCell.new(content: "Foo"),
-              Coradoc::CoreModel::TableCell.new(content: "Bar"),
+              Coradoc::CoreModel::TableCell.new(content: "Bar")
             ],
-          ),
+          )
         ],
       )
       doc = make_document(children: [table])
@@ -421,7 +421,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
             anchor_name: "ISO712",
             document_id: "ISO 712",
             ref_text: "Cereals and cereal products",
-          ),
+          )
         ],
       )
       doc = make_document(children: [bib])
@@ -455,31 +455,31 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
   describe "kitchen sink" do
     it "transforms a complex document with multiple element types" do
       doc = make_document(title: "Kitchen Sink", children: [
-        make_section(title: "Overview", level: 1, children: [
-          make_paragraph("Welcome to the test document."),
-          Coradoc::CoreModel::SourceBlock.new(
-            content: "puts 'hello'",
-            language: "ruby",
-          ),
-          Coradoc::CoreModel::ListBlock.new(
-            marker_type: "unordered",
-            items: [
-              Coradoc::CoreModel::ListItem.new(content: "Item 1"),
-              Coradoc::CoreModel::ListItem.new(content: "Item 2"),
-            ],
-          ),
-        ]),
+                            make_section(title: "Overview", level: 1, children: [
+                                           make_paragraph("Welcome to the test document."),
+                              Coradoc::CoreModel::SourceBlock.new(
+                                content: "puts 'hello'",
+                                language: "ruby",
+                              ),
+                              Coradoc::CoreModel::ListBlock.new(
+                                marker_type: "unordered",
+                                items: [
+                                  Coradoc::CoreModel::ListItem.new(content: "Item 1"),
+                                  Coradoc::CoreModel::ListItem.new(content: "Item 2")
+                                ],
+                              )
+                                         ]),
         make_section(title: "Details", level: 2, children: [
-          Coradoc::CoreModel::AnnotationBlock.new(
-            annotation_type: "warning",
-            content: "Be careful!",
-          ),
+                       Coradoc::CoreModel::AnnotationBlock.new(
+                         annotation_type: "warning",
+                         content: "Be careful!",
+                       ),
           Coradoc::CoreModel::Image.new(
             src: "diagram.png",
             alt: "Architecture",
-          ),
-        ]),
-      ])
+          )
+                     ])
+                          ])
 
       result = transformer.call(doc)
       json = result.to_json(pretty: true)

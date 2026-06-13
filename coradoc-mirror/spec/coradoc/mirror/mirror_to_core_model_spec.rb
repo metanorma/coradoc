@@ -14,7 +14,7 @@ RSpec.describe Coradoc::Mirror::MirrorToCoreModel do
         children: [
           Coradoc::CoreModel::ParagraphBlock.new(
             content: "Hello world",
-          ),
+          )
         ],
       )
 
@@ -35,9 +35,9 @@ RSpec.describe Coradoc::Mirror::MirrorToCoreModel do
             level: 1,
             id: "section-one",
             children: [
-              Coradoc::CoreModel::ParagraphBlock.new(content: "Content"),
+              Coradoc::CoreModel::ParagraphBlock.new(content: "Content")
             ],
-          ),
+          )
         ],
       )
 
@@ -72,7 +72,7 @@ RSpec.describe Coradoc::Mirror::MirrorToCoreModel do
         marker_type: "unordered",
         items: [
           Coradoc::CoreModel::ListItem.new(content: "First"),
-          Coradoc::CoreModel::ListItem.new(content: "Second"),
+          Coradoc::CoreModel::ListItem.new(content: "Second")
         ],
       )
 
@@ -125,9 +125,9 @@ RSpec.describe Coradoc::Mirror::MirrorToCoreModel do
           Coradoc::CoreModel::TableRow.new(
             cells: [
               Coradoc::CoreModel::TableCell.new(content: "A"),
-              Coradoc::CoreModel::TableCell.new(content: "B"),
+              Coradoc::CoreModel::TableCell.new(content: "B")
             ],
-          ),
+          )
         ],
       )
 

@@ -9,7 +9,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Inline do
       element = Coradoc::CoreModel::ParagraphBlock.new(
         children: [bold]
       )
-      
+
       nodes = described_class.process(element, context: context)
       expect(nodes.length).to eq(1)
       expect(nodes.first.type).to eq("text")
@@ -22,7 +22,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Inline do
       element = Coradoc::CoreModel::ParagraphBlock.new(
         children: [text]
       )
-      
+
       nodes = described_class.process(element, context: context)
       expect(nodes.length).to eq(1)
       expect(nodes.first.type).to eq("text")
@@ -37,7 +37,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Inline do
       element = Coradoc::CoreModel::ParagraphBlock.new(
         children: [link]
       )
-      
+
       nodes = described_class.process(element, context: context)
       expect(nodes.length).to eq(1)
       expect(nodes.first.type).to eq("text")
@@ -66,7 +66,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Inline do
     it "handles inline element directly" do
       italic = Coradoc::CoreModel::ItalicElement.new(content: "italic text")
       node = described_class.call(italic, context: context)
-      
+
       expect(node.type).to eq("text")
       expect(node.text).to eq("italic text")
       expect(node.marks.first.type).to eq("italic")
