@@ -8,6 +8,7 @@ gem 'coradoc-adoc', path: './coradoc-adoc'
 gem 'coradoc-docx', path: './coradoc-docx'
 gem 'coradoc-html', path: './coradoc-html'
 gem 'coradoc-markdown', path: './coradoc-markdown'
+gem 'coradoc-mirror', path: './coradoc-mirror'
 
 gem 'lutaml-model', github: 'lutaml/lutaml-model', branch: 'main'
 gem 'lutaml-xsd'
