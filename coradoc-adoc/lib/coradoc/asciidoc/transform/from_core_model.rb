@@ -298,22 +298,29 @@ module Coradoc
             )
           end
 
-          def transform_definition_list(definition_list)
+          def transform_definition_list(definition_list, depth = 1)
+            delimiter = ':' * (depth + 1)
             items = Array(definition_list.items).map do |item|
-              transform_definition_item(item)
+              transform_definition_item(item, depth)
             end
-            Coradoc::AsciiDoc::Model::List::Definition.new(items: items)
+            list = Coradoc::AsciiDoc::Model::List::Definition.new(items: items)
+            list.delimiter = delimiter
+            list
           end
 
-          def transform_definition_item(item)
+          def transform_definition_item(item, depth = 1)
+            delimiter = ':' * (depth + 1)
             term = Coradoc::AsciiDoc::Model::Term.new(term: item.term.to_s)
             contents = Array(item.definitions).map do |defn|
               Coradoc::AsciiDoc::Model::TextElement.new(content: defn.to_s)
             end
-            Coradoc::AsciiDoc::Model::List::DefinitionItem.new(
+            di = Coradoc::AsciiDoc::Model::List::DefinitionItem.new(
               terms: [term],
-              contents: contents
+              contents: contents,
+              delimiter: delimiter
             )
+            di.nested << transform_definition_list(item.nested, depth + 1) if item.nested&.items&.any?
+            di
           end
 
           def transform_toc(_toc)

@@ -98,6 +98,28 @@ RSpec.describe Coradoc::CoreModel::DefinitionItem do
     end
   end
 
+  describe 'nested definition lists' do
+    it 'accepts a nested DefinitionList' do
+      nested_list = Coradoc::CoreModel::DefinitionList.new(
+        items: [described_class.new(term: 'child', definitions: ['nested def'])]
+      )
+      parent = described_class.new(
+        term: 'parent',
+        definitions: ['parent def'],
+        nested: nested_list
+      )
+
+      expect(parent.nested).to be_a(Coradoc::CoreModel::DefinitionList)
+      expect(parent.nested.items.first.term).to eq('child')
+    end
+
+    it 'defaults nested to nil' do
+      item = described_class.new(term: 'leaf')
+
+      expect(item.nested).to be_nil
+    end
+  end
+
   describe '#semantically_equivalent?' do
     it 'returns true for identical definition items' do
       item1 = described_class.new(term: 'API', definitions: ['def1'])

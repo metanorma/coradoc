@@ -48,6 +48,12 @@ module Coradoc
                 definition_children: def_children
               )
               di.id = item.id if item.id
+
+              nested_adoc = Array(item.nested).find do |n|
+                n.is_a?(Coradoc::AsciiDoc::Model::List::Definition) && n.items.any?
+              end
+              di.nested = transform_list(nested_adoc, 'definition') if nested_adoc
+
               di
             end
 

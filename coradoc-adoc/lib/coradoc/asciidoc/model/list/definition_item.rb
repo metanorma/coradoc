@@ -32,6 +32,12 @@ module Coradoc
           attribute :id, :string
           attribute :terms, Coradoc::AsciiDoc::Model::Term, collection: true
           attribute :contents, Coradoc::AsciiDoc::Model::TextElement, collection: true
+          attribute :delimiter, :string, default: -> { '::' }
+          attribute :nested,
+                    Coradoc::AsciiDoc::Model::Base,
+                    polymorphic: [Coradoc::AsciiDoc::Model::List::Definition],
+                    collection: true,
+                    initialize_empty: true
 
           def to_adoc(delimiter: '')
             Coradoc::AsciiDoc::Serializer.serialize(self, delimiter: delimiter)

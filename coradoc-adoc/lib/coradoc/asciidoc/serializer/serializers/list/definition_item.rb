@@ -8,7 +8,8 @@ module Coradoc
           class DefinitionItem < Base
             def to_adoc(model, options_or_context = {})
               context = normalize_context(options_or_context)
-              delimiter = context.option(:delimiter, '')
+              delimiter = model.delimiter.to_s
+              delimiter = context.option(:delimiter, '::') if delimiter.empty?
               _anchor = model.anchor.nil? ? '' : serialize_child(model.anchor, context)
               content = +''
 
@@ -26,6 +27,25 @@ module Coradoc
 
               d = model.contents ? serialize_children(model.contents, context) : ''
               content << "#{d}\n"
+
+              nested_delimiter = "#{delimiter}:"
+              Array(model.nested).each do |nested_list|
+                next unless nested_list.is_a?(Coradoc::AsciiDoc::Model::List::Definition)
+
+                nested_list.items.each do |nested_item|
+                  content << serialize_with_options(nested_item, delimiter: nested_delimiter)
+                end
+              end
+
+              content
+            end
+
+            private
+
+            def serialize_with_options(child, options = {})
+              serializer_class = ElementRegistry.lookup(child.class)
+              serializer = serializer_class.new
+              serializer.to_adoc(child, options)
             end
           end
         end
