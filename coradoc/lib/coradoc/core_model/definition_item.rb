@@ -5,11 +5,12 @@ module Coradoc
     class DefinitionItem < Base
       attribute :term, :string
       attribute :definitions, :string, collection: true
+      attribute :nested, DefinitionList
 
       def initialize(args = {})
         @term_children = args.delete(:term_children) || []
         @definition_children = args.delete(:definition_children) || []
-        super(args)
+        super
       end
 
       attr_reader :term_children, :definition_children
@@ -39,7 +40,7 @@ module Coradoc
       private
 
       def comparable_attributes
-        super + %i[term definitions term_children definition_children]
+        super + %i[term definitions nested term_children definition_children]
       end
     end
   end

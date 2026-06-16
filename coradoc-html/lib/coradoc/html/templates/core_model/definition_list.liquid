@@ -4,5 +4,8 @@
 {% for defn in item.definitions %}
 <dd>{{ defn | render_element }}</dd>
 {% endfor %}
+{% if item.nested %}
+<dd>{{ item.nested | render_element }}</dd>
+{% endif %}
 {% endfor %}
 </dl>

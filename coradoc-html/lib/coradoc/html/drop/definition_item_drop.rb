@@ -19,6 +19,14 @@ module Coradoc
           @model.definitions.map { |d| content_to_liquid(d) }
         end
 
+        def nested
+          nested_model = @model.nested
+          return nil unless nested_model.is_a?(CoreModel::DefinitionList) &&
+                            nested_model.items&.any?
+
+          DropFactory.create(nested_model)
+        end
+
         private
 
         def term_text

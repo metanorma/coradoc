@@ -29,10 +29,10 @@ module Coradoc
           attrs >> r.repeat(1).as(:unordered)
         end
 
-        def definition_list(delimiter = '::')
+        def definition_list(_delimiter = nil)
           (attribute_list >> newline).maybe >>
-            dlist_item(delimiter).repeat(1).as(:definition_list) >>
-            dlist_item(delimiter).absent?
+            dlist_item.repeat(1).as(:definition_list) >>
+            dlist_item.absent?
         end
 
         def list_marker(nesting_level = 1)
@@ -98,27 +98,32 @@ module Coradoc
         end
 
         def dlist_delimiter
-          (str('::') | str(':::') | str('::::') | str(';;')
+          (
+            (str(':::::') >> match(':').absent?) |
+            (str('::::') >> match(':').absent?) |
+            (str(':::') >> match(':').absent?) |
+            (str('::') >> match(':').absent?) |
+            str(';;')
           ).as(:delimiter)
         end
 
-        def dlist_term(_delimiter)
-          (element_id_inline.maybe >>
-            match("[^\n:]").repeat(1)
-                           .as(:text)
-          ).as(:dlist_term) >> dlist_delimiter
+        def dlist_term(_delimiter = nil)
+          term_chars =
+            (dlist_delimiter.absent? >> match("[^\n]")).repeat(1)
+                                                       .as(:text)
+          (element_id_inline.maybe >> term_chars).as(:dlist_term) >> dlist_delimiter
         end
 
         def dlist_definition
-          text # >> empty_line.repeat(0)
+          text
             .as(:definition) >> line_ending >> empty_line.repeat(0)
         end
 
-        def dlist_item(delimiter)
-          (((dlist_term(delimiter).as(:terms).repeat(1) >> line_ending >>
+        def dlist_item(_delimiter = nil)
+          (((dlist_term.as(:terms).repeat(1) >> line_ending >>
             empty_line.repeat(0)).repeat(1) >>
             dlist_definition) |
-            (dlist_term(delimiter).repeat(1, 1).as(:terms) >> space >>
+            (dlist_term.repeat(1, 1).as(:terms) >> space >>
               dlist_definition)
           ).as(:definition_list_item)
         end
