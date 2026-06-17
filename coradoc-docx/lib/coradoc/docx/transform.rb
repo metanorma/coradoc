@@ -11,6 +11,7 @@ module Coradoc
       autoload :StyleResolver, 'coradoc/docx/transform/style_resolver'
       autoload :NumberingResolver, 'coradoc/docx/transform/numbering_resolver'
       autoload :OrderedContent, 'coradoc/docx/transform/ordered_content'
+      autoload :FrontmatterCoreProperties, 'coradoc/docx/transform/frontmatter_core_properties'
 
       # Element transform rules
       module Rules

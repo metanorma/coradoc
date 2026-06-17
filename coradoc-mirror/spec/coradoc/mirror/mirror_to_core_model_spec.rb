@@ -140,6 +140,27 @@ RSpec.describe Coradoc::Mirror::MirrorToCoreModel do
       expect(table).to be_a(Coradoc::CoreModel::Table)
       expect(table.rows.length).to eq(1)
     end
+
+    it 'round-trips frontmatter schema and data' do
+      original = Coradoc::CoreModel::DocumentElement.new(
+        title: 'Doc',
+        children: [
+          Coradoc::CoreModel::FrontmatterBlock.new(
+            schema: 'https://example.com/s.json',
+            data: { 'title' => 'Hello', 'count' => 42, 'tags' => %w[a b] }
+          ),
+          Coradoc::CoreModel::ParagraphBlock.new(content: 'body')
+        ]
+      )
+
+      mirror = Coradoc::Mirror.transform(original)
+      rebuilt = reverse.call(mirror)
+
+      fm = rebuilt.children.find { |c| c.is_a?(Coradoc::CoreModel::FrontmatterBlock) }
+      expect(fm).not_to be_nil
+      expect(fm.schema).to eq('https://example.com/s.json')
+      expect(fm.data).to eq('title' => 'Hello', 'count' => 42, 'tags' => %w[a b])
+    end
   end
 
   describe 'error handling' do

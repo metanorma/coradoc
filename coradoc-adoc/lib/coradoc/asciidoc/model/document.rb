@@ -69,6 +69,15 @@ module Coradoc
                     Coradoc::AsciiDoc::Model::Video
                   ]
 
+        # Raw YAML frontmatter text, or nil if absent.
+        #
+        # AsciiDoc treats frontmatter as opaque text — the YAML is only
+        # parsed/emitted at the CoreModel boundary by
+        # CoreModel::FrontmatterBlock::Codec (single source of truth).
+        # Storing raw text keeps the AsciiDoc parser/serializer symmetric
+        # without dragging YAML semantics into the AsciiDoc model (MECE).
+        attribute :frontmatter, :string
+
         # @param [Integer] index The index of the section to retrieve
         # @return [Coradoc::AsciiDoc::Model::Base] The section at the specified index
         def [](index)

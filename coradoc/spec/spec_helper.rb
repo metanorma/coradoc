@@ -8,6 +8,7 @@ require 'coradoc/html'
 require 'coradoc/markdown'
 require 'coradoc/markdown/parser/ast_processor'
 require 'coradoc/docx' if Gem.loaded_specs.key?('coradoc-docx')
+require 'coradoc/mirror' if Gem.loaded_specs.key?('coradoc-mirror')
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

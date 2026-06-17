@@ -123,4 +123,3 @@ module Coradoc
 end
 
 # Auto-register when this file is loaded
-Coradoc::AsciiDoc::Transform::FromCoreModelRegistrations.register_all!

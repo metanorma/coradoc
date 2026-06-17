@@ -89,6 +89,8 @@ module Coradoc
           doc = Uniword::Builder::DocumentBuilder.new
           doc.title(element.title) if element.title
 
+          FrontmatterCoreProperties.apply(doc, FrontmatterCoreProperties.extract(element))
+
           transform_children(element.children, doc)
 
           doc.build

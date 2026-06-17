@@ -46,8 +46,11 @@ module Coradoc
       # @param text [String] AsciiDoc content to parse
       # @return [Coradoc::AsciiDoc::Model::Document] Parsed document model
       def parse(text)
-        ast = Coradoc::AsciiDoc::Parser::Base.parse(text)
-        Coradoc::AsciiDoc::Transformer.transform(ast)
+        split = Parser::FrontmatterParser.call(text)
+        ast = Coradoc::AsciiDoc::Parser::Base.parse(split.body)
+        doc = Coradoc::AsciiDoc::Transformer.transform(ast)
+        doc.frontmatter = split.frontmatter if split.frontmatter?
+        doc
       end
 
       # Parse AsciiDoc text and convert to CoreModel

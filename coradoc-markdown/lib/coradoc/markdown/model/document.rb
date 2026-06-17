@@ -18,6 +18,15 @@ module Coradoc
     class Document < Base
       attribute :blocks, Coradoc::Markdown::Base, collection: true
 
+      # Raw YAML frontmatter text, or nil if absent.
+      #
+      # Markdown treats frontmatter as opaque text — the YAML is only
+      # parsed/emitted at the CoreModel boundary by
+      # CoreModel::FrontmatterBlock::Codec (single source of truth).
+      # Storing raw text keeps Markdown's parser/serializer symmetric
+      # without dragging YAML semantics into the Markdown model (MECE).
+      attribute :frontmatter, :string
+
       # @param [Integer] index The index of the block to retrieve
       # @return [Coradoc::Markdown::Base] The block at the specified index
       def [](index)

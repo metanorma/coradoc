@@ -75,12 +75,29 @@ module Coradoc
 
           def transform_document(doc)
             children = Array(doc.blocks).map { |block| transform(block) }
+            children = prepend_frontmatter(children, doc.frontmatter)
 
             Coradoc::CoreModel::DocumentElement.new(
               id: doc.id,
               title: extract_title(doc),
               children: children
             )
+          end
+
+          # If the Markdown document had raw frontmatter text, parse it
+          # via Codec into a typed FrontmatterBlock and prepend it so
+          # it participates in the standard block pipeline. Codec is
+          # the single source of truth for YAML parsing (DRY/MECE).
+          #
+          # The block is prepended even when the YAML is malformed —
+          # Codec returns an empty FrontmatterBlock in that case, which
+          # preserves the signal "frontmatter was present but invalid"
+          # for downstream consumers.
+          def prepend_frontmatter(children, frontmatter_text)
+            return children if frontmatter_text.nil? || frontmatter_text.strip.empty?
+
+            block = Coradoc::CoreModel::FrontmatterBlock::Codec.from_yaml(frontmatter_text)
+            [block, *children]
           end
 
           def transform_heading(heading)

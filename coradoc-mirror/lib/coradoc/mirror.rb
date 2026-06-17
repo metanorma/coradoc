@@ -89,6 +89,9 @@ module Coradoc
       # ── TOC ──
       registry.register(CoreModel::Toc, Handlers::Toc)
 
+      # ── Frontmatter ──
+      registry.register(CoreModel::FrontmatterBlock, Handlers::Frontmatter)
+
       # ── Generic Block (catch-all for unrecognized block types) ──
       registry.register(CoreModel::Block, Handlers::GenericBlock)
 

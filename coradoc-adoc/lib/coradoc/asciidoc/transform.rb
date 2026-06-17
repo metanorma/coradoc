@@ -12,6 +12,7 @@ module Coradoc
       autoload :TextExtractVisitor, "#{__dir__}/transform/text_extract_visitor"
       autoload :InlineTransformVisitor, "#{__dir__}/transform/inline_transform_visitor"
       autoload :ElementTransformers, "#{__dir__}/transform/element_transformers"
+      autoload :FrontmatterAttributeMap, "#{__dir__}/transform/frontmatter_attribute_map"
     end
   end
 end

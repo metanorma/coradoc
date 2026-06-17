@@ -31,6 +31,9 @@ module Coradoc
     # Drop layer — self-registering drops loaded via parent namespace file
     require 'coradoc/html/drop'
 
+    # FrontmatterBlock -> <meta> tag mapping (HTML-specific concern)
+    autoload :FrontmatterMeta, 'coradoc/html/frontmatter_meta'
+
     # Autoload HTML output converters
     autoload :ConverterBase, 'coradoc/html/converter_base'
     autoload :Static, 'coradoc/html/static'
