@@ -25,6 +25,16 @@ coverage/
 /spec/assets/test/
 /spec/assets/extract/
 
+# Merge/backup artifacts
+*.orig
+*.bak
+
+# Root-level scratch scripts
+/temp.rb
+/test_*.rb
+/test_registry.rb
+/update_coradoc.rb
+
 # rspec failure tracking
 .rspec_status
 **/spec/examples.txt
@@ -52,7 +62,17 @@ output/
 
 # Work in progress files
 user_templates/
-TODO.cham-iterate/
+
+# TODO and PROPOSAL files are personal working state — NEVER commit
+# Use conversation context, TaskList, and memory instead.
+TODO
+TODO.*
+PROPOSAL*
+PROPOSAL-*
+**/TODO
+**/TODO.*
+**/PROPOSAL*
+**/PROPOSAL-*
 
 # Scratch files
 sample.oscal.*
@@ -68,6 +88,7 @@ coradodoc-html/
 TODO.html-liquid/
 TODO.bugfixes/
 TODO.improve/
+
 
 # Frontend build artifacts
 coradoc-html/frontend/
