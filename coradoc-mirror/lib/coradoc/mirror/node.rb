@@ -320,6 +320,12 @@ module Coradoc
         node_attr :semantic_type, :title, :id
       end
 
+      class Frontmatter < Node
+        PM_TYPE = 'frontmatter'
+        node_attr :schema
+        node_attr :data, default: {}
+      end
+
       # Auto-registry: maps PM_TYPE → class for all declared subclasses.
       NODES = begin
                 registry = {}

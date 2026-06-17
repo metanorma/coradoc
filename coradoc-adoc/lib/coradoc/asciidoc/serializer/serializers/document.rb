@@ -21,6 +21,13 @@ module Coradoc
 
           def serialize_to_adoc
             parts = []
+            # Frontmatter prefix, if present. The raw YAML text is
+            # already canonical (single source of truth is Codec), so we
+            # only wrap it with `---` delimiters.
+            if @model.frontmatter && !@model.frontmatter.strip.empty?
+              parts << "---\n#{@model.frontmatter.chomp}\n---\n\n"
+            end
+
             # Only add leading newline if we have sections but no header
             parts << "\n" if @model.sections && !@model.sections.empty? && !@model.header
 

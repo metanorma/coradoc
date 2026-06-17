@@ -6,6 +6,10 @@
 <meta name="generator" content="Coradoc {{ generator_version }}">
 {% if author %}<meta name="author" content="{{ author }}">{% endif %}
 {% if description %}<meta name="description" content="{{ description }}">{% endif %}
+{% for meta in meta_tags %}<meta name="{{ meta.name }}" content="{{ meta.content }}">
+{% endfor %}
+{% for link in link_tags %}<link rel="{{ link.rel }}" href="{{ link.href }}">
+{% endfor %}
 <title>{{ title }}</title>
 <style>{{ css }}</style>
 </head>

@@ -48,6 +48,8 @@ module Coradoc
               transform_bibliography_entry(model)
             when Coradoc::CoreModel::TocEntry
               Coradoc::Markdown::Text.new(content: model.title.to_s)
+            when Coradoc::CoreModel::TextContent
+              model.text.to_s
             when Array
               model.map { |item| transform(item) }
             else
@@ -69,23 +71,39 @@ module Coradoc
           end
 
           def transform_document(doc)
-            blocks = Array(doc.children).map { |child| transform(child) }
+            blocks, frontmatter = extract_frontmatter(Array(doc.children))
+            blocks = blocks.flat_map { |child| flatten_result(transform(child)) }
 
             Coradoc::Markdown::Document.new(
               id: doc.id,
-              blocks: blocks
+              blocks: blocks,
+              frontmatter: frontmatter
             )
+          end
+
+          # If the first CoreModel child is a FrontmatterBlock, serialize
+          # it to YAML text via Codec (single source of truth) and pop
+          # it from the children list. Returns [remaining_children,
+          # frontmatter_text].
+          def extract_frontmatter(children)
+            first = children.first
+            return [children, nil] unless first.is_a?(CoreModel::FrontmatterBlock)
+
+            yaml = CoreModel::FrontmatterBlock::Codec.to_yaml(first)
+            [children.drop(1), yaml.nil? || yaml.empty? ? nil : yaml]
           end
 
           def transform_section(section)
-            Coradoc::Markdown::Heading.new(
+            heading = Coradoc::Markdown::Heading.new(
               level: section.level || 1,
               text: section.title.to_s
             )
+            child_blocks = Array(section.children).map { |child| transform(child) }
+            [heading, *child_blocks]
           end
 
           def transform_generic_element(element)
-            blocks = Array(element.children).map { |child| transform(child) }
+            blocks = Array(element.children).flat_map { |child| flatten_result(transform(child)) }
 
             Coradoc::Markdown::Document.new(
               id: element.id,
@@ -107,8 +125,17 @@ module Coradoc
 
           def transform_paragraph(block)
             content = block.renderable_content
-            has_structured = content.is_a?(Array) && content.any? { |c| !c.is_a?(CoreModel::TextContent) }
-            if has_structured
+            has_nested_blocks = content.is_a?(Array) && content.any? do |c|
+              c.is_a?(CoreModel::Block) || c.is_a?(CoreModel::StructuralElement)
+            end
+            if has_nested_blocks
+              content.filter_map do |c|
+                next c.text if c.is_a?(CoreModel::TextContent)
+                next nil if c.is_a?(String) && c.strip.empty?
+
+                transform(c)
+              end.flat_map { |c| flatten_result(c) }
+            elsif content.is_a?(Array) && content.any? { |c| !c.is_a?(CoreModel::TextContent) }
               children = content.map { |c| transform_inline_content(c) }
               Coradoc::Markdown::Paragraph.new(text: block.flat_text, children: children)
             else
@@ -122,8 +149,12 @@ module Coradoc
               transform_inline(element)
             when CoreModel::TextContent
               element.text
+            when CoreModel::Base
+              transform(element)
             when String
               element
+            when Array
+              element.map { |e| transform_inline_content(e) }
             else
               element.to_s
             end
@@ -143,8 +174,24 @@ module Coradoc
               Coradoc::Markdown::Extension.nomarkdown(block.content.to_s)
             when :literal
               transform_code_block(block)
+            when :example, :sidebar, :open, :reviewer
+              transform_container_block(block)
             else
               transform_paragraph(block)
+            end
+          end
+
+          def transform_container_block(block)
+            rc = block.renderable_content
+            if rc.is_a?(Array) && rc.any? { |c| c.is_a?(CoreModel::Block) || c.is_a?(CoreModel::ListBlock) }
+              rc.filter_map do |c|
+                next c.text if c.is_a?(CoreModel::TextContent)
+                next nil if c.is_a?(String) && c.strip.empty?
+
+                transform(c)
+              end.flat_map { |c| flatten_result(c) }
+            else
+              Coradoc::Markdown::Blockquote.new(content: block.flat_text)
             end
           end
 
@@ -180,7 +227,7 @@ module Coradoc
           end
 
           def transform_horizontal_rule(_block)
-            Coradoc::Markdown::HorizontalRule.new
+            Coradoc::Markdown::HorizontalRule.new(style: '---')
           end
 
           def transform_list(list)
@@ -211,8 +258,8 @@ module Coradoc
               first_row = table_rows.first
               first_row_cells = Array(first_row&.cells)
 
-              # Check if first row has header cells
-              if first_row_cells.any?(&:header)
+              # Check if first row is marked as header, or if any of its cells are header cells
+              if first_row&.header || first_row_cells.any?(&:header)
                 headers = first_row_cells.map(&:flat_text)
                 table_rows = table_rows[1..] || []
               end
@@ -308,8 +355,8 @@ module Coradoc
 
           def transform_annotation_block(annotation)
             text = annotation.flat_text
-            Coradoc::Markdown::Paragraph.new(
-              text: "**#{annotation.annotation_type}:** #{text}"
+            Coradoc::Markdown::Blockquote.new(
+              content: "**#{annotation.annotation_type}:** #{text}"
             )
           end
 
@@ -322,7 +369,40 @@ module Coradoc
           end
 
           def transform_bibliography_entry(entry)
-            Coradoc::Markdown::Paragraph.new(text: entry.display_text)
+            text = entry.display_text.to_s
+            text = convert_asciidoc_markers_to_markdown(text)
+            Coradoc::Markdown::Paragraph.new(text: text)
+          end
+
+          def convert_asciidoc_markers_to_markdown(text)
+            return '' if text.nil?
+
+            result = text.dup
+
+            # footnote:[text] -> ^[text]
+            result.gsub!(/footnote:\[(.*?)\]/, '^[\1]')
+
+            # [smallcap]#text# -> text
+            result.gsub!(/\[smallcap\]#(.*?)#/, '\1')
+
+            # *text* -> **text**
+            # Use negative lookbehind and lookahead to avoid replacing **text** to ****text****
+            result.gsub!(/(?<!\*)\*(.*?)\*(?!\*)/, '**\1**')
+
+            # _text_ -> *text*
+            # Use negative lookbehind and lookahead to avoid replacing __text__ to **text**
+            result.gsub!(/(?<!_)_(.*?)_(?!_)/, '*\1*')
+
+            result
+          end
+
+          def flatten_result(result)
+            case result
+            when Array
+              result.flat_map { |r| flatten_result(r) }
+            else
+              [result]
+            end
           end
         end
       end

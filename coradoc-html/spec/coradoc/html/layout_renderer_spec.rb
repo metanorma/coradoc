@@ -31,6 +31,48 @@ RSpec.describe Coradoc::Html::LayoutRenderer do
       html = described_class.new.render_static(doc, body_html, {})
       expect(html).not_to include('<script>alert')
     end
+
+    describe 'meta tag deduplication (opts vs frontmatter)' do
+      let(:frontmatter) do
+        CoreModel::FrontmatterBlock.new(
+          data: {
+            'author' => 'From Frontmatter',
+            'description' => 'From frontmatter description',
+            'subject' => 'Kept'
+          }
+        )
+      end
+      let(:document) do
+        CoreModel::DocumentElement.new(
+          title: 'Dedup Doc',
+          children: [frontmatter, CoreModel::ParagraphBlock.new(content: 'body')]
+        )
+      end
+
+      it 'suppresses frontmatter author/description when opts provides them' do
+        html = described_class.new.render_static(
+          document, body_html,
+          author: 'Caller', description: 'Caller desc'
+        )
+        author_tags = html.scan(/<meta name="author"/).length
+        desc_tags = html.scan(/<meta name="description"/).length
+        expect(author_tags).to eq(1)
+        expect(desc_tags).to eq(1)
+        expect(html).to include('content="Caller"')
+        expect(html).not_to include('From Frontmatter')
+        expect(html).to include('name="subject"')
+      end
+
+      it 'keeps frontmatter author/description when opts omits them' do
+        html = described_class.new.render_static(document, body_html, {})
+        author_tags = html.scan(/<meta name="author"/).length
+        desc_tags = html.scan(/<meta name="description"/).length
+        expect(author_tags).to eq(1)
+        expect(desc_tags).to eq(1)
+        expect(html).to include('From Frontmatter')
+        expect(html).to include('From frontmatter description')
+      end
+    end
   end
 
   describe '#render_spa' do

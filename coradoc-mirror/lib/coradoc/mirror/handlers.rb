@@ -31,6 +31,7 @@ module Coradoc
       autoload :Bibliography, "#{__dir__}/handlers/bibliography"
       autoload :Footnote, "#{__dir__}/handlers/footnote"
       autoload :Toc, "#{__dir__}/handlers/toc"
+      autoload :Frontmatter, "#{__dir__}/handlers/frontmatter"
       autoload :GenericBlock, "#{__dir__}/handlers/generic_block"
     end
   end

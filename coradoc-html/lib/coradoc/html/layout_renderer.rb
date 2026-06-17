@@ -53,7 +53,28 @@ module Coradoc
         opts.lang || Config::DEFAULT_LANG
       end
 
+      # Pull a leading FrontmatterBlock out of the document's children,
+      # if present. Returns nil when there isn't one.
+      def extract_frontmatter(document)
+        return nil unless document.is_a?(Coradoc::CoreModel::DocumentElement)
+
+        Array(document.children).find { |c| c.is_a?(Coradoc::CoreModel::FrontmatterBlock) }
+      end
+
+      # Filter meta_tags so caller-supplied opts (author/description)
+      # take precedence and we never emit two <meta> tags with the same
+      # name. Single source of truth for the dedup rule (DRY): both the
+      # static and SPA layout paths route through here.
+      def dedup_meta_tags(metas, opts)
+        overridden = %w[author description].each_with_object([]) do |name, acc|
+          acc << name if opts.public_send(name)
+        end
+        metas.reject { |m| overridden.include?(m.name) }
+      end
+
       def build_static_layout_data(document, body_html, opts)
+        frontmatter = extract_frontmatter(document)
+        fm_metas, fm_links = FrontmatterMeta.extract(frontmatter).values_at(:metas, :links)
         {
           'lang' => resolve_lang(opts),
           'title' => resolve_escaped_title(document),
@@ -61,17 +82,21 @@ module Coradoc
           'description' => opts.description,
           'generator_version' => Coradoc::VERSION.to_s,
           'body' => body_html,
-          'custom_css' => opts.custom_css
+          'custom_css' => opts.custom_css,
+          'meta_tags' => dedup_meta_tags(fm_metas, opts).map { |m| { 'name' => m.name, 'content' => m.content } },
+          'link_tags' => fm_links.map { |l| { 'rel' => l.rel, 'href' => l.href } }
         }
       end
 
       def build_static_fallback(document, body_html, opts)
+        frontmatter = extract_frontmatter(document)
         Nokogiri::HTML::Builder.new do |doc|
           doc.html(lang: resolve_lang(opts)) do
             doc.head do
               doc.meta(charset: 'UTF-8')
               doc.meta(name: 'viewport', content: 'width=device-width, initial-scale=1.0')
               doc.title resolve_title(document)
+              FrontmatterMeta.emit_into_builder(doc, frontmatter)
             end
             doc.body { doc << body_html }
           end
@@ -109,6 +134,8 @@ module Coradoc
       end
 
       def build_spa_layout_data(document, opts, assets, safe_json)
+        frontmatter = extract_frontmatter(document)
+        fm_metas, fm_links = FrontmatterMeta.extract(frontmatter).values_at(:metas, :links)
         {
           'lang' => resolve_lang(opts),
           'title' => resolve_escaped_title(document),
@@ -117,11 +144,14 @@ module Coradoc
           'generator_version' => Coradoc::VERSION.to_s,
           'css' => assets[:css],
           'js' => assets[:js],
-          'data' => safe_json
+          'data' => safe_json,
+          'meta_tags' => dedup_meta_tags(fm_metas, opts).map { |m| { 'name' => m.name, 'content' => m.content } },
+          'link_tags' => fm_links.map { |l| { 'rel' => l.rel, 'href' => l.href } }
         }
       end
 
       def build_spa_fallback(document, opts, assets, safe_json)
+        frontmatter = extract_frontmatter(document)
         Nokogiri::HTML::Builder.new do |doc|
           doc.html(lang: resolve_lang(opts)) do
             doc.head do
@@ -129,6 +159,7 @@ module Coradoc
               doc.meta(name: 'viewport', content: 'width=device-width, initial-scale=1.0')
               doc.meta(name: 'generator', content: "Coradoc #{Coradoc::VERSION}")
               doc.title resolve_title(document)
+              FrontmatterMeta.emit_into_builder(doc, frontmatter)
               doc.style { doc.text assets[:css] } if assets[:css]
             end
             doc.body do

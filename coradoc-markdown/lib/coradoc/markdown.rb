@@ -85,6 +85,7 @@ module Coradoc
       autoload :ParsletExtras, 'coradoc/markdown/parser/parslet_extras'
       autoload :HTML_ENTITIES, 'coradoc/markdown/parser/html_entities'
       autoload :AstProcessor, 'coradoc/markdown/parser/ast_processor'
+      autoload :FrontmatterParser, 'coradoc/markdown/parser/frontmatter_parser'
     end
 
     # Shared parser utilities
@@ -97,8 +98,11 @@ module Coradoc
       # @param options [Hash] Parsing options
       # @return [Coradoc::Markdown::Document] The parsed document model
       def parse(content, _options = {})
-        ast = Parser::BlockParser.new.parse(content)
-        Transformer.transform_document(ast)
+        split = Parser::FrontmatterParser.call(content)
+        ast = Parser::BlockParser.new.parse(split.body)
+        doc = Transformer.transform_document(ast)
+        doc.frontmatter = split.frontmatter if split.frontmatter?
+        doc
       end
 
       # Parse raw AST (for debugging)
@@ -133,6 +137,7 @@ module Coradoc
       # @param options [Hash] Serialization options
       # @return [String] The Markdown output
       def serialize(document, options = {})
+        document = Transform::FromCoreModel.transform(document) if document.is_a?(Coradoc::CoreModel::Base)
         Serializer.serialize(document, options)
       end
 

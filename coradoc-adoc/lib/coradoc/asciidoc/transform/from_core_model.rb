@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'from_core_model_registrations'
-
 module Coradoc
   module AsciiDoc
     module Transform
@@ -9,8 +7,17 @@ module Coradoc
       class FromCoreModel
         include Coradoc::Transform::Base
 
+        @registered = false
+
         class << self
+          def register!
+            return if @registered
+            Transform::FromCoreModelRegistrations.register_all!
+            @registered = true
+          end
+
           def transform(model)
+            register!
             return model.map { |item| transform(item) } if model.is_a?(Array)
             return model unless model.is_a?(Coradoc::CoreModel::Base)
 
@@ -32,10 +39,13 @@ module Coradoc
                          Coradoc::AsciiDoc::Model::Header.new(title: '')
                        end
 
+              sections, frontmatter = extract_frontmatter(Array(element.children))
+
               Coradoc::AsciiDoc::Model::Document.new(
                 id: element.id,
                 header: header,
-                sections: transform(element.children)
+                sections: transform(sections),
+                frontmatter: frontmatter
               )
             when CoreModel::SectionElement
               Coradoc::AsciiDoc::Model::Section.new(
@@ -336,6 +346,18 @@ module Coradoc
           end
 
           private
+
+          # If the first CoreModel child is a FrontmatterBlock, serialize
+          # it to YAML text via Codec (single source of truth) and pop it
+          # from the children list. Returns [remaining_children,
+          # frontmatter_text].
+          def extract_frontmatter(children)
+            first = children.first
+            return [children, nil] unless first.is_a?(CoreModel::FrontmatterBlock)
+
+            yaml = CoreModel::FrontmatterBlock::Codec.to_yaml(first)
+            [children.drop(1), (yaml.nil? || yaml.empty?) ? nil : yaml]
+          end
 
           def resolve_semantic_type(block)
             semantic = block.resolve_semantic_type

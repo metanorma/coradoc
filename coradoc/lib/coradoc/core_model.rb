@@ -49,6 +49,7 @@ module Coradoc
     autoload :ElementAttribute, "#{__dir__}/core_model/element_attribute"
     autoload :Metadata, "#{__dir__}/core_model/metadata"
     autoload :MetadataEntry, "#{__dir__}/core_model/metadata"
+    autoload :FrontmatterBlock, "#{__dir__}/core_model/frontmatter"
     autoload :Footnote, "#{__dir__}/core_model/footnote"
     autoload :FootnoteReference, "#{__dir__}/core_model/footnote"
     autoload :Abbreviation, "#{__dir__}/core_model/footnote"

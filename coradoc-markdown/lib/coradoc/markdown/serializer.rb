@@ -88,7 +88,10 @@ module Coradoc
       private
 
       def serialize_document(doc)
-        doc.blocks.map { |block| serialize(block) }.join("\n\n")
+        body = doc.blocks.map { |block| serialize(block) }.join("\n\n")
+        return body unless doc.frontmatter && !doc.frontmatter.empty?
+
+        "---\n#{doc.frontmatter}---\n\n#{body}".strip
       end
 
       def serialize_heading(heading)
@@ -159,11 +162,13 @@ module Coradoc
       end
 
       def serialize_table(table)
-        return '' if table.headers.empty?
+        cols = [table.headers.size, *table.rows.map { |r| Array(r).size }].max
+        return '' if cols.zero?
 
-        header_row = "| #{table.headers.join(' | ')} |"
-        separator = "| #{table.headers.map { |_| '---' }.join(' | ')} |"
-        rows = table.rows.map { |row| "| #{Array(row).join(' | ')} |" }
+        headers = table.headers.empty? ? Array.new(cols, '') : table.headers
+        header_row = "| #{headers.join(' | ')} |"
+        separator = "| #{headers.map { |_| '---' }.join(' | ')} |"
+        rows = table.rows.map { |row| "| #{Array(row).fill('', Array(row).size...cols).join(' | ')} |" }
 
         [header_row, separator, *rows].join("\n")
       end
@@ -184,7 +189,13 @@ module Coradoc
         dl.items.map do |term|
           lines = [term.text.to_s]
           term.definitions.each do |defn|
-            lines << ": #{defn.content}"
+            content_str = defn.content.to_s
+            content_str.lines.each_with_index do |line, i|
+              stripped = line.rstrip
+              next if i.positive? && stripped.empty?
+
+              lines << ": #{stripped}"
+            end
           end
           lines.join("\n")
         end.join("\n\n")

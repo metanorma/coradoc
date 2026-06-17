@@ -40,6 +40,7 @@ module Coradoc
         'footnote_entry' => ->(t, n) { t.build_footnote_entry(n) },
         'toc' => ->(t, n) { t.build_toc(n) },
         'toc_entry' => ->(t, n) { t.build_toc_entry(n) },
+        'frontmatter' => ->(t, n) { t.build_frontmatter(n) },
         'text' => ->(t, n) { t.build_text(n) },
         'soft_break' => ->(t, _n) { t.build_soft_break }
       }.freeze
@@ -156,6 +157,13 @@ module Coradoc
 
       def build_horizontal_rule
         CoreModel::HorizontalRuleBlock.new
+      end
+
+      def build_frontmatter(node)
+        CoreModel::FrontmatterBlock.new(
+          schema: node.schema,
+          data: node.data || {}
+        )
       end
 
       def build_admonition(node)
