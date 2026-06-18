@@ -1,0 +1,1456 @@
+---
+title: Coradoc Markdown Serialization Specification
+parent: References
+nav_order: 12
+---
+:docnumber: CDS-001
+:edition: 1
+:revdate: 2026-06-18
+:copyright-year: 2026
+:language: en
+:title: Coradoc Markdown Serialization Specification
+:doctype: standard
+:status: draft
+:mn-document-class: ribose
+:mn-output-extensions: xml,html,pdf,rxl
+
+== Introduction
+
+This document specifies the requirements for the `coradoc-markdown` gem's
+serialization layer — the component that transforms a `Coradoc::CoreModel`
+document tree into a Markdown string.
+
+The Coradoc Markdown serializer is the output endpoint for the
+`CoreModel → Markdown` transformation path. It must produce Markdown that:
+
+* Round-trips losslessly through `Markdown → CoreModel → Markdown`
+* Preserves all semantic content from `AsciiDoc → CoreModel → Markdown`
+* Renders correctly in common Markdown renderers (CommonMark, GFM, VitePress,
+  kramdown, Pandoc)
+* Uses widely-supported syntax — avoiding niche extensions where a standard
+  alternative exists
+
+=== Purpose and scope
+
+This specification:
+
+* Defines the required Markdown output for every supported CoreModel element
+* Specifies behavior for elements that have no native Markdown representation
+  (admonitions, example blocks, definition list nesting, open blocks)
+* Establishes conformance criteria for the serializer
+* Documents whitespace, line-joining, and escaping rules
+
+This specification does NOT cover:
+
+* The `coradoc-markdown` parser (`Markdown → CoreModel`) — covered in the
+  Markdown Syntax Reference
+* The `coradoc-adoc` parser (`AsciiDoc → CoreModel`)
+* The `coradoc-html` renderer
+
+=== Conformance
+
+A conforming Coradoc Markdown serializer SHALL:
+
+* Implement serialization for every element type listed in this specification
+* Produce output that renders correctly in at least one of: CommonMark, GFM,
+  VitePress (markdown-it), kramdown, or Pandoc
+* Preserve element nesting to the maximum extent supported by the target
+  Markdown flavor
+* Never silently drop content — elements with no Markdown equivalent SHALL
+  emit an HTML fallback or a structured representation
+* Preserve inline formatting inside all block elements
+* Support round-trip fidelity: `CoreModel → Markdown → CoreModel` SHALL
+  preserve all semantic content
+
+A conforming serializer MAY:
+
+* Provide configuration options to select between Markdown flavors
+  (e.g., `:gfm`, `:commonmark`, `:kramdown`)
+* Emit raw HTML where Markdown has no equivalent syntax
+* Emit extension syntax (e.g., `:::container`) when configured to target a
+  renderer that supports it
+
+== Normative references
+
+* CommonMark Specification Version 0.30
+* GitHub Flavored Markdown Specification
+* PHP Markdown Extra Definition List syntax
+* kramdown Syntax Documentation
+* Pandoc Markdown Documentation
+* RFC 2119 — Key words for use in RFCs to indicate requirement levels
+
+== Terms and definitions
+
+=== CoreModel
+format-agnostic document model used as the canonical representation
+inside Coradoc; the hub of all format-to-format transformations
+
+=== Serialization
+process of converting a CoreModel document tree into a format-specific
+string representation (e.g., Markdown, AsciiDoc, HTML)
+
+=== Round-trip fidelity
+property of a transformation where `Format A → CoreModel → Format A`
+preserves all semantic content, structure, and inline formatting
+
+=== Lossless serialization
+serialization that preserves all information from the source CoreModel;
+no content is dropped, merged, or altered semantically
+
+=== Autolink
+Markdown syntax for representing a bare URL as a clickable link without
+explicit link text; standard forms are `<https://example.com>` (HTML) or
+the bare URL `https://example.com` (GFM autolink extension)
+
+== Core principles
+
+=== Lossless output
+
+The serializer SHALL NOT silently drop any content. For every CoreModel
+element, one of the following SHALL be emitted:
+
+* Native Markdown syntax (preferred)
+* Raw HTML fallback (when no Markdown equivalent exists)
+* Structured representation (when neither is available and the element is
+  semantically required)
+
+=== Inline formatting preservation
+
+Inline elements (emphasis, strong, code, links, images, footnotes) SHALL be
+serialized identically regardless of their parent block type. A `Code`
+element inside a `DefinitionItem` SHALL produce the same output as a `Code`
+element inside a `Paragraph`.
+
+=== Whitespace correctness
+
+Paragraph text that spans multiple source lines SHALL be joined with a single
+space character. Leading and trailing whitespace on joined lines SHALL be
+collapsed to a single space. This rule applies to:
+
+* Paragraph content
+* Definition list definitions
+* List item content
+* Heading text
+
+=== Block separation
+
+Adjacent block elements SHALL be separated by a single blank line. This
+ensures correct rendering in all Markdown processors, including those that
+require blank-line separation between dissimilar block types.
+
+=== Nesting depth preservation
+
+Where Markdown supports nesting (ordered/unordered lists, blockquotes), the
+serializer SHALL preserve the source document's nesting depth. For elements
+where Markdown has no native nesting support (definition lists), the
+serializer SHALL use the HTML fallback to preserve structure.
+
+== Block elements
+
+=== Headings
+
+==== Purpose
+
+Headings create the document outline.
+
+==== Syntax
+
+.ATX headings
+[example]
+====
+ATX headings use `#` markers with a level from 1 to 6.
+
+[source,markdown]
+----
+# Heading Level 1
+
+## Heading Level 2
+
+###### Heading Level 6 <1>
+----
+<1> The number of `#` characters equals the heading level
+====
+
+==== Implementation notes
+
+1. Heading levels 1–6 SHALL be supported
+2. Heading text SHALL preserve inline formatting
+3. Heading IDs SHALL be emitted using the `{#id}` attribute syntax when
+   targeting kramdown/Pandoc, or omitted otherwise
+
+=== Paragraphs
+
+==== Purpose
+
+Paragraphs are the basic block-level text unit.
+
+==== Syntax
+
+.Basic paragraph
+[example]
+====
+Paragraphs are separated by blank lines.
+
+[source,markdown]
+----
+This is the first paragraph.
+
+This is the second paragraph. <1>
+----
+<1> A single blank line separates paragraphs
+====
+
+.Multi-line source paragraphs
+[example]
+====
+When a paragraph's source spans multiple lines, the serializer SHALL join
+the lines with a single space.
+
+[source,markdown]
+----
+This paragraph was written
+on two source lines
+but renders as one. <1>
+----
+<1> Source line breaks are replaced with spaces in the output
+====
+
+==== Implementation notes
+
+1. Consecutive lines within a paragraph SHALL be joined with a single space
+2. The serializer SHALL NOT preserve source line breaks within paragraphs
+   unless a hard line break is explicitly requested
+3. Leading and trailing whitespace on each line SHALL be stripped before
+   joining
+
+=== Hard line breaks
+
+==== Purpose
+
+Hard line breaks force a line break within a paragraph, distinct from a
+new paragraph.
+
+==== Syntax
+
+.Hard line break
+[example]
+====
+Hard line breaks use two trailing spaces followed by a newline.
+
+[source,markdown]
+----
+First line.  <1>
+Second line.
+----
+<1> Two trailing spaces create a hard line break
+====
+
+.Alternative hard line break (GFM)
+[example]
+====
+GFM also supports a backslash before a newline.
+
+[source,markdown]
+----
+First line.\ <1>
+Second line.
+----
+<1> Backslash-newline is an alternative hard break syntax
+====
+
+==== Implementation notes
+
+1. Hard line breaks SHALL be emitted as two trailing spaces when targeting
+   CommonMark
+2. Hard line breaks SHALL be emitted as a backslash-newline when targeting GFM
+3. The AsciiDoc `+` line-continuation (when used at the end of a paragraph
+   line) SHALL be serialized as a hard line break, NOT as literal `+` text
+
+=== Code blocks
+
+==== Purpose
+
+Code blocks present preformatted text, optionally with language-specific
+syntax highlighting.
+
+==== Syntax
+
+.Fenced code block
+[example]
+====
+Fenced code blocks use triple backticks with optional language.
+
+[source,markdown]
+----
+```ruby <1>
+def hello
+  puts "hi"
+end
+```
+----
+<1> Language identifier enables syntax highlighting
+====
+
+.Indented code block
+[example]
+====
+Indented code blocks use four leading spaces.
+
+[source,markdown]
+----
+    def hello
+      puts "hi"
+    end <1>
+----
+<1> Four spaces of indentation creates a code block
+====
+
+==== Implementation notes
+
+1. Fenced code blocks SHALL be preferred over indented code blocks
+2. The language identifier SHALL be preserved when present
+3. Code block content SHALL NOT be escaped — it is treated as literal text
+4. Nested fences inside a code block SHALL use a longer fence delimiter
+
+=== Block quotes
+
+==== Purpose
+
+Block quotes present quoted content from another source.
+
+==== Syntax
+
+.Basic block quote
+[example]
+====
+Block quotes use `>` prefix on each line.
+
+[source,markdown]
+----
+> This is a quote.
+>
+> It spans multiple paragraphs. <1>
+----
+<1> `>` on a blank line separates quoted paragraphs
+====
+
+.Nested block quotes
+[example]
+====
+Block quotes can nest.
+
+[source,markdown]
+----
+> Outer quote.
+>
+> > Inner quote. <1>
+----
+<1> Additional `>` markers increase nesting depth
+====
+
+==== Implementation notes
+
+1. Block quote markers SHALL appear on every line of the quoted content
+2. Nested block quotes SHALL use additional `>` markers
+3. Inline formatting SHALL be preserved inside block quotes
+
+=== Unordered lists
+
+==== Purpose
+
+Unordered lists present items without numbering.
+
+==== Syntax
+
+.Basic unordered list
+[example]
+====
+Unordered lists use `-`, `*`, or `+` markers.
+
+[source,markdown]
+----
+* First item
+* Second item
+* Third item <1>
+----
+<1> Asterisk-space creates an unordered list item
+====
+
+.Nested unordered list
+[example]
+====
+List items can contain nested lists.
+
+[source,markdown]
+----
+* First item
+  * Nested item 1 <1>
+  * Nested item 2
+* Second item
+----
+<1> Two spaces of indentation creates nesting
+====
+
+==== Implementation notes
+
+1. List markers SHALL be consistent within a single list level
+2. Nested lists SHALL use consistent indentation (2 or 4 spaces)
+3. Task list syntax (`- [ ]`, `- [x]`) SHALL be supported
+
+=== Ordered lists
+
+==== Purpose
+
+Ordered lists present numbered items.
+
+==== Syntax
+
+.Basic ordered list
+[example]
+====
+Ordered lists use numbers followed by periods.
+
+[source,markdown]
+----
+1. First item
+2. Second item
+3. Third item <1>
+----
+<1> Sequential numbers create an ordered list
+====
+
+.Start number
+[example]
+====
+Ordered lists can start at a number other than 1.
+
+[source,markdown]
+----
+3. Third item <1>
+4. Fourth item
+----
+<1> The first number sets the start value
+====
+
+==== Implementation notes
+
+1. Ordered list markers SHALL use periods (not closing parentheses) for
+   maximum compatibility
+2. The start number SHALL be preserved
+3. Nested ordered lists SHALL restart at 1
+
+=== Definition lists
+
+==== Purpose
+
+Definition lists associate terms with their definitions. They are essential
+for glossaries, attribute references, and term-definition pairs common in
+technical documentation.
+
+This is a CRITICAL element for Metanorma documentation — every flavor's
+document-attributes reference page uses definition lists extensively.
+
+==== Syntax
+
+.Flat definition list (PHP Markdown Extra)
+[example]
+====
+Flat definition lists use a term line followed by `: definition` lines.
+
+[source,markdown]
+----
+Term 1
+: Definition 1
+
+Term 2
+: Definition 2 <1>
+----
+<1> Colon-space starts a definition
+====
+
+.Multiple definitions per term
+[example]
+====
+A term can have multiple definitions.
+
+[source,markdown]
+----
+Term
+: First definition
+: Second definition <1>
+----
+<1> Multiple `:` lines create multiple definitions
+====
+
+==== Nested definition lists
+
+===== Problem
+
+Standard Markdown (CommonMark, GFM) does NOT support nested definition
+lists. The PHP Markdown Extra syntax has no nesting mechanism.
+
+===== Required serialization
+
+When a definition list item contains a nested definition list (i.e.,
+`DefinitionItem.nested` is populated), the serializer SHALL emit nested
+HTML `<dl>` structure inside the parent `<dd>`.
+
+.Nested definition list (HTML fallback)
+[example]
+====
+[source,html]
+----
+<dl>
+<dt>parent term</dt>
+<dd>
+  parent definition
+  <dl>
+  <dt>nested term 1</dt>
+  <dd>nested definition 1</dd>
+  <dt>nested term 2</dt>
+  <dd>nested definition 2</dd>
+  </dl>
+</dd>
+</dl>
+----
+
+The HTML `<dl>` structure renders correctly in all HTML-based renderers,
+including VitePress, and preserves the semantic nesting that Markdown
+syntax cannot express.
+====
+
+===== Mixed mode
+
+When a definition list contains a mix of flat and nested items, the
+serializer SHALL:
+
+* Emit flat items using Markdown `term\n: definition` syntax
+* Emit nested items using HTML `<dl>` inside the parent `<dd>`
+
+This hybrid approach maximizes readability while preserving structure.
+
+==== Implementation notes
+
+1. Flat definition lists SHALL use the PHP Markdown Extra syntax
+   (`term\n: definition`)
+2. Nested definition lists SHALL use HTML `<dl>/<dt>/<dd>` fallback
+3. The serializer SHALL detect whether a `DefinitionList` contains any
+   nested items and choose the appropriate output mode
+4. A definition list with NO nesting SHALL NOT use HTML — pure Markdown
+   is preferred for readability and editability
+5. Inline formatting inside terms and definitions SHALL be preserved
+6. Multiple definitions per term SHALL be supported
+
+=== Admonitions
+
+==== Purpose
+
+Admonitions are callout blocks that highlight notes, warnings, tips, and
+other attention-getting content. They are essential for technical
+documentation.
+
+This is a CRITICAL element — AsciiDoc documents use `NOTE:`, `WARNING:`,
+`TIP:`, `IMPORTANT:`, and `CAUTION:` extensively.
+
+==== Standard admonition types
+
+The serializer SHALL recognize and emit the following admonition types:
+
+[cols="1,4", options="header"]
+|===
+| Type | Purpose
+| `note` | Additional information
+| `tip` | Helpful suggestion
+| `warning` | Caution about potential problems
+| `important` | Critical information
+| `caution` | Warning about possible damage or data loss
+|===
+
+==== Syntax
+
+Markdown has no standard admonition syntax. The serializer SHALL support
+multiple output modes, configurable by the caller.
+
+.GitHub-style admonition (Markdown-native, GFM)
+[example]
+====
+GitHub Flavored Markdown supports admonitions as styled blockquotes.
+
+[source,markdown]
+----
+> **NOTE:** This is a note. <1>
+----
+<1> Bold type prefix inside a blockquote
+====
+
+This format renders correctly in GitHub, GitLab, and most Markdown
+renderers that recognize the `**TYPE:**` pattern.
+
+.Container syntax (VitePress / markdown-it-container)
+[example]
+====
+When targeting VitePress, the serializer SHALL emit container syntax.
+
+[source,markdown]
+----
+:::note <1>
+This is a note.
+::: <2>
+----
+<1> Triple-colon opens the admonition container with a type
+<2> Triple-colon closes the container
+====
+
+.Container with title
+[example]
+====
+Containers can have custom titles.
+
+[source,markdown]
+----
+:::note[Custom Title] <1>
+This is a note with a custom title.
+:::
+----
+<1> Square brackets specify a custom title
+====
+
+==== Implementation notes
+
+1. The serializer SHALL emit GitHub-style `> **TYPE:**` blockquotes by
+   default for maximum compatibility
+2. The serializer SHALL support a configuration option to emit container
+   syntax (`:::type`) for VitePress and markdown-it-container targets
+3. The admonition type SHALL be lowercased in the output
+4. The admonition content SHALL support multi-paragraph and nested block
+   content
+5. A custom title SHALL be emitted using `[Title]` syntax when present
+6. Admonitions SHALL NOT be rendered as plain blockquotes without the type
+   prefix — the type information is semantically required
+
+=== Example blocks
+
+==== Purpose
+
+Example blocks present illustrative content, often with a caption.
+
+This is a CRITICAL element — Metanorma documentation uses `[example]`
+blocks with `.Caption` titles throughout.
+
+==== Syntax
+
+Markdown has no native example block syntax. The serializer SHALL emit
+HTML fallback or admonition-style output.
+
+.Example block without caption
+[example]
+====
+[source,html]
+----
+<div class="example">
+<p>This is an example.</p>
+</div>
+----
+====
+
+.Example block with caption
+[example]
+====
+When a caption (title) is present, it SHALL be rendered as a heading
+inside the example container.
+
+[source,html]
+----
+<div class="example">
+<h4>Example: Caption text</h4>
+<p>This is an example.</p>
+</div>
+----
+====
+
+.Example as admonition (alternative mode)
+[example]
+====
+When configured for VitePress, examples SHALL use container syntax.
+
+[source,markdown]
+----
+:::details Example: Caption text <1>
+This is an example.
+:::
+----
+<1> `details` container type with title for collapsible example
+====
+
+==== Implementation notes
+
+1. Example blocks SHALL preserve the caption (title) — it SHALL NOT be
+   dropped
+2. Example blocks SHALL preserve all internal content including code blocks,
+   lists, and nested blocks
+3. The `[example]` attribute and `.Caption` from AsciiDoc SHALL map to the
+   example block's type and title respectively
+4. When the caption is absent, the example SHALL still be visually distinct
+   from regular paragraphs
+
+=== Open blocks
+
+==== Purpose
+
+Open blocks are generic container blocks that group content without applying
+specific formatting. They are used to apply attributes or IDs to a group
+of blocks collectively.
+
+==== Syntax
+
+Open blocks SHALL be serialized by emitting their children inline (since
+Markdown has no generic container concept), while preserving any ID or
+attribute on the first child.
+
+.Open block (attributes lost)
+[example]
+====
+[source,markdown]
+----
+First paragraph of the open block.
+
+Second paragraph of the open block. <1>
+----
+<1> Open block content is emitted as sibling paragraphs; the container is
+not represented in standard Markdown
+====
+
+.Open block with ID (HTML fallback)
+[example]
+====
+When an ID or attribute is present, the serializer SHALL emit an HTML
+wrapper to preserve it.
+
+[source,html]
+----
+<div id="block-id">
+<p>First paragraph.</p>
+<p>Second paragraph.</p>
+</div>
+----
+====
+
+==== Implementation notes
+
+1. Open blocks with no attributes SHALL be serialized by emitting their
+   children as sibling blocks
+2. Open blocks with an ID or class attribute SHALL use HTML `<div>` wrapper
+3. The serializer SHALL NOT drop content from open blocks — all children
+   SHALL appear in the output
+
+=== Tables
+
+==== Purpose
+
+Tables present tabular data.
+
+==== Syntax
+
+.GFM table
+[example]
+====
+GFM tables use pipe characters.
+
+[source,markdown]
+----
+| Header 1 | Header 2 |
+|----------|----------|
+| Cell 1   | Cell 2   | <1>
+----
+<1> Pipes separate columns; hyphens define the header row
+====
+
+==== Implementation notes
+
+1. Tables SHALL use GFM pipe syntax
+2. Column alignment SHALL be preserved using `:---`, `---:`, `:---:`
+3. Tables with cells containing block content SHALL fall back to HTML
+   `<table>` markup
+
+=== Horizontal rules
+
+==== Purpose
+
+Horizontal rules create visual separation.
+
+==== Syntax
+
+[source,markdown]
+----
+--- <1>
+
+***
+
+___ <2>
+----
+<1> Three hyphens create a horizontal rule
+<2> Asterisks or underscores also work
+
+==== Implementation notes
+
+1. Horizontal rules SHALL use three or more matching characters
+2. The serializer SHALL use `---` by default for consistency
+
+=== Images
+
+==== Purpose
+
+Images embed visual content.
+
+==== Syntax
+
+.Inline image
+[example]
+====
+[source,markdown]
+----
+![alt text](image.png) <1>
+----
+<1> Exclamation mark prefix denotes an image
+====
+
+.Image with title
+[example]
+====
+[source,markdown]
+----
+![alt text](image.png "Title") <1>
+----
+<1> Title in quotes after the URL
+====
+
+==== Implementation notes
+
+1. Image alt text SHALL be preserved
+2. Image titles SHALL be preserved
+3. Image dimensions (when present) SHALL be emitted as HTML attributes if
+   Markdown syntax cannot express them
+
+=== Comments
+
+==== Purpose
+
+Comments are editorial notes that SHALL NOT appear in rendered output.
+
+This is a CRITICAL element — AsciiDoc single-line comments (`// comment`)
+and comment blocks (`////`) are intended to be hidden from readers.
+
+==== Required behavior
+
+Comments SHALL be suppressed entirely from the Markdown output. They SHALL
+NOT appear as:
+
+* Literal `<!-- -->` HTML comment text
+* Visible text in the rendered page
+* Metadata in the document
+
+==== Implementation notes
+
+1. `CoreModel::CommentLine` SHALL produce NO output
+2. `CoreModel::CommentBlock` SHALL produce NO output
+3. The serializer SHALL NOT emit `<!-- ... -->` for comment elements
+4. Suppression is the correct behavior because comments are not part of the
+   document's semantic content — they are editorial annotations
+
+== Inline elements
+
+=== Emphasis
+
+==== Purpose
+
+Emphasis (italic) highlights text.
+
+==== Syntax
+
+[source,markdown]
+----
+_italic text_
+
+*italic text* <1>
+----
+<1> Both underscore and asterisk are valid
+
+==== Implementation notes
+
+1. The serializer SHALL use underscore for emphasis by default (less
+   ambiguous in the presence of asterisks)
+2. Emphasis SHALL be preserved inside all block types
+
+=== Strong
+
+==== Purpose
+
+Strong (bold) emphasizes text.
+
+==== Syntax
+
+[source,markdown]
+----
+**bold text**
+
+__bold text__ <1>
+----
+<1> Double underscore is an alternative
+
+==== Implementation notes
+
+1. The serializer SHALL use double asterisk for strong by default
+2. Strong SHALL be preserved inside all block types
+
+=== Inline code
+
+==== Purpose
+
+Inline code presents literal text or code snippets.
+
+==== Syntax
+
+[source,markdown]
+----
+`code snippet` <1>
+----
+<1> Backticks delimit inline code
+
+.Code containing backticks
+[example]
+====
+When code contains backticks, use more backticks as delimiters.
+
+[source,markdown]
+----
+``code with ` backtick`` <1>
+----
+<1> Double backticks allow a single backtick inside
+====
+
+==== Implementation notes
+
+1. Inline code SHALL use backtick delimiters
+2. The number of backticks SHALL exceed the longest run of backticks in
+   the content
+
+=== Links
+
+==== Purpose
+
+Links create hyperlinks to URLs or document sections.
+
+==== Syntax
+
+.Standard link
+[example]
+====
+[source,markdown]
+----
+[link text](https://example.com) <1>
+----
+<1> Square brackets for text, parentheses for URL
+====
+
+.Link with title
+[example]
+====
+[source,markdown]
+----
+[link text](https://example.com "Title") <1>
+----
+<1> Title in quotes after the URL
+====
+
+.Autolink (bare URL)
+[example]
+====
+When the link text equals the URL, the serializer SHALL emit an autolink
+or bare URL — NOT `[url](url)`.
+
+[source,markdown]
+----
+<https://example.com> <1>
+
+https://example.com <2>
+----
+<1> Angle-bracket autolink (CommonMark)
+<2> Bare URL autolink (GFM extension)
+====
+
+.Reference-style link
+[example]
+====
+For repeated URLs, reference-style links improve readability.
+
+[source,markdown]
+----
+[link text][1]
+
+[1]: https://example.com <1>
+----
+<1> Reference definitions appear at the document end
+====
+
+==== Implementation notes
+
+1. When link text equals the URL, the serializer SHALL emit an autolink
+   (`<url>`) or bare URL — `[url](url)` is explicitly rejected as it
+   duplicates the URL and is harder to read
+2. Link text SHALL preserve inline formatting
+3. Link titles SHALL be preserved when present
+4. Internal cross-references (anchor links) SHALL use `#anchor` syntax
+
+=== Footnotes
+
+==== Purpose
+
+Footnotes provide supplementary information.
+
+==== Syntax
+
+.Inline footnote reference
+[example]
+====
+[source,markdown]
+----
+Here is a statement.[^1] <1>
+
+[^1]: Here is the footnote. <2>
+----
+<1> `[^id]` creates a footnote reference
+<2> `[^id]:` defines the footnote
+====
+
+.Inline footnote
+[example]
+====
+[source,markdown]
+----
+Here is a statement.^[This is the footnote.] <1>
+----
+<1> Pandoc inline footnote syntax
+====
+
+==== Implementation notes
+
+1. Footnote references SHALL use `[^id]` syntax
+2. Footnote definitions SHALL appear at the document end
+3. Inline footnotes (Pandoc `^[...]`) MAY be used when supported
+
+=== Math
+
+==== Purpose
+
+Math elements present mathematical expressions using LaTeX syntax.
+
+==== Syntax
+
+.Inline math
+[example]
+====
+[source,markdown]
+----
+The formula $E = mc^2$ is famous. <1>
+----
+<1> Dollar signs delimit inline math
+====
+
+.Display math
+[example]
+====
+[source,markdown]
+----
+$$
+E = mc^2 <1>
+$$
+----
+<1> Double dollar signs create display math blocks
+====
+
+==== Implementation notes
+
+1. Inline math SHALL use `$...$` syntax
+2. Display math SHALL use `$$...$$` syntax
+3. LaTeX expressions SHALL be preserved verbatim
+
+=== Abbreviations
+
+==== Purpose
+
+Abbreviations define short forms with their expansions.
+
+==== Syntax
+
+[source,markdown]
+----
+The HTML specification is large. <1>
+
+*[HTML]: HyperText Markup Language <2>
+----
+<1> The abbreviation appears in text
+<2> The definition uses `*[ABBR]:` syntax
+
+==== Implementation notes
+
+1. Abbreviation definitions SHALL use `*[ABBR]: expansion` syntax
+2. Definitions SHALL appear at the document end
+
+== Whitespace and line-joining rules
+
+=== Paragraph line joining
+
+When a paragraph's source content spans multiple lines (common in AsciiDoc
+where paragraphs can wrap), the serializer SHALL join the lines into a
+single paragraph with the following rules:
+
+1. Each source line break SHALL be replaced with a single space character
+2. Leading whitespace on each line SHALL be stripped before joining
+3. Trailing whitespace on each line SHALL be stripped before joining
+4. Multiple consecutive spaces in the joined output SHALL be collapsed to
+   a single space
+5. A space SHALL be inserted between the last word of one line and the
+   first word of the next line — the serializer SHALL NOT concatenate
+   words without a separating space
+
+.Non-conforming output (current bug)
+[example]
+====
+[source,markdown]
+----
+...for this attribute.The N-document number... <1>
+----
+<1> Missing space between sentences — words are concatenated
+====
+
+.Conforming output
+[example]
+====
+[source,markdown]
+----
+...for this attribute. The N-document number... <1>
+----
+<1> Single space between joined lines
+====
+
+=== Block separation
+
+Adjacent block elements SHALL be separated by exactly one blank line.
+
+=== Trailing whitespace
+
+The serializer SHALL NOT emit trailing whitespace on lines unless it is
+semantically significant (e.g., hard line breaks).
+
+== Round-trip fidelity requirements
+
+=== AsciiDoc → CoreModel → Markdown
+
+The transformation `AsciiDoc → CoreModel → Markdown` SHALL preserve:
+
+1. All textual content (no dropped words, sentences, or paragraphs)
+2. All block structure (sections, paragraphs, lists, tables)
+3. All inline formatting (emphasis, code, links)
+4. All semantic elements (admonitions, examples, definition lists)
+5. Nesting depth for elements that support it
+
+=== Information loss allowance
+
+Information loss is permitted ONLY for:
+
+1. Source formatting details that have no semantic meaning (e.g., specific
+   line wrap points within a paragraph)
+2. Comments (which are intentionally suppressed)
+3. AsciiDoc-specific processing instructions that have no Markdown equivalent
+
+Information loss is NOT permitted for:
+
+1. Definition list items (including nested items)
+2. Admonition types (NOTE, WARNING, etc.)
+3. Example block captions
+4. Link URLs
+5. Any visible text content
+
+== Element dispatch requirements
+
+The serializer SHALL implement a dispatch entry for every CoreModel element
+type that can appear in the document tree. The dispatch table SHALL include
+(at minimum):
+
+[cols="2,4", options="header"]
+|===
+| CoreModel Element | Required Handler
+| `DocumentElement` | `serialize_document`
+| `SectionElement` | `serialize_section` (heading + children)
+| `ParagraphBlock` | `serialize_paragraph`
+| `ListBlock` | `serialize_list`
+| `ListItem` | `serialize_list_item`
+| `DefinitionList` | `serialize_definition_list`
+| `DefinitionItem` | (handled within definition list)
+| `ExampleBlock` | `serialize_example_block`
+| `OpenBlock` | `serialize_open_block`
+| `AnnotationBlock` | `serialize_admonition`
+| `QuoteBlock` | `serialize_blockquote`
+| `Table` | `serialize_table`
+| `Image` | `serialize_image`
+| `CodeBlock` / `ListingBlock` | `serialize_code_block`
+| `LiteralBlock` | `serialize_literal_block`
+| `HorizontalRuleBlock` | `serialize_horizontal_rule`
+| `CommentBlock` | (suppressed — no output)
+| `CommentLine` | (suppressed — no output)
+| `Footnote` | `serialize_footnote`
+| `FootnoteReference` | `serialize_footnote_reference`
+| `Abbreviation` | `serialize_abbreviation`
+| `Bibliography` | `serialize_bibliography`
+|===
+
+=== Unknown element handling
+
+If the serializer encounters an element type not in the dispatch table, it
+SHALL:
+
+1. Raise a descriptive error naming the element type, OR
+2. Fall back to serializing the element's text content
+
+The serializer SHALL NOT silently drop unknown elements.
+
+== Section element serialization
+
+=== Problem
+
+The `SectionElement` contains a title AND a list of child elements. The
+serializer MUST emit BOTH the heading and the children.
+
+=== Required behavior
+
+`serialize_section` SHALL:
+
+1. Emit a `Heading` from the section's title
+2. Recursively serialize all children of the section
+3. Return the heading AND all child blocks in correct order
+
+.Conforming implementation
+[example]
+====
+[source,ruby]
+----
+def transform_section(section)
+  heading = Heading.new(level: section.level, text: section.title.to_s)
+  child_blocks = Array(section.children).map { |child| transform(child) }
+  [heading, *child_blocks]
+end
+----
+====
+
+.Non-conforming implementation (current bug)
+[example]
+====
+[source,ruby]
+----
+def transform_section(section)
+  Heading.new(level: section.level, text: section.title.to_s) # BUG: drops children <1>
+end
+----
+<1> All section body content is lost — paragraphs, lists, tables, everything
+====
+
+== Conformance test suite
+
+A conforming serializer SHALL pass the following test cases. Each test
+parses an AsciiDoc snippet, serializes to Markdown, and asserts properties
+of the output.
+
+=== Test: Section preserves body content
+
+[source,ruby]
+----
+it "preserves section body content" do
+  source = "== Title\n\nParagraph text."
+  core = Coradoc.parse(source, format: :asciidoc)
+  md = Coradoc.serialize(Coradoc::Markdown.from_core_model(core), to: :markdown)
+  expect(md).to include("Paragraph text.")
+end
+----
+
+=== Test: Flat definition list
+
+[source,ruby]
+----
+it "preserves flat definition lists" do
+  source = "term1:: def1\nterm2:: def2\n"
+  core = Coradoc.parse(source, format: :asciidoc)
+  md = Coradoc.serialize(Coradoc::Markdown.from_core_model(core), to: :markdown)
+  expect(md).to include("term1")
+  expect(md).to include("def1")
+end
+----
+
+=== Test: Nested definition list
+
+[source,ruby]
+----
+it "preserves nested definition lists" do
+  source = "<<ADOC"
+== Section
+
+`parent`:: parent def
+
+`child1`::: child def 1
+`child2`::: child def 2
+ADOC
+  core = Coradoc.parse(source, format: :asciidoc)
+  md = Coradoc.serialize(Coradoc::Markdown.from_core_model(core), to: :markdown)
+  expect(md).to include("parent")
+  expect(md).to include("child def 1")
+  expect(md).to include("child def 2")
+end
+----
+
+=== Test: Admonition type preserved
+
+[source,ruby]
+----
+it "preserves admonition type" do
+  source = "NOTE: This is a note.\n"
+  core = Coradoc.parse(source, format: :asciidoc)
+  md = Coradoc.serialize(Coradoc::Markdown.from_core_model(core), to: :markdown)
+  expect(md).to match(/NOTE/i)
+  expect(md).to include("This is a note.")
+end
+----
+
+=== Test: Comment suppressed
+
+[source,ruby]
+----
+it "suppresses comments from output" do
+  source = "Paragraph one.\n\n// editorial comment\n\nParagraph two.\n"
+  core = Coradoc.parse(source, format: :asciidoc)
+  md = Coradoc.serialize(Coradoc::Markdown.from_core_model(core), to: :markdown)
+  expect(md).not_to include("editorial comment")
+  expect(md).not_to include("<!--")
+end
+----
+
+=== Test: Bare URL uses autolink
+
+[source,ruby]
+----
+it "serializes bare URLs as autolinks" do
+  source = "See https://example.com for info.\n"
+  core = Coradoc.parse(source, format: :asciidoc)
+  md = Coradoc.serialize(Coradoc::Markdown.from_core_model(core), to: :markdown)
+  expect(md).not_to match(/\[https:\/\/example\.com\]\(/) # Reject [url](url) form
+  expect(md).to include("https://example.com")
+end
+----
+
+=== Test: Paragraph line joining
+
+[source,ruby]
+----
+it "joins paragraph lines with spaces" do
+  source = "First line.\nSecond line.\n"
+  core = Coradoc.parse(source, format: :asciidoc)
+  md = Coradoc.serialize(Coradoc::Markdown.from_core_model(core), to: :markdown)
+  expect(md).to include("First line. Second line.")
+  expect(md).not_to include("line.Second") # No concatenated words
+end
+----
+
+=== Test: Example block caption preserved
+
+[source,ruby]
+----
+it "preserves example block captions" do
+  source = "<<ADOC
+.Example caption
+[example]
+====
+Example content.
+====
+ADOC
+  core = Coradoc.parse(source, format: :asciidoc)
+  md = Coradoc.serialize(Coradoc::Markdown.from_core_model(core), to: :markdown)
+  expect(md).to include("Example caption")
+  expect(md).to include("Example content.")
+end
+----
+
+=== Test: Multi-line definition list item
+
+[source,ruby]
+----
+it "preserves multi-line definition list items" do
+  source = "`term::\nDefinition starts here.\nSecond line.\n"
+  core = Coradoc.parse(source, format: :asciidoc)
+  md = Coradoc.serialize(Coradoc::Markdown.from_core_model(core), to: :markdown)
+  expect(md).to include("term")
+  expect(md).to include("Definition starts here.")
+  expect(md).to include("Second line.")
+end
+----
+
+=== Test: Open block children preserved
+
+[source,ruby]
+----
+it "preserves open block children" do
+  source = "<<ADOC
+--
+First paragraph.
+
+Second paragraph.
+--
+ADOC
+  core = Coradoc.parse(source, format: :asciidoc)
+  md = Coradoc.serialize(Coradoc::Markdown.from_core_model(core), to: :markdown)
+  expect(md).to include("First paragraph.")
+  expect(md).to include("Second paragraph.")
+end
+----
+
+== Configuration interface
+
+The serializer SHALL accept a configuration hash with the following options:
+
+[cols="1,4,3", options="header"]
+|===
+| Option | Purpose | Default
+| `:markdown_flavor` | Target flavor (`:commonmark`, `:gfm`, `:kramdown`, `:vitepress`) | `:gfm`
+| `:admonition_style` | Admonition output (`:github`, `:container`, `:html`) | `:github`
+| `:definition_list_nested` | How to handle nested deflists (`:html`, `:flatten`) | `:html`
+| `:suppress_comments` | Whether to suppress comments entirely | `true`
+| `:autolinks` | Use autolink form for bare URLs | `true`
+|===
+
+== Implementation priority
+
+The following elements have known bugs in the current implementation and
+SHALL be prioritized:
+
+[cols="1,4,1", options="header"]
+|===
+| Priority | Element | Issue
+| P0 | `SectionElement` | Children dropped (all body content lost)
+| P0 | `DefinitionList` (nested) | Nested items dropped
+| P0 | Multi-line `DefinitionItem` | First line of definition dropped when `term::` is on own line
+| P0 | Paragraph line joining | Words concatenated without space
+| P1 | `AnnotationBlock` (admonition) | No dispatch entry; degrades to blockquote
+| P1 | `ExampleBlock` | Caption dropped; no example-specific rendering
+| P1 | `OpenBlock` | No transform handler; content loses structure
+| P1 | `CommentLine`/`CommentBlock` | Rendered as visible `<!-- -->` text instead of suppressed
+| P1 | Bare URL autolinks | Emitted as `[url](url)` instead of `<url>`
+| P2 | Hard line break (`+`) | AsciiDoc `+` preserved as literal text
+|===
+
+[bibliography]
+== Bibliography
+
+* [[[commonmark,1]]] CommonMark Specification 0.30. https://commonmark.org/
+* [[[gfm,2]]] GitHub Flavored Markdown Specification. https://github.github.com/gfm/
+* [[[phpmarkdown,3]]] PHP Markdown Extra Definition List syntax. https://michelf.ca/projects/php-markdown/extra/#def-list
+* [[[kramdown,4]]] kramdown Syntax Documentation. https://kramdown.gettalong.org/syntax.html
+* [[[pandoc,5]]] Pandoc Markdown Documentation. https://pandoc.org/MANUAL.html
+* [[[rfc2119,6]]] RFC 2119: Key words for use in RFCs to indicate requirement levels. https://tools.ietf.org/html/rfc2119
+* [[[vitepress,7]]] VitePress Markdown Extensions. https://vitepress.dev/guide/markdown
