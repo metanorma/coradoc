@@ -5,12 +5,7 @@ module Coradoc
     # HorizontalRule model representing a Markdown horizontal rule (---, ***, ___).
     #
     class HorizontalRule < Base
-      attribute :style, :string, default: '---' # ---, ***, or ___
-
-      def initialize(style: '---')
-        super()
-        @style = style
-      end
+      attribute :style, :string, default: '---'
     end
   end
 end

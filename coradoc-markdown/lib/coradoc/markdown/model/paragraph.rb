@@ -14,10 +14,10 @@ module Coradoc
       # @return [Array] mixed content array
       attr_reader :children
 
-      def initialize(text: '', children: nil)
+      def initialize(text: '', children: [])
         super()
         @text = text
-        @children = children || []
+        @children = children
       end
 
       def children=(value)

@@ -25,6 +25,9 @@ module Coradoc
 
             CoreModel::TextContent.new(text: item.to_s)
           end.compact
+          # Lutaml defines the setter directly on the class, so we overwrite it.
+          # We cannot use `super` because the original setter is lost.
+          # `instance_variable_set` is required here to actually store the wrapped value.
           instance_variable_set(:@children, wrapped)
         end
       end
@@ -44,8 +47,19 @@ module Coradoc
         rc = renderable_content
         case rc
         when String then rc
-        when Array then rc.map { |c| c.is_a?(TextContent) ? c.text : c.content.to_s }.join
+        when Array then rc.map { |c| extract_child_text(c) }.join
         else rc.to_s
+        end
+      end
+
+      private
+
+      def extract_child_text(child)
+        case child
+        when TextContent then child.text
+        when String then child
+        when Base then child.flat_text
+        else child.to_s
         end
       end
     end

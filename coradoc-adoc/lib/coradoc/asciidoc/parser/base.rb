@@ -11,6 +11,7 @@ module Coradoc
       autoload :AttributeList, 'coradoc/asciidoc/parser/attribute_list'
       autoload :Bibliography, 'coradoc/asciidoc/parser/bibliography'
       autoload :Block, 'coradoc/asciidoc/parser/block'
+      autoload :BlockHeader, 'coradoc/asciidoc/parser/block_header'
       autoload :Citation, 'coradoc/asciidoc/parser/citation'
       autoload :Content, 'coradoc/asciidoc/parser/content'
       autoload :DocumentAttributes, 'coradoc/asciidoc/parser/document_attributes'
@@ -18,6 +19,7 @@ module Coradoc
       autoload :Inline, 'coradoc/asciidoc/parser/inline'
       autoload :List, 'coradoc/asciidoc/parser/list'
       autoload :Paragraph, 'coradoc/asciidoc/parser/paragraph'
+      autoload :RuleDispatcher, 'coradoc/asciidoc/parser/rule_dispatcher'
       autoload :Section, 'coradoc/asciidoc/parser/section'
       autoload :Table, 'coradoc/asciidoc/parser/table'
       autoload :Term, 'coradoc/asciidoc/parser/term'
@@ -29,6 +31,7 @@ module Coradoc
         include AttributeList
         include Bibliography
         include Block
+        include BlockHeader
         include Citation
         include Content
         include DocumentAttributes
@@ -83,77 +86,14 @@ module Coradoc
         end
 
         def rule_dispatch(rule_name, *args, **kwargs)
-          @dispatch_data ||= {}
-          dispatch_key = [rule_name, args, kwargs.to_a.sort]
-          dispatch_hash = dispatch_key.hash.abs
-          unless @dispatch_data.key?(dispatch_hash)
-            alias_name = :"#{rule_name}_#{dispatch_hash}"
-            Coradoc::AsciiDoc::Parser::Base.class_exec do
-              rule(alias_name) do
-                public_send(rule_name, *args, **kwargs)
-              end
-            end
-            @dispatch_data[dispatch_hash] = alias_name
-          end
-          dispatch_method = @dispatch_data[dispatch_hash]
-          public_send(dispatch_method)
-        end
-
-        def self.config(key)
-          # NOTE: These are internal dispatch configuration options for the parser:
-          # - add_dispatch: Enables automatic method dispatching
-          # - with_params: Supports parameterized rule invocation
-          c = {
-            add_dispatch: true,
-            with_params: true
-          }
-
-          raise ArgumentError, "Unknown config key: #{key}. Available keys: #{c.keys.join(', ')}" unless c.key?(key)
-
-          c[key]
-        end
-
-        # Collect parser methods from all parser modules (excluding Base, Cache, and FixFiles)
-        # Base is the parser class, Cache is a utility class, FixFiles is a utility module
-        parser_constants = Coradoc::AsciiDoc::Parser.constants - %i[Base Cache FixFiles]
-        parser_methods = parser_constants.each_with_object({}) do |const, acc|
-          rule_names = Coradoc::AsciiDoc::Parser.const_get(const).instance_methods
-          rule_names.each do |rule_name|
-            acc[rule_name] ||= []
-            acc[rule_name] << const
-          end
-        end
-
-        # Warn about duplicated parser methods:
-        parser_methods.each do |rule_name, defn_sites|
-          count = defn_sites.length
-          if count > 1
-            defn_site_constants = defn_sites.map { |const| Coradoc::AsciiDoc::Parser.const_get(const) }
-            Coradoc::Logger.warn "Parser method '#{rule_name}' is defined #{count} times in #{defn_site_constants.join(', ')}"
-          end
-        end
-
-        parser_methods.each_key do |rule_name|
-          params = Coradoc::AsciiDoc::Parser::Base.instance_method(rule_name).parameters
-          if config(:add_dispatch) && params == []
-            alias_name = :"alias_nondispatch_#{rule_name}"
-            Coradoc::AsciiDoc::Parser::Base.class_exec do
-              alias_method alias_name, rule_name
-              rule(rule_name) do
-                public_send(alias_name)
-              end
-            end
-          elsif config(:add_dispatch) && config(:with_params)
-            alias_name = :"alias_dispatch_#{rule_name}"
-            Coradoc::AsciiDoc::Parser::Base.class_exec do
-              alias_method alias_name, rule_name
-              define_method(rule_name) do |*args, **kwargs|
-                rule_dispatch(alias_name, *args, **kwargs)
-              end
-            end
-          end
+          RuleDispatcher.dispatch(self, rule_name, *args, **kwargs)
         end
       end
+
+      # Wrap every parser rule for Parslet memoization. Must run after all
+      # parser modules are included in Base so that instance_method(rule_name)
+      # finds the methods defined by every module.
+      RuleDispatcher.apply(Base)
     end
   end
 end

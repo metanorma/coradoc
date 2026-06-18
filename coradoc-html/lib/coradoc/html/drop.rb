@@ -13,6 +13,6 @@ module Coradoc
 end
 
 # Base must load first (DropFactory depends on it)
-require 'coradoc/html/drop/base'
+require_relative 'drop/base'
 # DropFactory loads next
-require 'coradoc/html/drop/drop_factory'
+require_relative 'drop/drop_factory'

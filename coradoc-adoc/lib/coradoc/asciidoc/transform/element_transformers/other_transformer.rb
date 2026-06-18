@@ -25,8 +25,10 @@ module Coradoc
             end
 
             def transform_image(image)
+              src = image.src.to_s
+              src = src[1..] if src.start_with?(':')
               Coradoc::CoreModel::Image.new(
-                src: image.src,
+                src: src,
                 alt: image.title&.to_s,
                 width: image.attributes&.[]('width'),
                 height: image.attributes&.[]('height')

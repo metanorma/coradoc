@@ -40,9 +40,7 @@ module Coradoc
         # rubocop:enable Style/OptionalBooleanParameter, Style/NumericPredicate
 
         def paragraph
-          (element_id.maybe >>
-            block_title.maybe >>
-            (attribute_list >> newline).maybe >>
+          (block_header >>
             ((paragraph_text_line(0).repeat(1, 1) >>
                    (newline.repeat(1).as(:line_break) | eof?)) |
               (paragraph_text_line(false).repeat(1) >>

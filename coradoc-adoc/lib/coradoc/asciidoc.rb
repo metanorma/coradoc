@@ -2,7 +2,7 @@
 
 require 'parslet'
 require 'lutaml/model'
-require 'coradoc/core_model' # Required for CoreModel types in transformers
+require 'coradoc'
 
 module Coradoc
   # Utility module autoload

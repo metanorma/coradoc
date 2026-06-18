@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'coradoc'
-require 'coradoc/core_model'
 require 'uniword'
 
 # Coradoc::Docx provides DOCX (OOXML) format support for Coradoc.

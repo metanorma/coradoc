@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'coradoc/asciidoc/serializer/serialization_context'
+require_relative '../serialization_context'
 
 module Coradoc
   module AsciiDoc

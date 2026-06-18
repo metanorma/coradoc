@@ -74,8 +74,33 @@ module Coradoc
           model.alt || model.src || ''
         end
 
+        def visit_inline_span(model)
+          model.text.to_s
+        end
+
+        def visit_list(model)
+          visit_array(model.items)
+        end
+
+        def visit_block(model)
+          visit_array(model.lines)
+        end
+
+        def visit_core_model_list(model)
+          model.items.map { |i| visit(i.content) }.join(' ')
+        end
+
+        def visit_definition_item(model)
+          terms_text = visit(model.terms)
+          contents_text = visit(model.contents)
+          [terms_text, contents_text].reject(&:empty?).join(': ')
+        end
+
         def visit_base_model(model)
-          model.content ? visit(model.content) : ''
+          content = model.content
+          content ? visit(content) : ''
+        rescue NoMethodError
+          ''
         end
 
         def visit_core_model_inline(model)
@@ -115,6 +140,13 @@ module Coradoc
           when Model::Inline::Footnote then visit_footnote(model)
           when Model::Inline::AttributeReference then visit_attribute_reference(model)
           when Model::Image::Core then visit_adoc_image(model)
+          when CoreModel::ListBlock then visit_core_model_list(model)
+          when Model::Inline::Span then visit_inline_span(model)
+          when Model::List::Core then visit_list(model)
+          when Model::List::Definition then visit_list(model)
+          when Model::List::DefinitionItem then visit_definition_item(model)
+          when Model::Block::Core then visit_block(model)
+          when Model::LineBreak, Model::CommentLine, Model::CommentBlock then ''
           when Model::Base then visit_base_model(model)
           else
             model.class.name.start_with?('Parslet::') ? model.to_s : ''

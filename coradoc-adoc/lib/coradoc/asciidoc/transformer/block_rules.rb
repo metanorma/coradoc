@@ -11,12 +11,11 @@ module Coradoc
             rule(block: subtree(:block)) do
               id = block[:id]
               title = block[:title]
-              attribute_list = block[:attribute_list]
+              attribute_list = AttributeListNormalizer.coerce(block[:attribute_list])
               delimiter = block[:delimiter].to_s
-              delimiter_c = delimiter[0]
               lines = block[:lines]
               ordering = block.keys.select do |k|
-                %i[id title attribute_list attribute_list2].include?(k)
+                %i[id title attribute_list].include?(k)
               end
 
               opts = {
@@ -26,44 +25,7 @@ module Coradoc
                 lines: lines,
                 ordering: ordering
               }
-              opts[:attributes] = attribute_list if attribute_list
-              delimiter_len = opts[:delimiter_len]
-
-              if delimiter_c == '*'
-                if attribute_list
-                  if attribute_list.positional == [] &&
-                     attribute_list.named.first&.name == 'reviewer'
-                    Model::Block::ReviewerComment.new(
-                      id:,
-                      title:,
-                      lines:,
-                      delimiter_len:,
-                      attributes: attribute_list
-                    )
-                  else
-                    Model::Block::Side.new(id:, title:, lines:, delimiter_len:,
-                                           attributes: attribute_list)
-                  end
-                else
-                  Model::Block::Side.new(id:, title:, lines:, delimiter_len:,
-                                         attributes: attribute_list)
-                end
-              elsif delimiter_c == '='
-                Model::Block::Example.new(id:, title:, lines:, delimiter_len:,
-                                          attributes: attribute_list)
-              elsif delimiter_c == '+'
-                Model::Block::Pass.new(id:, title:, lines:, delimiter_len:,
-                                       attributes: attribute_list)
-              elsif delimiter_c == '-' && delimiter.size == 2
-                Model::Block::Open.new(id:, title:, lines:, delimiter_len:,
-                                       attributes: attribute_list)
-              elsif delimiter_c == '-' && delimiter.size >= 4
-                Model::Block::SourceCode.new(id:, title:, lines:, delimiter_len:,
-                                             attributes: attribute_list)
-              elsif delimiter_c == '_'
-                Model::Block::Quote.new(id:, title:, lines:, delimiter_len:,
-                                        attributes: attribute_list)
-              end
+              BlockTypeClassifier.classify(delimiter, opts, attribute_list)
             end
 
             # Example
@@ -84,7 +46,7 @@ module Coradoc
               id = block_image[:id]
               title = block_image[:title]
               path = block_image[:path]
-              attrs = block_image[:attribute_list]
+              attrs = AttributeListNormalizer.coerce(block_image[:attribute_list])
               Model::Image::BlockImage.new(
                 title: title,
                 id: id,

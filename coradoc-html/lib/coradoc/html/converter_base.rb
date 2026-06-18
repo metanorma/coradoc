@@ -49,7 +49,7 @@ module Coradoc
 
         def initialize(**options)
           self.class.configuration_attributes.each do |name, default|
-            value = options.fetch(name) { default.respond_to?(:call) ? default.call : default }
+            value = options.fetch(name) { default.is_a?(Proc) ? default.call : default }
             public_send(:"#{name}=", value)
           end
         end

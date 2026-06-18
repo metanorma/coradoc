@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'coradoc/html/renderer'
+require_relative 'renderer'
 
 module Coradoc
   module Html

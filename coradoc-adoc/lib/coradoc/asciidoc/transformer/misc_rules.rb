@@ -157,35 +157,12 @@ module Coradoc
                 end
               end
 
-              content = lines.map do |line|
-                if line.is_a?(Hash) && line.key?(:text)
-                  text_content = line[:text]
-                  line_break = line[:line_break]
-
-                  transformed_text = if text_content.is_a?(Array)
-                                       text_content.map do |item|
-                                         if item.is_a?(Hash)
-                                           Transformer.new.apply(item)
-                                         else
-                                           item
-                                         end
-                                       end
-                                     else
-                                       text_content
-                                     end
-
-                  Model::TextElement.new(content: transformed_text, line_break: line_break)
-                else
-                  line
-                end
-              end
-
               Model::ReviewerNote.new(
                 reviewer: attrs[:reviewer],
                 date: attrs[:date],
                 from: attrs[:from],
                 to: attrs[:to],
-                content: content
+                content: Transformer.lines_to_text_elements(lines)
               )
             end
           end

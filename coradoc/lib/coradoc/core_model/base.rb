@@ -117,6 +117,23 @@ module Coradoc
         end
       end
 
+      def flat_text
+        ""
+      end
+
+      # Flatten this element to a plain-text string.
+      #
+      # Subclasses that include ChildrenContent override this to
+      # concatenate their children's text. Block-level elements
+      # without textual content (ListBlock, Table, etc.) fall back
+      # to the empty string — they are serialized structurally,
+      # not flattened into inline text.
+      #
+      # @return [String]
+      def flat_text
+        ""
+      end
+
       # Accept a visitor to traverse this element
       #
       # Implements the visitor pattern for document traversal.

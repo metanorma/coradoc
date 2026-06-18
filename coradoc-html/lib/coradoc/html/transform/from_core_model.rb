@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'coradoc/core_model'
+require 'coradoc'
 
 module Coradoc
   module Html
