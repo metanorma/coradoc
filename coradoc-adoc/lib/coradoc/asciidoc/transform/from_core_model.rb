@@ -12,6 +12,7 @@ module Coradoc
         class << self
           def register!
             return if @registered
+
             Transform::FromCoreModelRegistrations.register_all!
             @registered = true
           end
@@ -363,7 +364,7 @@ module Coradoc
             return [children, nil] unless first.is_a?(CoreModel::FrontmatterBlock)
 
             yaml = CoreModel::FrontmatterBlock::Codec.to_yaml(first)
-            [children.drop(1), (yaml.nil? || yaml.empty?) ? nil : yaml]
+            [children.drop(1), yaml.nil? || yaml.empty? ? nil : yaml]
           end
 
           def resolve_semantic_type(block)

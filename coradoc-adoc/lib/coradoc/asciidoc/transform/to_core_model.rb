@@ -11,6 +11,7 @@ module Coradoc
         class << self
           def register!
             return if @registered
+
             Transform::ToCoreModelRegistrations.register_all!
             @registered = true
           end

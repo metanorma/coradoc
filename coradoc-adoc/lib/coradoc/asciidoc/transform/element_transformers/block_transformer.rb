@@ -69,6 +69,7 @@ module Coradoc
 
                   text = ToCoreModel.extract_text_content(result)
                   next nil if text.nil? || text.strip.empty?
+
                   Coradoc::CoreModel::TextContent.new(text: text)
                 end
                 klass.new(

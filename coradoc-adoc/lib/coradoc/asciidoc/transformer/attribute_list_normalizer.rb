@@ -60,7 +60,8 @@ module Coradoc
         # @return [Model::AttributeList, nil]
         def unwrap(entry)
           return entry if entry.is_a?(Model::AttributeList)
-          return entry[:attribute_list] if entry.is_a?(Hash) && entry.key?(:attribute_list)
+
+          entry[:attribute_list] if entry.is_a?(Hash) && entry.key?(:attribute_list)
         end
       end
     end
