@@ -65,11 +65,11 @@ module Coradoc
             raise ArgumentError, "Unknown definition_list_nested: #{resolved[:definition_list_nested].inspect}"
           end
           unless [true, false].include?(resolved.fetch(:suppress_comments))
-            raise ArgumentError, "suppress_comments must be boolean"
+            raise ArgumentError, 'suppress_comments must be boolean'
           end
-          unless [true, false].include?(resolved.fetch(:autolinks))
-            raise ArgumentError, "autolinks must be boolean"
-          end
+          return if [true, false].include?(resolved.fetch(:autolinks))
+
+          raise ArgumentError, 'autolinks must be boolean'
         end
       end
     end
