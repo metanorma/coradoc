@@ -40,7 +40,7 @@ module Coradoc
         #   item.nested = Coradoc::AsciiDoc::Model::List::Unordered.new
         #   item.nested.items << Coradoc::AsciiDoc::Model::List::Item.new
         #
-        class Item < Base
+        class Item < Coradoc::AsciiDoc::Model::Base
           include Coradoc::AsciiDoc::Model::Anchorable
 
           attribute :id, :string

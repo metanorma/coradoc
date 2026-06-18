@@ -26,7 +26,7 @@ module Coradoc
         #   item.terms << Coradoc::AsciiDoc::Model::Term.new(term: "API")
         #   item.contents << Coradoc::AsciiDoc::Model::TextElement.new("Application Programming Interface")
         #
-        class DefinitionItem < Base
+        class DefinitionItem < Coradoc::AsciiDoc::Model::Base
           include Coradoc::AsciiDoc::Model::Anchorable
 
           attribute :id, :string
