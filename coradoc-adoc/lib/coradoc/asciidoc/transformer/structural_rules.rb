@@ -60,81 +60,19 @@ module Coradoc
               table
             end
 
-            # Table with rows (new parser output - rows captured explicitly)
-            rule(
-              delim_char: simple(:delim_char),
-              rows: sequence(:rows)
-            ) do
-              Model::Table.new(rows: Transformer.regroup_table_rows(rows))
-            end
-
-            # Table with rows and title
-            rule(
-              title: simple(:title),
-              delim_char: simple(:delim_char),
-              rows: sequence(:rows)
-            ) do
-              Model::Table.new(title: title.to_s, rows: Transformer.regroup_table_rows(rows))
-            end
-
-            # Table with rows and id
-            rule(
-              id: simple(:id),
-              delim_char: simple(:delim_char),
-              rows: sequence(:rows)
-            ) do
-              Model::Table.new(id: id.to_s, rows: Transformer.regroup_table_rows(rows))
-            end
-
-            # Table with rows, id, and attributes
-            rule(
-              id: simple(:id),
-              attribute_list: simple(:attrs),
-              delim_char: simple(:delim_char),
-              rows: sequence(:rows)
-            ) do
-              Model::Table.new(id: id.to_s, rows: Transformer.regroup_table_rows(rows, attrs), attrs: attrs)
-            end
-
-            # Table with rows, title, and attributes
-            rule(
-              title: simple(:title),
-              attribute_list: simple(:attrs),
-              delim_char: simple(:delim_char),
-              rows: sequence(:rows)
-            ) do
-              Model::Table.new(title: title.to_s, rows: Transformer.regroup_table_rows(rows, attrs), attrs: attrs)
-            end
-
-            # Table with rows and attributes only
-            rule(
-              attribute_list: simple(:attrs),
-              delim_char: simple(:delim_char),
-              rows: sequence(:rows)
-            ) do
-              Model::Table.new(rows: Transformer.regroup_table_rows(rows, attrs), attrs: attrs)
-            end
-
-            # Table with rows, id, title, and attributes (full set)
-            rule(
-              id: simple(:id),
-              title: simple(:title),
-              attribute_list: simple(:attrs),
-              delim_char: simple(:delim_char),
-              rows: sequence(:rows)
-            ) do
-              Model::Table.new(id: id.to_s, title: title.to_s, rows: Transformer.regroup_table_rows(rows, attrs),
-                               attrs: attrs)
-            end
-
-            # Table with id and title (no attributes)
-            rule(
-              id: simple(:id),
-              title: simple(:title),
-              delim_char: simple(:delim_char),
-              rows: sequence(:rows)
-            ) do
-              Model::Table.new(id: id.to_s, title: title.to_s, rows: Transformer.regroup_table_rows(rows))
+            # Unified Table rule. Every variant (with or without title, id,
+            # attributes) flows through here. Parser::BlockHeader always
+            # captures attribute_lists as a sequence, so we funnel through
+            # coerce_attribute_list before constructing the model.
+            rule(table: subtree(:table)) do
+              id = table[:id]&.to_s
+              title = table[:title]&.to_s
+              attrs = AttributeListNormalizer.coerce(table[:attribute_list])
+              rows = table[:rows]
+              opts = { rows: Transformer.regroup_table_rows(rows, attrs), attrs: attrs }
+              opts[:id] = id if id
+              opts[:title] = title unless title.nil? || title.empty?
+              Model::Table.new(**opts)
             end
 
             # Title
@@ -171,7 +109,7 @@ module Coradoc
 
               id = title.id if title.is_a?(Model::Title) && title.id && !id
 
-              attribute_list = section[:attribute_list] || nil
+              attribute_list = AttributeListNormalizer.coerce(section[:attribute_list])
               contents = section[:contents] || []
               sections = section[:sections]
               Model::Section.new(
@@ -200,12 +138,11 @@ module Coradoc
 
             # Bibliography entry
             rule(bibliography_entry: subtree(:bib_entry)) do
-              anchor_name = bib_entry[:anchor_name]
-              document_id = bib_entry[:document_id]
-              ref_text = bib_entry[:ref_text]
-              line_break = bib_entry[:line_break]
               Model::BibliographyEntry.new(
-                anchor_name:, document_id:, ref_text:, line_break:
+                anchor_name: bib_entry[:anchor_name],
+                document_id: bib_entry[:document_id],
+                ref_text: Model::BibliographyEntry.coerce_ref_text(bib_entry[:ref_text]),
+                line_break: bib_entry[:line_break]
               )
             end
           end

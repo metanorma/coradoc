@@ -111,8 +111,11 @@ RSpec.describe Coradoc::AsciiDoc::ParseError do
   end
 
   describe '.generate_suggestion' do
+    # Lightweight real object instead of double() per project rule.
+    let(:error_struct) { Struct.new(:message) }
+
     it 'suggests fix for heading errors' do
-      error = double(message: 'Expected heading')
+      error = error_struct.new('Expected heading')
 
       suggestion = described_class.generate_suggestion(error)
 
@@ -120,7 +123,7 @@ RSpec.describe Coradoc::AsciiDoc::ParseError do
     end
 
     it 'suggests fix for list errors' do
-      error = double(message: 'Expected list item')
+      error = error_struct.new('Expected list item')
 
       suggestion = described_class.generate_suggestion(error)
 
@@ -128,7 +131,7 @@ RSpec.describe Coradoc::AsciiDoc::ParseError do
     end
 
     it 'suggests fix for table errors' do
-      error = double(message: 'Expected table delimiter')
+      error = error_struct.new('Expected table delimiter')
 
       suggestion = described_class.generate_suggestion(error)
 
@@ -136,7 +139,7 @@ RSpec.describe Coradoc::AsciiDoc::ParseError do
     end
 
     it 'suggests fix for attribute errors' do
-      error = double(message: 'Expected attribute')
+      error = error_struct.new('Expected attribute')
 
       suggestion = described_class.generate_suggestion(error)
 
@@ -144,7 +147,7 @@ RSpec.describe Coradoc::AsciiDoc::ParseError do
     end
 
     it 'returns nil for unknown errors' do
-      error = double(message: 'Unknown error type')
+      error = error_struct.new('Unknown error type')
 
       expect(described_class.generate_suggestion(error)).to be_nil
     end

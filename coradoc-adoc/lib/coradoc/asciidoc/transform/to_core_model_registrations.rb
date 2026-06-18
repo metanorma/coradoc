@@ -189,6 +189,11 @@ module Coradoc
             )
 
             Registry.register(
+              Coradoc::AsciiDoc::Model::Image::InlineImage,
+              ->(model) { Oth.transform_image(model) }
+            )
+
+            Registry.register(
               Coradoc::AsciiDoc::Model::Bibliography,
               ->(model) { Oth.transform_bibliography(model) }
             )
@@ -199,17 +204,11 @@ module Coradoc
             )
 
             [
-              Coradoc::AsciiDoc::Model::TextElement,
               Coradoc::AsciiDoc::Model::Include,
               Coradoc::AsciiDoc::Model::Audio,
               Coradoc::AsciiDoc::Model::Video,
               Coradoc::AsciiDoc::Model::ContentList,
-              Coradoc::AsciiDoc::Model::Tag
-            ].each do |klass|
-              Registry.register(klass, ->(model) { model })
-            end
-
-            [
+              Coradoc::AsciiDoc::Model::Tag,
               Coradoc::AsciiDoc::Model::LineBreak,
               Coradoc::AsciiDoc::Model::Break::PageBreak
             ].each do |klass|
@@ -221,6 +220,3 @@ module Coradoc
     end
   end
 end
-
-# Auto-register when this file is loaded
-Coradoc::AsciiDoc::Transform::ToCoreModelRegistrations.register_all!

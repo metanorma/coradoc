@@ -113,9 +113,7 @@ module Coradoc
         # inline_image is defined in inline.rb for inline images (image:)
 
         def block_image
-          (element_id.maybe >>
-            block_title.maybe >>
-            (attribute_list >> newline).maybe >>
+          (block_header >>
             match('^i') >> str('mage::') >>
             file_path.as(:path) >>
             attribute_list(:attribute_list_macro) >>

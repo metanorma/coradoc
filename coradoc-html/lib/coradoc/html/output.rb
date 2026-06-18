@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'coradoc/output'
+require 'coradoc'
 
 module Coradoc
   module Output

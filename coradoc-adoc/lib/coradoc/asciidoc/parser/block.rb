@@ -30,14 +30,6 @@ module Coradoc
           open_block(n_deep)).as(:block)
         end
 
-        def reviewer_note_block(_n_deep = 3)
-          # Match blocks with reviewer attribute
-          # This should only match when attribute_list contains reviewer=
-          # For now, we'll make it not match anything specific
-          # The block() method will handle these cases
-          str('').absent? # Never matches - placeholder for future implementation
-        end
-
         def example_block(n_deep)
           block_style(n_deep, '=', 4)
         end
@@ -83,6 +75,7 @@ module Coradoc
         end
 
         # Block delimiter: 4+ identical characters (or 2 for open block)
+        # Used by paragraph.rb to reject lines that look like block delimiters.
         # NOTE: repeat(4,) means 4 or more (not exactly 4)
         def block_delimiter
           line_start? >>
@@ -93,16 +86,6 @@ module Coradoc
               str('-')).repeat(4) | # 4+ characters for most blocks
               str('-').repeat(2, 2)) >> # Exactly 2 for open block
             newline
-        end
-
-        def element_attributes
-          block_title.maybe >>
-            element_id.maybe >>
-            (attribute_list >> newline).maybe >>
-            block_title.maybe >>
-            newline.maybe >>
-            (attribute_list >> newline).maybe >>
-            element_id.maybe
         end
 
         # Block style parser with variable delimiter length
@@ -130,8 +113,7 @@ module Coradoc
             (closing_pattern.absent? >> content).repeat(1)
           end
 
-          element_attributes >>
-            (line_start? >> attribute_list >> newline).maybe >>
+          block_header >>
             line_start? >>
             current_delimiter.as(:delimiter) >> newline >>
             if type == :pass
@@ -165,8 +147,7 @@ module Coradoc
             (closing_pattern.absent? >> content).repeat(1)
           end
 
-          element_attributes >>
-            (line_start? >> attribute_list >> newline).maybe >>
+          block_header >>
             line_start? >>
             current_delimiter.as(:delimiter) >> newline >>
             if type == :pass

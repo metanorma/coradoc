@@ -62,7 +62,15 @@ module Coradoc
               has_nested_blocks = lines.any?(Coradoc::AsciiDoc::Model::Block::Core)
 
               if has_nested_blocks
-                children = lines.map { |line| ToCoreModel.transform(line) }
+                children = lines.filter_map do |line|
+                  result = ToCoreModel.transform(line)
+                  next nil if result.nil?
+                  next result if result.is_a?(Coradoc::CoreModel::Base)
+
+                  text = ToCoreModel.extract_text_content(result)
+                  next nil if text.nil? || text.strip.empty?
+                  Coradoc::CoreModel::TextContent.new(text: text)
+                end
                 klass.new(
                   id: block.id,
                   title: ToCoreModel.extract_title_text(block.title),

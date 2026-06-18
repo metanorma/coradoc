@@ -18,7 +18,7 @@ module Coradoc
         @text = args[:text] || ''
         @checked = args[:checked]
         @sublist = args[:sublist]
-        @children = args[:children] || []
+        @children = args.fetch(:children, [])
       end
 
       def children=(value)

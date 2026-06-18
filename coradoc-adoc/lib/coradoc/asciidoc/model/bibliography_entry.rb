@@ -32,6 +32,24 @@ module Coradoc
         attribute :document_id, :string
         attribute :ref_text, :string
         attribute :line_break, :string, default: -> { '' }
+
+        # Coerce a raw parser AST value into the canonical ref_text string.
+        # Accepts the shapes produced by Parser::Bibliography for `:ref_text`:
+        # nil, Parslet::Slice, plain String, single Model::Base, or an Array
+        # of any of these. Keeping this coercion on the model that owns
+        # ref_text (rather than in a transformer rule) keeps the transformer
+        # declarative and lets callers build entries from any source shape.
+        # @param raw [Object, nil]
+        # @return [String]
+        def self.coerce_ref_text(raw)
+          return '' if raw.nil?
+
+          case raw
+          when Array then raw.map { |e| coerce_ref_text(e) }.join
+          when String then raw
+          else raw.to_s
+          end
+        end
       end
     end
   end

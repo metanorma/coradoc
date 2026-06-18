@@ -1,15 +1,22 @@
 # frozen_string_literal: true
 
-require_relative 'to_core_model_registrations'
-
 module Coradoc
   module AsciiDoc
     module Transform
       class ToCoreModel
         include Coradoc::Transform::Base
 
+        @registered = false
+
         class << self
+          def register!
+            return if @registered
+            Transform::ToCoreModelRegistrations.register_all!
+            @registered = true
+          end
+
           def transform(model)
+            register!
             return model.filter_map { |item| transform(item) } if model.is_a?(Array)
             return model unless model.is_a?(Coradoc::AsciiDoc::Model::Base)
 

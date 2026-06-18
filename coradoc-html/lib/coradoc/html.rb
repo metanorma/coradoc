@@ -13,9 +13,9 @@ module Coradoc
 end
 
 # Load HTML input module to register with Coradoc::Input
-require 'coradoc/html/input'
+require_relative 'html/input'
 # Load HTML output module to register with Coradoc::Output
-require 'coradoc/html/output'
+require_relative 'html/output'
 
 module Coradoc
   module Html
@@ -29,7 +29,7 @@ module Coradoc
     autoload :TitleText, 'coradoc/html/title_text'
 
     # Drop layer — self-registering drops loaded via parent namespace file
-    require 'coradoc/html/drop'
+    require_relative 'html/drop'
 
     # FrontmatterBlock -> <meta> tag mapping (HTML-specific concern)
     autoload :FrontmatterMeta, 'coradoc/html/frontmatter_meta'
@@ -45,7 +45,7 @@ module Coradoc
     autoload :TemplateLocator, 'coradoc/html/template_locator'
     autoload :TemplateConfig, 'coradoc/html/template_config'
     # Side-effect: registers Liquid filters on load
-    require 'coradoc/html/template_helpers'
+    require_relative 'html/template_helpers'
     autoload :Renderer, 'coradoc/html/renderer'
     autoload :LayoutRenderer, 'coradoc/html/layout_renderer'
     autoload :RenderOptions, 'coradoc/html/render_options'

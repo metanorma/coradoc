@@ -5,6 +5,17 @@ module Coradoc
     class Transformer < Parslet::Transform
       # Module containing inline element transformation rules
       module InlineRules
+        # Inline formatting variants that share the same rule shape:
+        # constrained and unconstrained forms of the same model class.
+        # `span` is excluded because it carries `text:` + `attributes:`
+        # rather than `content:`, so it gets its own pair of rules.
+        FORMATTING_VARIANTS = [
+          %i[bold      Bold],
+          %i[italic    Italic],
+          %i[highlight Highlight],
+          %i[monospace Monospace]
+        ].freeze
+
         def self.apply(transformer_class)
           transformer_class.class_eval do
             # Link
@@ -82,64 +93,23 @@ module Coradoc
               href_arg.to_s
             end
 
-            # Bold (constrained)
-            rule(bold_constrained: subtree(:bold)) do
-              content = Transformer.extract_inline_content(bold)
-              Model::Inline::Bold.new(content: content, unconstrained: false)
-            end
+            # Inline formatting rules generated from a single registry.
+            # See InlineRules::FORMATTING_VARIANTS. `span` is special
+            # because it carries `text:` + `attributes:` rather than
+            # `content:`, so it stays inline below.
+            InlineRules::FORMATTING_VARIANTS.each do |prefix, class_name|
+              klass = Model::Inline.const_get(class_name)
+              constrained_key = :"#{prefix}_constrained"
+              unconstrained_key = :"#{prefix}_unconstrained"
 
-            # Bold (unconstrained)
-            rule(bold_unconstrained: subtree(:bold)) do
-              content = Transformer.extract_inline_content(bold)
-              Model::Inline::Bold.new(content: content, unconstrained: true)
-            end
-
-            # Italic (constrained)
-            rule(italic_constrained: subtree(:italic)) do
-              content = Transformer.extract_inline_content(italic)
-              Model::Inline::Italic.new(content: content, unconstrained: false)
-            end
-
-            # Italic (unconstrained)
-            rule(italic_unconstrained: subtree(:italic)) do
-              content = Transformer.extract_inline_content(italic)
-              Model::Inline::Italic.new(content: content, unconstrained: true)
-            end
-
-            # Highlight (constrained)
-            rule(highlight_constrained: subtree(:highlight)) do
-              content = Transformer.extract_inline_content(highlight)
-              Model::Inline::Highlight.new(content: content, unconstrained: false)
-            end
-
-            # Highlight (unconstrained)
-            rule(highlight_unconstrained: subtree(:highlight)) do
-              content = Transformer.extract_inline_content(highlight)
-              Model::Inline::Highlight.new(content: content, unconstrained: true)
-            end
-
-            # Monospace (constrained)
-            rule(monospace_constrained: subtree(:monospace)) do
-              content = Transformer.extract_inline_content(monospace)
-              Model::Inline::Monospace.new(content: content, unconstrained: false)
-            end
-
-            # Monospace (unconstrained)
-            rule(monospace_unconstrained: subtree(:monospace)) do
-              content = Transformer.extract_inline_content(monospace)
-              Model::Inline::Monospace.new(content: content, unconstrained: true)
-            end
-
-            # Superscript
-            rule(superscript: subtree(:superscript)) do
-              content = Transformer.extract_simple_inline_content(superscript)
-              Model::Inline::Superscript.new(content:)
-            end
-
-            # Subscript
-            rule(subscript: subtree(:subscript)) do
-              content = Transformer.extract_simple_inline_content(subscript)
-              Model::Inline::Subscript.new(content:)
+              rule(constrained_key => subtree(:subtree)) do
+                content = Transformer.extract_inline_content(subtree)
+                klass.new(content: content, unconstrained: false)
+              end
+              rule(unconstrained_key => subtree(:subtree)) do
+                content = Transformer.extract_inline_content(subtree)
+                klass.new(content: content, unconstrained: true)
+              end
             end
 
             # Span (constrained)
@@ -158,6 +128,18 @@ module Coradoc
                 unconstrained: true,
                 attributes: span_unconstrained[:attribute_list]
               )
+            end
+
+            # Superscript
+            rule(superscript: subtree(:superscript)) do
+              content = Transformer.extract_simple_inline_content(superscript)
+              Model::Inline::Superscript.new(content:)
+            end
+
+            # Subscript
+            rule(subscript: subtree(:subscript)) do
+              content = Transformer.extract_simple_inline_content(subscript)
+              Model::Inline::Subscript.new(content:)
             end
 
             # Highlight (simple)

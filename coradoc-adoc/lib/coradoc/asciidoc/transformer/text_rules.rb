@@ -68,32 +68,8 @@ module Coradoc
 
             # Paragraph
             rule(paragraph: subtree(:paragraph)) do
-              lines = paragraph[:lines] || []
-              content = lines.map do |line|
-                if line.is_a?(Hash) && line.key?(:text)
-                  text_content = line[:text]
-                  line_break = line[:line_break]
-
-                  transformed_text = if text_content.is_a?(Array)
-                                       text_content.map do |item|
-                                         if item.is_a?(Hash)
-                                           Transformer.new.apply(item)
-                                         else
-                                           item
-                                         end
-                                       end
-                                     else
-                                       text_content
-                                     end
-
-                  Model::TextElement.new(content: transformed_text, line_break: line_break)
-                else
-                  line
-                end
-              end
-
               Model::Paragraph.new(
-                content: content,
+                content: Transformer.lines_to_text_elements(paragraph[:lines]),
                 id: paragraph[:id],
                 attributes: paragraph[:attribute_list],
                 title: paragraph[:title]

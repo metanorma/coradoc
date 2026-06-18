@@ -35,12 +35,12 @@ module Coradoc
       class Entry
         attr_accessor :id, :text, :level, :children, :number
 
-        def initialize(id:, text:, level:, number: nil)
+        def initialize(id:, text:, level:, number: nil, children: [])
           @id = id
           @text = text
           @level = level
           @number = number
-          @children = []
+          @children = children
         end
 
         def to_markdown(indent: 0)

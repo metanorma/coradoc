@@ -2,7 +2,7 @@
 
 require 'digest'
 require 'nokogiri'
-require 'coradoc/input'
+require 'coradoc'
 
 module Coradoc
   module Input
