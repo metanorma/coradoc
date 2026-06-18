@@ -87,6 +87,7 @@ module Coradoc
               Coradoc::AsciiDoc::Model::Block::SourceCode.new(
                 id: block.id,
                 title: block.title,
+                lang: block.language,
                 lines: content_text.split("\n"),
                 attributes: build_attributes(block)
               )
