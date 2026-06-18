@@ -302,6 +302,17 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
       end
     end
 
+    context 'with CommentLine' do
+      it 'transforms a CoreModel CommentLine to AsciiDoc Model CommentLine preserving text' do
+        core_cl = Coradoc::CoreModel::CommentLine.new(text: 'editorial note')
+
+        result = described_class.transform(core_cl)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::CommentLine)
+        expect(result.text).to eq('editorial note')
+      end
+    end
+
     context 'with FootnoteReference' do
       it 'transforms a CoreModel FootnoteReference to AsciiDoc Inline Footnote' do
         core_ref = Coradoc::CoreModel::FootnoteReference.new(id: 'fn1')

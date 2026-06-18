@@ -37,9 +37,10 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
       end
 
       it 'transforms to Markdown::Heading' do
-        expect(transform).to be_a(Coradoc::Markdown::Heading)
-        expect(transform.level).to eq(2)
-        expect(transform.text).to eq('Section Title')
+        heading = transform.is_a?(Array) ? transform.first : transform
+        expect(heading).to be_a(Coradoc::Markdown::Heading)
+        expect(heading.level).to eq(2)
+        expect(heading.text).to eq('Section Title')
       end
     end
 
@@ -394,10 +395,10 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
     context 'with AnnotationBlock' do
       let(:core_model) { Coradoc::CoreModel::AnnotationBlock.new(annotation_type: 'NOTE', content: 'Be careful') }
 
-      it 'produces a Paragraph with annotation prefix' do
-        expect(transform).to be_a(Coradoc::Markdown::Paragraph)
-        expect(transform.text).to include('NOTE')
-        expect(transform.text).to include('Be careful')
+      it 'produces a Blockquote with annotation prefix' do
+        expect(transform).to be_a(Coradoc::Markdown::Blockquote)
+        expect(transform.content).to include('NOTE')
+        expect(transform.content).to include('Be careful')
       end
     end
 
@@ -412,9 +413,9 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
       end
 
       it 'flattens inline children to plain text in annotation output' do
-        expect(transform).to be_a(Coradoc::Markdown::Paragraph)
-        expect(transform.text).to include('WARNING')
-        expect(transform.text).to include('This is important')
+        expect(transform).to be_a(Coradoc::Markdown::Blockquote)
+        expect(transform.content).to include('WARNING')
+        expect(transform.content).to include('This is important')
       end
     end
 
@@ -458,12 +459,43 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
       end
     end
 
+    context 'with BibliographyEntry containing formatting' do
+      let(:core_model) do
+        Coradoc::CoreModel::BibliographyEntry.new(
+          document_id: 'ISO 712', ref_text: 'The _Cereals_ are *very* important. [smallcap]#TEXT#. footnote:[This is a footnote]'
+        )
+      end
+
+      it 'strips AsciiDoc markers and converts to Markdown' do
+        expect(transform).to be_a(Coradoc::Markdown::Paragraph)
+        expect(transform.text).to include('The *Cereals* are **very** important. TEXT. ^[This is a footnote]')
+      end
+    end
+
     context 'with TocEntry' do
       let(:core_model) { Coradoc::CoreModel::TocEntry.new(title: 'Section 1', level: 1) }
 
       it 'produces a Text element with title' do
         expect(transform).to be_a(Coradoc::Markdown::Text)
         expect(transform.content).to eq('Section 1')
+      end
+    end
+
+    context 'with CommentLine' do
+      let(:core_model) { Coradoc::CoreModel::CommentLine.new(text: 'note to self') }
+
+      it 'produces a Markdown::Comment preserving text' do
+        expect(transform).to be_a(Coradoc::Markdown::Comment)
+        expect(transform.text).to eq('note to self')
+      end
+    end
+
+    context 'with CommentBlock' do
+      let(:core_model) { Coradoc::CoreModel::CommentBlock.new(content: 'hidden block') }
+
+      it 'produces a Markdown::Comment preserving content' do
+        expect(transform).to be_a(Coradoc::Markdown::Comment)
+        expect(transform.text).to eq('hidden block')
       end
     end
 

@@ -75,6 +75,15 @@ module Coradoc
                 )
               }
             )
+
+            Registry.register(
+              Coradoc::AsciiDoc::Model::CommentLine,
+              lambda { |model|
+                Coradoc::CoreModel::CommentLine.new(
+                  text: model.text.to_s
+                )
+              }
+            )
           end
 
           def register_list_transformers!

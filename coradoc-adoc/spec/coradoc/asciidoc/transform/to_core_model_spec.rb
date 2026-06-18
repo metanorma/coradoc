@@ -248,6 +248,17 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ToCoreModel do
       end
     end
 
+    context 'with CommentLine' do
+      it 'transforms an AsciiDoc CommentLine to CoreModel::CommentLine preserving text' do
+        comment = Coradoc::AsciiDoc::Model::CommentLine.new(text: 'invisible note')
+
+        result = described_class.transform(comment)
+
+        expect(result).to be_a(Coradoc::CoreModel::CommentLine)
+        expect(result.text).to eq('invisible note')
+      end
+    end
+
     context 'with unknown type' do
       it 'returns the object unchanged for unknown types' do
         unknown = Object.new

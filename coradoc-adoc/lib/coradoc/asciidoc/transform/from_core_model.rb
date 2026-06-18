@@ -345,6 +345,12 @@ module Coradoc
             )
           end
 
+          def transform_comment_line(comment)
+            Coradoc::AsciiDoc::Model::CommentLine.new(
+              text: comment.text.to_s
+            )
+          end
+
           private
 
           # If the first CoreModel child is a FrontmatterBlock, serialize
