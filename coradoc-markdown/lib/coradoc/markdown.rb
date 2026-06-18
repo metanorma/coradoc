@@ -61,6 +61,7 @@ module Coradoc
     autoload :Underline, 'coradoc/markdown/model/underline'
     autoload :CrossReference, 'coradoc/markdown/model/cross_reference'
     autoload :NamedValue, 'coradoc/markdown/model/named_value'
+    autoload :Comment, 'coradoc/markdown/model/comment'
 
     # Serializer
     autoload :Serializer, 'coradoc/markdown/serializer'

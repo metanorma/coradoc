@@ -115,6 +115,11 @@ module Coradoc
               Coradoc::CoreModel::BibliographyEntry,
               ->(model) { FromCoreModel.transform_bibliography_entry(model) }
             )
+
+            Registry.register(
+              Coradoc::CoreModel::CommentLine,
+              ->(model) { FromCoreModel.transform_comment_line(model) }
+            )
           end
         end
       end

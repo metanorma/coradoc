@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'coradoc/core_model'
+require 'coradoc'
 
 module Coradoc
   module Markdown
@@ -62,6 +62,8 @@ module Coradoc
               transform_extension(model)
             when Coradoc::Markdown::AttributeList
               transform_attribute_list(model)
+            when Coradoc::Markdown::Comment
+              Coradoc::CoreModel::CommentBlock.new(content: model.text.to_s)
             when Coradoc::Markdown::Text
               model.content.to_s
             when Array

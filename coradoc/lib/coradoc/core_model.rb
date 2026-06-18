@@ -72,6 +72,7 @@ module Coradoc
     autoload :ReviewerBlock, "#{__dir__}/core_model/reviewer_block"
     autoload :ParagraphBlock, "#{__dir__}/core_model/paragraph_block"
     autoload :CommentBlock, "#{__dir__}/core_model/comment_block"
+    autoload :CommentLine, "#{__dir__}/core_model/comment_line"
     autoload :HorizontalRuleBlock, "#{__dir__}/core_model/horizontal_rule_block"
     autoload :IdGenerator, "#{__dir__}/core_model/id_generator"
   end

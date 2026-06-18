@@ -76,6 +76,8 @@ module Coradoc
           serialize_math(element)
         when Extension
           serialize_extension(element)
+        when Comment
+          serialize_comment(element)
         when String
           element
         else
@@ -263,6 +265,12 @@ module Coradoc
         else
           "{::#{elem.name}#{opts}}#{elem.content}{:/}"
         end
+      end
+
+      def serialize_comment(elem)
+        text = elem.text.to_s.strip
+        return '<!---->' if text.empty?
+        "<!-- #{text} -->"
       end
 
       def extension_options_to_s(options)

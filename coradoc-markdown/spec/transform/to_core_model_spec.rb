@@ -258,5 +258,14 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         expect(transform).to eq('plain string')
       end
     end
+
+    context 'with Comment' do
+      let(:markdown_model) { Coradoc::Markdown::Comment.new(text: 'hidden note') }
+
+      it 'produces a CoreModel::CommentBlock preserving text as content' do
+        expect(transform).to be_a(Coradoc::CoreModel::CommentBlock)
+        expect(transform.content).to eq('hidden note')
+      end
+    end
   end
 end

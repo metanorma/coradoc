@@ -20,6 +20,9 @@ module Coradoc
             when Coradoc::CoreModel::AnnotationBlock
               # Must be checked before Block since AnnotationBlock < Block
               transform_annotation_block(model)
+            when Coradoc::CoreModel::CommentBlock
+              # Must be checked before Block since CommentBlock < Block
+              Coradoc::Markdown::Comment.new(text: model.content.to_s)
             when Coradoc::CoreModel::Block
               transform_block(model)
             when Coradoc::CoreModel::ListBlock
@@ -48,6 +51,8 @@ module Coradoc
               transform_bibliography_entry(model)
             when Coradoc::CoreModel::TocEntry
               Coradoc::Markdown::Text.new(content: model.title.to_s)
+            when Coradoc::CoreModel::CommentLine
+              Coradoc::Markdown::Comment.new(text: model.text.to_s)
             when Coradoc::CoreModel::TextContent
               model.text.to_s
             when Array
