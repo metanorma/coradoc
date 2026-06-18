@@ -240,8 +240,8 @@ module Coradoc
 
           # Check for known patterns and transform them
           if element.key?(:heading)
-            level = element[:heading].to_s.length
-            text = element[:text] ? element[:text].to_s.strip : ''
+            level = heading_level(element[:heading])
+            text = extract_text(element[:text]).strip
             heading = Heading.new(level: level, text: text)
             # Apply IAL if present
             apply_ial_to_element(heading, element[:ial]) if element.key?(:ial)
@@ -287,6 +287,15 @@ module Coradoc
           # Definition list
           return transform_definition_list(element[:dl]) if element.key?(:dl)
 
+          # Unordered list
+          return transform_list(element[:ul], ordered: false) if element.key?(:ul)
+
+          # Ordered list
+          return transform_list(element[:ol], ordered: true) if element.key?(:ol)
+
+          # Table
+          return transform_table(element) if element.key?(:table_header)
+
           # Footnote definition
           if element.key?(:fn_id)
             content = if element[:fn_content_continued]
@@ -308,6 +317,82 @@ module Coradoc
           end
 
           nil
+        end
+
+        # ATX heading: level is the count of leading '#' chars.
+        # Setext heading: level is 1 for '=' underline, 2 for '-' underline.
+        def heading_level(heading)
+          s = heading.to_s
+          return s.length if s.start_with?('#')
+          return 1 if s.start_with?('=')
+          return 2 if s.start_with?('-')
+
+          s.length
+        end
+
+        # Transform a list (ul/ol). Items arrive as `[{li: {p: {ln: "x"}}}, ...]`,
+        # as bare `{li: ...}` subtrees, or as an Array of mixed paragraph +
+        # nested-list nodes when the item has a sublist.
+        def transform_list(items, ordered:)
+          items = [items] unless items.is_a?(Array)
+          list_items = items.map do |node|
+            li = node.is_a?(Hash) ? node[:li] : node
+            transform_list_item(li)
+          end
+          List.new(ordered: ordered, items: list_items)
+        end
+
+        def transform_list_item(li)
+          nodes = normalize_list_item_nodes(li)
+          text_parts = []
+          sublist = nil
+          nodes.each do |n|
+            case n
+            when Hash
+              if n.key?(:p)
+                text_parts << extract_text_from_p(n[:p])
+              elsif n.key?(:ul)
+                sublist = transform_list(n[:ul], ordered: false)
+              elsif n.key?(:ol)
+                sublist = transform_list(n[:ol], ordered: true)
+              end
+            else
+              text_parts << n.to_s
+            end
+          end
+          item = ListItem.new(text: text_parts.join(' ').strip)
+          item.sublist = sublist if sublist
+          item
+        end
+
+        # Normalize the various shapes a list-item node can take:
+        #   Hash {p: ...}     -> [{p: ...}]
+        #   Hash {ul: ...}    -> [{ul: ...}]  (nested list, no text)
+        #   Array [...]       -> [...] (mixed paragraph + nested list nodes)
+        #   String / Slice    -> [s]
+        def normalize_list_item_nodes(li)
+          return li if li.is_a?(Array)
+          return [li] unless li.is_a?(Hash)
+          return [li] if li.key?(:p) || li.key?(:ul) || li.key?(:ol) || li.key?(:li)
+
+          [li]
+        end
+
+        # Transform a table. Header row, separator row, and body rows.
+        def transform_table(element)
+          headers = extract_row_cells(element.dig(:table_header, :row))
+          body_rows = Array(element[:table_body]).map do |body_node|
+            extract_row_cells(body_node[:table_body_row][:row]).join(' | ')
+          end
+          Table.new(headers: headers, rows: body_rows)
+        end
+
+        def extract_row_cells(row)
+          Array(row).map do |cell|
+            next cell.to_s.strip unless cell.is_a?(Hash)
+
+            cell[:cell].to_s.strip
+          end
         end
 
         # Transform definition list

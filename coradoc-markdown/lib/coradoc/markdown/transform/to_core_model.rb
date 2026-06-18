@@ -133,9 +133,11 @@ module Coradoc
 
           def transform_list(list)
             items = Array(list.items).map do |item|
+              nested = item.sublist ? transform_list(item.sublist) : nil
               Coradoc::CoreModel::ListItem.new(
                 content: extract_text(item.text),
-                marker: list.ordered ? '1.' : '*'
+                marker: list.ordered ? '1.' : '*',
+                nested_list: nested
               )
             end
 
@@ -163,7 +165,7 @@ module Coradoc
               cells = if row.is_a?(Array)
                         row.map { |c| Coradoc::CoreModel::TableCell.new(content: c.to_s, header: false) }
                       else
-                        [Coradoc::CoreModel::TableCell.new(content: row.to_s, header: false)]
+                        row.to_s.split(' | ').map { |c| Coradoc::CoreModel::TableCell.new(content: c.to_s, header: false) }
                       end
               rows << Coradoc::CoreModel::TableRow.new(cells: cells)
             end

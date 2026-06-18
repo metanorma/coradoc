@@ -395,9 +395,9 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
     context 'with AnnotationBlock' do
       let(:core_model) { Coradoc::CoreModel::AnnotationBlock.new(annotation_type: 'NOTE', content: 'Be careful') }
 
-      it 'produces a Blockquote with annotation prefix' do
-        expect(transform).to be_a(Coradoc::Markdown::Blockquote)
-        expect(transform.content).to include('NOTE')
+      it 'produces an Admonition preserving type and content' do
+        expect(transform).to be_a(Coradoc::Markdown::Admonition)
+        expect(transform.admonition_type).to eq('note')
         expect(transform.content).to include('Be careful')
       end
     end
@@ -412,9 +412,9 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
         )
       end
 
-      it 'flattens inline children to plain text in annotation output' do
-        expect(transform).to be_a(Coradoc::Markdown::Blockquote)
-        expect(transform.content).to include('WARNING')
+      it 'flattens inline children to plain text in admonition output' do
+        expect(transform).to be_a(Coradoc::Markdown::Admonition)
+        expect(transform.admonition_type).to eq('warning')
         expect(transform.content).to include('This is important')
       end
     end
