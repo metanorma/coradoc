@@ -133,4 +133,53 @@ RSpec.describe 'AsciiDoc definition list parsing' do
       )
     end
   end
+
+  describe 'attribute list on definition list' do
+    def find_adoc_dlist(node)
+      return node if node.is_a?(Coradoc::AsciiDoc::Model::List::Definition)
+
+      children = node.respond_to?(:sections) ? node.sections : Array(node.blocks)
+      children.flat_map { |c| [find_adoc_dlist(c)].compact }.first
+    end
+
+    it 'parses [%hardbreaks] prefix without raising (regression)' do
+      expect { parse_to_core("[%hardbreaks]\nterm:: def\n") }.not_to raise_error
+    end
+
+    it 'parses [%metadata] and preserves the attribute on the AsciiDoc model' do
+      doc = Coradoc::AsciiDoc.parse("[%metadata]\nidentifier:: abc\n")
+      dlist = find_adoc_dlist(doc)
+
+      expect(dlist).to be_a(Coradoc::AsciiDoc::Model::List::Definition)
+    end
+
+    it 'preserves [%metadata] attribute value through attrs.to_adoc' do
+      doc = Coradoc::AsciiDoc.parse("[%metadata]\nidentifier:: abc\n")
+      dlist = find_adoc_dlist(doc)
+
+      expect(dlist.attrs.to_adoc(show_empty: false)).to eq('[%metadata]')
+    end
+
+    it 'parses [.glossary] and preserves it on the AsciiDoc model' do
+      doc = Coradoc::AsciiDoc.parse("[.glossary]\nterm:: def\n")
+      dlist = find_adoc_dlist(doc)
+
+      expect(dlist.attrs.to_adoc(show_empty: false)).to eq('[.glossary]')
+    end
+
+    it 'serializes the attribute list back before the items' do
+      original = "[%metadata]\nidentifier:: abc\nsubject:: s\n"
+      serialized = Coradoc::AsciiDoc.serialize(Coradoc::AsciiDoc.parse(original))
+
+      expect(serialized).to include("[%metadata]\nidentifier:: abc")
+    end
+
+    it 'round-trips the attribute list through serialize/parse' do
+      original = "[%metadata]\nidentifier:: abc\nsubject:: s\n"
+      serialized = Coradoc::AsciiDoc.serialize(Coradoc::AsciiDoc.parse(original))
+      reparsed = find_adoc_dlist(Coradoc::AsciiDoc.parse(serialized))
+
+      expect(reparsed.attrs.to_adoc(show_empty: false)).to eq('[%metadata]')
+    end
+  end
 end

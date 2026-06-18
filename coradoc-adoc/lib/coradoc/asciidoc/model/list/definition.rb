@@ -4,6 +4,13 @@ module Coradoc
   module AsciiDoc
     module Model
       module List
+        # Definition list container. Inherits universal list attributes
+        # (id, attrs) from List::Base.
+        #
+        # @!attribute [r] items
+        #   @return [Array<DefinitionItem>] Definition items in this list
+        # @!attribute [r] delimiter
+        #   @return [String] Delimiter indicating nesting depth ('::', ':::', ...)
         class Definition < Base
           attribute :items,
                     Coradoc::AsciiDoc::Model::Base,

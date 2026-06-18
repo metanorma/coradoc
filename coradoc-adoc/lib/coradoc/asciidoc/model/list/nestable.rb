@@ -4,9 +4,13 @@ module Coradoc
   module AsciiDoc
     module Model
       module List
-        # Mixin module for nestable list functionality.
-        # Provides common functionality for lists that can contain nested lists.
-        class Nestable < Coradoc::AsciiDoc::Model::Base
+        # Marker class for lists that can be nested inside a List::Item
+        # via its +nested+ attribute. Inherits universal list attributes
+        # (id, attrs) from List::Base.
+        #
+        # List::Definition does not extend Nestable because it has its own
+        # nesting model via List::DefinitionItem#nested.
+        class Nestable < Base
         end
       end
     end

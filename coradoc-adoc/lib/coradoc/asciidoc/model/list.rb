@@ -6,16 +6,18 @@ module Coradoc
       # Namespace for all AsciiDoc list types and their items.
       #
       # List Architecture:
-      #   - List::Core - Common list functionality (base class)
+      #   - List::Base - Universal list attributes (id, attrs)
+      #   - List::Nestable - Marker class for lists nestable inside Item
+      #   - List::Core - Ordered/unordered list base (marker, prefix, ol_count)
       #   - List::Ordered - Numbered lists (1., 2., 3., etc.)
       #   - List::Unordered - Bulleted lists (*, **, etc.)
       #   - List::Definition - Labeled/definition lists (term:: definition)
       #   - List::Item - Item for ordered/unordered lists
       #   - List::DefinitionItem - Item for definition lists
-      #   - List::Nestable - Mixin for nesting support
       #
       module List
         # Autoload list types lazily
+        autoload :Base, 'coradoc/asciidoc/model/list/base'
         autoload :Core, 'coradoc/asciidoc/model/list/core'
         autoload :Nestable, 'coradoc/asciidoc/model/list/nestable'
         autoload :Ordered, 'coradoc/asciidoc/model/list/ordered'

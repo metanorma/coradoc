@@ -8,7 +8,9 @@ module Coradoc
           class Definition < Base
             def to_adoc(model, _options = {})
               @model = model
-              content = +"\n"
+              _attrs = @model.attrs.to_adoc(show_empty: false).to_s
+              prefix = _attrs.empty? ? '' : "#{_attrs}\n"
+              content = "\n#{prefix}"
               @model.items.each do |item|
                 # Pass delimiter to item serialization
                 serialized = serialize_child_with_options(item, delimiter: @model.delimiter)
