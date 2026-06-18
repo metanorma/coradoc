@@ -94,9 +94,10 @@ module Coradoc
             alias_name = :"alias_nondispatch_#{rule_name}"
             guard_name = :"alias_nondispatch_rule_guard_#{rule_name}"
             return if parser_class.method_defined?(guard_name)
+
             parser_class.class_eval do
               alias_method alias_name, rule_name
-              define_method(guard_name) { }
+              define_method(guard_name) {}
               rule(rule_name) do
                 public_send(alias_name)
               end
@@ -107,9 +108,10 @@ module Coradoc
             alias_name = :"alias_dispatch_#{rule_name}"
             guard_name = :"alias_dispatch_rule_guard_#{rule_name}"
             return if parser_class.method_defined?(guard_name)
+
             parser_class.class_eval do
               alias_method alias_name, rule_name
-              define_method(guard_name) { }
+              define_method(guard_name) {}
               define_method(rule_name) do |*args, **kwargs|
                 RuleDispatcher.dispatch(self, alias_name, *args, **kwargs)
               end

@@ -85,8 +85,8 @@ module Coradoc
           warn e.parse_failure_cause.ascii_tree
         end
 
-        def rule_dispatch(rule_name, *args, **kwargs)
-          RuleDispatcher.dispatch(self, rule_name, *args, **kwargs)
+        def rule_dispatch(rule_name, *, **)
+          RuleDispatcher.dispatch(self, rule_name, *, **)
         end
       end
 

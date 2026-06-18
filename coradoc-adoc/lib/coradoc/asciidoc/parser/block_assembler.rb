@@ -55,19 +55,17 @@ module Coradoc
             if nested_delimiter?(stripped) && stripped != delimiter
               nested_delimiter = stripped
               nested_lines = extract_block_lines(lines, i, nested_delimiter)
-              
+
               block_lines << { block: { delimiter: nested_delimiter, lines: nested_lines } }
-              
+
               i += nested_lines.length + 1
-            else
+            elsif line.strip.empty?
               # Handle empty lines vs content lines
-              if line.strip.empty?
-                block_lines << { line_break: "\n" }
-              else
-                # Remove trailing newline for processing
-                text = line.chomp
-                block_lines << { text: text, line_break: "\n" }
-              end
+              block_lines << { line_break: "\n" }
+            else
+              # Remove trailing newline for processing
+              text = line.chomp
+              block_lines << { text: text, line_break: "\n" }
             end
 
             i += 1
@@ -78,11 +76,11 @@ module Coradoc
 
         def self.nested_delimiter?(str)
           return false if str.length < 2
-          
+
           char = str[0]
           return false unless ['-', '*', '=', '_', '+'].include?(char)
           return false unless str.chars.all? { |c| c == char }
-          
+
           (char == '-' && str.length == 2) || str.length >= 4
         end
 

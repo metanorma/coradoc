@@ -111,7 +111,6 @@ module Coradoc
         TableLayout.regroup_table_rows(rows, attrs)
       end
 
-
       # Transform a syntax tree using this transformer's rules
       #
       # @param syntax_tree [Hash, Array] The AST from the parser
