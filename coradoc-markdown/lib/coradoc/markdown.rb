@@ -62,6 +62,14 @@ module Coradoc
     autoload :CrossReference, 'coradoc/markdown/model/cross_reference'
     autoload :NamedValue, 'coradoc/markdown/model/named_value'
     autoload :Comment, 'coradoc/markdown/model/comment'
+    autoload :Admonition, 'coradoc/markdown/model/admonition'
+    autoload :ExampleBlock, 'coradoc/markdown/model/example_block'
+    autoload :OpenBlock, 'coradoc/markdown/model/open_block'
+    autoload :Sidebar, 'coradoc/markdown/model/sidebar'
+    autoload :Verse, 'coradoc/markdown/model/verse'
+    autoload :Pass, 'coradoc/markdown/model/pass'
+    autoload :Literal, 'coradoc/markdown/model/literal'
+    autoload :HardLineBreak, 'coradoc/markdown/model/hard_line_break'
 
     # Serializer
     autoload :Serializer, 'coradoc/markdown/serializer'

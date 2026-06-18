@@ -122,7 +122,7 @@ module Coradoc
             when :paragraph
               transform_paragraph(block)
             when :comment
-              Coradoc::Markdown::Extension.comment(block.content.to_s)
+              Coradoc::Markdown::Comment.new(text: block.content.to_s)
             else
               transform_delimited_block(block)
             end
@@ -171,16 +171,24 @@ module Coradoc
             case semantic
             when :source_code, :listing
               transform_code_block(block)
-            when :quote, :verse
+            when :quote
               transform_blockquote(block)
+            when :verse
+              transform_verse_block(block)
             when :horizontal_rule
               transform_horizontal_rule(block)
             when :pass
-              Coradoc::Markdown::Extension.nomarkdown(block.content.to_s)
+              transform_pass_block(block)
             when :literal
-              transform_code_block(block)
-            when :example, :sidebar, :open, :reviewer
-              transform_container_block(block)
+              transform_literal_block(block)
+            when :example
+              transform_example_block(block)
+            when :sidebar
+              transform_sidebar_block(block)
+            when :open
+              transform_open_block(block)
+            when :reviewer
+              transform_admonition_block(block, default_type: 'reviewer')
             else
               transform_paragraph(block)
             end
@@ -198,6 +206,60 @@ module Coradoc
             else
               Coradoc::Markdown::Blockquote.new(content: block.flat_text)
             end
+          end
+
+          def transform_verse_block(block)
+            Coradoc::Markdown::Verse.new(
+              content: block.flat_text,
+              attribution: block.respond_to?(:attribution) ? block.attribution : nil
+            )
+          end
+
+          def transform_pass_block(block)
+            return Coradoc::Markdown::Math.block(block.content.to_s) if block.language == 'latexmath'
+
+            Coradoc::Markdown::Pass.new(content: block.content.to_s)
+          end
+
+          def transform_literal_block(block)
+            Coradoc::Markdown::Literal.new(content: block.content.to_s)
+          end
+
+          def transform_example_block(block)
+            Coradoc::Markdown::ExampleBlock.new(
+              content: block.flat_text,
+              caption: block.title.to_s
+            )
+          end
+
+          def transform_sidebar_block(block)
+            Coradoc::Markdown::Sidebar.new(
+              content: block.flat_text,
+              title: block.title.to_s
+            )
+          end
+
+          def transform_open_block(block)
+            children = Array(block.children).map { |c| transform(c) }.flat_map { |c| flatten_result(c) }
+            children = paragraphs_from_content(block.content) if children.empty?
+            Coradoc::Markdown::OpenBlock.new(
+              children: children,
+              id: block.id
+            )
+          end
+
+          def paragraphs_from_content(content)
+            content.to_s.split(/\n\s*\n/).map do |chunk|
+              Coradoc::Markdown::Paragraph.new(text: chunk.strip)
+            end
+          end
+
+          def transform_admonition_block(block, default_type: 'note')
+            Coradoc::Markdown::Admonition.new(
+              admonition_type: block.respond_to?(:annotation_type) ? (block.annotation_type || default_type) : default_type,
+              content: block.flat_text,
+              title: block.respond_to?(:annotation_label) ? block.annotation_label : nil
+            )
           end
 
           def resolve_markdown_semantic(block)
@@ -239,12 +301,16 @@ module Coradoc
             items = Array(list.items).map do |item|
               content = item.renderable_content
               has_structured = content.is_a?(Array) && content.any? { |c| !c.is_a?(CoreModel::TextContent) }
-              if has_structured
-                children = content.map { |c| transform_inline_content(c) }
-                Coradoc::Markdown::ListItem.new(text: item.flat_text, children: children)
-              else
-                Coradoc::Markdown::ListItem.new(text: item.flat_text)
+              md_item = if has_structured
+                          children = content.map { |c| transform_inline_content(c) }
+                          Coradoc::Markdown::ListItem.new(text: item.flat_text, children: children)
+                        else
+                          Coradoc::Markdown::ListItem.new(text: item.flat_text)
+                        end
+              if item.nested_list
+                md_item.sublist = transform_list(item.nested_list)
               end
+              md_item
             end
 
             Coradoc::Markdown::List.new(
@@ -330,9 +396,11 @@ module Coradoc
               definitions = Array(item.definitions).map do |defn|
                 Coradoc::Markdown::DefinitionItem.new(content: defn.to_s)
               end
+              nested = item.nested ? transform_definition_list(item.nested) : nil
               Coradoc::Markdown::DefinitionTerm.new(
                 text: item.term.to_s,
-                definitions: definitions
+                definitions: definitions,
+                nested: nested
               )
             end
 
@@ -359,10 +427,7 @@ module Coradoc
           end
 
           def transform_annotation_block(annotation)
-            text = annotation.flat_text
-            Coradoc::Markdown::Blockquote.new(
-              content: "**#{annotation.annotation_type}:** #{text}"
-            )
+            transform_admonition_block(annotation, default_type: 'note')
           end
 
           def transform_bibliography(bib)

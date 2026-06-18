@@ -424,7 +424,7 @@ module Coradoc
             table_separator_row.as(:table_separator) >>
             line_ending >>
             (
-              table_row.as(:table_body_row) >> line_ending
+              table_row.as(:table_body_row) >> (line_ending | any.absent?)
             ).repeat(1).as(:table_body)
         end
 
