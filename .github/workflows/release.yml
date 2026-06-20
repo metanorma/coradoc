@@ -32,7 +32,12 @@ jobs:
   release:
     uses: metanorma/ci/.github/workflows/monorepo-rubygems-release.yml@main
     with:
-      gem_name: ${{ github.event.inputs.gem_name || 'coradoc' }}
+      # gated=false: coradoc has no test→do-release relay wired up, and
+      # metanorma/ci's do-release payload doesn't carry gem-name, so gated
+      # mode can never publish the right gem. Publish immediately on
+      # workflow_dispatch; the idempotency guard handles any duplicates.
+      gated: false
+      gem_name: ${{ github.event.client_payload.gem-name || github.event.inputs.gem_name || 'coradoc' }}
       gem_directory: '.'
       next_version: ${{ github.event.inputs.next_version || 'skip' }}
       version_file: >-
