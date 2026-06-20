@@ -35,6 +35,14 @@ jobs:
       gem_name: ${{ github.event.inputs.gem_name || 'coradoc' }}
       gem_directory: '.'
       next_version: ${{ github.event.inputs.next_version || 'skip' }}
+      version_file: >-
+        ${{
+          (github.event.inputs.gem_name == 'coradoc-adoc' && 'lib/coradoc/asciidoc/version.rb') ||
+          (github.event.inputs.gem_name == 'coradoc-html' && 'lib/coradoc/html/version.rb') ||
+          (github.event.inputs.gem_name == 'coradoc-markdown' && 'lib/coradoc/markdown/version.rb') ||
+          (github.event.inputs.gem_name == 'coradoc-docx' && 'lib/coradoc/docx/version.rb') ||
+          ''
+        }}
     secrets:
       rubygems-api-key: ${{ secrets.METANORMA_CI_RUBYGEMS_API_KEY }}
       pat_token: ${{ secrets.METANORMA_CI_PAT_TOKEN }}
