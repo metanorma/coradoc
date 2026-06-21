@@ -74,6 +74,10 @@ PROPOSAL-*
 **/PROPOSAL*
 **/PROPOSAL-*
 
+# BUG reports are personal issue tracking — NEVER commit
+BUG-*.md
+**/BUG-*.md
+
 # Scratch files
 sample.oscal.*
 /x

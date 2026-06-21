@@ -104,11 +104,22 @@ module Coradoc
             delim_str = c.captures[capture_key].to_s.strip
             closing_pattern = str(delim_str) >> newline
 
-            content = block_image
-            content |= block(n_deep - 1) if n_deep.positive?
-            content |= list
-            content |= text_line(false, unguarded: true, verbatim: verbatim)
-            content |= empty_line.as(:line_break)
+            # Verbatim blocks (source/listing) treat their body as literal
+            # text per the AsciiDoc spec — no substitutions, no nested
+            # blocks. Allowing nested block parsing here would consume
+            # shorter inner delimiters (e.g. `----` inside `------`) and
+            # strip the original structure when serializing back.
+            content = if verbatim
+                        text_line(false, unguarded: true, verbatim: true) |
+                          empty_line.as(:line_break)
+                      else
+                        c = block_image
+                        c |= block(n_deep - 1) if n_deep.positive?
+                        c |= list
+                        c |= text_line(false, unguarded: true)
+                        c |= empty_line.as(:line_break)
+                        c
+                      end
 
             (closing_pattern.absent? >> content).repeat(1)
           end
