@@ -5,10 +5,24 @@
 {{ element.text }}
 {% elsif element.semantic_type == "source_code" %}
 <pre{% if element.id %} id="{{ element.id }}"{% endif %}{% if element.title %} title="{{ element.title }}"{% endif %}><code{% if element.language %} data-lang="{{ element.language }}"{% endif %}>{{ element.text }}</code></pre>
+{% if element.callouts? %}
+<ol class="callouts">
+{% for callout in element.callouts %}
+<li value="{{ callout.index }}">{{ callout.content }}</li>
+{% endfor %}
+</ol>
+{% endif %}
 {% elsif element.semantic_type == "literal" %}
 <pre{% if element.id %} id="{{ element.id }}"{% endif %}{% if element.title %} title="{{ element.title }}"{% endif %} class="literal">{{ element.text }}</pre>
 {% elsif element.semantic_type == "listing" %}
 <pre{% if element.id %} id="{{ element.id }}"{% endif %}{% if element.title %} title="{{ element.title }}"{% endif %}>{{ element.text }}</pre>
+{% if element.callouts? %}
+<ol class="callouts">
+{% for callout in element.callouts %}
+<li value="{{ callout.index }}">{{ callout.content }}</li>
+{% endfor %}
+</ol>
+{% endif %}
 {% elsif element.semantic_type == "quote" or element.semantic_type == "verse" %}
 <blockquote{% if element.id %} id="{{ element.id }}"{% endif %}{% if element.title %} title="{{ element.title }}"{% endif %}>
 {{ element.content | render_element }}

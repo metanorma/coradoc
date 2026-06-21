@@ -56,7 +56,7 @@ module Coradoc
             when Coradoc::CoreModel::TextContent
               model.text.to_s
             when Array
-              model.map { |item| transform(item) }
+              model.flat_map { |item| flatten_result(transform(item)) }
             else
               model
             end
@@ -281,10 +281,21 @@ module Coradoc
           end
 
           def transform_code_block(block)
-            Coradoc::Markdown::CodeBlock.new(
-              code: block.content.to_s,
+            code = CoreModel::CalloutText.strip_markers(block.content.to_s, block.callouts)
+            code_block = Coradoc::Markdown::CodeBlock.new(
+              code: code,
               language: block.language
             )
+            return code_block if block.callouts.nil? || block.callouts.empty?
+
+            [code_block, transform_callout_list(block.callouts)]
+          end
+
+          def transform_callout_list(callouts)
+            items = CoreModel::CalloutText.ordered(callouts).map do |callout|
+              Coradoc::Markdown::ListItem.new(text: callout.content.to_s)
+            end
+            Coradoc::Markdown::List.new(ordered: true, items: items)
           end
 
           def transform_blockquote(block)
@@ -307,9 +318,7 @@ module Coradoc
                         else
                           Coradoc::Markdown::ListItem.new(text: item.flat_text)
                         end
-              if item.nested_list
-                md_item.sublist = transform_list(item.nested_list)
-              end
+              md_item.sublist = transform_list(item.nested_list) if item.nested_list
               md_item
             end
 

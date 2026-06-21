@@ -75,6 +75,78 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
       end
     end
 
+    context 'with SourceBlock containing callouts' do
+      let(:core_model) do
+        Coradoc::CoreModel::SourceBlock.new(
+          content: "get '/hi' do <1>\nputs \"hello\" <2>",
+          language: 'ruby',
+          callouts: [
+            Coradoc::CoreModel::Callout.new(index: 1, content: 'Returns hello world'),
+            Coradoc::CoreModel::Callout.new(index: 2, content: 'Prints greeting')
+          ]
+        )
+      end
+
+      it 'returns [CodeBlock, List] with markers stripped from code' do
+        expect(transform).to be_an(Array)
+        expect(transform.size).to eq(2)
+
+        code_block, list = transform
+        expect(code_block).to be_a(Coradoc::Markdown::CodeBlock)
+        expect(code_block.code).to eq("get '/hi' do\nputs \"hello\"")
+        expect(code_block.language).to eq('ruby')
+
+        expect(list).to be_a(Coradoc::Markdown::List)
+        expect(list.ordered).to be(true)
+        expect(list.items.map(&:text)).to eq(['Returns hello world', 'Prints greeting'])
+      end
+    end
+
+    context 'with SourceBlock without callouts but literal <N> in code' do
+      let(:core_model) do
+        Coradoc::CoreModel::SourceBlock.new(
+          content: 'x = 1 if y < 1',
+          language: 'ruby'
+        )
+      end
+
+      it 'leaves literal <N> intact' do
+        expect(transform).to be_a(Coradoc::Markdown::CodeBlock)
+        expect(transform.code).to eq('x = 1 if y < 1')
+      end
+    end
+
+    context 'with two SourceBlocks each carrying their own callouts' do
+      let(:core_model) do
+        [
+          Coradoc::CoreModel::SourceBlock.new(
+            content: "alpha <1>\nbeta",
+            language: 'ruby',
+            callouts: [Coradoc::CoreModel::Callout.new(index: 1, content: 'first block note')]
+          ),
+          Coradoc::CoreModel::SourceBlock.new(
+            content: "gamma <1>\ndelta",
+            language: 'python',
+            callouts: [Coradoc::CoreModel::Callout.new(index: 1, content: 'second block note')]
+          )
+        ]
+      end
+
+      it 'pairs each code block with its own callout list' do
+        expect(transform).to be_an(Array)
+        expect(transform.length).to eq(4)
+
+        first_code, first_list, second_code, second_list = transform
+        expect(first_code.code).to eq("alpha\nbeta")
+        expect(first_code.language).to eq('ruby')
+        expect(first_list.items.first.text).to eq('first block note')
+
+        expect(second_code.code).to eq("gamma\ndelta")
+        expect(second_code.language).to eq('python')
+        expect(second_list.items.first.text).to eq('second block note')
+      end
+    end
+
     context 'with Block (blockquote)' do
       let(:core_model) do
         Coradoc::CoreModel::Block.new(
