@@ -53,10 +53,16 @@ module Coradoc
       #   @return [String, nil] language identifier for source code blocks
       attribute :language, :string
 
+      # @!attribute callouts
+      #   @return [Array<Callout>] callout annotations attached to this
+      #     block. Empty for most block types; populated by format gems
+      #     when AsciiDoc-style `<N>` annotations follow a verbatim block.
+      attribute :callouts, Callout, collection: true, default: -> { [] }
+
       private
 
       def comparable_attributes
-        super + %i[block_semantic_type content]
+        super + %i[block_semantic_type content callouts]
       end
     end
   end

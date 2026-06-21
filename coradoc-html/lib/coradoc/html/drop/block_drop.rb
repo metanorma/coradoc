@@ -26,11 +26,23 @@ module Coradoc
         end
 
         def text
-          if %i[source_code literal listing].include?(resolved_semantic_type)
-            Escape.escape_html(@model.flat_text)
+          if verbatim?
+            Escape.escape_html(stripped_text)
           elsif resolved_semantic_type == :pass
             @model.flat_text.to_s
           end
+        end
+
+        def callouts
+          return [] unless verbatim?
+
+          @callouts ||= CoreModel::CalloutText.ordered(@model.callouts).map do |callout|
+            { 'index' => callout.index, 'content' => Escape.escape_html(callout.content.to_s) }
+          end
+        end
+
+        def callouts?
+          !callouts.empty?
         end
 
         def hidden?
@@ -49,6 +61,14 @@ module Coradoc
 
         def resolved_semantic_type
           @resolved_semantic_type ||= @model.resolve_semantic_type || :paragraph
+        end
+
+        def verbatim?
+          %i[source_code literal listing].include?(resolved_semantic_type)
+        end
+
+        def stripped_text
+          CoreModel::CalloutText.strip_markers(@model.flat_text.to_s, @model.callouts)
         end
       end
 

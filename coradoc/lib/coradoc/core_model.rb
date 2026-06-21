@@ -12,6 +12,8 @@ module Coradoc
     # Autoload submodules lazily using relative paths
     autoload :Base, "#{__dir__}/core_model/base"
     autoload :ChildrenContent, "#{__dir__}/core_model/children_content"
+    autoload :Callout, "#{__dir__}/core_model/callout"
+    autoload :CalloutText, "#{__dir__}/core_model/callout_text"
     autoload :Block, "#{__dir__}/core_model/block"
     autoload :AnnotationBlock, "#{__dir__}/core_model/annotation_block"
     autoload :ListBlock, "#{__dir__}/core_model/list_block"

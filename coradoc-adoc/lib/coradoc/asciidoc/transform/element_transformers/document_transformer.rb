@@ -10,6 +10,7 @@ module Coradoc
               title_text = ToCoreModel.extract_title_text(doc.header&.title)
               attributes = ToCoreModel.extract_document_attributes(doc)
               children = ToCoreModel.transform(doc.sections || doc.contents || [])
+              children = CalloutMerger.call(children)
               children = prepend_frontmatter(children, doc.frontmatter)
 
               Coradoc::CoreModel::DocumentElement.new(
@@ -38,6 +39,7 @@ module Coradoc
               )
 
               content_children = ToCoreModel.transform(section.contents || [])
+              content_children = CalloutMerger.call(content_children)
               nested_sections = (section.sections || []).map do |child|
                 transform_section(child, parent_id: section_id)
               end

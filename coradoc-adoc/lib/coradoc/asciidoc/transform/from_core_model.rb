@@ -45,7 +45,7 @@ module Coradoc
               Coradoc::AsciiDoc::Model::Document.new(
                 id: element.id,
                 header: header,
-                sections: transform(sections),
+                sections: flatten_children(sections),
                 frontmatter: frontmatter
               )
             when CoreModel::SectionElement
@@ -53,15 +53,27 @@ module Coradoc
                 id: element.id,
                 level: element.level,
                 title: create_title(element.title, element.level),
-                contents: transform(element.children)
+                contents: flatten_children(element.children)
               )
             else
               Coradoc::AsciiDoc::Model::Section.new(
                 id: element.id,
                 title: create_title(element.title, 1),
-                contents: transform(element.children)
+                contents: flatten_children(element.children)
               )
             end
+          end
+
+          # Transforms each CoreModel child and flattens one level so a
+          # transform that returns multiple siblings (e.g. a source block
+          # followed by its re-expanded callout paragraphs) stays in
+          # document order.
+          def flatten_children(children)
+            Array(children).flat_map { |child| flatten_one(transform(child)) }
+          end
+
+          def flatten_one(result)
+            result.is_a?(Array) ? result : [result]
           end
 
           def transform_block(block)
@@ -82,7 +94,13 @@ module Coradoc
             end
 
             content_text = safe_content_to_string(content)
+            result = build_verbatim_block(semantic, block, content_text)
+            return result unless verbatim_with_callouts?(semantic, block)
 
+            [result, *build_callout_paragraphs(block.callouts)]
+          end
+
+          def build_verbatim_block(semantic, block, content_text)
             case semantic
             when :source_code
               Coradoc::AsciiDoc::Model::Block::SourceCode.new(
@@ -159,6 +177,23 @@ module Coradoc
                 delimiter_char: delim_char,
                 delimiter_len: delim_len,
                 lines: content_text.split("\n")
+              )
+            end
+          end
+
+          def verbatim_with_callouts?(semantic, block)
+            return false unless %i[source_code listing].include?(semantic)
+            return false if block.callouts.nil? || block.callouts.empty?
+
+            true
+          end
+
+          # Re-expands typed Callouts back into the AsciiDoc `<N> text`
+          # paragraph form so the round-trip is faithful.
+          def build_callout_paragraphs(callouts)
+            callouts.sort_by { |c| c.index || Float::INFINITY }.map do |callout|
+              Coradoc::AsciiDoc::Model::Paragraph.new(
+                content: create_text_elements("<#{callout.index}> #{callout.content}")
               )
             end
           end

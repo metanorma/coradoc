@@ -13,6 +13,7 @@ module Coradoc
       autoload :InlineTransformVisitor, "#{__dir__}/transform/inline_transform_visitor"
       autoload :ElementTransformers, "#{__dir__}/transform/element_transformers"
       autoload :FrontmatterAttributeMap, "#{__dir__}/transform/frontmatter_attribute_map"
+      autoload :CalloutMerger, "#{__dir__}/transform/callout_merger"
     end
   end
 end
