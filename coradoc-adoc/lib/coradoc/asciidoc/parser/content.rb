@@ -24,7 +24,7 @@ module Coradoc
         # :zero :one :many
         def text_line(many_breaks = false, unguarded: false, verbatim: false)
           tl = if verbatim
-                 text_any.as(:text)
+                 raw_verbatim_line.as(:text)
                elsif unguarded
                  literal_space? >> text_any.as(:text)
                else
@@ -36,6 +36,15 @@ module Coradoc
           else
             tl >> (line_ending.as(:line_break) | eof?)
           end
+        end
+
+        # A verbatim source/listing line: capture every character up to the
+        # next newline without applying any inline substitutions. Source and
+        # listing blocks must round-trip their text untouched — otherwise
+        # sequences like Liquid `{{ var }}` collide with AsciiDoc attribute
+        # references and get rewritten.
+        def raw_verbatim_line
+          (line_ending.absent? >> any).repeat(1)
         end
 
         def asciidoc_char
