@@ -28,7 +28,13 @@ module Coradoc
       #   admonition.content = "Be careful!"
       #
       class Admonition < Attached
-        attribute :content, :string
+        attribute :content,
+                  Lutaml::Model::Serializable,
+                  collection: true,
+                  polymorphic: [
+                    Lutaml::Model::Type::String,
+                    Coradoc::AsciiDoc::Model::TextElement
+                  ]
         attribute :type, :string
         attribute :line_break, :string, default: -> { '' }
       end

@@ -255,10 +255,12 @@ module Coradoc
           end
 
           def transform_admonition_block(block, default_type: 'note')
+            children = transform_inline_array(block.renderable_content)
             Coradoc::Markdown::Admonition.new(
               admonition_type: block.respond_to?(:annotation_type) ? (block.annotation_type || default_type) : default_type,
               content: block.flat_text,
-              title: block.respond_to?(:annotation_label) ? block.annotation_label : nil
+              title: block.respond_to?(:annotation_label) ? block.annotation_label : nil,
+              children: children
             )
           end
 

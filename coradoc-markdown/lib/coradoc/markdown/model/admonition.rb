@@ -24,11 +24,17 @@ module Coradoc
       attribute :content, :string
       attribute :title, :string
 
-      def initialize(admonition_type:, content:, title: nil, **rest)
+      # Mixed inline content (strings and inline model objects) carried
+      # from the CoreModel children so serializers can preserve cross
+      # references, code spans, etc. When empty, fall back to `content`.
+      attr_reader :children
+
+      def initialize(admonition_type:, content:, title: nil, children: [], **rest)
         super
         @admonition_type = admonition_type.to_s.downcase
         @content = content
         @title = title
+        @children = Array(children)
       end
     end
   end

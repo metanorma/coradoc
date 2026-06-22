@@ -12,9 +12,9 @@ module Coradoc
           # Source: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
           class GfmAlert < Base
             class << self
-              def render(admonition, _ctx)
+              def render(admonition, ctx)
                 type = admonition.admonition_type.to_s.capitalize
-                body = admonition.content.to_s
+                body = render_body(admonition, ctx)
                 body = body.lines.map { |line| "> #{line}".rstrip }.join("\n")
                 title_suffix = admonition.title ? " \"#{admonition.title}\"" : ''
                 "> [!#{type}]#{title_suffix}\n#{body}"

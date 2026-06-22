@@ -36,9 +36,12 @@ module Coradoc
         # Coerce a raw parser AST value into the canonical ref_text string.
         # Accepts the shapes produced by Parser::Bibliography for `:ref_text`:
         # nil, Parslet::Slice, plain String, single Model::Base, or an Array
-        # of any of these. Keeping this coercion on the model that owns
-        # ref_text (rather than in a transformer rule) keeps the transformer
-        # declarative and lets callers build entries from any source shape.
+        # of any of these. Model objects (TextElement, Inline::Italic, etc.)
+        # are flattened via TextExtractVisitor so their text content is
+        # preserved instead of leaking `#<Class:0x...>` inspect strings.
+        # Keeping this coercion on the model that owns ref_text (rather than
+        # in a transformer rule) keeps the transformer declarative and lets
+        # callers build entries from any source shape.
         # @param raw [Object, nil]
         # @return [String]
         def self.coerce_ref_text(raw)
@@ -47,6 +50,8 @@ module Coradoc
           case raw
           when Array then raw.map { |e| coerce_ref_text(e) }.join
           when String then raw
+          when Coradoc::AsciiDoc::Model::Base
+            Coradoc::AsciiDoc::Transform::TextExtractVisitor.new.extract(raw).to_s
           else raw.to_s
           end
         end
