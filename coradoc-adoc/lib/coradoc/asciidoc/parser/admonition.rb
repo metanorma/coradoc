@@ -15,7 +15,7 @@ module Coradoc
 
         def admonition_line
           admonition_type.as(:admonition_type) >> str(': ') >>
-            (text.as(:text) >>
+            (text_any.as(:text) >>
             line_ending.as(:line_break)
             ).repeat(1)
             .as(:content)

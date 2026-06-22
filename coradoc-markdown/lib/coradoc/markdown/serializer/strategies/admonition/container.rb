@@ -20,10 +20,10 @@ module Coradoc
           #   :::
           class Container < Base
             class << self
-              def render(admonition, _ctx)
+              def render(admonition, ctx)
                 type = admonition.admonition_type.to_s
                 title_suffix = admonition.title ? "[#{admonition.title}]" : ''
-                ":::#{type}#{title_suffix}\n#{admonition.content.to_s}\n:::"
+                ":::#{type}#{title_suffix}\n#{render_body(admonition, ctx)}\n:::"
               end
             end
           end
