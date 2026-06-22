@@ -23,6 +23,11 @@ module Coradoc
       def passed?
         duration < threshold
       end
+
+      def format_line
+        status = passed? ? 'PASS' : 'FAIL'
+        "  #{status} #{name}: #{duration.round(4)}s (threshold: #{threshold}s)"
+      end
     end
 
     ComparisonResult = Struct.new(:name, :duration, :baseline, keyword_init: true) do
@@ -30,6 +35,12 @@ module Coradoc
         return false if baseline.nil? || baseline.zero?
 
         (duration - baseline).abs / baseline > pct
+      end
+
+      def format_line
+        status = regressed? ? 'WARN' : 'OK'
+        baseline_str = baseline ? "(baseline: #{baseline.round(4)}s)" : '(no baseline)'
+        "  #{status} #{name}: #{duration.round(4)}s #{baseline_str}"
       end
     end
 
@@ -50,14 +61,15 @@ module Coradoc
         { results:, failed_count: failed, total: results.size }
       end
 
-      def print_results(summary)
-        results = summary[:results]
-        results.each do |r|
-          status = r.passed? ? 'PASS' : 'FAIL'
-          puts "  #{status} #{r.name}: #{r.duration.round(4)}s (threshold: #{r.threshold}s)"
+      def print_results(summary_or_results)
+        if summary_or_results.is_a?(Hash)
+          summary = summary_or_results
+          summary[:results].each { |r| puts r.format_line }
+          puts
+          puts "#{summary[:total] - summary[:failed_count]}/#{summary[:total]} passed"
+        else
+          Array(summary_or_results).each { |r| puts r.format_line }
         end
-        puts
-        puts "#{summary[:total] - summary[:failed_count]}/#{summary[:total]} passed"
       end
 
       def compare_with_baseline(baseline_path, iterations: 3)
