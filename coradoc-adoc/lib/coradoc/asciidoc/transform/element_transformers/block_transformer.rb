@@ -35,6 +35,75 @@ module Coradoc
               )
             end
 
+            # Open blocks (`--`) are generic containers. AsciiDoc allows
+            # casting them to a different block type via positional
+            # attributes: verbatim types (`[source]`, `[listing]`,
+            # `[literal]`) and admonition labels (`[NOTE]`, `[TIP]`,
+            # `[WARNING]`, `[CAUTION]`, `[IMPORTANT]`). When such a cast
+            # is present, the block behaves like the corresponding
+            # delimited block. Anything else stays an OpenBlock.
+            def transform_open_block(block)
+              semantic = open_block_semantic(block)
+              case semantic
+              when :source_code
+                transform_source_block(block)
+              when :listing
+                transform_listing_from_open(block)
+              when :literal
+                transform_literal_from_open(block)
+              when :admonition
+                transform_admonition_from_open(block)
+              else
+                transform_typed_block(block, Coradoc::CoreModel::OpenBlock)
+              end
+            end
+
+            ADMONITION_TYPES = %w[note tip warning caution important].freeze
+
+            def open_block_semantic(block)
+              attrs = block.attributes
+              return nil unless attrs.is_a?(Coradoc::AsciiDoc::Model::AttributeList)
+
+              first = attrs.positional&.first
+              return nil unless first.is_a?(Coradoc::AsciiDoc::Model::AttributeListAttribute)
+
+              case first.value.to_s.downcase
+              when 'source' then :source_code
+              when 'listing' then :listing
+              when 'literal' then :literal
+              when *ADMONITION_TYPES then :admonition
+              end
+            end
+
+            def transform_admonition_from_open(block)
+              type = block.attributes.positional.first.value.to_s.downcase
+              content_lines = Array(block.lines).map { |line| ToCoreModel.extract_text_content(line) }.join("\n")
+              Coradoc::CoreModel::AnnotationBlock.new(
+                annotation_type: type,
+                content: content_lines,
+                title: ToCoreModel.extract_title_text(block.title)
+              )
+            end
+
+            def transform_listing_from_open(block)
+              content_lines = Array(block.lines).map { |line| ToCoreModel.extract_text_content(line) }.join("\n")
+              Coradoc::CoreModel::ListingBlock.new(
+                id: block.id,
+                title: ToCoreModel.extract_title_text(block.title),
+                content: content_lines,
+                language: ToCoreModel.extract_block_language(block)
+              )
+            end
+
+            def transform_literal_from_open(block)
+              content_lines = Array(block.lines).map { |line| ToCoreModel.extract_text_content(line) }.join("\n")
+              Coradoc::CoreModel::LiteralBlock.new(
+                id: block.id,
+                title: ToCoreModel.extract_title_text(block.title),
+                content: content_lines
+              )
+            end
+
             def transform_block(block, semantic_type_or_delimiter)
               content_lines = ToCoreModel.extract_block_lines(block)
               semantic_type = if semantic_type_or_delimiter.is_a?(Symbol)

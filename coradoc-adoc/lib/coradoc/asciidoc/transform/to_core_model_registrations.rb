@@ -52,7 +52,6 @@ module Coradoc
               Coradoc::AsciiDoc::Model::Block::Example => Coradoc::CoreModel::ExampleBlock,
               Coradoc::AsciiDoc::Model::Block::Side => Coradoc::CoreModel::SidebarBlock,
               Coradoc::AsciiDoc::Model::Block::Literal => Coradoc::CoreModel::LiteralBlock,
-              Coradoc::AsciiDoc::Model::Block::Open => Coradoc::CoreModel::OpenBlock,
               Coradoc::AsciiDoc::Model::Block::Pass => Coradoc::CoreModel::PassBlock
             }.each do |block_class, core_model_class|
               Registry.register_with_priority(
@@ -61,6 +60,12 @@ module Coradoc
                 priority: 10
               )
             end
+
+            Registry.register_with_priority(
+              Coradoc::AsciiDoc::Model::Block::Open,
+              ->(model) { Blk.transform_open_block(model) },
+              priority: 10
+            )
 
             Registry.register(
               Coradoc::AsciiDoc::Model::Block::Core,
