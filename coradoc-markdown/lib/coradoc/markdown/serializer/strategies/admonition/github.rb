@@ -15,9 +15,7 @@ module Coradoc
               def render(admonition, ctx)
                 type = admonition.admonition_type.to_s.upcase
                 body = render_body(admonition, ctx)
-                if admonition.title
-                  body = "**#{admonition.title}**\n\n#{body}" unless admonition.title.to_s.strip.empty?
-                end
+                body = "**#{admonition.title}**\n\n#{body}" if admonition.title && !admonition.title.to_s.strip.empty?
                 "> **#{type}:** #{body}"
               end
             end
