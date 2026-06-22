@@ -165,6 +165,12 @@ module Coradoc
             end
           end
 
+          def transform_inline_array(renderable)
+            return [] unless renderable.is_a?(Array)
+
+            renderable.map { |c| transform_inline_content(c) }
+          end
+
           def transform_delimited_block(block)
             semantic = resolve_markdown_semantic(block)
 
