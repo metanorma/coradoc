@@ -15,23 +15,31 @@ module Coradoc
           handles_type ::Coradoc::Markdown::ExampleBlock
 
           def call(element, ctx)
+            body = render_body(element, ctx)
             if ctx.config.admonition_style == :container
-              render_container(element)
+              render_container(element, body)
             else
-              render_html(element)
+              render_html(element, body)
             end
           end
 
           private
 
-          def render_html(element)
-            caption_html = element.caption ? %(<h4>Example: #{element.caption}</h4>\n) : ''
-            %(<div class="example">\n#{caption_html}<p>#{element.content.to_s}</p>\n</div>)
+          def render_body(element, ctx)
+            return element.content.to_s if element.children.nil? || element.children.empty?
+
+            element.children.map { |c| ctx.serialize(c) }.join("\n\n")
           end
 
-          def render_container(element)
+          def render_html(element, body)
+            caption_html = element.caption ? %(<h4>Example: #{element.caption}</h4>\n) : ''
+            inner = element.children&.any? ? body : "<p>#{body}</p>"
+            %(<div class="example">\n#{caption_html}#{inner}\n</div>)
+          end
+
+          def render_container(element, body)
             title = element.caption ? " Example: #{element.caption}" : ''
-            ":::details#{title}\n#{element.content.to_s}\n:::"
+            ":::details#{title}\n#{body}\n:::"
           end
         end
       end

@@ -15,11 +15,13 @@ module Coradoc
     class ExampleBlock < Base
       attribute :content, :string
       attribute :caption, :string
+      attribute :children, Coradoc::Markdown::Base, collection: true, default: []
 
-      def initialize(content:, caption: nil, **rest)
+      def initialize(content:, caption: nil, children: [], **rest)
         super
         @content = content
         @caption = caption
+        @children = Array(children)
       end
     end
   end

@@ -232,9 +232,11 @@ module Coradoc
           end
 
           def transform_example_block(block)
+            children = Array(block.children).map { |c| transform(c) }.flat_map { |c| flatten_result(c) }
             Coradoc::Markdown::ExampleBlock.new(
               content: block.flat_text,
-              caption: block.title.to_s
+              caption: block.title.to_s,
+              children: children
             )
           end
 
