@@ -20,11 +20,20 @@ module Coradoc
       # sufficient and the serializer falls back to HTML <dl>/<dt>/<dd>.
       attribute :nested, Coradoc::Markdown::DefinitionList
 
+      # Mixed inline content (strings and inline model objects) for the
+      # term — lets serializers preserve backticks, bold, etc.
+      attr_reader :children
+
       def initialize(text: '', definitions: [], nested: nil, **rest)
-        super
+        super()
         @text = text
         @definitions = definitions
         @nested = nested
+        @children = rest.fetch(:children, [])
+      end
+
+      def children=(value)
+        @children = value || []
       end
     end
   end

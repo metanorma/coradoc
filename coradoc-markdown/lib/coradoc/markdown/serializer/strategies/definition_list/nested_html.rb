@@ -24,25 +24,34 @@ module Coradoc
                 # When the caller asked to flatten, never emit HTML.
                 return Flat.render(list, ctx) if ctx.config.definition_list_nested == :flatten
 
-                render_dl(list)
+                render_dl(list, ctx)
               end
 
               private
 
-              def render_dl(list)
-                items_html = list.items.map { |term| render_term(term) }.join
+              def render_dl(list, ctx)
+                items_html = list.items.map { |term| render_term(term, ctx) }.join
                 "<dl>\n#{items_html}</dl>"
               end
 
-              def render_term(term)
-                dt = "<dt>#{term.text.to_s}</dt>"
-                dds = term.definitions.map { |d| render_dd(d) }.join
-                nested = term.nested ? "\n  #{render_dl(term.nested)}" : ''
+              def render_term(term, ctx)
+                dt_text = if term.children.any?
+                            ctx.serialize_inline_join(term.children)
+                          else
+                            term.text.to_s
+                          end
+                dt = "<dt>#{dt_text}</dt>"
+                dds = term.definitions.map { |d| render_dd(d, ctx) }.join
+                nested = term.nested ? "\n  #{render_dl(term.nested, ctx)}" : ''
                 "#{dt}\n#{dds}#{nested unless nested.empty?}"
               end
 
-              def render_dd(definition)
-                content_str = definition.content.to_s.strip
+              def render_dd(definition, ctx)
+                content_str = if definition.children.any?
+                                ctx.serialize_inline_join(definition.children).strip
+                              else
+                                definition.content.to_s.strip
+                              end
                 "<dd>\n  #{content_str}\n</dd>"
               end
             end

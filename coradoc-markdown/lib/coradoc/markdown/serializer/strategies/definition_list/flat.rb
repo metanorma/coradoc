@@ -24,20 +24,29 @@ module Coradoc
                 list.items.none? { |term| term.nested }
               end
 
-              def render(list, _ctx)
+              def render(list, ctx)
                 list.items.map do |term|
-                  lines = [term.text.to_s]
-                  term.definitions.each do |defn|
-                    content_str = defn.content.to_s
-                    content_str.lines.each_with_index do |line, i|
-                      stripped = line.rstrip
-                      next if i.positive? && stripped.empty?
-
-                      lines << ": #{stripped}"
-                    end
-                  end
-                  lines.join("\n")
+                  render_term(term, ctx)
                 end.join("\n\n")
+              end
+
+              def render_term(term, ctx)
+                term_text = term.children.any? ? ctx.serialize_inline_join(term.children) : term.text.to_s
+                lines = [term_text]
+                term.definitions.each do |defn|
+                  append_definition_lines(lines, defn, ctx)
+                end
+                lines.join("\n")
+              end
+
+              def append_definition_lines(lines, defn, ctx)
+                content_str = defn.children.any? ? ctx.serialize_inline_join(defn.children) : defn.content.to_s
+                content_str.lines.each_with_index do |line, i|
+                  stripped = line.rstrip
+                  next if i.positive? && stripped.empty?
+
+                  lines << ": #{stripped}"
+                end
               end
             end
           end

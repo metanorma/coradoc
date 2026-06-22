@@ -19,6 +19,23 @@ module Coradoc
 
       # Nested block content (paragraphs, code blocks, lists, etc.)
       attribute :blocks, :string, collection: true
+
+      # Mixed inline content (strings and inline model objects) carried
+      # from the CoreModel definition_children so serializers can render
+      # backtick code spans, bold, italics, etc.
+      attr_reader :children
+
+      def initialize(args = {})
+        super()
+        @content = args[:content]
+        @inline_content = args.fetch(:inline_content, [])
+        @blocks = args.fetch(:blocks, [])
+        @children = args.fetch(:children, [])
+      end
+
+      def children=(value)
+        @children = value || []
+      end
     end
   end
 end
