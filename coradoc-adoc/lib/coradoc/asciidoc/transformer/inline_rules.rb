@@ -27,20 +27,11 @@ module Coradoc
             end
 
             # Cross reference
-            rule(href: simple(:href)) do
-              Model::Inline::CrossReference.new(href: href.to_s)
-            end
-
-            rule(
-              href: simple(:href),
-              name: simple(:name)
-            ) do
-              Model::Inline::CrossReference.new(href: href.to_s, args: [name.to_s])
-            end
-
-            rule(cross_reference: sequence(:xref)) do
-              args = xref.size > 1 ? xref[1..] : []
-              Model::Inline::CrossReference.new(href: xref[0], args:)
+            rule(cross_reference: subtree(:xref)) do
+              href = xref[:href].to_s
+              text = xref[:text]
+              args = text ? [text.to_s] : []
+              Model::Inline::CrossReference.new(href:, args:)
             end
 
             # Inline image
@@ -86,11 +77,6 @@ module Coradoc
             rule(footnote: sequence(:footnote)) do
               text_str = footnote.map(&:to_s).join
               Coradoc::AsciiDoc::Model::Inline::Footnote.new(text: text_str)
-            end
-
-            # Href arg
-            rule(href_arg: simple(:href_arg)) do
-              href_arg.to_s
             end
 
             # Inline formatting rules generated from a single registry.
