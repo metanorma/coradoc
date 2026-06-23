@@ -426,6 +426,8 @@ module Coradoc
               content
             when Array
               content.map { |item| safe_content_to_string(item) }.join
+            when Coradoc::CoreModel::Base
+              content.flat_text
             when Lutaml::Model::Serializable
               if content.is_a?(Coradoc::AsciiDoc::Model::Base)
                 content.to_adoc
