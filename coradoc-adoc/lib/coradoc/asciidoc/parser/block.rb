@@ -27,6 +27,7 @@ module Coradoc
           source_block(n_deep) |
           quote_block(n_deep) |
           pass_block(n_deep) |
+          literal_block(n_deep) |
           open_block(n_deep)).as(:block)
         end
 
@@ -35,7 +36,7 @@ module Coradoc
         end
 
         def pass_block(n_deep)
-          block_style(n_deep, '+', 4, :pass)
+          block_style(n_deep, '+', 4, verbatim: true)
         end
 
         def quote_block(n_deep)
@@ -50,13 +51,18 @@ module Coradoc
           block_style(n_deep, '-', 4, verbatim: true)
         end
 
+        def literal_block(n_deep)
+          block_style(n_deep, '.', 4, verbatim: true)
+        end
+
         # Open block: exactly 2 dashes (cannot nest within itself)
         def open_block(n_deep)
           block_style_exact(n_deep, '-', 2)
         end
 
         def block_title
-          str('.') >> space.absent? >> text.as(:title) >> newline
+          (line_start? >> block_delimiter.absent?) >>
+            str('.') >> space.absent? >> text.as(:title) >> newline
         end
 
         def block_type(type)
@@ -83,6 +89,7 @@ module Coradoc
               str('=') |
               str('_') |
               str('+') |
+              str('.') |
               str('-')).repeat(4) | # 4+ characters for most blocks
               str('-').repeat(2, 2)) >> # Exactly 2 for open block
             newline
@@ -90,10 +97,10 @@ module Coradoc
 
         # Block style parser with variable delimiter length
         # @param n_deep [Integer] Nesting depth for nested blocks
-        # @param delimiter [String] The delimiter character ("=", "-", "_", "*", "+")
+        # @param delimiter [String] The delimiter character ("=", "-", "_", "*", "+", ".")
         # @param repeater [Integer] Minimum number of delimiter characters (default: 4)
-        # @param type [Symbol] Block type for special handling (e.g., :pass)
-        def block_style(n_deep = 3, delimiter = '*', repeater = 4, type = nil, verbatim: false)
+        # @param verbatim [Boolean] Treat body as raw text (no substitutions, no nested blocks)
+        def block_style(n_deep = 3, delimiter = '*', repeater = 4, verbatim: false)
           capture_key = :"delimit_#{delimiter}_#{n_deep}"
           current_delimiter = str(delimiter).repeat(repeater).capture(capture_key)
           closing_delimiter = dynamic do |_s, c|
@@ -104,9 +111,9 @@ module Coradoc
             delim_str = c.captures[capture_key].to_s.strip
             closing_pattern = str(delim_str) >> newline
 
-            # Verbatim blocks (source/listing) treat their body as literal
-            # text per the AsciiDoc spec — no substitutions, no nested
-            # blocks. Allowing nested block parsing here would consume
+            # Verbatim blocks (source/listing/literal/pass) treat their body
+            # as literal text per the AsciiDoc spec — no substitutions, no
+            # nested blocks. Allowing nested block parsing here would consume
             # shorter inner delimiters (e.g. `----` inside `------`) and
             # strip the original structure when serializing back.
             content = if verbatim
@@ -127,18 +134,14 @@ module Coradoc
           block_header >>
             line_start? >>
             current_delimiter.as(:delimiter) >> newline >>
-            if type == :pass
-              (text_line(false, unguarded: true, verbatim: verbatim) | empty_line.as(:line_break)).repeat(1).as(:lines)
-            else
-              block_content_with_closing.as(:lines)
-            end >>
+            block_content_with_closing.as(:lines) >>
             line_start? >>
             closing_delimiter >> newline
         end
 
         # Block style parser with EXACT delimiter length (for open blocks)
         # Open blocks use exactly 2 dashes and cannot nest within themselves
-        def block_style_exact(n_deep = 3, delimiter = '-', exact_chars = 2, type = nil)
+        def block_style_exact(n_deep = 3, delimiter = '-', exact_chars = 2)
           capture_key = :"delimit_#{delimiter}_exact_#{exact_chars}_#{n_deep}"
           current_delimiter = str(delimiter).repeat(exact_chars, exact_chars).capture(capture_key)
           closing_delimiter = dynamic do |_s, c|
@@ -161,11 +164,7 @@ module Coradoc
           block_header >>
             line_start? >>
             current_delimiter.as(:delimiter) >> newline >>
-            if type == :pass
-              (text_line(false, unguarded: true) | empty_line.as(:line_break)).repeat(1).as(:lines)
-            else
-              block_content_with_closing.as(:lines)
-            end >>
+            block_content_with_closing.as(:lines) >>
             line_start? >>
             closing_delimiter >> newline
         end

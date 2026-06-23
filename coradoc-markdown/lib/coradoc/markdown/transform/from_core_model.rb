@@ -228,7 +228,11 @@ module Coradoc
           end
 
           def transform_literal_block(block)
-            Coradoc::Markdown::Literal.new(content: block.content.to_s)
+            content = CoreModel::CalloutText.strip_markers(block.content.to_s, block.callouts)
+            literal = Coradoc::Markdown::Literal.new(content: content)
+            return literal if block.callouts.nil? || block.callouts.empty?
+
+            [literal, transform_callout_list(block.callouts)]
           end
 
           def transform_example_block(block)
@@ -241,9 +245,11 @@ module Coradoc
           end
 
           def transform_sidebar_block(block)
+            children = Array(block.children).map { |c| transform(c) }.flat_map { |c| flatten_result(c) }
             Coradoc::Markdown::Sidebar.new(
               content: block.flat_text,
-              title: block.title.to_s
+              title: block.title.to_s,
+              children: children
             )
           end
 
@@ -350,13 +356,13 @@ module Coradoc
 
               # Check if first row is marked as header, or if any of its cells are header cells
               if first_row&.header || first_row_cells.any?(&:header)
-                headers = first_row_cells.map(&:flat_text)
+                headers = first_row_cells.map { |cell| strip_cell_callouts(cell.flat_text) }
                 table_rows = table_rows[1..] || []
               end
 
               # Convert remaining rows to pipe-separated strings
               rows = table_rows.map do |row|
-                Array(row.cells).map(&:flat_text).join(' | ')
+                Array(row.cells).map { |cell| strip_cell_callouts(cell.flat_text) }.join(' | ')
               end
             end
 
@@ -364,6 +370,12 @@ module Coradoc
               headers: headers,
               rows: rows
             )
+          end
+
+          CALLOUT_MARKER_IN_CELL = /\s*<\d+>(?=\s|\z)/.freeze
+
+          def strip_cell_callouts(text)
+            text.to_s.gsub(CALLOUT_MARKER_IN_CELL, '')
           end
 
           def transform_image(image)

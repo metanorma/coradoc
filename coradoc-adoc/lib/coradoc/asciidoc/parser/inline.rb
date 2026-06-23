@@ -123,6 +123,16 @@ module Coradoc
           ).as(:inline_image)
         end
 
+        # Triple-plus inline passthrough: `+++raw content+++`. The content
+        # passes through all substitutions verbatim. Common use is to embed
+        # raw HTML in AsciiDoc documents.
+        def inline_passthrough
+          (str('+++') >>
+            (str('+++').absent? >> match('[^\n]')).repeat(1).as(:raw) >>
+            str('+++')
+          ).as(:inline_passthrough)
+        end
+
         def underline
           (attribute_list >> match('\\[.underline\\]').as(:role) >>
             str('#') >>
@@ -145,6 +155,7 @@ module Coradoc
             str('https').present? |
             str('link:').present? |
             str('image:').present? |
+            str('+++').present? |
             term_type.present? |
             str('footnote').present? |
             stem_type.present?
@@ -171,6 +182,7 @@ module Coradoc
             stem |
             link |
             inline_image |
+            inline_passthrough |
             underline |
             small
         end

@@ -6,13 +6,18 @@ module Coradoc
   module Markdown
     class Serializer
       module Serializers
-        # Literal block: indented code block (4 leading spaces per line).
-        # Distinct from a code block (which carries a language hint).
+        # Literal block: preformatted text with no language hint. Uses an
+        # unlabeled fenced code block so the content survives VitePress's
+        # Vue template parser (4-space indented code blocks only work in
+        # specific contexts and leak `<` characters when not separated by
+        # blank lines).
         class Literal < ElementSerializer
           handles_type ::Coradoc::Markdown::Literal
 
           def call(element, _ctx)
-            element.content.to_s.lines.map { |line| "    #{line}" }.join
+            body = element.content.to_s
+            body = body.chomp + "\n" unless body.end_with?("\n")
+            "```\n#{body}```\n"
           end
         end
       end

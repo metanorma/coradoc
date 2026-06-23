@@ -84,7 +84,8 @@ module Coradoc
         def preceding_verbatim_block(result)
           last = result.last
           return nil unless last.is_a?(Coradoc::CoreModel::SourceBlock) ||
-                            last.is_a?(Coradoc::CoreModel::ListingBlock)
+                            last.is_a?(Coradoc::CoreModel::ListingBlock) ||
+                            last.is_a?(Coradoc::CoreModel::LiteralBlock)
 
           last
         end

@@ -43,6 +43,14 @@ module Coradoc
               )
             end
 
+            # Inline passthrough (`+++raw content+++`)
+            rule(inline_passthrough: subtree(:passthrough)) do
+              Model::Inline::Passthrough.new(
+                content: passthrough[:raw].to_s,
+                form: 'triple'
+              )
+            end
+
             # Attribute reference
             rule(attribute_reference: simple(:name)) do
               Model::Inline::AttributeReference.new(name:)

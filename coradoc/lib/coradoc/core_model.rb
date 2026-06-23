@@ -36,6 +36,7 @@ module Coradoc
     autoload :SpanElement, "#{__dir__}/core_model/inline_element"
     autoload :TermElement, "#{__dir__}/core_model/inline_element"
     autoload :LineBreakElement, "#{__dir__}/core_model/inline_element"
+    autoload :RawInlineElement, "#{__dir__}/core_model/raw_inline_element"
     autoload :StructuralElement, "#{__dir__}/core_model/structural_element"
     autoload :DocumentElement, "#{__dir__}/core_model/structural_element"
     autoload :SectionElement, "#{__dir__}/core_model/structural_element"

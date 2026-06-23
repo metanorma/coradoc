@@ -25,6 +25,7 @@ module Coradoc
           }],
           ['=', 4, nil, ->(opts, attrs) { Model::Block::Example.new(**opts.merge(attributes: attrs)) }],
           ['+', 4, nil, ->(opts, attrs) { Model::Block::Pass.new(**opts.merge(attributes: attrs)) }],
+          ['.', 4, nil, ->(opts, attrs) { Model::Block::Literal.new(**opts.merge(attributes: attrs)) }],
           ['_', 4, nil, ->(opts, attrs) { Model::Block::Quote.new(**opts.merge(attributes: attrs)) }],
           ['-', 4, nil, ->(opts, attrs) { Model::Block::SourceCode.new(**opts.merge(attributes: attrs)) }],
           ['-', 2, 2,  ->(opts, attrs) { Model::Block::Open.new(**opts.merge(attributes: attrs)) }]
