@@ -158,6 +158,15 @@ module Coradoc
                 )
               }
             )
+
+            Registry.register(
+              Coradoc::AsciiDoc::Model::Inline::Passthrough,
+              lambda { |model|
+                Coradoc::CoreModel::RawInlineElement.new(
+                  content: model.content.to_s
+                )
+              }
+            )
           end
 
           def register_table_transformers!

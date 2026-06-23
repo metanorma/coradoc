@@ -25,6 +25,7 @@ module Coradoc
         autoload :Small, 'coradoc/asciidoc/model/inline/small'
         autoload :Strikethrough, 'coradoc/asciidoc/model/inline/strikethrough'
         autoload :Stem, 'coradoc/asciidoc/model/inline/stem'
+        autoload :Passthrough, 'coradoc/asciidoc/model/inline/passthrough'
       end
     end
   end
