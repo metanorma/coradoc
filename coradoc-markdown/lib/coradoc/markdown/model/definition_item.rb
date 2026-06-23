@@ -14,8 +14,10 @@ module Coradoc
       # The definition content (text or nested blocks)
       attribute :content, :string
 
-      # Inline content can be an array of text/inline elements
-      attribute :inline_content, :string, collection: true
+      # Inline content as typed Markdown elements (Code, Strong, Text, etc.).
+      # When present, the Flat serializer renders these via
+      # `ctx.serialize_inline_join` so inline formatting is preserved.
+      attribute :inline_content, Coradoc::Markdown::Base, collection: true, default: []
 
       # Nested block content (paragraphs, code blocks, lists, etc.)
       attribute :blocks, :string, collection: true
