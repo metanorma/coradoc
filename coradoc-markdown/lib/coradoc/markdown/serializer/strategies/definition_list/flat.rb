@@ -24,11 +24,11 @@ module Coradoc
                 list.items.none? { |term| term.nested }
               end
 
-              def render(list, _ctx)
+              def render(list, ctx)
                 list.items.map do |term|
-                  lines = [term.text.to_s]
+                  lines = [render_term(term, ctx)]
                   term.definitions.each do |defn|
-                    content_str = defn.content.to_s
+                    content_str = render_definition(defn, ctx)
                     content_str.lines.each_with_index do |line, i|
                       stripped = line.rstrip
                       next if i.positive? && stripped.empty?
@@ -38,6 +38,22 @@ module Coradoc
                   end
                   lines.join("\n")
                 end.join("\n\n")
+              end
+
+              private
+
+              def render_term(term, ctx)
+                children = term.text_children
+                return term.text.to_s if children.nil? || children.empty?
+
+                ctx.serialize_inline_join(children)
+              end
+
+              def render_definition(defn, ctx)
+                children = defn.inline_content
+                return defn.content.to_s if children.nil? || children.empty?
+
+                ctx.serialize_inline_join(children)
               end
             end
           end

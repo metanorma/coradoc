@@ -412,18 +412,32 @@ module Coradoc
 
           def transform_definition_list(dl)
             items = Array(dl.items).map do |item|
-              definitions = Array(item.definitions).map do |defn|
-                Coradoc::Markdown::DefinitionItem.new(content: defn.to_s)
-              end
+              definition = build_definition_item(item)
               nested = item.nested ? transform_definition_list(item.nested) : nil
+              term_children = Array(item.term_children).map { |c| transform_inline_content(c) }
               Coradoc::Markdown::DefinitionTerm.new(
                 text: item.term.to_s,
-                definitions: definitions,
+                text_children: term_children,
+                definitions: [definition],
                 nested: nested
               )
             end
 
             Coradoc::Markdown::DefinitionList.new(items: items)
+          end
+
+          def build_definition_item(item)
+            children = Array(item.definition_children)
+            if children.empty?
+              content = item.definitions&.first&.to_s
+              return Coradoc::Markdown::DefinitionItem.new(content: content)
+            end
+
+            inline = children.map { |c| transform_inline_content(c) }
+            Coradoc::Markdown::DefinitionItem.new(
+              content: item.definitions&.first&.to_s,
+              inline_content: inline
+            )
           end
 
           def transform_footnote(fn)
