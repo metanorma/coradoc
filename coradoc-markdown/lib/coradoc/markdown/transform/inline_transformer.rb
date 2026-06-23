@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'cgi'
+
 module Coradoc
   module Markdown
     module Transform
@@ -38,7 +40,7 @@ module Coradoc
                 target: element.target.to_s
               )
             when 'raw_inline'
-              element.content.to_s
+              CGI.escapeHTML(element.content.to_s)
             else
               element.content.to_s
             end

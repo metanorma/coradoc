@@ -35,11 +35,16 @@ module Coradoc
 
         # Walks the input children left-to-right. When a paragraph whose
         # content is composed entirely of `<N> text` lines follows a
-        # verbatim block (SourceBlock or ListingBlock), each `<N>` line
-        # becomes a Callout attached to that block instead of a separate
-        # paragraph.
+        # verbatim block (SourceBlock, ListingBlock, LiteralBlock), each
+        # `<N>` line becomes a Callout attached to that block instead of
+        # a separate paragraph.
         #
-        # Annotations that do not follow a verbatim block are preserved
+        # Annotations that follow any other block (e.g. a Table) cannot
+        # attach as Callouts — those blocks don't carry callouts. Convert
+        # the paragraph to an ordered ListBlock so the downstream
+        # serializer renders `1. text` instead of leaking `<N>` markers.
+        #
+        # Annotations with no preceding block at all are preserved
         # verbatim — they may be legitimate prose.
         def merge(children)
           children.each.with_object([]) do |child, result|
@@ -47,6 +52,8 @@ module Coradoc
             target = annotations && preceding_verbatim_block(result)
             if target
               target.callouts.concat(annotations)
+            elsif annotations && result.any?
+              result << callout_list(annotations)
             else
               result << child
             end
@@ -54,6 +61,21 @@ module Coradoc
         end
 
         private
+
+        def callout_list(annotations)
+          ordered = annotations.sort_by { |c| c.index || Float::INFINITY }
+          items = ordered.map do |callout|
+            Coradoc::CoreModel::ListItem.new(
+              marker: '.',
+              content: callout.content.to_s
+            )
+          end
+          Coradoc::CoreModel::ListBlock.new(
+            marker_type: 'ordered',
+            marker_level: 1,
+            items: items
+          )
+        end
 
         # Returns an Array of Callout if the paragraph is entirely
         # callout annotations, otherwise nil.

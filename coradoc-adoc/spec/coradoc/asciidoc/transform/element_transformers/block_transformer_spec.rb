@@ -143,7 +143,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::BlockTransform
       expect(result.title).to eq('Quote')
       expect(result.content).to eq('To be or not to be')
       expect(result.attribution).to eq('Shakespeare')
-      expect(result.children).to be_empty
+      expect(result.children).to all(be_a(Coradoc::CoreModel::ParagraphBlock))
     end
 
     it 'transforms into a specified class with nested blocks' do

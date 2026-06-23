@@ -150,10 +150,19 @@ module Coradoc
                 )
               else
                 content_lines = lines.map { |line| ToCoreModel.extract_text_content(line) }.join("\n")
+                children = lines.map do |line|
+                  inline = ToCoreModel.transform_inline_content(line)
+                  inline = [Coradoc::CoreModel::TextContent.new(text: "")] if inline.empty?
+                  Coradoc::CoreModel::ParagraphBlock.new(
+                    content: ToCoreModel.extract_text_content(line),
+                    children: Array(inline)
+                  )
+                end
                 klass.new(
                   id: block.id,
                   title: ToCoreModel.extract_title_text(block.title),
                   content: content_lines,
+                  children: children,
                   language: ToCoreModel.extract_block_language(block),
                   **extra_attrs
                 )
