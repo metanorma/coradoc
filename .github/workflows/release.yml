@@ -13,6 +13,7 @@ on:
           - coradoc-html
           - coradoc-markdown
           - coradoc-docx
+          - coradoc-mirror
       next_version:
         description: >-
           Next release version. Possible values: x.y.z, major, minor,
@@ -46,6 +47,7 @@ jobs:
           (github.event.inputs.gem_name == 'coradoc-html' && 'lib/coradoc/html/version.rb') ||
           (github.event.inputs.gem_name == 'coradoc-markdown' && 'lib/coradoc/markdown/version.rb') ||
           (github.event.inputs.gem_name == 'coradoc-docx' && 'lib/coradoc/docx/version.rb') ||
+          (github.event.inputs.gem_name == 'coradoc-mirror' && 'lib/coradoc/mirror/version.rb') ||
           ''
         }}
     secrets:
