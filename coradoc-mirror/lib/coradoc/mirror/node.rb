@@ -292,22 +292,17 @@ module Coradoc
 
       # Admonition (NOTE, TIP, WARNING, CAUTION, IMPORTANT).
       #
-      # The Ruby-side source-of-truth attribute is `admonition_type`. When
-      # constructed via `js_shape: true`, #to_h emits `attrs.type` instead,
-      # to match the @metanorma/mirror JS contract. Both shapes
-      # deserialize transparently via .from_h.
+      # Canonical Ruby attribute is `admonition_type` (distinct from Node's
+      # built-in `type`, which carries the ProseMirror node-type string).
+      # The wire attribute name is `type` per the @metanorma/mirror JS
+      # contract — `to_h` performs a plain rename, not dialect-aware
+      # shape-shifting. `from_h` accepts either name for forward compat
+      # with previously-serialized trees.
       class Admonition < Node
         PM_TYPE = 'admonition'
         node_attr :admonition_type, :title, :label, :id
 
-        def initialize(js_shape: false, **kwargs)
-          super(**kwargs)
-          @js_shape = js_shape
-        end
-
         def to_h
-          return super unless @js_shape
-
           hash = super
           attrs = hash['attrs']
           return hash unless attrs.is_a?(Hash) && attrs.key?('admonition_type')
@@ -319,15 +314,12 @@ module Coradoc
         def self.from_h(hash)
           return nil unless hash
 
-          raw_attrs = hash['attrs'] || {}
-          attrs = raw_attrs.dup
-          js_shape = attrs.key?('type') && !attrs.key?('admonition_type')
+          attrs = (hash['attrs'] || {}).dup
           attrs['admonition_type'] ||= attrs.delete('type') if attrs.key?('type')
 
           kwargs = build_kwargs(self, attrs)
           kwargs[:content] = (hash['content'] || []).map { |c| Node.from_h(c) }
           kwargs[:marks] = (hash['marks'] || []).map { |m| Mark.from_h(m) }
-          kwargs[:js_shape] = js_shape
           new(**kwargs)
         end
       end

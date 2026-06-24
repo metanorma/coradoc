@@ -245,7 +245,7 @@ RSpec.describe 'JS library vocabulary conformance' do
   end
 
   describe 'Phase 4 admonition shape' do
-    it 'emits attrs.admonition_type by default (backward compat)' do
+    it 'emits attrs.type always (dialect-agnostic)' do
       element = Coradoc::CoreModel::AnnotationBlock.new(
         annotation_type: 'note', content: 'heads up'
       )
@@ -253,11 +253,11 @@ RSpec.describe 'JS library vocabulary conformance' do
         element, context: Coradoc::Mirror::CoreModelToMirror.new
       )
       hash = node.to_h
-      expect(hash['attrs']['admonition_type']).to eq('note')
-      expect(hash['attrs']).not_to include('type')
+      expect(hash['attrs']['type']).to eq('note')
+      expect(hash['attrs']).not_to include('admonition_type')
     end
 
-    it 'emits attrs.type when partition_structural' do
+    it 'emits attrs.type regardless of partition_structural' do
       transformer = Coradoc::Mirror::CoreModelToMirror.new
       transformer.partition_structural = true
       element = Coradoc::CoreModel::AnnotationBlock.new(
@@ -271,10 +271,9 @@ RSpec.describe 'JS library vocabulary conformance' do
       expect(hash['attrs']).not_to include('admonition_type')
     end
 
-    it 'round-trips JS-shape admonition back to AnnotationBlock' do
+    it 'round-trips admonition back to AnnotationBlock' do
       mirror = Coradoc::Mirror::Node::Admonition.new(
         admonition_type: 'warning',
-        js_shape: true,
         content: [Coradoc::Mirror::Node::Text.new(text: 'careful')]
       )
       hash = mirror.to_h
@@ -290,12 +289,18 @@ RSpec.describe 'JS library vocabulary conformance' do
       expect(core.children.first.annotation_type).to eq('warning')
     end
 
-    it 'round-trips legacy-shape admonition back to AnnotationBlock' do
-      mirror = Coradoc::Mirror::Node::Admonition.new(
-        admonition_type: 'tip',
-        content: [Coradoc::Mirror::Node::Text.new(text: 'hint')]
-      )
-      doc = Coradoc::Mirror::Node::Document.new(content: [mirror])
+    it 'round-trips legacy-shape (attrs.admonition_type) payloads back to AnnotationBlock' do
+      # A payload serialized before the canonical-rename shipped still
+      # carries `attrs.admonition_type`. from_h must normalize it.
+      legacy_hash = {
+        'type' => 'admonition',
+        'attrs' => { 'admonition_type' => 'tip' },
+        'content' => [{ 'type' => 'text', 'text' => 'hint' }]
+      }
+      rebuilt = Coradoc::Mirror::Node::Admonition.from_h(legacy_hash)
+      expect(rebuilt.admonition_type).to eq('tip')
+
+      doc = Coradoc::Mirror::Node::Document.new(content: [rebuilt])
       core = Coradoc::Mirror::MirrorToCoreModel.new.call(doc)
       expect(core.children.first).to be_a(Coradoc::CoreModel::AnnotationBlock)
       expect(core.children.first.annotation_type).to eq('tip')
