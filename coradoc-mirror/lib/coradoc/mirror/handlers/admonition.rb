@@ -5,10 +5,9 @@ module Coradoc
     module Handlers
       # Admonition (NOTE, TIP, WARNING, CAUTION, IMPORTANT) handler.
       #
-      # The annotation_type is always set from the CoreModel value. When
-      # partition_structural is on, the node is built with `js_shape: true`
-      # so #to_h emits `attrs.type` (the @metanorma/mirror JS contract);
-      # otherwise it emits the legacy `attrs.admonition_type`.
+      # Emits a dialect-agnostic `Node::Admonition`. The canonical Ruby
+      # attribute is `admonition_type`; the model renames it to the wire
+      # name `type` on #to_h unconditionally. No flag, no dialect branch.
       module Admonition
         def self.call(element, context:)
           content = context.extract_content(element)
@@ -19,8 +18,7 @@ module Coradoc
             admonition_type: element.annotation_type,
             title: element.title,
             label: element.annotation_label,
-            content: content,
-            js_shape: context.partition_structural
+            content: content
           )
         end
       end
