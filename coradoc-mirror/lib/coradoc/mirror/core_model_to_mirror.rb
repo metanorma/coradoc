@@ -24,11 +24,18 @@ module Coradoc
         @registry = registry
         @footnote_counter = 0
         @footnotes = []
+        @partition_structural = false
       end
 
-      def call(document)
+      # Read by Handlers::Structural.section to decide whether to emit
+      # generic `section` (legacy) or a JS SECTION_TYPE (`clause`, `annex`,
+      # etc.) when partition_structural mode is on.
+      attr_accessor :partition_structural
+
+      def call(document, partition_structural: false)
         @footnote_counter = 0
         @footnotes = []
+        @partition_structural = partition_structural
 
         content = extract_content(document)
         fn_block = flush_footnotes
@@ -38,8 +45,21 @@ module Coradoc
         Node::Document.new(
           title: attrs[:title],
           id: attrs[:id],
-          content: content
+          content: partition_structural ? wrap_structural(content) : content
         )
+      end
+
+      # Partitions flat doc children into [preface?, sections?, *bibliography,
+      # *trailing] per the @metanorma/mirror JS structural contract. See
+      # Handlers::Structural.partition_doc_children for the rules.
+      def wrap_structural(children)
+        partitioned = Handlers::Structural.partition_doc_children(children)
+        wrapped = []
+        wrapped << Node::Preamble.new(content: partitioned[:preface]) if partitioned[:preface].any?
+        wrapped << Node::Sections.new(content: partitioned[:sections]) if partitioned[:sections].any?
+        wrapped.concat(partitioned[:bibliography])
+        wrapped.concat(partitioned[:trailing])
+        wrapped
       end
 
       def extract_content(element)

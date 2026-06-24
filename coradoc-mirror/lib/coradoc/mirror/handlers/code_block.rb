@@ -25,13 +25,28 @@ module Coradoc
 
           def build_code_block(element, context, passthrough: false)
             text = extract_text(element)
-            Node::CodeBlock.new(
-              id: element.id,
-              title: element.title,
-              language: element.language,
-              passthrough: passthrough || nil,
-              content: [context.text_node(text)]
-            )
+            js_mode = context.partition_structural
+
+            if js_mode
+              # @metanorma/mirror JS sourcecode contract: text in attrs.text,
+              # no children. Pre-formatted text rendered via <pre><code>.
+              Node::CodeBlock.new(
+                id: element.id,
+                title: element.title,
+                language: element.language,
+                passthrough: passthrough || nil,
+                text: text,
+                content: []
+              )
+            else
+              Node::CodeBlock.new(
+                id: element.id,
+                title: element.title,
+                language: element.language,
+                passthrough: passthrough || nil,
+                content: [context.text_node(text)]
+              )
+            end
           end
 
           def extract_text(element)

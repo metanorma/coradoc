@@ -174,8 +174,8 @@ RSpec.describe Coradoc::Mirror::Node do
       expect(described_class::NODES['doc']).to eq(described_class::Document)
       expect(described_class::NODES['paragraph']).to eq(described_class::Paragraph)
       expect(described_class::NODES['heading']).to eq(described_class::Heading)
-      expect(described_class::NODES['code_block']).to eq(described_class::CodeBlock)
-      expect(described_class::NODES['blockquote']).to eq(described_class::Blockquote)
+      expect(described_class::NODES['sourcecode']).to eq(described_class::CodeBlock)
+      expect(described_class::NODES['quote']).to eq(described_class::Blockquote)
       expect(described_class::NODES['bullet_list']).to eq(described_class::BulletList)
       expect(described_class::NODES['ordered_list']).to eq(described_class::OrderedList)
       expect(described_class::NODES['list_item']).to eq(described_class::ListItem)
@@ -196,7 +196,7 @@ RSpec.describe Coradoc::Mirror::Node do
       hash = {
         'type' => 'text',
         'text' => 'bold text',
-        'marks' => [{ 'type' => 'bold' }]
+        'marks' => [{ 'type' => 'strong' }]
       }
       node = described_class::Text.from_h(hash)
       expect(node.text).to eq('bold text')

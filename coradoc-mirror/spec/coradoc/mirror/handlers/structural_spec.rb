@@ -46,7 +46,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Structural do
 
       node = described_class.preamble(element, context: context)
       expect(node).to be_a(Coradoc::Mirror::Node::Preamble)
-      expect(node.type).to eq('preamble')
+      expect(node.type).to eq('preface')
       expect(node.content.length).to eq(1)
     end
   end
@@ -61,7 +61,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Structural do
 
       node = described_class.header(element, context: context)
       expect(node).to be_a(Coradoc::Mirror::Node::Header)
-      expect(node.type).to eq('header')
+      expect(node.type).to eq('floating_title')
       expect(node.title).to eq('Main Title')
       expect(node.level).to eq(1)
       expect(node.content.length).to eq(1)

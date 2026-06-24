@@ -18,7 +18,7 @@ RSpec.describe Coradoc::Mirror::Mark do
   describe 'serialization' do
     it 'serializes to hash' do
       mark = Coradoc::Mirror::Mark::Bold.new
-      expect(mark.to_h).to eq({ 'type' => 'bold' })
+      expect(mark.to_h).to eq({ 'type' => 'strong' })
     end
 
     it 'includes attrs when present' do
@@ -32,7 +32,7 @@ RSpec.describe Coradoc::Mirror::Mark do
 
   describe 'deserialization' do
     it 'reconstructs from hash' do
-      hash = { 'type' => 'bold' }
+      hash = { 'type' => 'strong' }
       mark = described_class.from_h(hash)
       expect(mark).to be_a(Coradoc::Mirror::Mark::Bold)
     end
@@ -61,8 +61,8 @@ RSpec.describe Coradoc::Mirror::Mark do
   describe 'mark type subclasses' do
     it 'registers all subclasses in MARKS map' do
       marks = described_class::MARKS
-      expect(marks['bold']).to eq(Coradoc::Mirror::Mark::Bold)
-      expect(marks['italic']).to eq(Coradoc::Mirror::Mark::Italic)
+      expect(marks['strong']).to eq(Coradoc::Mirror::Mark::Bold)
+      expect(marks['emphasis']).to eq(Coradoc::Mirror::Mark::Italic)
       expect(marks['code']).to eq(Coradoc::Mirror::Mark::Monospace)
       expect(marks['link']).to eq(Coradoc::Mirror::Mark::Link)
       expect(marks['xref']).to eq(Coradoc::Mirror::Mark::CrossReference)

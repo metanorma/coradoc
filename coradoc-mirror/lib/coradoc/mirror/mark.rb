@@ -71,11 +71,11 @@ module Coradoc
       # ── Mark type subclasses ────────────────────────────────────
 
       class Bold < Mark
-        PM_TYPE = 'bold'
+        PM_TYPE = 'strong'
       end
 
       class Italic < Mark
-        PM_TYPE = 'italic'
+        PM_TYPE = 'emphasis'
       end
 
       class Monospace < Mark
@@ -87,7 +87,7 @@ module Coradoc
       end
 
       class Strikethrough < Mark
-        PM_TYPE = 'strikethrough'
+        PM_TYPE = 'strike'
       end
 
       class Subscript < Mark
