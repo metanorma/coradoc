@@ -21,8 +21,27 @@ module Coradoc
             id: section_ast[:id],
             level: extract_level(section_ast),
             children: build_section_contents(section_ast[:contents]) +
-                      build_subsections(section_ast[:sections])
+                      build_subsections(section_ast[:sections]),
+            attributes: build_section_metadata(section_ast[:attribute_list])
           )
+        end
+
+        # Convert the AsciiDoc `[style]` / `[role=x]` block header into a
+        # CoreModel::Metadata so downstream consumers (coradoc-mirror) can
+        # dispatch on `style` to pick a JS section type (annex, abstract, ...).
+        # Returns nil when the section had no attribute list — preserves the
+        # pre-fix default.
+        def build_section_metadata(attribute_list)
+          normalized = Coradoc::AsciiDoc::Transformer::AttributeListNormalizer
+                       .coerce(attribute_list)
+          return nil unless normalized.is_a?(Coradoc::AsciiDoc::Model::AttributeList)
+
+          metadata = Coradoc::CoreModel::Metadata.new
+          first_positional = normalized.positional.first
+          metadata['style'] = first_positional.value if first_positional
+          named_role = normalized.named.find { |n| n.name == 'role' }
+          metadata['role'] = named_role.value.first if named_role&.value&.any?
+          metadata
         end
 
         def build_section_contents(contents_ast)

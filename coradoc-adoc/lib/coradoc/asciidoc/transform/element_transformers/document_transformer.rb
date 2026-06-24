@@ -48,8 +48,27 @@ module Coradoc
                 id: section_id,
                 level: section.level,
                 title: title_text,
-                children: content_children + nested_sections
+                children: content_children + nested_sections,
+                attributes: section_metadata_from(section)
               )
+            end
+
+            # Convert the AsciiDoc `[style]` / `[role=x]` block header on a
+            # Model::Section into a CoreModel::Metadata so coradoc-mirror's
+            # Handlers::Structural can dispatch on `style` to pick the right
+            # JS section type (annex, abstract, references, ...). Returns
+            # nil when the section carries no attribute list — preserving
+            # the pre-fix default.
+            def section_metadata_from(section)
+              list = section.attribute_list
+              return nil unless list.is_a?(Coradoc::AsciiDoc::Model::AttributeList)
+
+              metadata = Coradoc::CoreModel::Metadata.new
+              first_positional = list.positional.first
+              metadata['style'] = first_positional.value if first_positional
+              named_role = list.named.find { |n| n.name == 'role' }
+              metadata['role'] = named_role.value.first if named_role&.value&.any?
+              metadata
             end
           end
         end
