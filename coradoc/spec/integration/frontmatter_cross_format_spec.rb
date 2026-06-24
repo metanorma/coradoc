@@ -88,26 +88,34 @@ RSpec.describe 'Frontmatter cross-format integration', type: :integration do
   end
 
   describe 'CoreModel → Mirror → CoreModel', if: defined?(Coradoc::Mirror) do
-    it 'survives JSON round-trip with Date narrowed to ISO 8601 string' do
+    it 'survives JSON round-trip preserving Date as a typed Date' do
       core = Coradoc::AsciiDoc.parse_to_core(adoc_text)
       original_fm = core.children.first
 
       mirror_doc = Coradoc::Mirror.transform(core)
-      json = JSON.generate(mirror_doc.to_h)
+      json = JSON.generate(mirror_doc.to_hash)
 
       parsed = JSON.parse(json)
       frontmatter_node = parsed.dig('content', 0)
       expect(frontmatter_node['type']).to eq('frontmatter')
-      expect(frontmatter_node['attrs']['data']['date']).to eq('2024-07-22')
-      expect(frontmatter_node['attrs']['data']['count']).to eq(42)
-      expect(frontmatter_node['attrs']['data']['tags']).to eq(%w[foo bar])
+      expect(frontmatter_node['attrs']['schema']).to eq('https://example.com/s.json')
 
-      rebuilt_node = Coradoc::Mirror::Node.from_h(parsed)
+      # Typed tree: attrs.entries is a list of {key, value} pairs.
+      entries = frontmatter_node['attrs']['entries']
+      by_key = entries.each_with_object({}) { |e, h| h[e['key']] = e['value'] }
+      expect(by_key['date']['value_type']).to eq('date')
+      expect(by_key['date']['date_value']).to eq('2024-07-22')
+      expect(by_key['count']['value_type']).to eq('integer')
+      expect(by_key['count']['integer_value']).to eq(42)
+      expect(by_key['tags']['value_type']).to eq('array')
+      expect(by_key['tags']['items'].map { |v| v['string_value'] }).to eq(%w[foo bar])
+
+      rebuilt_node = Coradoc::Mirror.from_hash(parsed)
       rebuilt = Coradoc::Mirror::MirrorToCoreModel.new.call(rebuilt_node)
       rebuilt_fm = rebuilt.children.find { |c| c.is_a?(Coradoc::CoreModel::FrontmatterBlock) }
       expect(rebuilt_fm.schema).to eq(original_fm.schema)
       expect(rebuilt_fm.data['title']).to eq('Release Notes')
-      expect(rebuilt_fm.data['date']).to eq('2024-07-22')
+      expect(rebuilt_fm.data['date']).to eq(Date.new(2024, 7, 22))
       expect(rebuilt_fm.data['count']).to eq(42)
       expect(rebuilt_fm.data['tags']).to eq(%w[foo bar])
     end
