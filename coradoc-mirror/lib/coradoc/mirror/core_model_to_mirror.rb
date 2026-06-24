@@ -51,9 +51,9 @@ module Coradoc
 
       # Partitions flat doc children into [preface?, sections?, *bibliography,
       # *trailing] per the @metanorma/mirror JS structural contract. See
-      # Handlers::Structural.partition_doc_children for the rules.
+      # Partitioner for the bucketing rules.
       def wrap_structural(children)
-        partitioned = Handlers::Structural.partition_doc_children(children)
+        partitioned = Partitioner.partition(children)
         wrapped = []
         wrapped << Node::Preamble.new(content: partitioned[:preface]) if partitioned[:preface].any?
         wrapped << Node::Sections.new(content: partitioned[:sections]) if partitioned[:sections].any?

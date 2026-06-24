@@ -152,8 +152,7 @@ RSpec.describe 'JS library vocabulary conformance' do
         content: [Coradoc::Mirror::Node::Text.new(text: 'x')]
       )
       # Simulate the post-extract state by partitioning directly.
-      buckets = Coradoc::Mirror::Handlers::Structural
-                .partition_doc_children([paragraph, footnotes])
+      buckets = Coradoc::Mirror::Partitioner.partition([paragraph, footnotes])
       expect(buckets[:trailing]).to eq([footnotes])
       expect(buckets[:preface]).to eq([paragraph])
     end
@@ -199,8 +198,7 @@ RSpec.describe 'JS library vocabulary conformance' do
       annex = Coradoc::Mirror::Node::Section.new(
         type: 'annex', title: 'A', level: 1
       )
-      buckets = Coradoc::Mirror::Handlers::Structural
-                .partition_doc_children([clause, annex])
+      buckets = Coradoc::Mirror::Partitioner.partition([clause, annex])
       expect(buckets[:sections].map(&:type)).to eq(%w[clause annex])
     end
   end
