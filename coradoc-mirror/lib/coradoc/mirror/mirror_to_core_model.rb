@@ -1,29 +1,16 @@
 # frozen_string_literal: true
 
-require_relative 'reverse_builders'
-
 module Coradoc
   module Mirror
     # Transforms ProseMirror-compatible Mirror nodes back into CoreModel.
     #
-    # Dispatch is delegated to ReverseBuilder::REGISTRY — adding a new
-    # Mirror node type is done by registering a new Builder class, with
-    # no edit to this file (OCP).
+    # Dispatch is delegated to ReverseBuilder (node-level) and
+    # MarkReverseBuilder (mark-level) — adding a new node or mark type is
+    # done by registering a new Builder class, with no edit to this file
+    # (OCP). ReverseBuilder and MarkReverseBuilder are autoloaded from
+    # coradoc/mirror.rb; referencing them here triggers load of the
+    # registry files, which is where the built-in builders self-register.
     class MirrorToCoreModel
-      # Mark type → CoreModel class mapping (OCP: add new marks by adding
-      # a row here, or — for non-trivial marks like `link` — extending
-      # the case statement in #apply_mark).
-      SIMPLE_MARKS = {
-        'strong' => CoreModel::BoldElement,
-        'emphasis' => CoreModel::ItalicElement,
-        'code' => CoreModel::MonospaceElement,
-        'underline' => CoreModel::UnderlineElement,
-        'strike' => CoreModel::StrikethroughElement,
-        'subscript' => CoreModel::SubscriptElement,
-        'superscript' => CoreModel::SuperscriptElement,
-        'highlight' => CoreModel::HighlightElement
-      }.freeze
-
       def call(mirror_node)
         build_node(mirror_node)
       end
@@ -49,18 +36,14 @@ module Coradoc
         end
       end
 
+      # Mark dispatch goes through MarkReverseBuilder so adding a new
+      # mark type is purely additive (OCP parity with node dispatch).
+      # Unknown marks pass `inner` through unchanged.
       def apply_mark(inner, mark)
-        klass = SIMPLE_MARKS[mark.type]
-        return klass.new(children: Array(inner)) if klass
+        builder_class = MarkReverseBuilder.lookup(mark.type)
+        return inner unless builder_class
 
-        case mark.type
-        when 'link'
-          CoreModel::LinkElement.new(target: mark.href, children: Array(inner))
-        when 'xref'
-          CoreModel::CrossReferenceElement.new(target: mark.target, children: Array(inner))
-        else
-          inner
-        end
+        builder_class.new.build(inner, mark)
       end
 
       def build_inline_children(node)
