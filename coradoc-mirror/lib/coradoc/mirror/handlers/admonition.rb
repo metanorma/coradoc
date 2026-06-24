@@ -14,10 +14,12 @@ module Coradoc
           return nil if content.empty?
 
           Node::Admonition.new(
-            id: element.id,
-            admonition_type: element.annotation_type,
-            title: element.title,
-            label: element.annotation_label,
+            attrs: Node::Admonition::Attrs.new(
+              admonition_type: element.annotation_type,
+              title: element.title,
+              label: element.annotation_label,
+              id: element.id
+            ),
             content: content
           )
         end

@@ -11,9 +11,11 @@ module Coradoc
           return nil if entries.empty?
 
           Node::Bibliography.new(
-            id: element.id,
-            title: element.title,
-            level: element.level,
+            attrs: Node::Bibliography::Attrs.new(
+              id: element.id,
+              title: element.title,
+              level: element.level
+            ),
             content: entries
           )
         end
@@ -26,9 +28,11 @@ module Coradoc
             return nil if text.nil? || text.empty?
 
             Node::BibliographyEntry.new(
-              anchor_name: entry.anchor_name,
-              document_id: entry.document_id,
-              url: entry.url,
+              attrs: Node::BibliographyEntry::Attrs.new(
+                anchor_name: entry.anchor_name,
+                document_id: entry.document_id,
+                url: entry.url
+              ),
               content: [context.text_node(text)]
             )
           end

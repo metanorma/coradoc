@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'json'
+require 'yaml'
 
 module Coradoc
   module Mirror
@@ -127,7 +128,7 @@ module Coradoc
     # @return [String] JSON string
     def self.to_json(document, pretty: false, registry: default_registry)
       node = transform(document, registry: registry)
-      node.to_json(pretty: pretty)
+      pretty ? JSON.pretty_generate(node.to_hash) : JSON.generate(node.to_hash)
     end
 
     # Convenience: transform and serialize to YAML string.
@@ -137,7 +138,24 @@ module Coradoc
     # @return [String] YAML string
     def self.to_yaml(document, registry: default_registry)
       node = transform(document, registry: registry)
-      node.to_yaml
+      YAML.dump(node.to_hash)
+    end
+
+    # Top-level hash dispatcher: reads `type` and delegates to the
+    # matching Node subclass's lutaml-generated `from_hash`. This is a
+    # module-level factory — the actual deserialization is done by
+    # lutaml on the resolved subclass. Unknown types raise.
+    #
+    # @param hash [Hash, nil] wire-shape hash
+    # @return [Node, nil]
+    def self.from_hash(hash)
+      return nil if hash.nil?
+
+      type = hash.is_a?(Hash) ? hash['type'] : nil
+      klass_name = Node::TYPE_TO_CLASS[type]
+      raise Error, "Unknown mirror node type: #{type.inspect}" unless klass_name
+
+      Object.const_get(klass_name).from_hash(hash)
     end
   end
 end

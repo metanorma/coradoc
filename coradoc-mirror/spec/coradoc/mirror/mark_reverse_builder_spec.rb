@@ -8,10 +8,10 @@ require 'spec_helper'
 RSpec.describe Coradoc::Mirror::MarkReverseBuilder do
   describe 'REGISTRY coverage' do
     it 'registers a builder for every Mark PM_TYPE' do
-      mark_types = Coradoc::Mirror::Mark::MARKS.keys
+      mark_types = Coradoc::Mirror::Mark::TYPE_TO_CLASS.keys
       registered = described_class.registered_types
 
-      missing = mark_types - registered
+      _missing = mark_types - registered
       # Stem, Span, Subscript, etc. may not yet have a CoreModel target —
       # they pass through unchanged in apply_mark. Only fail if a mark
       # that SHOULD reverse is missing. For now, document what we have.
@@ -48,7 +48,9 @@ RSpec.describe Coradoc::Mirror::MarkReverseBuilder do
 
     it 'reads href from Link mark' do
       inner = Coradoc::CoreModel::TextContent.new(text: 'click')
-      mark = Coradoc::Mirror::Mark::Link.new(href: 'https://x')
+      mark = Coradoc::Mirror::Mark::Link.new(
+        attrs: Coradoc::Mirror::Mark::Link::Attrs.new(href: 'https://x')
+      )
       result = described_class.lookup('link').new.build(inner, mark)
       expect(result).to be_a(Coradoc::CoreModel::LinkElement)
       expect(result.target).to eq('https://x')
@@ -57,7 +59,9 @@ RSpec.describe Coradoc::Mirror::MarkReverseBuilder do
 
     it 'reads target from CrossReference mark' do
       inner = Coradoc::CoreModel::TextContent.new(text: 'see')
-      mark = Coradoc::Mirror::Mark::CrossReference.new(target: 'sec-1')
+      mark = Coradoc::Mirror::Mark::CrossReference.new(
+        attrs: Coradoc::Mirror::Mark::CrossReference::Attrs.new(target: 'sec-1')
+      )
       result = described_class.lookup('xref').new.build(inner, mark)
       expect(result).to be_a(Coradoc::CoreModel::CrossReferenceElement)
       expect(result.target).to eq('sec-1')

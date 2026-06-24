@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe Coradoc::Mirror::Handlers::GenericBlock do
@@ -29,9 +30,9 @@ RSpec.describe Coradoc::Mirror::Handlers::GenericBlock do
       result = described_class.call(element, context: context)
 
       expect(result).to be_a(Coradoc::Mirror::Node::GenericBlock)
-      expect(result.id).to eq('block-1')
-      expect(result.title).to eq('Test Block')
-      expect(result.semantic_type).to eq('test_type')
+      expect(result.attrs.id).to eq('block-1')
+      expect(result.attrs.title).to eq('Test Block')
+      expect(result.attrs.semantic_type).to eq('test_type')
       expect(result.content.length).to eq(1)
       expect(result.content.first.type).to eq('text')
       expect(result.content.first.text).to eq('Some text')
@@ -51,9 +52,9 @@ RSpec.describe Coradoc::Mirror::Handlers::GenericBlock do
       result = described_class.call(element, context: context)
 
       expect(result).to be_a(Coradoc::Mirror::Node::GenericBlock)
-      expect(result.id).to be_nil
-      expect(result.title).to be_nil
-      expect(result.semantic_type).to be_nil
+      expect(result.attrs.id).to be_nil
+      expect(result.attrs.title).to be_nil
+      expect(result.attrs.semantic_type).to be_nil
     end
   end
 end

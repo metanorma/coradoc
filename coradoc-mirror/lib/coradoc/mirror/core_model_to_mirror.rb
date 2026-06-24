@@ -43,8 +43,7 @@ module Coradoc
 
         attrs = build_document_attrs(document)
         Node::Document.new(
-          title: attrs[:title],
-          id: attrs[:id],
+          attrs: Node::Document::Attrs.new(title: attrs[:title], id: attrs[:id]),
           content: partition_structural ? wrap_structural(content) : content
         )
       end
@@ -95,7 +94,11 @@ module Coradoc
           id: fn_id, ref_id: ref_id, number: num, content: fn_content
         )
 
-        Node::FootnoteMarker.new(id: fn_id, ref_id: ref_id, number: num)
+        Node::FootnoteMarker.new(
+          attrs: Node::FootnoteMarker::Attrs.new(
+            id: fn_id, ref_id: ref_id, number: num
+          )
+        )
       end
 
       def resolve_footnote_reference(ref)
@@ -104,9 +107,11 @@ module Coradoc
 
         if entry
           Node::FootnoteMarker.new(
-            id: entry.id,
-            ref_id: "fn-ref-#{entry.number}-dup-#{@footnote_counter}",
-            number: entry.number
+            attrs: Node::FootnoteMarker::Attrs.new(
+              id: entry.id,
+              ref_id: "fn-ref-#{entry.number}-dup-#{@footnote_counter}",
+              number: entry.number
+            )
           )
         else
           text_node("[#{target_id || 'footnote'}]")
@@ -118,7 +123,10 @@ module Coradoc
 
         entries = @footnotes.map do |fn|
           Node::FootnoteEntry.new(
-            id: fn.id, ref_id: fn.ref_id, number: fn.number, content: fn.content
+            attrs: Node::FootnoteEntry::Attrs.new(
+              id: fn.id, ref_id: fn.ref_id, number: fn.number
+            ),
+            content: fn.content
           )
         end
 

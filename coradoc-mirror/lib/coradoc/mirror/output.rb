@@ -26,7 +26,7 @@ module Coradoc
             pretty = options[:pretty] != false
             input.each_with_object({}) do |(filename, document), result|
               node = Coradoc::Mirror.transform(document)
-              result[filename] = node.to_json(pretty: pretty)
+              result[filename] = pretty ? JSON.pretty_generate(node.to_hash) : JSON.generate(node.to_hash)
             end
           end
         end
@@ -46,7 +46,7 @@ module Coradoc
           def processor_execute(input, _options = {})
             input.each_with_object({}) do |(filename, document), result|
               node = Coradoc::Mirror.transform(document)
-              result[filename] = node.to_yaml
+              result[filename] = YAML.dump(node.to_hash)
             end
           end
         end

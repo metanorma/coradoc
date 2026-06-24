@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe Coradoc::Mirror::Handlers::Inline do
@@ -44,7 +45,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Inline do
       expect(nodes.first.type).to eq('text')
       expect(nodes.first.text).to eq('Example')
       expect(nodes.first.marks.first.type).to eq('link')
-      expect(nodes.first.marks.first.href).to eq('https://example.com')
+      expect(nodes.first.marks.first.attrs.href).to eq('https://example.com')
     end
   end
 

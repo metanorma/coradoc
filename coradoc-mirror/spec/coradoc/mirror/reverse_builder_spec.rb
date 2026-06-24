@@ -8,7 +8,7 @@ require 'spec_helper'
 RSpec.describe Coradoc::Mirror::ReverseBuilder do
   describe 'REGISTRY coverage' do
     it 'registers a builder for every Node PM_TYPE' do
-      node_types = Coradoc::Mirror::Node::NODES.keys
+      node_types = Coradoc::Mirror::Node::TYPE_TO_CLASS.keys
       registered = described_class.registered_types
 
       missing = node_types - registered

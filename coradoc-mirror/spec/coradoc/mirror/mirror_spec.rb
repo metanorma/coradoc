@@ -31,7 +31,7 @@ RSpec.describe Coradoc::Mirror do
 
       result = described_class.transform(doc)
       expect(result).to be_a(Coradoc::Mirror::Node::Document)
-      expect(result.title).to eq('Quick Test')
+      expect(result.attrs.title).to eq('Quick Test')
     end
   end
 

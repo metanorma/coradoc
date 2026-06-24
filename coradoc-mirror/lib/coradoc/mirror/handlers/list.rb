@@ -12,8 +12,10 @@ module Coradoc
 
           node_class = ordered?(element) ? Node::OrderedList : Node::BulletList
           node_class.new(
-            id: element.id,
-            start: element.is_a?(CoreModel::ListBlock) ? element.start : nil,
+            attrs: node_class::Attrs.new(
+              id: element.id,
+              start: element.is_a?(CoreModel::ListBlock) ? element.start : nil
+            ),
             content: items
           )
         end
@@ -25,7 +27,10 @@ module Coradoc
             content = build_item_content(item, context)
             return nil if content.empty?
 
-            Node::ListItem.new(id: item.id, content: content)
+            Node::ListItem.new(
+              attrs: Node::ListItem::Attrs.new(id: item.id),
+              content: content
+            )
           end
 
           def build_item_content(item, context)

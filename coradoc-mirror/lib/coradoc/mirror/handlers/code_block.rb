@@ -31,19 +31,21 @@ module Coradoc
               # @metanorma/mirror JS sourcecode contract: text in attrs.text,
               # no children. Pre-formatted text rendered via <pre><code>.
               Node::CodeBlock.new(
-                id: element.id,
-                title: element.title,
-                language: element.language,
-                passthrough: passthrough || nil,
-                text: text,
+                attrs: Node::CodeBlock::Attrs.new(
+                  title: element.title,
+                  language: element.language,
+                  passthrough: passthrough || nil,
+                  text: text
+                ),
                 content: []
               )
             else
               Node::CodeBlock.new(
-                id: element.id,
-                title: element.title,
-                language: element.language,
-                passthrough: passthrough || nil,
+                attrs: Node::CodeBlock::Attrs.new(
+                  title: element.title,
+                  language: element.language,
+                  passthrough: passthrough || nil
+                ),
                 content: [context.text_node(text)]
               )
             end

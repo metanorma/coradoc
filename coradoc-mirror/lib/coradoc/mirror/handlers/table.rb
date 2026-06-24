@@ -17,9 +17,11 @@ module Coradoc
           return nil if content.empty?
 
           Node::Table.new(
-            id: element.id,
-            title: element.title,
-            width: element.width,
+            attrs: Node::Table::Attrs.new(
+              id: element.id,
+              title: element.title,
+              width: element.width
+            ),
             content: content
           )
         end
@@ -51,10 +53,12 @@ module Coradoc
           def build_table_cell(cell, context)
             content = build_cell_content(cell, context)
             Node::TableCell.new(
-              colspan: cell.colspan,
-              rowspan: cell.rowspan,
-              alignment: cell.alignment,
-              header: cell.header || nil,
+              attrs: Node::TableCell::Attrs.new(
+                colspan: cell.colspan,
+                rowspan: cell.rowspan,
+                alignment: cell.alignment,
+                header: cell.header || nil
+              ),
               content: content
             )
           end

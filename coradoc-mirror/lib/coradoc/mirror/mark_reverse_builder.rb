@@ -124,7 +124,7 @@ module Coradoc
         registers 'link'
 
         def build(inner, mark)
-          CoreModel::LinkElement.new(target: mark.href, children: Array(inner))
+          CoreModel::LinkElement.new(target: mark.attrs&.href, children: Array(inner))
         end
       end
 
@@ -133,7 +133,7 @@ module Coradoc
 
         def build(inner, mark)
           CoreModel::CrossReferenceElement.new(
-            target: mark.target, children: Array(inner)
+            target: mark.attrs&.target, children: Array(inner)
           )
         end
       end
