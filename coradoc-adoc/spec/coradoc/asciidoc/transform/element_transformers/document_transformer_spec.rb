@@ -80,7 +80,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::DocumentTransf
         contents: [],
         sections: []
       )
-      
+
       outer_title = Coradoc::AsciiDoc::Model::Title.new(content: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'Outer')])
       outer_section = Coradoc::AsciiDoc::Model::Section.new(
         level: 1,
@@ -96,11 +96,49 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::DocumentTransf
       # ID is generated if nil
       expect(result.id).to eq('_outer')
       expect(result.children.size).to eq(1)
-      
+
       inner_core = result.children[0]
       expect(inner_core).to be_a(Coradoc::CoreModel::SectionElement)
       expect(inner_core.title).to eq('Inner')
       expect(inner_core.id).to eq('_outer_inner')
+    end
+
+    it 'propagates [appendix] style into CoreModel attributes' do
+      list = Coradoc::AsciiDoc::Model::AttributeList.new
+      list.add_positional('appendix')
+      section = Coradoc::AsciiDoc::Model::Section.new(
+        level: 1,
+        title: Coradoc::AsciiDoc::Model::Title.new(content: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'Appendix')]),
+        attribute_list: list
+      )
+
+      result = described_class.transform_section(section)
+
+      expect(result.attributes).to be_a(Coradoc::CoreModel::Metadata)
+      expect(result.attributes['style']).to eq('appendix')
+    end
+
+    it 'propagates named role into CoreModel attributes' do
+      list = Coradoc::AsciiDoc::Model::AttributeList.new
+      list.add_named('role', 'summary')
+      section = Coradoc::AsciiDoc::Model::Section.new(
+        level: 1,
+        title: Coradoc::AsciiDoc::Model::Title.new(content: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'Overview')]),
+        attribute_list: list
+      )
+
+      result = described_class.transform_section(section)
+
+      expect(result.attributes['role']).to eq('summary')
+    end
+
+    it 'leaves attributes nil when section has no attribute list' do
+      section = Coradoc::AsciiDoc::Model::Section.new(
+        level: 1,
+        title: Coradoc::AsciiDoc::Model::Title.new(content: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'Plain')])
+      )
+
+      expect(described_class.transform_section(section).attributes).to be_nil
     end
   end
 end

@@ -58,7 +58,20 @@ module Coradoc
                   Coradoc::AsciiDoc::Model::Section,
                   collection: true,
                   initialize_empty: true
+        # Block-header attribute list (e.g. `[appendix]`, `[bibliography]`).
+        # Single source of truth for the AsciiDoc `[style]` hint; downstream
+        # consumers (coradoc-mirror) read `style` from SectionElement#attributes
+        # to dispatch JS section types (annex, references, ...).
+        attribute :attribute_list, Coradoc::AsciiDoc::Model::AttributeList
         # attribute :anchor, Coradoc::AsciiDoc::Model::Inline::Anchor
+
+        # Style hint derived from the first positional in `attribute_list`.
+        # Returns nil when no list is attached. Kept here so callers don't
+        # need to know the AttributeList shape.
+        def style
+          first_positional = attribute_list&.positional&.first
+          first_positional&.value
+        end
 
         # Allow setting level directly during initialization
         def initialize(**attributes)

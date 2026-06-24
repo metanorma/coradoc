@@ -130,4 +130,28 @@ RSpec.describe Coradoc::AsciiDoc::Model::Section do
       expect { section.validate }.not_to raise_error
     end
   end
+
+  describe '#attribute_list and #style' do
+    let(:appendix_list) do
+      Coradoc::AsciiDoc::Model::AttributeList.new.tap do |l|
+        l.add_positional('appendix')
+      end
+    end
+
+    it 'retains an attribute list passed at construction' do
+      section = described_class.new(attribute_list: appendix_list)
+
+      expect(section.attribute_list).to be_a(Coradoc::AsciiDoc::Model::AttributeList)
+      expect(section.attribute_list.positional.first.value).to eq('appendix')
+    end
+
+    it '#style returns the first positional value' do
+      section = described_class.new(attribute_list: appendix_list)
+      expect(section.style).to eq('appendix')
+    end
+
+    it '#style returns nil when no attribute list is present' do
+      expect(described_class.new.style).to be_nil
+    end
+  end
 end
