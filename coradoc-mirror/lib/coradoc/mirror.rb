@@ -14,10 +14,13 @@ module Coradoc
     autoload :MirrorToCoreModel, "#{__dir__}/mirror/mirror_to_core_model"
     autoload :Partitioner, "#{__dir__}/mirror/partitioner"
     # ReverseBuilder's REGISTRY is populated by the built-in builder
-    # classes (defined in reverse_builders.rb) at load time. We autoload
-    # that file directly so the registry is full by the time any caller
-    # references Coradoc::Mirror::ReverseBuilder.
-    autoload :ReverseBuilder, "#{__dir__}/mirror/reverse_builders"
+    # subclasses (defined inside reverse_builder.rb) at load time. The
+    # file is the autoload target, so the registry is full by the time
+    # any caller references Coradoc::Mirror::ReverseBuilder.
+    autoload :ReverseBuilder, "#{__dir__}/mirror/reverse_builder"
+    # MarkReverseBuilder is the mark-level parallel to ReverseBuilder.
+    # Same OCP pattern: one Builder class per mark type, self-registering.
+    autoload :MarkReverseBuilder, "#{__dir__}/mirror/mark_reverse_builder"
     autoload :HandlerRegistry, "#{__dir__}/mirror/handler_registry"
     autoload :Handlers, "#{__dir__}/mirror/handlers"
     # MirrorJsonFormat and MirrorYamlFormat are loaded via require in

@@ -34,6 +34,11 @@ RSpec.describe Coradoc::Mirror::ReverseBuilder do
     # and verify it is dispatched — without editing any existing code.
     let(:synthetic_type) { 'rspec_synthetic_type' }
 
+    # Lightweight Node-like struct (real Ruby object, not a double) carrying
+    # just enough surface for MirrorToCoreModel dispatch + the synthetic
+    # builder's #build to read what they need.
+    SyntheticNode = Struct.new(:type, :text, :content, :marks, :title, :id)
+
     after do
       described_class::REGISTRY.delete(synthetic_type)
     end
@@ -49,9 +54,7 @@ RSpec.describe Coradoc::Mirror::ReverseBuilder do
 
       expect(described_class.lookup(synthetic_type)).to eq(synthetic_class)
 
-      node = Coradoc::Mirror::Node::Text.new(text: 'x')
-      allow(node).to receive(:type).and_return(synthetic_type)
-
+      node = SyntheticNode.new(synthetic_type, 'x', [], [], nil, nil)
       core = Coradoc::Mirror::MirrorToCoreModel.new.call(
         Coradoc::Mirror::Node::Document.new(content: [node])
       )
