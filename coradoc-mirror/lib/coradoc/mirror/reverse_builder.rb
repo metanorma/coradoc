@@ -11,7 +11,7 @@ module Coradoc
     #       registers 'figure'
     #
     #       def build(node)
-    #         CoreModel::Figure.new(children: context.build_content(node))
+    #         CoreModel::Image.new(src: node.src, ...)
     #       end
     #     end
     #   end
