@@ -135,10 +135,7 @@ module Coradoc
       end
 
       def element_children(element)
-        if element.is_a?(CoreModel::StructuralElement) ||
-           element.is_a?(CoreModel::InlineElement) ||
-           element.is_a?(CoreModel::TableCell) ||
-           element.is_a?(CoreModel::Block)
+        if element.is_a?(Coradoc::CoreModel::HasChildren)
           children = element.children
           return children if children && !children.empty?
         end

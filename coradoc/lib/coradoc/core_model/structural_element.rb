@@ -11,6 +11,11 @@ module Coradoc
     # Structural elements can contain other elements (blocks, lists, etc.)
     # and can be nested hierarchically to represent document structure.
     class StructuralElement < Base
+      # StructuralElements carry typed block children (sections, paragraphs,
+      # etc.) rather than mixed inline content, so they don't include
+      # ChildrenContent. HasChildren marks the structural predicate that
+      # downstream traversal dispatches on (OCP).
+      include HasChildren
       # @!attribute level
       #   @return [Integer, nil] hierarchical level (1-6 for sections)
       attribute :level, :integer
