@@ -14,6 +14,7 @@ module Coradoc
       autoload :ElementTransformers, "#{__dir__}/transform/element_transformers"
       autoload :FrontmatterAttributeMap, "#{__dir__}/transform/frontmatter_attribute_map"
       autoload :CalloutMerger, "#{__dir__}/transform/callout_merger"
+      autoload :AttributeListToMetadata, "#{__dir__}/transform/attribute_list_to_metadata"
     end
   end
 end

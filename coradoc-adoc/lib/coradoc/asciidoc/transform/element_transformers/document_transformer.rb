@@ -53,22 +53,13 @@ module Coradoc
               )
             end
 
-            # Convert the AsciiDoc `[style]` / `[role=x]` block header on a
-            # Model::Section into a CoreModel::Metadata so coradoc-mirror's
-            # Handlers::Structural can dispatch on `style` to pick the right
-            # JS section type (annex, abstract, references, ...). Returns
-            # nil when the section carries no attribute list — preserving
-            # the pre-fix default.
+            # Delegates to Transform::AttributeListToMetadata for the typed
+            # Model::AttributeList -> CoreModel::Metadata conversion. The
+            # helper handles the nil/non-AttributeList guard and is the
+            # single source of truth shared with Builder::ElementBuilder.
             def section_metadata_from(section)
-              list = section.attribute_list
-              return nil unless list.is_a?(Coradoc::AsciiDoc::Model::AttributeList)
-
-              metadata = Coradoc::CoreModel::Metadata.new
-              first_positional = list.positional.first
-              metadata['style'] = first_positional.value if first_positional
-              named_role = list.named.find { |n| n.name == 'role' }
-              metadata['role'] = named_role.value.first if named_role&.value&.any?
-              metadata
+              Coradoc::AsciiDoc::Transform::AttributeListToMetadata
+                .call(section.attribute_list)
             end
           end
         end

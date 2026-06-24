@@ -26,22 +26,14 @@ module Coradoc
           )
         end
 
-        # Convert the AsciiDoc `[style]` / `[role=x]` block header into a
-        # CoreModel::Metadata so downstream consumers (coradoc-mirror) can
-        # dispatch on `style` to pick a JS section type (annex, abstract, ...).
-        # Returns nil when the section had no attribute list — preserves the
-        # pre-fix default.
+        # Coerces the AST attribute_list (hash / string / nil) through the
+        # normalizer, then delegates to Transform::AttributeListToMetadata
+        # for the typed Model::AttributeList -> CoreModel::Metadata step.
+        # Single source of truth lives in the transform layer (DRY/MECE).
         def build_section_metadata(attribute_list)
-          normalized = Coradoc::AsciiDoc::Transformer::AttributeListNormalizer
-                       .coerce(attribute_list)
-          return nil unless normalized.is_a?(Coradoc::AsciiDoc::Model::AttributeList)
-
-          metadata = Coradoc::CoreModel::Metadata.new
-          first_positional = normalized.positional.first
-          metadata['style'] = first_positional.value if first_positional
-          named_role = normalized.named.find { |n| n.name == 'role' }
-          metadata['role'] = named_role.value.first if named_role&.value&.any?
-          metadata
+          list = Coradoc::AsciiDoc::Transformer::AttributeListNormalizer
+                 .coerce(attribute_list)
+          Coradoc::AsciiDoc::Transform::AttributeListToMetadata.call(list)
         end
 
         def build_section_contents(contents_ast)
