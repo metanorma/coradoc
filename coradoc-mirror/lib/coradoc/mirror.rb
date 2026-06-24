@@ -12,6 +12,7 @@ module Coradoc
     autoload :Transformer, "#{__dir__}/mirror/transformer"
     autoload :CoreModelToMirror, "#{__dir__}/mirror/core_model_to_mirror"
     autoload :MirrorToCoreModel, "#{__dir__}/mirror/mirror_to_core_model"
+    autoload :Partitioner, "#{__dir__}/mirror/partitioner"
     # ReverseBuilder's REGISTRY is populated by the built-in builder
     # classes (defined in reverse_builders.rb) at load time. We autoload
     # that file directly so the registry is full by the time any caller
