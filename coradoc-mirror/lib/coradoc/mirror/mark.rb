@@ -69,6 +69,11 @@ module Coradoc
       end
 
       # ── Mark type subclasses ────────────────────────────────────
+      #
+      # Ruby class names follow Ruby conventions (Bold, Italic); PM_TYPE
+      # values follow the @metanorma/mirror JS vocab (strong, emphasis).
+      # The conformance spec at spec/coradoc/mirror/js_vocab_conformance_spec.rb
+      # locks the wire format against the JS library's canonical list.
 
       class Bold < Mark
         PM_TYPE = 'strong'

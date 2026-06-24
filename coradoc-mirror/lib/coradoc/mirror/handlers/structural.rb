@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'set'
-
 module Coradoc
   module Mirror
     module Handlers
@@ -93,11 +91,13 @@ module Coradoc
           SECTION_STYLE_TO_JS_TYPE[style] || 'clause'
         end
 
+        # Reads `style` then `role` from SectionElement#attributes via the
+        # Metadata#[] accessor — no intermediate hash allocation per call.
         def self.section_style(element)
           attrs = element.attributes
           return nil unless attrs.is_a?(Coradoc::CoreModel::Metadata)
 
-          attrs.to_h['style'] || attrs.to_h['role']
+          attrs['style'] || attrs['role']
         end
 
         def self.preamble(element, context:)

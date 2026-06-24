@@ -164,8 +164,8 @@ module Coradoc
 
         if document.is_a?(CoreModel::DocumentElement) &&
            document.attributes.is_a?(CoreModel::Metadata)
-          document.attributes.to_h.each do |key, value|
-            attrs[key.to_sym] = value
+          document.attributes.entries&.each do |entry|
+            attrs[entry.key.to_sym] = entry.value
           end
         end
 

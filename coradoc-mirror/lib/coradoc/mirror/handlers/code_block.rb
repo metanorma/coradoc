@@ -50,9 +50,11 @@ module Coradoc
           end
 
           def extract_text(element)
-            if element.is_a?(CoreModel::Block) && element.content && !element.content.to_s.empty?
+            return '' unless element.is_a?(CoreModel::Block)
+
+            if element.content && !element.content.to_s.empty?
               element.flat_text || element.content.to_s
-            elsif element.is_a?(CoreModel::Block) && element.lines && !element.lines.empty?
+            elsif element.lines && !element.lines.empty?
               Array(element.lines).join("\n")
             else
               ''
