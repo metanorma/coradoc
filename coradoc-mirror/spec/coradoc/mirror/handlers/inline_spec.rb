@@ -15,7 +15,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Inline do
       expect(nodes.length).to eq(1)
       expect(nodes.first.type).to eq('text')
       expect(nodes.first.text).to eq('bold text')
-      expect(nodes.first.marks.first.type).to eq('bold')
+      expect(nodes.first.marks.first.type).to eq('strong')
     end
 
     it 'processes text content' do
@@ -70,7 +70,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Inline do
 
       expect(node.type).to eq('text')
       expect(node.text).to eq('italic text')
-      expect(node.marks.first.type).to eq('italic')
+      expect(node.marks.first.type).to eq('emphasis')
     end
   end
 end

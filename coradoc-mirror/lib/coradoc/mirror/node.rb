@@ -168,25 +168,35 @@ module Coradoc
 
       class Section < Node
         PM_TYPE = 'section'
+        # JS SECTION_TYPES emitted under partition_structural: true. All
+        # deserialize to a Section instance with type preserved.
+        PM_ALIASES = %w[
+          clause annex content_section abstract foreword introduction
+          acknowledgements terms definitions references
+        ].freeze
         node_attr :title, :id, :level
       end
 
       class Preamble < Node
-        PM_TYPE = 'preamble'
+        PM_TYPE = 'preface'
+      end
+
+      class Sections < Node
+        PM_TYPE = 'sections'
       end
 
       class Header < Node
-        PM_TYPE = 'header'
+        PM_TYPE = 'floating_title'
         node_attr :title, :level
       end
 
       class CodeBlock < Node
-        PM_TYPE = 'code_block'
-        node_attr :language, :title, :passthrough
+        PM_TYPE = 'sourcecode'
+        node_attr :language, :title, :passthrough, :text
       end
 
       class Blockquote < Node
-        PM_TYPE = 'blockquote'
+        PM_TYPE = 'quote'
         node_attr :attribution
       end
 
@@ -229,21 +239,33 @@ module Coradoc
       end
 
       class DefinitionList < Node
-        PM_TYPE = 'definition_list'
+        PM_TYPE = 'dl'
         node_attr :id
       end
 
       class DefinitionTerm < Node
-        PM_TYPE = 'definition_term'
+        PM_TYPE = 'dt'
       end
 
       class DefinitionDescription < Node
-        PM_TYPE = 'definition_description'
+        PM_TYPE = 'dd'
       end
 
       class Image < Node
         PM_TYPE = 'image'
         node_attr :src, :alt, :title, :caption, :width, :height, :inline
+      end
+
+      # JS @metanorma/mirror figure node: wraps an Image with an optional
+      # Caption child when the AsciiDoc source provides a title.
+      class Figure < Node
+        PM_TYPE = 'figure'
+        node_attr :id, :title
+      end
+
+      # Caption child of Figure. Carries the visible title text.
+      class Caption < Node
+        PM_TYPE = 'caption'
       end
 
       class Table < Node
@@ -268,9 +290,46 @@ module Coradoc
         node_attr :colspan, :rowspan, :alignment, :header
       end
 
+      # Admonition (NOTE, TIP, WARNING, CAUTION, IMPORTANT).
+      #
+      # The Ruby-side source-of-truth attribute is `admonition_type`. When
+      # constructed via `js_shape: true`, #to_h emits `attrs.type` instead,
+      # to match the @metanorma/mirror JS contract. Both shapes
+      # deserialize transparently via .from_h.
       class Admonition < Node
         PM_TYPE = 'admonition'
         node_attr :admonition_type, :title, :label, :id
+
+        def initialize(js_shape: false, **kwargs)
+          super(**kwargs)
+          @js_shape = js_shape
+        end
+
+        def to_h
+          return super unless @js_shape
+
+          hash = super
+          attrs = hash['attrs']
+          return hash unless attrs.is_a?(Hash) && attrs.key?('admonition_type')
+
+          attrs['type'] = attrs.delete('admonition_type')
+          hash
+        end
+
+        def self.from_h(hash)
+          return nil unless hash
+
+          raw_attrs = hash['attrs'] || {}
+          attrs = raw_attrs.dup
+          js_shape = attrs.key?('type') && !attrs.key?('admonition_type')
+          attrs['admonition_type'] ||= attrs.delete('type') if attrs.key?('type')
+
+          kwargs = build_kwargs(self, attrs)
+          kwargs[:content] = (hash['content'] || []).map { |c| Node.from_h(c) }
+          kwargs[:marks] = (hash['marks'] || []).map { |m| Mark.from_h(m) }
+          kwargs[:js_shape] = js_shape
+          new(**kwargs)
+        end
       end
 
       class Bibliography < Node
@@ -326,7 +385,9 @@ module Coradoc
         node_attr :data, default: {}
       end
 
-      # Auto-registry: maps PM_TYPE → class for all declared subclasses.
+      # Auto-registry: maps PM_TYPE (and any PM_ALIASES) → class for all
+      # declared subclasses. Aliases let one Node class deserialize under
+      # multiple type strings (e.g. Section is also clause/annex/...).
       NODES = begin
                 registry = {}
                 constants.each do |name|
@@ -334,6 +395,9 @@ module Coradoc
                   next unless k.is_a?(Class) && k < Node && k::PM_TYPE != 'node'
 
                   registry[k::PM_TYPE] = k
+                  if k.const_defined?(:PM_ALIASES, false)
+                    Array(k::PM_ALIASES).each { |alias_type| registry[alias_type] = k }
+                  end
                 end
                 registry.freeze
       end

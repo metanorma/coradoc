@@ -12,6 +12,11 @@ module Coradoc
     autoload :Transformer, "#{__dir__}/mirror/transformer"
     autoload :CoreModelToMirror, "#{__dir__}/mirror/core_model_to_mirror"
     autoload :MirrorToCoreModel, "#{__dir__}/mirror/mirror_to_core_model"
+    # ReverseBuilder's REGISTRY is populated by the built-in builder
+    # classes (defined in reverse_builders.rb) at load time. We autoload
+    # that file directly so the registry is full by the time any caller
+    # references Coradoc::Mirror::ReverseBuilder.
+    autoload :ReverseBuilder, "#{__dir__}/mirror/reverse_builders"
     autoload :HandlerRegistry, "#{__dir__}/mirror/handler_registry"
     autoload :Handlers, "#{__dir__}/mirror/handlers"
     # MirrorJsonFormat and MirrorYamlFormat are loaded via require in
@@ -102,9 +107,12 @@ module Coradoc
     #
     # @param document [CoreModel::Base] CoreModel document
     # @param registry [HandlerRegistry] handler registry (defaults to built-in)
+    # @param partition_structural [Boolean] wrap doc.content in
+    #   preface/sections/bibliography containers per the @metanorma/mirror JS
+    #   structural contract (default: false for backward compatibility).
     # @return [Node::Document] mirror document root
-    def self.transform(document, registry: default_registry)
-      CoreModelToMirror.new(registry: registry).call(document)
+    def self.transform(document, registry: default_registry, partition_structural: false)
+      CoreModelToMirror.new(registry: registry).call(document, partition_structural: partition_structural)
     end
 
     # Convenience: transform and serialize to JSON string.

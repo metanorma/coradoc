@@ -1,325 +1,53 @@
 # frozen_string_literal: true
 
+require_relative 'reverse_builders'
+
 module Coradoc
   module Mirror
     # Transforms ProseMirror-compatible Mirror nodes back into CoreModel.
     #
-    # Uses a frozen TYPE_BUILDERS dispatch table (OCP): new node types
-    # are supported by adding entries.
+    # Dispatch is delegated to ReverseBuilder::REGISTRY — adding a new
+    # Mirror node type is done by registering a new Builder class, with
+    # no edit to this file (OCP).
     class MirrorToCoreModel
-      # Dispatch table: Mirror node type string → builder lambda.
-      TYPE_BUILDERS = {
-        'doc' => ->(t, n) { t.build_document(n) },
-        'section' => ->(t, n) { t.build_section(n) },
-        'header' => ->(t, n) { t.build_header(n) },
-        'preamble' => ->(t, n) { t.build_preamble(n) },
-        'paragraph' => ->(t, n) { t.build_paragraph(n) },
-        'code_block' => ->(t, n) { t.build_code_block(n) },
-        'blockquote' => ->(t, n) { t.build_blockquote(n) },
-        'example' => ->(t, n) { t.build_example(n) },
-        'sidebar' => ->(t, n) { t.build_sidebar(n) },
-        'open_block' => ->(t, n) { t.build_open_block(n) },
-        'verse' => ->(t, n) { t.build_verse(n) },
-        'horizontal_rule' => ->(t, _n) { t.build_horizontal_rule },
-        'admonition' => ->(t, n) { t.build_admonition(n) },
-        'bullet_list' => ->(t, n) { t.build_bullet_list(n) },
-        'ordered_list' => ->(t, n) { t.build_ordered_list(n) },
-        'list_item' => ->(t, n) { t.build_list_item(n) },
-        'definition_list' => ->(t, n) { t.build_definition_list(n) },
-        'definition_term' => ->(t, n) { t.build_inline_text(n) },
-        'definition_description' => ->(t, n) { t.build_inline_text(n) },
-        'image' => ->(t, n) { t.build_image(n) },
-        'table' => ->(t, n) { t.build_table(n) },
-        'table_head' => ->(t, n) { t.build_table_head(n) },
-        'table_body' => ->(t, n) { t.build_table_body(n) },
-        'table_row' => ->(t, n) { t.build_table_row(n) },
-        'table_cell' => ->(t, n) { t.build_table_cell(n) },
-        'bibliography' => ->(t, n) { t.build_bibliography(n) },
-        'biblio_entry' => ->(t, n) { t.build_biblio_entry(n) },
-        'footnotes' => ->(_t, _n) {},
-        'footnote_entry' => ->(t, n) { t.build_footnote_entry(n) },
-        'toc' => ->(t, n) { t.build_toc(n) },
-        'toc_entry' => ->(t, n) { t.build_toc_entry(n) },
-        'frontmatter' => ->(t, n) { t.build_frontmatter(n) },
-        'text' => ->(t, n) { t.build_text(n) },
-        'soft_break' => ->(t, _n) { t.build_soft_break }
-      }.freeze
-
-      # Mark type → CoreModel class mapping (OCP: add new marks here).
+      # Mark type → CoreModel class mapping (OCP: add new marks by adding
+      # a row here, or — for non-trivial marks like `link` — extending
+      # the case statement in #apply_mark).
       SIMPLE_MARKS = {
-        'bold' => CoreModel::BoldElement,
-        'italic' => CoreModel::ItalicElement,
+        'strong' => CoreModel::BoldElement,
+        'emphasis' => CoreModel::ItalicElement,
         'code' => CoreModel::MonospaceElement,
         'underline' => CoreModel::UnderlineElement,
-        'strikethrough' => CoreModel::StrikethroughElement,
+        'strike' => CoreModel::StrikethroughElement,
         'subscript' => CoreModel::SubscriptElement,
         'superscript' => CoreModel::SuperscriptElement,
         'highlight' => CoreModel::HighlightElement
       }.freeze
-
-      LIST_TYPES = %w[bullet_list ordered_list].freeze
 
       def call(mirror_node)
         build_node(mirror_node)
       end
 
       def build_node(node)
-        builder = TYPE_BUILDERS[node.type]
-        raise Error, "Unknown mirror node type: #{node.type}" unless builder
+        builder_class = ReverseBuilder.lookup(node.type)
+        raise Error, "Unknown mirror node type: #{node.type}" unless builder_class
 
-        builder.call(self, node)
+        builder_class.new(self).build(node)
       end
+
+      # ── Shared helpers (single source of truth — used by every
+      # ReverseBuilder::Base subclass via delegation) ──
 
       def build_content(node)
         return [] unless node.content
 
-        node.content.filter_map { |child| build_node(child) }
-      end
+        node.content.flat_map do |child|
+          result = build_node(child)
+          next [] if result.nil?
 
-      # ── Structural ──
-
-      def build_document(node)
-        CoreModel::DocumentElement.new(
-          title: node.title,
-          id: node.id,
-          children: build_content(node)
-        )
-      end
-
-      def build_section(node)
-        CoreModel::SectionElement.new(
-          title: node.title,
-          level: node.level,
-          id: node.id,
-          children: build_content(node)
-        )
-      end
-
-      def build_header(node)
-        CoreModel::HeaderElement.new(
-          title: node.title,
-          level: node.level,
-          children: build_content(node)
-        )
-      end
-
-      def build_preamble(node)
-        CoreModel::PreambleElement.new(
-          children: build_content(node)
-        )
-      end
-
-      # ── Blocks ──
-
-      def build_paragraph(node)
-        CoreModel::ParagraphBlock.new(children: build_inline_children(node))
-      end
-
-      def build_code_block(node)
-        CoreModel::SourceBlock.new(
-          content: extract_text(node),
-          language: node.language,
-          title: node.title
-        )
-      end
-
-      def build_blockquote(node)
-        CoreModel::QuoteBlock.new(
-          attribution: node.attribution,
-          children: build_content(node)
-        )
-      end
-
-      def build_example(node)
-        CoreModel::ExampleBlock.new(
-          title: node.title,
-          children: build_content(node)
-        )
-      end
-
-      def build_sidebar(node)
-        CoreModel::SidebarBlock.new(
-          title: node.title,
-          children: build_content(node)
-        )
-      end
-
-      def build_open_block(node)
-        CoreModel::OpenBlock.new(children: build_content(node))
-      end
-
-      def build_verse(node)
-        CoreModel::VerseBlock.new(
-          content: extract_text(node),
-          attribution: node.attribution
-        )
-      end
-
-      def build_horizontal_rule
-        CoreModel::HorizontalRuleBlock.new
-      end
-
-      def build_frontmatter(node)
-        CoreModel::FrontmatterBlock.new(
-          schema: node.schema,
-          data: node.data || {}
-        )
-      end
-
-      def build_admonition(node)
-        text = build_content(node).map do |c|
-          c.is_a?(CoreModel::InlineElement) ? c.content.to_s : ''
-        end.join
-
-        CoreModel::AnnotationBlock.new(
-          annotation_type: node.admonition_type,
-          content: text
-        )
-      end
-
-      # ── Lists ──
-
-      def build_bullet_list(node)
-        items = build_content(node).select { |c| c.is_a?(CoreModel::ListItem) }
-        CoreModel::ListBlock.new(marker_type: 'unordered', items: items)
-      end
-
-      def build_ordered_list(node)
-        items = build_content(node).select { |c| c.is_a?(CoreModel::ListItem) }
-        CoreModel::ListBlock.new(marker_type: 'ordered', items: items)
-      end
-
-      def build_list_item(node)
-        children = build_inline_children(node)
-        text = children.map { |c| c.is_a?(CoreModel::TextContent) ? c.text : '' }.join
-
-        nested_list = find_nested_list(node)
-        CoreModel::ListItem.new(content: text, children: children, nested_list: nested_list)
-      end
-
-      def build_definition_list(node)
-        terms = []
-        descriptions = []
-        node.content&.each do |child|
-          next unless child.is_a?(Node)
-
-          case child.type
-          when 'definition_term' then terms << build_node(child)
-          when 'definition_description' then descriptions << build_node(child)
-          end
-        end
-
-        items = terms.zip(descriptions).map do |term, desc|
-          CoreModel::DefinitionItem.new(
-            term: inline_content(term),
-            definitions: [inline_content(desc)]
-          )
-        end
-
-        CoreModel::DefinitionList.new(items: items)
-      end
-
-      # ── Media ──
-
-      def build_image(node)
-        CoreModel::Image.new(
-          src: node.src,
-          alt: node.alt,
-          title: node.title,
-          caption: node.caption,
-          width: node.width,
-          height: node.height
-        )
-      end
-
-      # ── Tables ──
-
-      def build_table(node)
-        rows = []
-        node.content&.each do |child|
-          next unless child.is_a?(Node)
-          next unless %w[table_head table_body].include?(child.type)
-
-          child.content&.each do |row_node|
-            rows << build_node(row_node) if row_node.is_a?(Node)
-          end
-        end
-
-        CoreModel::Table.new(title: node.title, rows: rows)
-      end
-
-      def build_table_head(node)
-        build_content(node).first || CoreModel::TableRow.new
-      end
-
-      def build_table_body(node)
-        build_content(node).first || CoreModel::TableRow.new
-      end
-
-      def build_table_row(node)
-        cells = build_content(node).select { |c| c.is_a?(CoreModel::TableCell) }
-        CoreModel::TableRow.new(cells: cells)
-      end
-
-      def build_table_cell(node)
-        CoreModel::TableCell.new(
-          content: extract_text(node),
-          header: node.header || false,
-          colspan: node.colspan,
-          rowspan: node.rowspan,
-          alignment: node.alignment
-        )
-      end
-
-      # ── Bibliography ──
-
-      def build_bibliography(node)
-        entries = build_content(node).select { |c| c.is_a?(CoreModel::BibliographyEntry) }
-        CoreModel::Bibliography.new(title: node.title, entries: entries)
-      end
-
-      def build_biblio_entry(node)
-        CoreModel::BibliographyEntry.new(
-          anchor_name: node.anchor_name,
-          document_id: node.document_id,
-          ref_text: extract_text(node)
-        )
-      end
-
-      # ── Footnotes ──
-
-      def build_footnote_entry(node)
-        CoreModel::Footnote.new(id: node.id, content: extract_text(node))
-      end
-
-      # ── TOC ──
-
-      def build_toc(_node)
-        CoreModel::Toc.new
-      end
-
-      def build_toc_entry(node)
-        CoreModel::TocEntry.new(id: node.id, title: node.title)
-      end
-
-      # ── Inline ──
-
-      def build_text(node)
-        text = node.text || ''
-        marks = node.marks || []
-
-        return CoreModel::TextContent.new(text: text) if marks.empty?
-
-        marks.reduce(CoreModel::TextContent.new(text: text)) do |current, mark|
-          apply_mark(current, mark)
+          result.is_a?(Array) ? result : [result]
         end
       end
-
-      def build_soft_break
-        CoreModel::LineBreakElement.new
-      end
-
-      # ── Helpers ──
 
       def apply_mark(inner, mark)
         klass = SIMPLE_MARKS[mark.type]
@@ -345,12 +73,6 @@ module Coradoc
         end
       end
 
-      def build_inline_text(node)
-        children = build_inline_children(node)
-        text = children.map { |c| c.is_a?(CoreModel::TextContent) ? c.text : '' }.join
-        CoreModel::InlineElement.new(content: text)
-      end
-
       def extract_text(node)
         return node.text.to_s if node.is_a?(Node::Text)
         return '' unless node.content
@@ -358,15 +80,6 @@ module Coradoc
         node.content.filter_map do |child|
           child.is_a?(Node) ? extract_text(child) : ''
         end.join
-      end
-
-      private
-
-      def find_nested_list(node)
-        node.content&.each do |child|
-          return build_node(child) if child.is_a?(Node) && LIST_TYPES.include?(child.type)
-        end
-        nil
       end
 
       def inline_content(element)

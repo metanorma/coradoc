@@ -21,9 +21,12 @@ module Coradoc
       # Convert CoreModel document to Mirror node tree.
       #
       # @param document [CoreModel::Base] CoreModel document
+      # @param partition_structural [Boolean] wrap doc.content in
+      #   preface/sections/bibliography containers per the @metanorma/mirror
+      #   JS structural contract (default: false).
       # @return [Node::Document] mirror document root
-      def from_core_model(document)
-        CoreModelToMirror.new(registry: @registry).call(document)
+      def from_core_model(document, partition_structural: false)
+        CoreModelToMirror.new(registry: @registry).call(document, partition_structural: partition_structural)
       end
 
       # Convert Mirror node tree to CoreModel document.
