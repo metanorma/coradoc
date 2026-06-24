@@ -9,7 +9,7 @@ module Coradoc
           return nil if content.empty?
 
           Node::Blockquote.new(
-            attribution: element.attribution,
+            attrs: Node::Blockquote::Attrs.new(attribution: element.attribution),
             content: content
           )
         end

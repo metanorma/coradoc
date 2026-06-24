@@ -35,9 +35,9 @@ RSpec.describe 'End-to-end integration' do
       )
 
       yaml = Coradoc::Mirror.to_yaml(doc)
-      mirror_node = Coradoc::Mirror::Node.from_h(YAML.safe_load(yaml))
+      mirror_node = Coradoc::Mirror.from_hash(YAML.safe_load(yaml))
       expect(mirror_node).to be_a(Coradoc::Mirror::Node::Document)
-      expect(mirror_node.title).to eq('YAML Round Trip')
+      expect(mirror_node.attrs.title).to eq('YAML Round Trip')
     end
   end
 
@@ -81,14 +81,14 @@ RSpec.describe 'End-to-end integration' do
       parsed = JSON.parse(json)
 
       # Reconstruct from JSON
-      mirror_node = Coradoc::Mirror::Node.from_h(parsed)
+      mirror_node = Coradoc::Mirror.from_hash(parsed)
       expect(mirror_node).to be_a(Coradoc::Mirror::Node::Document)
-      expect(mirror_node.title).to eq('JSON Round Trip')
+      expect(mirror_node.attrs.title).to eq('JSON Round Trip')
     end
   end
 
   describe 'with AsciiDoc', if: Gem.loaded_specs.key?('coradoc-adoc') do
-    before(:each) do
+    before do
       require 'coradoc/asciidoc'
     end
 
@@ -120,9 +120,9 @@ RSpec.describe 'End-to-end integration' do
       mirror = Coradoc::Mirror.transform(doc)
 
       expect(mirror).to be_a(Coradoc::Mirror::Node::Document)
-      expect(mirror.title).to eq('Integration Test')
+      expect(mirror.attrs.title).to eq('Integration Test')
 
-      json = mirror.to_json(pretty: true)
+      json = JSON.pretty_generate(mirror.to_hash)
       parsed = JSON.parse(json)
       expect(parsed['type']).to eq('doc')
       expect(parsed['content'].length).to be >= 2

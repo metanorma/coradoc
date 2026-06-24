@@ -1,361 +1,300 @@
 # frozen_string_literal: true
 
-require 'json'
+require 'lutaml/model'
+require_relative 'mark'
 
 module Coradoc
   module Mirror
     # ProseMirror-compatible document node.
     #
-    # Every node has a +type+, optional typed attributes, optional +content+
-    # (child nodes), and optional +marks+ (inline formatting). Serializes to
-    # the canonical ProseMirror JSON format:
+    # Wire format:
     #
-    #   { "type": "paragraph", "content": [...], "attrs": {...}, "marks": [...] }
+    #   { "type": "paragraph", "attrs": {...}, "content": [...], "marks": [...] }
     #
-    # Subclasses declare typed attributes via +node_attr+ and a +PM_TYPE+
-    # constant for their canonical type string. New node types are added by
-    # subclassing Node — no modification of existing code needed (OCP).
-    class Node
+    # All built-in Node subclasses live below in this file so the
+    # TYPE_TO_CLASS registry can see every PM_TYPE at load time. Adding
+    # a new node type = adding one subclass (+ optional Attrs sub-model)
+    # and letting the registry walker pick it up (OCP).
+    #
+    # The TYPE_TO_CLASS and POLYMORPHIC constants are declared up-front
+    # (empty) because subclass `key_value` blocks reference them at class
+    # load time. The table is populated and frozen after every subclass
+    # is defined at the bottom of this file.
+    class Node < Lutaml::Model::Serializable
       PM_TYPE = 'node'
 
-      attr_accessor :content, :marks
+      TYPE_TO_CLASS = {}
+      POLYMORPHIC = { attribute: 'type', class_map: TYPE_TO_CLASS }.freeze
 
-      class << self
-        def node_attr(*names, default: nil)
-          @node_attr_names ||= []
-          @node_attr_defaults ||= {}
+      attribute :type, :string, default: -> { self.class::PM_TYPE }
+      attribute :content, Node, collection: true
+      attribute :marks, Mark, collection: true
 
-          names.each do |name|
-            @node_attr_names << name
-            @node_attr_defaults[name] = default
-          end
-
-          attr_accessor(*names)
-        end
-
-        def node_attr_names
-          @node_attr_names ||= []
-        end
-
-        def node_attr_defaults
-          @node_attr_defaults ||= {}
-        end
-      end
-
-      def initialize(type: nil, content: [], marks: [], **attrs)
-        @type_override = type
-        @content = content || []
-        @marks = marks || []
-
-        self.class.node_attr_names.each do |name|
-          value = if attrs.key?(name)
-                    attrs[name]
-                  else
-                    default = self.class.node_attr_defaults[name]
-                    default.is_a?(Proc) ? default.call : default
-                  end
-          public_send(:"#{name}=", value)
-        end
-      end
-
-      def type
-        @type_override || self.class::PM_TYPE
-      end
-
-      def to_h
-        result = { 'type' => type }
-        attrs = serialize_attrs
-        result['attrs'] = attrs unless attrs.empty?
-        result['marks'] = marks.map(&:to_h) unless marks.empty?
-        unless content.empty?
-          items = content.is_a?(Array) ? content : [content]
-          result['content'] = items.map(&:to_h)
-        end
-        result
-      end
-
-      alias to_hash to_h
-
-      def to_json(pretty: false, **options)
-        if pretty
-          JSON.pretty_generate(to_h, options)
-        else
-          to_h.to_json(options)
-        end
-      end
-
-      def to_yaml
-        YAML.dump(to_h)
-      end
-
-      def self.from_h(hash)
-        return nil unless hash
-
-        type_str = hash['type']
-        klass = NODES[type_str]
-
-        if klass && klass != self
-          klass.from_h(hash)
-        else
-          base = klass || self
-          content = (hash['content'] || []).map { |c| Node.from_h(c) }
-          marks = (hash['marks'] || []).map { |m| Mark.from_h(m) }
-
-          attrs = hash['attrs'] || {}
-          kwargs = build_kwargs(base, attrs)
-          kwargs[:content] = content
-          kwargs[:marks] = marks
-          kwargs[:type] = type_str if klass.nil?
-
-          base.new(**kwargs)
-        end
+      key_value do
+        map 'type', to: :type, render_default: true
+        map 'content', to: :content, polymorphic: POLYMORPHIC
+        map 'marks', to: :marks, polymorphic: Mark::POLYMORPHIC
       end
 
       def text_content
         return '' unless content
 
-        content.map do |item|
-          item.is_a?(Node) ? item.text_content : ''
-        end.join
+        content.select { |c| c.is_a?(Node) }.map(&:text_content).join
+      end
+    end
+  end
+end
+
+module Coradoc
+  module Mirror
+    class Node
+      # ── Top-level ──
+
+      class Document < Node
+        PM_TYPE = 'doc'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :title, :string
+          attribute :id, :string
+
+          key_value do
+            map 'title', to: :title
+            map 'id', to: :id
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
       end
 
-      # ── Node type subclasses ────────────────────────────────────
+      # ── Structural containers ──
+
+      class Section < Node
+        # JS SECTION_TYPES — all deserialize to Section. The type string
+        # is preserved as the type attribute on the instance.
+        PM_TYPE = 'section'
+        PM_ALIASES = %w[
+          clause annex content_section abstract foreword introduction
+          acknowledgements terms definitions references
+        ].freeze
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :title, :string
+          attribute :id, :string
+          attribute :level, :integer
+
+          key_value do
+            map 'title', to: :title
+            map 'id', to: :id
+            map 'level', to: :level
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class Preamble < Node
+        PM_TYPE = 'preface'
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class Sections < Node
+        PM_TYPE = 'sections'
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class Header < Node
+        PM_TYPE = 'floating_title'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :title, :string
+          attribute :level, :integer
+
+          key_value do
+            map 'title', to: :title
+            map 'level', to: :level
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      # ── Text (special: text at top level, not under attrs) ──
 
       class Text < Node
         PM_TYPE = 'text'
 
-        node_attr :text
+        attribute :text, :string
 
-        def initialize(text: '', **)
-          super(**)
-          @text = text
-        end
-
-        def to_h
-          result = super
-          result['text'] = text.to_s
-          result
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'text', to: :text
+          map 'marks', to: :marks, polymorphic: Mark::POLYMORPHIC
         end
 
         def text_content
           text.to_s
         end
-
-        def self.from_h(hash)
-          return nil unless hash
-
-          new(
-            text: hash['text'] || '',
-            attrs: (hash['attrs'] || {}).transform_keys(&:to_sym),
-            marks: (hash['marks'] || []).map { |m| Mark.from_h(m) }
-          )
-        end
       end
 
-      class Document < Node
-        PM_TYPE = 'doc'
-        node_attr :title, :id
-      end
+      # ── Paragraph / block text ──
 
       class Paragraph < Node
         PM_TYPE = 'paragraph'
-      end
 
-      class Heading < Node
-        PM_TYPE = 'heading'
-        node_attr :level
-      end
-
-      class Section < Node
-        PM_TYPE = 'section'
-        # JS SECTION_TYPES emitted under partition_structural: true. All
-        # deserialize to a Section instance with type preserved.
-        PM_ALIASES = %w[
-          clause annex content_section abstract foreword introduction
-          acknowledgements terms definitions references
-        ].freeze
-        node_attr :title, :id, :level
-      end
-
-      class Preamble < Node
-        PM_TYPE = 'preface'
-      end
-
-      class Sections < Node
-        PM_TYPE = 'sections'
-      end
-
-      class Header < Node
-        PM_TYPE = 'floating_title'
-        node_attr :title, :level
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+          map 'marks', to: :marks, polymorphic: Mark::POLYMORPHIC
+        end
       end
 
       class CodeBlock < Node
         PM_TYPE = 'sourcecode'
-        node_attr :language, :title, :passthrough, :text
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :language, :string
+          attribute :title, :string
+          attribute :passthrough, :boolean
+          attribute :text, :string
+
+          key_value do
+            map 'language', to: :language
+            map 'title', to: :title
+            map 'passthrough', to: :passthrough
+            map 'text', to: :text
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
       end
 
       class Blockquote < Node
         PM_TYPE = 'quote'
-        node_attr :attribution
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :attribution, :string
+
+          key_value do
+            map 'attribution', to: :attribution
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
       end
 
       class Example < Node
         PM_TYPE = 'example'
-        node_attr :title, :id
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :title, :string
+          attribute :id, :string
+
+          key_value do
+            map 'title', to: :title
+            map 'id', to: :id
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
       end
 
       class Sidebar < Node
         PM_TYPE = 'sidebar'
-        node_attr :title, :id
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :title, :string
+          attribute :id, :string
+
+          key_value do
+            map 'title', to: :title
+            map 'id', to: :id
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
       end
 
       class OpenBlock < Node
         PM_TYPE = 'open_block'
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
       end
 
       class Verse < Node
         PM_TYPE = 'verse'
-        node_attr :attribution
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :attribution, :string
+
+          key_value do
+            map 'attribution', to: :attribution
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
       end
 
       class HorizontalRule < Node
         PM_TYPE = 'horizontal_rule'
-      end
-
-      class BulletList < Node
-        PM_TYPE = 'bullet_list'
-        node_attr :id, :start
-      end
-
-      class OrderedList < Node
-        PM_TYPE = 'ordered_list'
-        node_attr :id, :start
-      end
-
-      class ListItem < Node
-        PM_TYPE = 'list_item'
-        node_attr :id
-      end
-
-      class DefinitionList < Node
-        PM_TYPE = 'dl'
-        node_attr :id
-      end
-
-      class DefinitionTerm < Node
-        PM_TYPE = 'dt'
-      end
-
-      class DefinitionDescription < Node
-        PM_TYPE = 'dd'
-      end
-
-      class Image < Node
-        PM_TYPE = 'image'
-        node_attr :src, :alt, :title, :caption, :width, :height, :inline
-      end
-
-      # JS @metanorma/mirror figure node: wraps an Image with an optional
-      # Caption child when the AsciiDoc source provides a title.
-      class Figure < Node
-        PM_TYPE = 'figure'
-        node_attr :id, :title
-      end
-
-      # Caption child of Figure. Carries the visible title text.
-      class Caption < Node
-        PM_TYPE = 'caption'
-      end
-
-      class Table < Node
-        PM_TYPE = 'table'
-        node_attr :title, :id, :width
-      end
-
-      class TableHead < Node
-        PM_TYPE = 'table_head'
-      end
-
-      class TableBody < Node
-        PM_TYPE = 'table_body'
-      end
-
-      class TableRow < Node
-        PM_TYPE = 'table_row'
-      end
-
-      class TableCell < Node
-        PM_TYPE = 'table_cell'
-        node_attr :colspan, :rowspan, :alignment, :header
-      end
-
-      # Admonition (NOTE, TIP, WARNING, CAUTION, IMPORTANT).
-      #
-      # Canonical Ruby attribute is `admonition_type` (distinct from Node's
-      # built-in `type`, which carries the ProseMirror node-type string).
-      # The wire attribute name is `type` per the @metanorma/mirror JS
-      # contract — `to_h` performs a plain rename, not dialect-aware
-      # shape-shifting. `from_h` accepts either name for forward compat
-      # with previously-serialized trees.
-      class Admonition < Node
-        PM_TYPE = 'admonition'
-        node_attr :admonition_type, :title, :label, :id
-
-        def to_h
-          hash = super
-          attrs = hash['attrs']
-          return hash unless attrs.is_a?(Hash) && attrs.key?('admonition_type')
-
-          attrs['type'] = attrs.delete('admonition_type')
-          hash
-        end
-
-        def self.from_h(hash)
-          return nil unless hash
-
-          attrs = (hash['attrs'] || {}).dup
-          attrs['admonition_type'] ||= attrs.delete('type') if attrs.key?('type')
-
-          kwargs = build_kwargs(self, attrs)
-          kwargs[:content] = (hash['content'] || []).map { |c| Node.from_h(c) }
-          kwargs[:marks] = (hash['marks'] || []).map { |m| Mark.from_h(m) }
-          new(**kwargs)
-        end
-      end
-
-      class Bibliography < Node
-        PM_TYPE = 'bibliography'
-        node_attr :title, :id, :level
-      end
-
-      class BibliographyEntry < Node
-        PM_TYPE = 'biblio_entry'
-        node_attr :anchor_name, :document_id, :url
-      end
-
-      class Footnotes < Node
-        PM_TYPE = 'footnotes'
-      end
-
-      class FootnoteMarker < Node
-        PM_TYPE = 'footnote_marker'
-        node_attr :id, :ref_id, :number
-      end
-
-      class FootnoteEntry < Node
-        PM_TYPE = 'footnote_entry'
-        node_attr :id, :ref_id, :number
-      end
-
-      class Toc < Node
-        PM_TYPE = 'toc'
-        node_attr :title
-      end
-
-      class TocEntry < Node
-        PM_TYPE = 'toc_entry'
-        node_attr :id, :title, :level
       end
 
       class ThematicBreak < Node
@@ -366,52 +305,552 @@ module Coradoc
         PM_TYPE = 'soft_break'
       end
 
+      # ── Admonition (NOTE, TIP, WARNING, CAUTION, IMPORTANT) ──
+      #
+      # The Ruby attribute name is `admonition_type` (kept distinct from
+      # Node's built-in `type` discriminator). The wire attribute name is
+      # `type` per the @metanorma/mirror JS contract. The rename happens
+      # via a `map` declaration — no hand-rolled to_h/from_h.
+
+      class Admonition < Node
+        PM_TYPE = 'admonition'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :admonition_type, :string
+          attribute :title, :string
+          attribute :label, :string
+          attribute :id, :string
+
+          key_value do
+            map 'type', to: :admonition_type # RENAME: Ruby ≠ wire
+            map 'title', to: :title
+            map 'label', to: :label
+            map 'id', to: :id
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      # ── Lists ──
+
+      class BulletList < Node
+        PM_TYPE = 'bullet_list'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :id, :string
+          attribute :start, :integer
+
+          key_value do
+            map 'id', to: :id
+            map 'start', to: :start
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class OrderedList < Node
+        PM_TYPE = 'ordered_list'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :id, :string
+          attribute :start, :integer
+
+          key_value do
+            map 'id', to: :id
+            map 'start', to: :start
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class ListItem < Node
+        PM_TYPE = 'list_item'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :id, :string
+
+          key_value do
+            map 'id', to: :id
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+          map 'marks', to: :marks, polymorphic: Mark::POLYMORPHIC
+        end
+      end
+
+      class DefinitionList < Node
+        PM_TYPE = 'dl'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :id, :string
+
+          key_value do
+            map 'id', to: :id
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class DefinitionTerm < Node
+        PM_TYPE = 'dt'
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+          map 'marks', to: :marks, polymorphic: Mark::POLYMORPHIC
+        end
+      end
+
+      class DefinitionDescription < Node
+        PM_TYPE = 'dd'
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+          map 'marks', to: :marks, polymorphic: Mark::POLYMORPHIC
+        end
+      end
+
+      # ── Media ──
+
+      class Image < Node
+        PM_TYPE = 'image'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :src, :string
+          attribute :alt, :string
+          attribute :title, :string
+          attribute :caption, :string
+          attribute :width, :string
+          attribute :height, :string
+          attribute :inline, :boolean
+
+          key_value do
+            map 'src', to: :src
+            map 'alt', to: :alt
+            map 'title', to: :title
+            map 'caption', to: :caption
+            map 'width', to: :width
+            map 'height', to: :height
+            map 'inline', to: :inline
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      # JS @metanorma/mirror figure: wraps Image + optional Caption.
+      class Figure < Node
+        PM_TYPE = 'figure'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :id, :string
+          attribute :title, :string
+
+          key_value do
+            map 'id', to: :id
+            map 'title', to: :title
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class Caption < Node
+        PM_TYPE = 'caption'
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+          map 'marks', to: :marks, polymorphic: Mark::POLYMORPHIC
+        end
+      end
+
+      # ── Tables ──
+
+      class Table < Node
+        PM_TYPE = 'table'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :title, :string
+          attribute :id, :string
+          attribute :width, :string
+
+          key_value do
+            map 'title', to: :title
+            map 'id', to: :id
+            map 'width', to: :width
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class TableHead < Node
+        PM_TYPE = 'table_head'
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class TableBody < Node
+        PM_TYPE = 'table_body'
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class TableRow < Node
+        PM_TYPE = 'table_row'
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class TableCell < Node
+        PM_TYPE = 'table_cell'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :colspan, :integer
+          attribute :rowspan, :integer
+          attribute :alignment, :string
+          attribute :header, :boolean
+
+          key_value do
+            map 'colspan', to: :colspan
+            map 'rowspan', to: :rowspan
+            map 'alignment', to: :alignment
+            map 'header', to: :header
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+          map 'marks', to: :marks, polymorphic: Mark::POLYMORPHIC
+        end
+      end
+
+      # ── Bibliography ──
+
+      class Bibliography < Node
+        PM_TYPE = 'bibliography'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :title, :string
+          attribute :id, :string
+          attribute :level, :integer
+
+          key_value do
+            map 'title', to: :title
+            map 'id', to: :id
+            map 'level', to: :level
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class BibliographyEntry < Node
+        PM_TYPE = 'biblio_entry'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :anchor_name, :string
+          attribute :document_id, :string
+          attribute :url, :string
+
+          key_value do
+            map 'anchor_name', to: :anchor_name
+            map 'document_id', to: :document_id
+            map 'url', to: :url
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      # ── Footnotes ──
+
+      class Footnotes < Node
+        PM_TYPE = 'footnotes'
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class FootnoteMarker < Node
+        PM_TYPE = 'footnote_marker'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :id, :string
+          attribute :ref_id, :string
+          attribute :number, :integer
+
+          key_value do
+            map 'id', to: :id
+            map 'ref_id', to: :ref_id
+            map 'number', to: :number
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+        end
+      end
+
+      class FootnoteEntry < Node
+        PM_TYPE = 'footnote_entry'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :id, :string
+          attribute :ref_id, :string
+          attribute :number, :integer
+
+          key_value do
+            map 'id', to: :id
+            map 'ref_id', to: :ref_id
+            map 'number', to: :number
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      # ── TOC ──
+
+      class Toc < Node
+        PM_TYPE = 'toc'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :title, :string
+
+          key_value do
+            map 'title', to: :title
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      class TocEntry < Node
+        PM_TYPE = 'toc_entry'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :id, :string
+          attribute :title, :string
+          attribute :level, :integer
+
+          key_value do
+            map 'id', to: :id
+            map 'title', to: :title
+            map 'level', to: :level
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      # ── Generic (catch-all) ──
+
       class GenericBlock < Node
         PM_TYPE = 'generic_block'
-        node_attr :semantic_type, :title, :id
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :semantic_type, :string
+          attribute :title, :string
+          attribute :id, :string
+
+          key_value do
+            map 'semantic_type', to: :semantic_type
+            map 'title', to: :title
+            map 'id', to: :id
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      # ── Frontmatter (typed tree — no hashes) ──
+
+      class FrontmatterValue < Lutaml::Model::Serializable; end
+
+      class FrontmatterEntry < Lutaml::Model::Serializable
+        attribute :key, :string
+        attribute :value, FrontmatterValue
+
+        key_value do
+          map 'key', to: :key, render_default: true
+          map 'value', to: :value
+        end
+      end
+
+      class FrontmatterValue
+        attribute :value_type, :string
+        attribute :string_value, :string
+        attribute :integer_value, :integer
+        attribute :float_value, :float
+        attribute :boolean_value, :boolean
+        attribute :date_value, :date
+        attribute :datetime_value, :date_time
+        attribute :symbol_value, :string
+        attribute :items, FrontmatterValue, collection: true
+        attribute :entries, FrontmatterEntry, collection: true
+
+        key_value do
+          map 'value_type', to: :value_type, render_default: true
+          map 'string_value', to: :string_value
+          map 'integer_value', to: :integer_value
+          map 'float_value', to: :float_value
+          map 'boolean_value', to: :boolean_value
+          map 'date_value', to: :date_value
+          map 'datetime_value', to: :datetime_value
+          map 'symbol_value', to: :symbol_value
+          map 'items', to: :items
+          map 'entries', to: :entries
+        end
       end
 
       class Frontmatter < Node
         PM_TYPE = 'frontmatter'
-        node_attr :schema
-        node_attr :data, default: {}
-      end
 
-      # Auto-registry: maps PM_TYPE (and any PM_ALIASES) → class for all
-      # declared subclasses. Aliases let one Node class deserialize under
-      # multiple type strings (e.g. Section is also clause/annex/...).
-      NODES = begin
-                registry = {}
-                constants.each do |name|
-                  k = const_get(name)
-                  next unless k.is_a?(Class) && k < Node && k::PM_TYPE != 'node'
+        class Attrs < Lutaml::Model::Serializable
+          attribute :schema, :string
+          attribute :entries, FrontmatterEntry, collection: true
 
-                  registry[k::PM_TYPE] = k
-                  if k.const_defined?(:PM_ALIASES, false)
-                    Array(k::PM_ALIASES).each { |alias_type| registry[alias_type] = k }
-                  end
-                end
-                registry.freeze
-      end
+          key_value do
+            map 'schema', to: :schema
+            map 'entries', to: :entries
+          end
+        end
 
-      private
+        attribute :attrs, Attrs
 
-      def serialize_attrs
-        self.class.node_attr_names.each_with_object({}) do |name, hash|
-          value = public_send(name)
-          hash[name.to_s] = value unless value.nil?
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
         end
       end
+    end
+  end
+end
 
-      def self.build_kwargs(klass, attrs)
-        return {} if attrs.empty?
+module Coradoc
+  module Mirror
+    class Node
+      # Populate the polymorphic class map now that every subclass is
+      # defined. Maps each PM_TYPE wire string to its Ruby class name.
+      # Section's PM_ALIASES are added on top so all JS SECTION_TYPES
+      # route to Section on reverse parse.
+      Node.constants.each do |name|
+        k = Node.const_get(name)
+        next unless k.is_a?(Class) && k < Node && k::PM_TYPE != 'node'
 
-        symbolized = attrs.transform_keys(&:to_sym)
-        klass.node_attr_names.each_with_object({}) do |name, kwargs|
-          kwargs[name] = symbolized[name] if symbolized.key?(name)
-        end
+        TYPE_TO_CLASS[k::PM_TYPE] = k.name
+        Array(k::PM_ALIASES).each { |a| TYPE_TO_CLASS[a] = k.name } if k.const_defined?(:PM_ALIASES, false)
       end
-      private_class_method :build_kwargs
+      TYPE_TO_CLASS.freeze
     end
   end
 end

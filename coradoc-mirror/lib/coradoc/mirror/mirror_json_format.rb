@@ -12,18 +12,18 @@ module Coradoc
     module MirrorJsonFormat
       class << self
         # Output-only format — parsing from mirror JSON is not supported via
-        # the format registry. Use Mirror::Node.from_h directly.
+        # the format registry. Use Mirror::Node.from_hash directly.
         def parse_to_core(_input, _options = {})
           raise Coradoc::UnsupportedFormatError,
                 'Parsing from mirror JSON is not supported via the format registry. ' \
-                'Use Coradoc::Mirror::Node.from_h(JSON.parse(input)) directly.'
+                'Use Coradoc::Mirror::Node.from_hash(JSON.parse(input)) directly.'
         end
 
         # Accept CoreModel, serialize to Mirror JSON.
         def serialize(document, options = {})
           pretty = options[:pretty] != false
           node = Coradoc::Mirror.transform(document)
-          node.to_json(pretty: pretty)
+          pretty ? JSON.pretty_generate(node.to_hash) : JSON.generate(node.to_hash)
         end
 
         def serialize?

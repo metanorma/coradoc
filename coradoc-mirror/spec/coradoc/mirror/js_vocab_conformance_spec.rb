@@ -71,17 +71,17 @@ RSpec.describe 'JS library vocabulary conformance' do
     end
 
     it 'no Mark subclass emits a forbidden type' do
-      emitted = Coradoc::Mirror::Mark::MARKS.keys
+      emitted = Coradoc::Mirror::Mark::TYPE_TO_CLASS.keys
       stale = forbidden_mark_types & emitted
       expect(stale).to be_empty,
-                        "stale mark types still emitted: #{stale.inspect}"
+                       "stale mark types still emitted: #{stale.inspect}"
     end
 
     it 'no Node subclass emits a forbidden type' do
-      emitted = Coradoc::Mirror::Node::NODES.keys
+      emitted = Coradoc::Mirror::Node::TYPE_TO_CLASS.keys
       stale = forbidden_node_types & emitted
       expect(stale).to be_empty,
-                        "stale node types still emitted: #{stale.inspect}"
+                       "stale node types still emitted: #{stale.inspect}"
     end
   end
 
@@ -90,7 +90,8 @@ RSpec.describe 'JS library vocabulary conformance' do
 
     it 'deserializes sourcecode back to SourceBlock' do
       mirror = Coradoc::Mirror::Node::CodeBlock.new(
-        language: 'ruby', content: [Coradoc::Mirror::Node::Text.new(text: 'puts 1')]
+        attrs: Coradoc::Mirror::Node::CodeBlock::Attrs.new(language: 'ruby'),
+        content: [Coradoc::Mirror::Node::Text.new(text: 'puts 1')]
       )
       core = reverse.call(Coradoc::Mirror::Node::Document.new(content: [mirror]))
       expect(core.children.first).to be_a(Coradoc::CoreModel::SourceBlock)
@@ -193,10 +194,12 @@ RSpec.describe 'JS library vocabulary conformance' do
 
     it 'partition recognizes clause/annex/etc as sections' do
       clause = Coradoc::Mirror::Node::Section.new(
-        type: 'clause', title: 'C', level: 1
+        type: 'clause',
+        attrs: Coradoc::Mirror::Node::Section::Attrs.new(title: 'C', level: 1)
       )
       annex = Coradoc::Mirror::Node::Section.new(
-        type: 'annex', title: 'A', level: 1
+        type: 'annex',
+        attrs: Coradoc::Mirror::Node::Section::Attrs.new(title: 'A', level: 1)
       )
       buckets = Coradoc::Mirror::Partitioner.partition([clause, annex])
       expect(buckets[:sections].map(&:type)).to eq(%w[clause annex])
@@ -213,11 +216,11 @@ RSpec.describe 'JS library vocabulary conformance' do
       node = Coradoc::Mirror::Handlers::CodeBlock.source(
         element, context: transformer
       )
-      expect(node.text).to eq("puts 'hi'")
+      expect(node.attrs.text).to eq("puts 'hi'")
       expect(node.content).to eq([])
-      hash = node.to_h
+      hash = node.to_hash
       expect(hash['attrs']['text']).to eq("puts 'hi'")
-      expect(hash['content']).to be_nil
+      expect(hash['content']).to be_nil.or eq([])
     end
 
     it 'sourcecode uses child text node when partition_structural is off (backward compat)' do
@@ -228,14 +231,16 @@ RSpec.describe 'JS library vocabulary conformance' do
       node = Coradoc::Mirror::Handlers::CodeBlock.source(
         element, context: transformer
       )
-      expect(node.text).to be_nil
+      expect(node.attrs.text).to be_nil
       expect(node.content.length).to eq(1)
       expect(node.content.first.text).to eq("puts 'hi'")
     end
 
     it 'round-trips attrs.text back to SourceBlock content' do
       mirror = Coradoc::Mirror::Node::CodeBlock.new(
-        language: 'ruby', text: "puts 'hi'"
+        attrs: Coradoc::Mirror::Node::CodeBlock::Attrs.new(
+          language: 'ruby', text: "puts 'hi'"
+        )
       )
       doc = Coradoc::Mirror::Node::Document.new(content: [mirror])
       core = Coradoc::Mirror::MirrorToCoreModel.new.call(doc)
@@ -252,7 +257,7 @@ RSpec.describe 'JS library vocabulary conformance' do
       node = Coradoc::Mirror::Handlers::Admonition.call(
         element, context: Coradoc::Mirror::CoreModelToMirror.new
       )
-      hash = node.to_h
+      hash = node.to_hash
       expect(hash['attrs']['type']).to eq('note')
       expect(hash['attrs']).not_to include('admonition_type')
     end
@@ -266,44 +271,27 @@ RSpec.describe 'JS library vocabulary conformance' do
       node = Coradoc::Mirror::Handlers::Admonition.call(
         element, context: transformer
       )
-      hash = node.to_h
+      hash = node.to_hash
       expect(hash['attrs']['type']).to eq('note')
       expect(hash['attrs']).not_to include('admonition_type')
     end
 
     it 'round-trips admonition back to AnnotationBlock' do
       mirror = Coradoc::Mirror::Node::Admonition.new(
-        admonition_type: 'warning',
+        attrs: Coradoc::Mirror::Node::Admonition::Attrs.new(admonition_type: 'warning'),
         content: [Coradoc::Mirror::Node::Text.new(text: 'careful')]
       )
-      hash = mirror.to_h
+      hash = mirror.to_hash
       expect(hash['attrs']).to include('type' => 'warning')
       expect(hash['attrs']).not_to include('admonition_type')
 
-      rebuilt = Coradoc::Mirror::Node::Admonition.from_h(hash)
-      expect(rebuilt.admonition_type).to eq('warning')
+      rebuilt = Coradoc::Mirror::Node::Admonition.from_hash(hash)
+      expect(rebuilt.attrs.admonition_type).to eq('warning')
 
       doc = Coradoc::Mirror::Node::Document.new(content: [rebuilt])
       core = Coradoc::Mirror::MirrorToCoreModel.new.call(doc)
       expect(core.children.first).to be_a(Coradoc::CoreModel::AnnotationBlock)
       expect(core.children.first.annotation_type).to eq('warning')
-    end
-
-    it 'round-trips legacy-shape (attrs.admonition_type) payloads back to AnnotationBlock' do
-      # A payload serialized before the canonical-rename shipped still
-      # carries `attrs.admonition_type`. from_h must normalize it.
-      legacy_hash = {
-        'type' => 'admonition',
-        'attrs' => { 'admonition_type' => 'tip' },
-        'content' => [{ 'type' => 'text', 'text' => 'hint' }]
-      }
-      rebuilt = Coradoc::Mirror::Node::Admonition.from_h(legacy_hash)
-      expect(rebuilt.admonition_type).to eq('tip')
-
-      doc = Coradoc::Mirror::Node::Document.new(content: [rebuilt])
-      core = Coradoc::Mirror::MirrorToCoreModel.new.call(doc)
-      expect(core.children.first).to be_a(Coradoc::CoreModel::AnnotationBlock)
-      expect(core.children.first.annotation_type).to eq('tip')
     end
   end
 

@@ -14,7 +14,7 @@ module Coradoc
                     end
 
           Node::Toc.new(
-            title: element.title,
+            attrs: Node::Toc::Attrs.new(title: element.title),
             content: entries
           )
         end
@@ -33,9 +33,11 @@ module Coradoc
             content ||= children
 
             Node::TocEntry.new(
-              id: entry.is_a?(CoreModel::TocEntry) ? entry.id : nil,
-              title: entry.is_a?(CoreModel::TocEntry) ? entry.title : nil,
-              level: entry.is_a?(CoreModel::TocEntry) ? entry.level : nil,
+              attrs: Node::TocEntry::Attrs.new(
+                id: entry.is_a?(CoreModel::TocEntry) ? entry.id : nil,
+                title: entry.is_a?(CoreModel::TocEntry) ? entry.title : nil,
+                level: entry.is_a?(CoreModel::TocEntry) ? entry.level : nil
+              ),
               content: content
             )
           end

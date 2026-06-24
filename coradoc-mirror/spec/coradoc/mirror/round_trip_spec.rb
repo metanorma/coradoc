@@ -10,8 +10,8 @@ module JSShapeRoundTripHelpers
 
   def round_trip(doc, reverse:)
     mirror = Coradoc::Mirror.transform(doc, partition_structural: true)
-    parsed = JSON.parse(mirror.to_json)
-    rebuilt = Coradoc::Mirror::Node.from_h(parsed)
+    parsed = JSON.parse(JSON.generate(mirror.to_hash))
+    rebuilt = Coradoc::Mirror.from_hash(parsed)
     [parsed, reverse.call(rebuilt)]
   end
 

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe Coradoc::Mirror::Handlers::Toc do
@@ -28,18 +29,18 @@ RSpec.describe Coradoc::Mirror::Handlers::Toc do
       node = described_class.call(element, context: context)
       expect(node).to be_a(Coradoc::Mirror::Node::Toc)
       expect(node.type).to eq('toc')
-      expect(node.title).to eq('Table of Contents')
+      expect(node.attrs.title).to eq('Table of Contents')
       expect(node.content.length).to eq(1)
 
       entry_node = node.content.first
       expect(entry_node).to be_a(Coradoc::Mirror::Node::TocEntry)
-      expect(entry_node.id).to eq('sec-1')
-      expect(entry_node.title).to eq('Section 1')
-      expect(entry_node.level).to eq(1)
+      expect(entry_node.attrs.id).to eq('sec-1')
+      expect(entry_node.attrs.title).to eq('Section 1')
+      expect(entry_node.attrs.level).to eq(1)
 
       sub_entry_node = entry_node.content.first
       expect(sub_entry_node).to be_a(Coradoc::Mirror::Node::TocEntry)
-      expect(sub_entry_node.id).to eq('sec-1-1')
+      expect(sub_entry_node.attrs.id).to eq('sec-1-1')
     end
 
     it 'creates empty toc node if no entries' do
@@ -47,7 +48,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Toc do
 
       node = described_class.call(element, context: context)
       expect(node.type).to eq('toc')
-      expect(node.title).to eq('Empty TOC')
+      expect(node.attrs.title).to eq('Empty TOC')
       expect(node.content).to be_empty
     end
   end

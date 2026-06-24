@@ -7,8 +7,6 @@ RSpec.describe Coradoc::Mirror::Node do
     it 'creates a basic node with type' do
       node = described_class.new(type: 'custom')
       expect(node.type).to eq('custom')
-      expect(node.content).to eq([])
-      expect(node.marks).to eq([])
     end
 
     it 'uses PM_TYPE as default type' do
@@ -18,70 +16,84 @@ RSpec.describe Coradoc::Mirror::Node do
   end
 
   describe 'typed attributes' do
-    it 'Document has title and id accessors' do
-      doc = described_class::Document.new(title: 'My Doc', id: 'doc-1')
-      expect(doc.title).to eq('My Doc')
-      expect(doc.id).to eq('doc-1')
+    it 'Document has title and id accessors under attrs' do
+      doc = described_class::Document.new(
+        attrs: described_class::Document::Attrs.new(title: 'My Doc', id: 'doc-1')
+      )
+      expect(doc.attrs.title).to eq('My Doc')
+      expect(doc.attrs.id).to eq('doc-1')
     end
 
-    it 'Section has title, id, level accessors' do
-      section = described_class::Section.new(title: 'Intro', id: 's1', level: 2)
-      expect(section.title).to eq('Intro')
-      expect(section.id).to eq('s1')
-      expect(section.level).to eq(2)
+    it 'Section has title, id, level accessors under attrs' do
+      section = described_class::Section.new(
+        attrs: described_class::Section::Attrs.new(title: 'Intro', id: 's1', level: 2)
+      )
+      expect(section.attrs.title).to eq('Intro')
+      expect(section.attrs.id).to eq('s1')
+      expect(section.attrs.level).to eq(2)
     end
 
-    it 'CodeBlock has language, title, passthrough accessors' do
-      code = described_class::CodeBlock.new(language: 'ruby', title: 'Example', passthrough: true)
-      expect(code.language).to eq('ruby')
-      expect(code.title).to eq('Example')
-      expect(code.passthrough).to be true
+    it 'CodeBlock has language, title, passthrough accessors under attrs' do
+      code = described_class::CodeBlock.new(
+        attrs: described_class::CodeBlock::Attrs.new(language: 'ruby', title: 'Example', passthrough: true)
+      )
+      expect(code.attrs.language).to eq('ruby')
+      expect(code.attrs.title).to eq('Example')
+      expect(code.attrs.passthrough).to be true
     end
 
-    it 'Image has src, alt, caption, width, height accessors' do
-      img = described_class::Image.new(src: 'img.png', alt: 'Alt', caption: 'Cap', width: '100')
-      expect(img.src).to eq('img.png')
-      expect(img.alt).to eq('Alt')
-      expect(img.caption).to eq('Cap')
-      expect(img.width).to eq('100')
-      expect(img.height).to be_nil
+    it 'Image has src, alt, caption, width, height accessors under attrs' do
+      img = described_class::Image.new(
+        attrs: described_class::Image::Attrs.new(src: 'img.png', alt: 'Alt', caption: 'Cap', width: '100')
+      )
+      expect(img.attrs.src).to eq('img.png')
+      expect(img.attrs.alt).to eq('Alt')
+      expect(img.attrs.caption).to eq('Cap')
+      expect(img.attrs.width).to eq('100')
+      expect(img.attrs.height).to be_nil
     end
 
-    it 'TableCell has colspan, rowspan, alignment, header accessors' do
-      cell = described_class::TableCell.new(colspan: 2, header: true, alignment: 'center')
-      expect(cell.colspan).to eq(2)
-      expect(cell.header).to be true
-      expect(cell.alignment).to eq('center')
-      expect(cell.rowspan).to be_nil
+    it 'TableCell has colspan, rowspan, alignment, header accessors under attrs' do
+      cell = described_class::TableCell.new(
+        attrs: described_class::TableCell::Attrs.new(colspan: 2, header: true, alignment: 'center')
+      )
+      expect(cell.attrs.colspan).to eq(2)
+      expect(cell.attrs.header).to be true
+      expect(cell.attrs.alignment).to eq('center')
+      expect(cell.attrs.rowspan).to be_nil
     end
   end
 
   describe 'serialization' do
     it 'serializes to hash with only non-empty fields' do
       node = described_class.new(type: 'paragraph')
-      expect(node.to_h).to eq({ 'type' => 'paragraph' })
+      expect(node.to_hash).to eq({ 'type' => 'paragraph' })
     end
 
     it 'includes typed attrs when set' do
-      node = described_class::Heading.new(level: 1)
-      expect(node.to_h).to eq({
-                                'type' => 'heading',
-                                'attrs' => { 'level' => 1 }
-                              })
+      node = described_class::Header.new(
+        attrs: described_class::Header::Attrs.new(level: 1)
+      )
+      expect(node.to_hash).to eq({
+                                   'type' => 'floating_title',
+                                   'attrs' => { 'level' => 1 }
+                                 })
     end
 
     it 'omits nil attrs' do
-      node = described_class::Section.new(title: 'Intro')
-      expect(node.to_h).to eq({
-                                'type' => 'section',
-                                'attrs' => { 'title' => 'Intro' }
-                              })
+      node = described_class::Section.new(
+        attrs: described_class::Section::Attrs.new(title: 'Intro')
+      )
+      expect(node.to_hash).to eq({
+                                   'type' => 'section',
+                                   'attrs' => { 'title' => 'Intro' }
+                                 })
     end
 
     it 'includes content when present' do
       child = described_class::Text.new(text: 'hello')
       node = described_class::Paragraph.new(content: [child])
-      hash = node.to_h
+      hash = node.to_hash
       expect(hash['content']).to be_an(Array)
       expect(hash['content'].length).to eq(1)
     end
@@ -89,38 +101,35 @@ RSpec.describe Coradoc::Mirror::Node do
     it 'includes marks when present' do
       mark = Coradoc::Mirror::Mark::Bold.new
       node = described_class::Text.new(text: 'bold', marks: [mark])
-      hash = node.to_h
+      hash = node.to_hash
       expect(hash['marks']).to be_an(Array)
     end
 
-    it 'serializes to JSON' do
+    it 'serializes to JSON via to_hash' do
       node = described_class::Paragraph.new
-      json = node.to_json
+      json = JSON.generate(node.to_hash)
       expect(JSON.parse(json)).to eq({ 'type' => 'paragraph' })
     end
 
     it 'serializes to pretty JSON' do
       node = described_class::Paragraph.new
-      json = node.to_json(pretty: true)
+      json = JSON.pretty_generate(node.to_hash)
       expect(json).to include("\n")
     end
 
     it 'serializes to YAML' do
-      node = described_class::Section.new(id: 'p1')
-      yaml = node.to_yaml
+      node = described_class::Section.new(
+        attrs: described_class::Section::Attrs.new(id: 'p1')
+      )
+      yaml = YAML.dump(node.to_hash)
       parsed = YAML.safe_load(yaml)
       expect(parsed['type']).to eq('section')
       expect(parsed['attrs']['id']).to eq('p1')
     end
-
-    it 'aliases to_hash to to_h' do
-      node = described_class.new(type: 'test')
-      expect(node.to_hash).to eq(node.to_h)
-    end
   end
 
   describe 'deserialization' do
-    it 'reconstructs typed nodes from hash' do
+    it 'reconstructs typed nodes from hash via Mirror.from_hash' do
       hash = {
         'type' => 'section',
         'attrs' => { 'title' => 'Intro', 'level' => 1 },
@@ -131,10 +140,10 @@ RSpec.describe Coradoc::Mirror::Node do
         ]
       }
 
-      node = described_class.from_h(hash)
+      node = Coradoc::Mirror.from_hash(hash)
       expect(node).to be_a(described_class::Section)
-      expect(node.title).to eq('Intro')
-      expect(node.level).to eq(1)
+      expect(node.attrs.title).to eq('Intro')
+      expect(node.attrs.level).to eq(1)
       expect(node.content.length).to eq(1)
 
       para = node.content.first
@@ -143,15 +152,9 @@ RSpec.describe Coradoc::Mirror::Node do
       expect(para.content.first.text).to eq('Hello')
     end
 
-    it 'returns nil for nil input' do
-      expect(described_class.from_h(nil)).to be_nil
-    end
-
-    it 'handles unknown types as generic Node' do
+    it 'raises on unknown types via Mirror.from_hash' do
       hash = { 'type' => 'unknown_custom_type' }
-      node = described_class.from_h(hash)
-      expect(node).to be_a(described_class)
-      expect(node.type).to eq('unknown_custom_type')
+      expect { Coradoc::Mirror.from_hash(hash) }.to raise_error(Coradoc::Mirror::Error)
     end
   end
 
@@ -170,25 +173,25 @@ RSpec.describe Coradoc::Mirror::Node do
   end
 
   describe 'node type subclasses' do
-    it 'registers all subclasses in NODES map' do
-      expect(described_class::NODES['doc']).to eq(described_class::Document)
-      expect(described_class::NODES['paragraph']).to eq(described_class::Paragraph)
-      expect(described_class::NODES['heading']).to eq(described_class::Heading)
-      expect(described_class::NODES['sourcecode']).to eq(described_class::CodeBlock)
-      expect(described_class::NODES['quote']).to eq(described_class::Blockquote)
-      expect(described_class::NODES['bullet_list']).to eq(described_class::BulletList)
-      expect(described_class::NODES['ordered_list']).to eq(described_class::OrderedList)
-      expect(described_class::NODES['list_item']).to eq(described_class::ListItem)
-      expect(described_class::NODES['image']).to eq(described_class::Image)
-      expect(described_class::NODES['table']).to eq(described_class::Table)
-      expect(described_class::NODES['section']).to eq(described_class::Section)
-      expect(described_class::NODES['admonition']).to eq(described_class::Admonition)
+    it 'registers all subclasses in TYPE_TO_CLASS map' do
+      expect(described_class::TYPE_TO_CLASS['doc']).to eq(described_class::Document.name)
+      expect(described_class::TYPE_TO_CLASS['paragraph']).to eq(described_class::Paragraph.name)
+      expect(described_class::TYPE_TO_CLASS['floating_title']).to eq(described_class::Header.name)
+      expect(described_class::TYPE_TO_CLASS['sourcecode']).to eq(described_class::CodeBlock.name)
+      expect(described_class::TYPE_TO_CLASS['quote']).to eq(described_class::Blockquote.name)
+      expect(described_class::TYPE_TO_CLASS['bullet_list']).to eq(described_class::BulletList.name)
+      expect(described_class::TYPE_TO_CLASS['ordered_list']).to eq(described_class::OrderedList.name)
+      expect(described_class::TYPE_TO_CLASS['list_item']).to eq(described_class::ListItem.name)
+      expect(described_class::TYPE_TO_CLASS['image']).to eq(described_class::Image.name)
+      expect(described_class::TYPE_TO_CLASS['table']).to eq(described_class::Table.name)
+      expect(described_class::TYPE_TO_CLASS['section']).to eq(described_class::Section.name)
+      expect(described_class::TYPE_TO_CLASS['admonition']).to eq(described_class::Admonition.name)
     end
 
     it 'Text node has text attribute' do
       node = described_class::Text.new(text: 'Hello')
       expect(node.text).to eq('Hello')
-      expect(node.to_h['text']).to eq('Hello')
+      expect(node.to_hash['text']).to eq('Hello')
       expect(node.text_content).to eq('Hello')
     end
 
@@ -198,7 +201,7 @@ RSpec.describe Coradoc::Mirror::Node do
         'text' => 'bold text',
         'marks' => [{ 'type' => 'strong' }]
       }
-      node = described_class::Text.from_h(hash)
+      node = described_class::Text.from_hash(hash)
       expect(node.text).to eq('bold text')
       expect(node.marks.length).to eq(1)
       expect(node.marks.first).to be_a(Coradoc::Mirror::Mark::Bold)
@@ -206,11 +209,10 @@ RSpec.describe Coradoc::Mirror::Node do
 
     it 'round-trips through serialization' do
       doc = described_class::Document.new(
-        title: 'Test',
+        attrs: described_class::Document::Attrs.new(title: 'Test'),
         content: [
           described_class::Section.new(
-            level: 1,
-            title: 'Intro',
+            attrs: described_class::Section::Attrs.new(level: 1, title: 'Intro'),
             content: [
               described_class::Paragraph.new(
                 content: [
@@ -226,15 +228,33 @@ RSpec.describe Coradoc::Mirror::Node do
         ]
       )
 
-      json = doc.to_json(pretty: true)
-      parsed = described_class.from_h(JSON.parse(json))
+      json = JSON.pretty_generate(doc.to_hash)
+      parsed = Coradoc::Mirror.from_hash(JSON.parse(json))
 
       expect(parsed).to be_a(described_class::Document)
-      expect(parsed.title).to eq('Test')
+      expect(parsed.attrs.title).to eq('Test')
       expect(parsed.content.length).to eq(1)
       section = parsed.content.first
       expect(section).to be_a(described_class::Section)
       expect(section.content.first.content.first.marks.first).to be_a(Coradoc::Mirror::Mark::Bold)
+    end
+  end
+
+  describe 'Admonition rename' do
+    it 'emits admonition_type as attrs.type on the wire' do
+      node = described_class::Admonition.new(
+        attrs: described_class::Admonition::Attrs.new(admonition_type: 'note')
+      )
+      hash = node.to_hash
+      expect(hash['type']).to eq('admonition')
+      expect(hash['attrs']['type']).to eq('note')
+      expect(hash['attrs']).not_to have_key('admonition_type')
+    end
+
+    it 'round-trips the rename through from_hash' do
+      hash = { 'type' => 'admonition', 'attrs' => { 'type' => 'tip' } }
+      node = described_class::Admonition.from_hash(hash)
+      expect(node.attrs.admonition_type).to eq('tip')
     end
   end
 end

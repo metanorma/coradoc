@@ -10,7 +10,10 @@ module Coradoc
           end
           return nil if entries.empty?
 
-          Node::DefinitionList.new(id: element.id, content: entries)
+          Node::DefinitionList.new(
+            attrs: Node::DefinitionList::Attrs.new(id: element.id),
+            content: entries
+          )
         end
 
         class << self

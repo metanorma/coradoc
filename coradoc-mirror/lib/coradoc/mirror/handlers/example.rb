@@ -9,8 +9,7 @@ module Coradoc
           return nil if content.empty?
 
           Node::Example.new(
-            id: element.id,
-            title: element.title,
+            attrs: Node::Example::Attrs.new(id: element.id, title: element.title),
             content: content
           )
         end

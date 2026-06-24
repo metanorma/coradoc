@@ -1,79 +1,41 @@
 # frozen_string_literal: true
 
+require 'lutaml/model'
+
 module Coradoc
   module Mirror
     # ProseMirror-compatible inline mark (formatting annotation).
     #
     # Marks decorate inline text nodes with formatting semantics like
-    # bold, italic, link, etc. They are serialized as:
+    # bold, italic, link, etc. Wire format:
     #
-    #   { "type": "bold" }
+    #   { "type": "strong" }
     #   { "type": "link", "attrs": { "href": "..." } }
     #
-    # New mark types are added by subclassing Mark — no modification of
-    # existing code needed (OCP).
-    class Mark
+    # All built-in Mark subclasses live below in this file so the
+    # TYPE_TO_CLASS registry at the bottom can see every PM_TYPE at
+    # load time. Adding a new mark type = adding one subclass + letting
+    # the registry walker pick it up (OCP).
+    class Mark < Lutaml::Model::Serializable
       PM_TYPE = 'mark'
 
-      class << self
-        def mark_attr(*names)
-          @mark_attr_names ||= []
-          @mark_attr_names |= names
-          attr_accessor(*names)
-        end
+      attribute :type, :string, default: -> { self.class::PM_TYPE }
 
-        def mark_attr_names
-          @mark_attr_names ||= []
-        end
+      key_value do
+        map 'type', to: :type, render_default: true
       end
 
-      def initialize(type: nil)
-        @type_override = type
-        self.class.mark_attr_names.each do |name|
-          public_send(:"#{name}=", nil)
-        end
+      def text_content
+        ''
       end
+    end
+  end
+end
 
-      def type
-        @type_override || self.class::PM_TYPE
-      end
-
-      def to_h
-        result = { 'type' => type }
-        attrs = serialize_attrs
-        result['attrs'] = attrs unless attrs.empty?
-        result
-      end
-
-      alias to_hash to_h
-
-      def to_json(**options)
-        to_h.to_json(options)
-      end
-
-      def self.from_h(hash)
-        return nil unless hash
-
-        type_str = hash['type']
-        mark_class = MARKS[type_str]
-
-        if mark_class && mark_class != self
-          mark_class.from_h(hash)
-        else
-          attrs = hash['attrs'] || {}
-          base = mark_class || self
-          kwargs = build_kwargs(base, attrs)
-          kwargs[:type] = type_str if mark_class.nil?
-          base.new(**kwargs)
-        end
-      end
-
-      # ── Mark type subclasses ────────────────────────────────────
-      #
-      # Ruby class names follow Ruby conventions (Bold, Italic); PM_TYPE
-      # values follow the @metanorma/mirror JS vocab (strong, emphasis).
-      # The conformance spec at spec/coradoc/mirror/js_vocab_conformance_spec.rb
-      # locks the wire format against the JS library's canonical list.
+module Coradoc
+  module Mirror
+    class Mark
+      # ── Marks without attrs ──
 
       class Bold < Mark
         PM_TYPE = 'strong'
@@ -107,84 +69,113 @@ module Coradoc
         PM_TYPE = 'highlight'
       end
 
+      # ── Marks with attrs ──
+
       class Link < Mark
         PM_TYPE = 'link'
-        mark_attr :href
 
-        def initialize(href: nil)
-          super()
-          @href = href
+        class Attrs < Lutaml::Model::Serializable
+          attribute :href, :string
+
+          key_value do
+            map 'href', to: :href
+          end
         end
 
-        def self.from_h(hash)
-          return nil unless hash
+        attribute :attrs, Attrs
 
-          attrs = hash['attrs'] || {}
-          new(href: attrs['href'])
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
         end
       end
 
       class CrossReference < Mark
         PM_TYPE = 'xref'
-        mark_attr :target, :resolved
 
-        def initialize(target: nil, resolved: nil)
-          super()
-          @target = target
-          @resolved = resolved
+        class Attrs < Lutaml::Model::Serializable
+          attribute :target, :string
+          attribute :resolved, :string
+
+          key_value do
+            map 'target', to: :target
+            map 'resolved', to: :resolved
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
         end
       end
 
       class Stem < Mark
         PM_TYPE = 'stem'
-        mark_attr :stem_type
 
-        def initialize(stem_type: nil)
-          super()
-          @stem_type = stem_type
+        class Attrs < Lutaml::Model::Serializable
+          attribute :stem_type, :string
+
+          key_value do
+            map 'stem_type', to: :stem_type
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
         end
       end
 
       class Span < Mark
         PM_TYPE = 'span'
-        mark_attr :role
 
-        def initialize(role: nil)
-          super()
-          @role = role
+        class Attrs < Lutaml::Model::Serializable
+          attribute :role, :string
+
+          key_value do
+            map 'role', to: :role
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
         end
       end
+    end
+  end
+end
 
-      # Populate and freeze the registry after all subclasses are defined.
-      MARKS = begin
-                registry = {}
-                constants.each do |name|
-                  k = const_get(name)
-                  next unless k.is_a?(Class) && k < Mark && k::PM_TYPE != 'mark'
+module Coradoc
+  module Mirror
+    class Mark
+      # Polymorphic class map — flat hash from PM_TYPE wire string to
+      # fully-qualified Ruby class name. Used by Node and Mark mappings
+      # to dispatch polymorphic deserialization. Populated once after
+      # all subclasses are defined above.
+      TYPE_TO_CLASS = begin
+        result = {}
+        Mark.constants.each do |name|
+          k = Mark.const_get(name)
+          next unless k.is_a?(Class) && k < Mark && k::PM_TYPE != 'mark'
 
-                  registry[k::PM_TYPE] = k
-                end
-                registry.freeze
-      end
-
-      private
-
-      def serialize_attrs
-        self.class.mark_attr_names.each_with_object({}) do |name, hash|
-          value = public_send(name)
-          hash[name.to_s] = value unless value.nil?
+          result[k::PM_TYPE] = k.name
         end
+        result.freeze
       end
 
-      def self.build_kwargs(klass, attrs)
-        return {} if attrs.empty?
-
-        symbolized = attrs.transform_keys(&:to_sym)
-        klass.mark_attr_names.each_with_object({}) do |name, kwargs|
-          kwargs[name] = symbolized[name] if symbolized.key?(name)
-        end
-      end
-      private_class_method :build_kwargs
+      # Frozen polymorphic option block. Referenced verbatim by every
+      # Node mapping that has a `marks` collection.
+      POLYMORPHIC = {
+        attribute: 'type',
+        class_map: TYPE_TO_CLASS
+      }.freeze
     end
   end
 end

@@ -60,7 +60,7 @@ module Coradoc
         end
 
         # Shared helpers — all delegate to the context (DRY).
-        def build_content(node)        = context.build_content(node)
+        def build_content(node) = context.build_content(node)
         def build_inline_children(node) = context.build_inline_children(node)
         def build_node(node)            = context.build_node(node)
         def extract_text(node)          = context.extract_text(node)
@@ -83,9 +83,10 @@ module Coradoc
         registers 'doc'
 
         def build(node)
+          attrs = node.attrs
           CoreModel::DocumentElement.new(
-            title: node.title,
-            id: node.id,
+            title: attrs&.title,
+            id: attrs&.id,
             children: build_content(node)
           )
         end
@@ -100,10 +101,11 @@ module Coradoc
                   'acknowledgements', 'terms', 'definitions', 'references'
 
         def build(node)
+          attrs = node.attrs
           CoreModel::SectionElement.new(
-            title: node.title,
-            level: node.level,
-            id: node.id,
+            title: attrs&.title,
+            level: attrs&.level,
+            id: attrs&.id,
             children: build_content(node)
           )
         end
@@ -113,9 +115,10 @@ module Coradoc
         registers 'floating_title', 'heading'
 
         def build(node)
+          attrs = node.attrs
           CoreModel::HeaderElement.new(
-            title: node.title,
-            level: node.level,
+            title: attrs&.title,
+            level: attrs&.level,
             children: build_content(node)
           )
         end
@@ -153,10 +156,11 @@ module Coradoc
         registers 'sourcecode'
 
         def build(node)
+          attrs = node.attrs
           CoreModel::SourceBlock.new(
-            content: node.text || extract_text(node),
-            language: node.language,
-            title: node.title
+            content: attrs&.text || extract_text(node),
+            language: attrs&.language,
+            title: attrs&.title
           )
         end
       end
@@ -166,7 +170,7 @@ module Coradoc
 
         def build(node)
           CoreModel::QuoteBlock.new(
-            attribution: node.attribution,
+            attribution: node.attrs&.attribution,
             children: build_content(node)
           )
         end
@@ -177,7 +181,7 @@ module Coradoc
 
         def build(node)
           CoreModel::ExampleBlock.new(
-            title: node.title,
+            title: node.attrs&.title,
             children: build_content(node)
           )
         end
@@ -188,7 +192,7 @@ module Coradoc
 
         def build(node)
           CoreModel::SidebarBlock.new(
-            title: node.title,
+            title: node.attrs&.title,
             children: build_content(node)
           )
         end
@@ -208,7 +212,7 @@ module Coradoc
         def build(node)
           CoreModel::VerseBlock.new(
             content: extract_text(node),
-            attribution: node.attribution
+            attribution: node.attrs&.attribution
           )
         end
       end
@@ -225,9 +229,10 @@ module Coradoc
         registers 'frontmatter'
 
         def build(node)
+          attrs = node.attrs
           CoreModel::FrontmatterBlock.new(
-            schema: node.schema,
-            data: node.data || {}
+            schema: attrs&.schema,
+            data: FrontmatterTreeToHash.to_hash(attrs&.entries || [])
           )
         end
       end
@@ -237,7 +242,7 @@ module Coradoc
 
         def build(node)
           CoreModel::AnnotationBlock.new(
-            annotation_type: node.admonition_type,
+            annotation_type: node.attrs&.admonition_type,
             content: extract_text(node)
           )
         end
@@ -330,13 +335,14 @@ module Coradoc
         registers 'image'
 
         def build(node)
+          attrs = node.attrs
           CoreModel::Image.new(
-            src: node.src,
-            alt: node.alt,
-            title: node.title,
-            caption: node.caption,
-            width: node.width,
-            height: node.height
+            src: attrs&.src,
+            alt: attrs&.alt,
+            title: attrs&.title,
+            caption: attrs&.caption,
+            width: attrs&.width,
+            height: attrs&.height
           )
         end
       end
@@ -393,7 +399,7 @@ module Coradoc
             end
           end
 
-          CoreModel::Table.new(title: node.title, rows: rows)
+          CoreModel::Table.new(title: node.attrs&.title, rows: rows)
         end
       end
 
@@ -426,12 +432,13 @@ module Coradoc
         registers 'table_cell'
 
         def build(node)
+          attrs = node.attrs
           CoreModel::TableCell.new(
             content: extract_text(node),
-            header: node.header || false,
-            colspan: node.colspan,
-            rowspan: node.rowspan,
-            alignment: node.alignment
+            header: attrs&.header || false,
+            colspan: attrs&.colspan,
+            rowspan: attrs&.rowspan,
+            alignment: attrs&.alignment
           )
         end
       end
@@ -443,7 +450,7 @@ module Coradoc
 
         def build(node)
           entries = build_content(node).select { |c| c.is_a?(CoreModel::BibliographyEntry) }
-          CoreModel::Bibliography.new(title: node.title, entries: entries)
+          CoreModel::Bibliography.new(title: node.attrs&.title, entries: entries)
         end
       end
 
@@ -451,9 +458,10 @@ module Coradoc
         registers 'biblio_entry'
 
         def build(node)
+          attrs = node.attrs
           CoreModel::BibliographyEntry.new(
-            anchor_name: node.anchor_name,
-            document_id: node.document_id,
+            anchor_name: attrs&.anchor_name,
+            document_id: attrs&.document_id,
             ref_text: extract_text(node)
           )
         end
@@ -476,7 +484,8 @@ module Coradoc
         registers 'footnote_entry'
 
         def build(node)
-          CoreModel::Footnote.new(id: node.id, content: extract_text(node))
+          attrs = node.attrs
+          CoreModel::Footnote.new(id: attrs&.id, content: extract_text(node))
         end
       end
 
@@ -486,10 +495,11 @@ module Coradoc
         registers 'footnote_marker'
 
         def build(node)
+          attrs = node.attrs
           CoreModel::FootnoteReference.new(
-            id: node.id,
-            reference: node.ref_id,
-            number: node.number
+            id: attrs&.id,
+            reference: attrs&.ref_id,
+            number: attrs&.number
           )
         end
       end
@@ -508,7 +518,8 @@ module Coradoc
         registers 'toc_entry'
 
         def build(node)
-          CoreModel::TocEntry.new(id: node.id, title: node.title)
+          attrs = node.attrs
+          CoreModel::TocEntry.new(id: attrs&.id, title: attrs&.title)
         end
       end
 
@@ -544,10 +555,11 @@ module Coradoc
         registers 'generic_block'
 
         def build(node)
+          attrs = node.attrs
           CoreModel::Block.new(
-            block_semantic_type: node.semantic_type || 'generic',
-            title: node.title,
-            id: node.id,
+            block_semantic_type: attrs&.semantic_type || 'generic',
+            title: attrs&.title,
+            id: attrs&.id,
             content: extract_text(node)
           )
         end
@@ -555,6 +567,34 @@ module Coradoc
 
       LIST_TYPES = %w[bullet_list ordered_list].freeze
       private_constant :LIST_TYPES
+
+      # Walks a typed FrontmatterEntry / FrontmatterValue tree and
+      # rebuilds the CoreModel `data` hash. Inverse of
+      # Handlers::Frontmatter.build_value.
+      module FrontmatterTreeToHash
+        module_function
+
+        def to_hash(entries)
+          entries.each_with_object({}) do |entry, result|
+            result[entry.key] = unwrap_value(entry.value)
+          end
+        end
+
+        def unwrap_value(value)
+          case value.value_type
+          when 'map' then to_hash(value.entries || [])
+          when 'array' then (value.items || []).map { |v| unwrap_value(v) }
+          when 'integer'  then value.integer_value
+          when 'float'    then value.float_value
+          when 'boolean'  then value.boolean_value
+          when 'date'     then value.date_value
+          when 'datetime' then value.datetime_value
+          when 'symbol'   then value.symbol_value&.to_sym
+          when 'nil'      then nil
+          else value.string_value
+          end
+        end
+      end
     end
   end
 end

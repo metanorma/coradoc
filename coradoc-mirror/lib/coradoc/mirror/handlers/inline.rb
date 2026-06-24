@@ -130,7 +130,9 @@ module Coradoc
             text = element.target.to_s if text.empty? && element.target
             return nil if text.empty?
 
-            context.text_node(text, marks: [Mark::Link.new(href: element.target)])
+            context.text_node(text, marks: [
+                                Mark::Link.new(attrs: Mark::Link::Attrs.new(href: element.target))
+                              ])
           end
 
           def build_xref_mark(element, context)
@@ -141,8 +143,10 @@ module Coradoc
             return nil if display_text.empty?
 
             context.text_node(display_text, marks: [Mark::CrossReference.new(
-              target: target,
-              resolved: text.empty? ? nil : text
+              attrs: Mark::CrossReference::Attrs.new(
+                target: target,
+                resolved: text.empty? ? nil : text
+              )
             )])
           end
 
@@ -150,7 +154,9 @@ module Coradoc
             text = extract_inline_text(element)
             return nil if text.empty?
 
-            context.text_node(text, marks: [Mark::Stem.new(stem_type: element.stem_type)])
+            context.text_node(text, marks: [
+                                Mark::Stem.new(attrs: Mark::Stem::Attrs.new(stem_type: element.stem_type))
+                              ])
           end
 
           def build_span_mark(element, context)
@@ -158,7 +164,9 @@ module Coradoc
             return nil if text.empty?
 
             role = element.attr('role')
-            context.text_node(text, marks: [Mark::Span.new(role: role)])
+            context.text_node(text, marks: [
+                                Mark::Span.new(attrs: Mark::Span::Attrs.new(role: role))
+                              ])
           end
 
           def build_footnote_node(element, context)
@@ -184,9 +192,7 @@ module Coradoc
           def extract_inline_text(element)
             return element.content.to_s if element.content && !element.content.to_s.empty?
 
-            if element.is_a?(CoreModel::InlineElement) && element.nested_elements
-              return element.nested_elements.map { |nested| extract_inline_text(nested) }.join
-            end
+            return element.nested_elements.map { |nested| extract_inline_text(nested) }.join if element.is_a?(CoreModel::InlineElement) && element.nested_elements
 
             if (element.is_a?(CoreModel::InlineElement) || element.is_a?(CoreModel::Block)) && element.children && !element.children.empty?
               return element.children.map do |child|

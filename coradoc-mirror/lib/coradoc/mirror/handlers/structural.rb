@@ -11,8 +11,7 @@ module Coradoc
         def self.document(element, context:)
           content = context.extract_content(element)
           Node::Document.new(
-            title: element.title,
-            id: element.id,
+            attrs: Node::Document::Attrs.new(title: element.title, id: element.id),
             content: content
           )
         end
@@ -41,9 +40,11 @@ module Coradoc
 
           Node::Section.new(
             type: type,
-            id: element.id,
-            title: element.title,
-            level: element.heading_level,
+            attrs: Node::Section::Attrs.new(
+              id: element.id,
+              title: element.title,
+              level: element.heading_level
+            ),
             content: content
           )
         end
@@ -70,8 +71,10 @@ module Coradoc
         def self.header(element, context:)
           content = context.extract_content(element)
           Node::Header.new(
-            title: element.title,
-            level: element.heading_level,
+            attrs: Node::Header::Attrs.new(
+              title: element.title,
+              level: element.heading_level
+            ),
             content: content
           )
         end

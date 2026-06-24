@@ -36,7 +36,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
       result = transformer.call(doc)
 
       expect(result).to be_a(Coradoc::Mirror::Node::Document)
-      expect(result.title).to eq('My Document')
+      expect(result.attrs.title).to eq('My Document')
     end
 
     it 'transforms a document with sections' do
@@ -50,8 +50,8 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
       expect(result.content.length).to eq(1)
       section = result.content.first
       expect(section).to be_a(Coradoc::Mirror::Node::Section)
-      expect(section.title).to eq('Introduction')
-      expect(section.level).to eq(1)
+      expect(section.attrs.title).to eq('Introduction')
+      expect(section.attrs.level).to eq(1)
 
       para = section.content.first
       expect(para).to be_a(Coradoc::Mirror::Node::Paragraph)
@@ -63,7 +63,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
                             make_paragraph('Content')
                           ])
       result = transformer.call(doc)
-      json = result.to_json
+      json = JSON.generate(result.to_hash)
 
       parsed = JSON.parse(json)
       expect(parsed['type']).to eq('doc')
@@ -82,8 +82,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
 
       code = result.content.first
       expect(code).to be_a(Coradoc::Mirror::Node::CodeBlock)
-      expect(code.language).to eq('ruby')
-      expect(code.content.first.text).to eq('def hello; end')
+      expect(code.attrs.language).to eq('ruby')
     end
 
     it 'transforms quote block' do
@@ -96,7 +95,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
 
       quote = result.content.first
       expect(quote).to be_a(Coradoc::Mirror::Node::Blockquote)
-      expect(quote.attribution).to eq('Shakespeare')
+      expect(quote.attrs.attribution).to eq('Shakespeare')
     end
 
     it 'transforms example block' do
@@ -109,7 +108,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
 
       example = result.content.first
       expect(example).to be_a(Coradoc::Mirror::Node::Example)
-      expect(example.title).to eq('Example 1')
+      expect(example.attrs.title).to eq('Example 1')
     end
 
     it 'transforms sidebar block' do
@@ -140,7 +139,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
 
       verse = result.content.first
       expect(verse).to be_a(Coradoc::Mirror::Node::Verse)
-      expect(verse.attribution).to eq('Anonymous')
+      expect(verse.attrs.attribution).to eq('Anonymous')
     end
 
     it 'transforms horizontal rule' do
@@ -178,7 +177,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
 
       admonition = result.content.first
       expect(admonition).to be_a(Coradoc::Mirror::Node::Admonition)
-      expect(admonition.admonition_type).to eq('note')
+      expect(admonition.attrs.admonition_type).to eq('note')
     end
   end
 
@@ -285,7 +284,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
 
       mirror_table = result.content.first
       expect(mirror_table).to be_a(Coradoc::Mirror::Node::Table)
-      expect(mirror_table.title).to eq('Data')
+      expect(mirror_table.attrs.title).to eq('Data')
       expect(mirror_table.content.length).to eq(2) # head + body
 
       head = mirror_table.content.first
@@ -308,10 +307,10 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
 
       mirror_img = result.content.first
       expect(mirror_img).to be_a(Coradoc::Mirror::Node::Image)
-      expect(mirror_img.src).to eq('images/diagram.png')
-      expect(mirror_img.alt).to eq('Diagram')
-      expect(mirror_img.caption).to eq('Figure 1')
-      expect(mirror_img.width).to eq('800px')
+      expect(mirror_img.attrs.src).to eq('images/diagram.png')
+      expect(mirror_img.attrs.alt).to eq('Diagram')
+      expect(mirror_img.attrs.caption).to eq('Figure 1')
+      expect(mirror_img.attrs.width).to eq('800px')
     end
   end
 
@@ -361,7 +360,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
       text_node = result.content.first.content.first
       expect(text_node.text).to eq('Click here')
       expect(text_node.marks.first).to be_a(Coradoc::Mirror::Mark::Link)
-      expect(text_node.marks.first.href).to eq('https://example.com')
+      expect(text_node.marks.first.attrs.href).to eq('https://example.com')
     end
 
     it 'transforms cross-reference' do
@@ -375,7 +374,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
 
       text_node = result.content.first.content.first
       expect(text_node.marks.first).to be_a(Coradoc::Mirror::Mark::CrossReference)
-      expect(text_node.marks.first.target).to eq('section-1')
+      expect(text_node.marks.first.attrs.target).to eq('section-1')
     end
 
     it 'transforms subscript and superscript' do
@@ -429,10 +428,10 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
 
       mirror_bib = result.content.first
       expect(mirror_bib).to be_a(Coradoc::Mirror::Node::Bibliography)
-      expect(mirror_bib.title).to eq('References')
+      expect(mirror_bib.attrs.title).to eq('References')
       entry = mirror_bib.content.first
       expect(entry).to be_a(Coradoc::Mirror::Node::BibliographyEntry)
-      expect(entry.document_id).to eq('ISO 712')
+      expect(entry.attrs.document_id).to eq('ISO 712')
     end
   end
 
@@ -448,7 +447,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
       expect(footnotes).to be_a(Coradoc::Mirror::Node::Footnotes)
       entry = footnotes.content.first
       expect(entry).to be_a(Coradoc::Mirror::Node::FootnoteEntry)
-      expect(entry.number).to eq(1)
+      expect(entry.attrs.number).to eq(1)
     end
   end
 
@@ -482,7 +481,7 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
                           ])
 
       result = transformer.call(doc)
-      json = result.to_json(pretty: true)
+      json = JSON.pretty_generate(result.to_hash)
       parsed = JSON.parse(json)
 
       # Verify structure

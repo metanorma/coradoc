@@ -12,7 +12,7 @@ module Coradoc
                  end
 
           Node::Verse.new(
-            attribution: element.attribution,
+            attrs: Node::Verse::Attrs.new(attribution: element.attribution),
             content: [context.text_node(text)]
           )
         end

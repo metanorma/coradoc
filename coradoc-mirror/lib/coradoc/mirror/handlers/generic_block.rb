@@ -10,9 +10,11 @@ module Coradoc
           return nil if content.empty?
 
           Node::GenericBlock.new(
-            id: element.id,
-            title: element.title,
-            semantic_type: semantic_type&.to_s,
+            attrs: Node::GenericBlock::Attrs.new(
+              id: element.id,
+              title: element.title,
+              semantic_type: semantic_type&.to_s
+            ),
             content: content
           )
         end

@@ -9,8 +9,7 @@ module Coradoc
           return nil if content.empty?
 
           Node::Sidebar.new(
-            id: element.id,
-            title: element.title,
+            attrs: Node::Sidebar::Attrs.new(id: element.id, title: element.title),
             content: content
           )
         end

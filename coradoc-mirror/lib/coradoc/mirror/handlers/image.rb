@@ -18,8 +18,7 @@ module Coradoc
           return image_node unless caption_text?(element)
 
           Node::Figure.new(
-            id: element.id,
-            title: caption_value(element),
+            attrs: Node::Figure::Attrs.new(id: element.id, title: caption_value(element)),
             content: [image_node, Node::Caption.new(content: caption_text_nodes(element, context))]
           )
         end
@@ -29,14 +28,15 @@ module Coradoc
 
           def build_image_node(element)
             Node::Image.new(
-              id: element.id,
-              src: element.src,
-              alt: element.alt,
-              title: element.title,
-              caption: element.caption,
-              width: element.width,
-              height: element.height,
-              inline: element.inline || nil
+              attrs: Node::Image::Attrs.new(
+                src: element.src,
+                alt: element.alt,
+                title: element.title,
+                caption: element.caption,
+                width: element.width,
+                height: element.height,
+                inline: element.inline || nil
+              )
             )
           end
 
