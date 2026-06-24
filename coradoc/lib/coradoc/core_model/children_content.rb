@@ -11,7 +11,12 @@ module Coradoc
     #   attribute :children, Base, collection: true
     # on each including class. This module overrides the setter to
     # auto-wrap raw strings as TextContent, keeping all callers simple.
+    #
+    # Includes HasChildren so all mixed-content classes also satisfy
+    # the structural predicate (OCP — no subclass enumeration needed
+    # for children-based dispatch).
     module ChildrenContent
+      include HasChildren
       # Override the children= setter to auto-wrap strings as TextContent.
       # This is defined via define_method so it always overrides the
       # lutaml-generated setter, regardless of include order.
