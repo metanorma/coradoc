@@ -536,20 +536,58 @@ RSpec.describe 'Integration pipeline fixes' do
       ADOC
 
       core = parse_to_core(adoc)
-      images = []
-      gather = lambda do |el|
-        return unless el.is_a?(Coradoc::CoreModel::Base)
 
-        images << el if el.is_a?(Coradoc::CoreModel::Image)
-        if el.class.attributes.key?(:children) && el.children
-          el.children.each { |c| gather.call(c) }
-        end
+      # Image must be a direct child of the document (block sibling of the
+      # paragraphs), not nested inside a paragraph. Walking the full tree
+      # would mask Bug D — the image was previously a child of a
+      # ParagraphBlock, which produced invalid `<p><figure>` HTML.
+      top_level_image = core.children.find do |c|
+        c.is_a?(Coradoc::CoreModel::Image) && c.src == 'foo.png'
       end
-      gather.call(core)
+      expect(top_level_image).not_to be_nil
+      expect(top_level_image.alt).to eq('Alt text')
 
-      image = images.find { |i| i.src == 'foo.png' }
+      # And the surrounding siblings must be paragraphs, not a paragraph
+      # that wraps the image.
+      paragraphs = core.children.select { |c| c.is_a?(Coradoc::CoreModel::ParagraphBlock) }
+      expect(paragraphs.length).to eq(2)
+      paragraphs.each do |para|
+        para.children.each { |child| expect(child).not_to be_a(Coradoc::CoreModel::Image) }
+      end
+    end
+
+    it 'parses caption from second positional attribute' do
+      adoc = <<~ADOC
+        image::diagram.png[Architecture, Figure 1]
+      ADOC
+
+      core = parse_to_core(adoc)
+      image = core.children.find { |c| c.is_a?(Coradoc::CoreModel::Image) }
+
       expect(image).not_to be_nil
-      expect(image.alt).to eq('Alt text')
+      expect(image.src).to eq('diagram.png')
+      expect(image.alt).to eq('Architecture')
+      expect(image.caption).to eq('Figure 1')
+    end
+
+    it 'distinguishes image:: (block) from image: (inline)' do
+      adoc = <<~ADOC
+        Click image:icon.png[magnify] to zoom.
+
+        image::photo.png[Photo]
+      ADOC
+
+      core = parse_to_core(adoc)
+
+      # Block image: direct child of document
+      block_image = core.children.find { |c| c.is_a?(Coradoc::CoreModel::Image) && c.src == 'photo.png' }
+      expect(block_image).not_to be_nil
+      expect(block_image.alt).to eq('Photo')
+
+      # Inline image: nested inside a paragraph
+      para = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ParagraphBlock) }
+      inline_image = para&.children&.find { |c| c.is_a?(Coradoc::CoreModel::Image) && c.src == 'icon.png' }
+      expect(inline_image).not_to be_nil
     end
   end
 

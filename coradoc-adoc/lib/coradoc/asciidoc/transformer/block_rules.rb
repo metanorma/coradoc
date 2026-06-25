@@ -46,7 +46,7 @@ module Coradoc
               id = block_image[:id]
               title = block_image[:title]
               path = block_image[:path]
-              attrs = AttributeListNormalizer.coerce(block_image[:attribute_list])
+              attrs = AttributeListNormalizer.coerce(block_image[:attribute_list_macro])
               Model::Image::BlockImage.new(
                 title: title,
                 id: id,
