@@ -14,6 +14,15 @@ module Coradoc
     autoload :CoreModelToMirror, "#{__dir__}/mirror/core_model_to_mirror"
     autoload :MirrorToCoreModel, "#{__dir__}/mirror/mirror_to_core_model"
     autoload :Partitioner, "#{__dir__}/mirror/partitioner"
+    # Shared tree→Hash translator for the frontmatter typed-tree. Read by
+    # ReverseBuilder::Frontmatter and FrontmatterQuery — single source of
+    # truth for the inverse of Handlers::Frontmatter.build_value.
+    autoload :FrontmatterTreeToHash, "#{__dir__}/mirror/frontmatter_tree_to_hash"
+    # Public read-API for downstream consumers (e.g. site generators) that
+    # need a flat Ruby Hash of a Mirror doc's frontmatter without re-parsing
+    # the source YAML. Frontmatter lives in the CoreModel and the Mirror
+    # doc, not in a parallel YAML parse.
+    autoload :FrontmatterQuery, "#{__dir__}/mirror/frontmatter_query"
     # ReverseBuilder's REGISTRY is populated by the built-in builder
     # subclasses (defined inside reverse_builder.rb) at load time. The
     # file is the autoload target, so the registry is full by the time
