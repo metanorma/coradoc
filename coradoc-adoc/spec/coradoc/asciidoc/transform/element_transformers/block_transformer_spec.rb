@@ -146,6 +146,27 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::BlockTransform
       expect(result.children).to all(be_a(Coradoc::CoreModel::ParagraphBlock))
     end
 
+    it 'groups consecutive soft-wrapped lines into a single paragraph' do
+      block = Coradoc::AsciiDoc::Model::Block::Example.new(
+        lines: [
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'First paragraph line 1.'),
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'First paragraph line 2.'),
+          Coradoc::AsciiDoc::Model::LineBreak.new,
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'Second paragraph here.')
+        ]
+      )
+
+      result = described_class.transform_typed_block(
+        block, Coradoc::CoreModel::ExampleBlock
+      )
+
+      paragraphs = result.children
+      expect(paragraphs.size).to eq(2)
+      expect(paragraphs.all?(Coradoc::CoreModel::ParagraphBlock)).to be(true)
+      expect(paragraphs[0].content).to eq('First paragraph line 1. First paragraph line 2.')
+      expect(paragraphs[1].content).to eq('Second paragraph here.')
+    end
+
     it 'transforms into a specified class with nested blocks' do
       nested = Coradoc::AsciiDoc::Model::Block::Core.new(
         lines: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'Inner')]

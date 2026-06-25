@@ -52,21 +52,19 @@ module Coradoc
 
         def olist_item(nesting_level = 1)
           item = olist_marker(nesting_level).as(:marker) >>
-                 match("\n").absent? >> space >> text_line(true, unguarded: true)
-          # >>
-          # (list_continuation.present? >> list_continuation >>
-          # paragraph #| example_block(n_deep: 1)
-          # ).repeat(0).as(:attached)
+                 match("\n").absent? >> space >>
+                 (text_line(true, unguarded: true) >>
+                  list_item_continuation_lines).as(:lines)
 
           att = (list_continuation.present? >>
                   list_continuation >>
-                  (admonition_line | paragraph | block) # (n_deep: 1))
+                  (admonition_line | paragraph | block)
                 ).repeat(0).as(:attached)
           item >>= att.maybe
 
           if nesting_level <= 4
             item >>= (list_marker(nesting_level + 1).present? >>
-                   list(nesting_level + 1)).repeat(0).as(:nested) # ).maybe
+                   list(nesting_level + 1)).repeat(0).as(:nested)
           end
           olist_marker(nesting_level).present? >> item.as(:list_item)
         end
@@ -82,19 +80,31 @@ module Coradoc
         def ulist_item(nesting_level = 1)
           item = ulist_marker(nesting_level).as(:marker) >>
                  str(' [[[').absent? >>
-                 match("\n").absent? >> space >> text_line(true, unguarded: true)
+                 match("\n").absent? >> space >>
+                 (text_line(true, unguarded: true) >>
+                  list_item_continuation_lines).as(:lines)
 
           att = (list_continuation.present? >>
                   list_continuation >>
-                  (admonition_line | paragraph | block) # (n_deep: 1))
+                  (admonition_line | paragraph | block)
                 ).repeat(0).as(:attached)
           item >>= att.maybe
 
           if nesting_level <= 4
             item >>= (list_marker(nesting_level + 1).present? >>
-                   list(nesting_level + 1)).repeat(0).as(:nested) # ).maybe
+                   list(nesting_level + 1)).repeat(0).as(:nested)
           end
           ulist_marker(nesting_level).present? >> item.as(:list_item)
+        end
+
+        # Continuation lines of a list item's first paragraph. AsciiDoc
+        # joins consecutive non-blank lines into one paragraph within the
+        # item, but the lines must not start a sibling construct (another
+        # list marker, block delimiter, attribute list, section, element
+        # id, table boundary, list continuation, or list prefix).
+        # `line_not_text?` (from Paragraph) is that exact lookahead.
+        def list_item_continuation_lines
+          (line_not_text? >> text_line(true, unguarded: true)).repeat(0)
         end
 
         def dlist_delimiter
