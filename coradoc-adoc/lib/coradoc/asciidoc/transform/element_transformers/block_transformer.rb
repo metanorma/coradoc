@@ -123,15 +123,14 @@ module Coradoc
             end
 
             def transform_typed_block(block, klass, extra_attrs = {})
-              lines = Array(block.lines).reject do |line|
-                line.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
-                  line.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
-              end
-
-              has_nested_blocks = lines.any?(Coradoc::AsciiDoc::Model::Block::Core)
+              raw_lines = Array(block.lines)
+              has_nested_blocks = raw_lines.any?(Coradoc::AsciiDoc::Model::Block::Core)
 
               if has_nested_blocks
-                children = lines.filter_map do |line|
+                children = raw_lines.reject do |line|
+                  line.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
+                    line.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
+                end.filter_map do |line|
                   result = ToCoreModel.transform(line)
                   next nil if result.nil?
                   next result if result.is_a?(Coradoc::CoreModel::Base)
@@ -149,15 +148,21 @@ module Coradoc
                   **extra_attrs
                 )
               else
-                content_lines = lines.map { |line| ToCoreModel.extract_text_content(line) }.join("\n")
-                children = lines.map do |line|
-                  inline = ToCoreModel.transform_inline_content(line)
-                  inline = [Coradoc::CoreModel::TextContent.new(text: "")] if inline.empty?
+                paragraph_groups = group_block_lines_into_paragraphs(raw_lines)
+
+                content_lines = paragraph_groups.map do |group|
+                  ToCoreModel.extract_text_content(group)
+                end.join("\n\n")
+
+                children = paragraph_groups.map do |group|
+                  inline = ToCoreModel.transform_inline_content(group)
+                  inline = [Coradoc::CoreModel::TextContent.new(text: '')] if inline.empty?
                   Coradoc::CoreModel::ParagraphBlock.new(
-                    content: ToCoreModel.extract_text_content(line),
+                    content: ToCoreModel.extract_text_content(group),
                     children: Array(inline)
                   )
                 end
+
                 klass.new(
                   id: block.id,
                   title: ToCoreModel.extract_title_text(block.title),
@@ -167,6 +172,24 @@ module Coradoc
                   **extra_attrs
                 )
               end
+            end
+
+            # AsciiDoc joins consecutive non-blank lines into one paragraph;
+            # blank lines (parsed as Model::LineBreak) separate paragraphs.
+            def group_block_lines_into_paragraphs(lines)
+              groups = []
+              current = []
+              lines.each do |line|
+                if line.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
+                   line.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
+                  groups << current if current.any?
+                  current = []
+                else
+                  current << line
+                end
+              end
+              groups << current if current.any?
+              groups
             end
           end
         end

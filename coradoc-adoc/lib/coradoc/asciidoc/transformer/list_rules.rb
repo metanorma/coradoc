@@ -47,8 +47,12 @@ module Coradoc
             rule(list_item: subtree(:list_item)) do
               marker = list_item[:marker]
               id = list_item[:id]
-              text = list_item[:text]
-              text = list_item[:text].to_s if list_item[:text].instance_of?(Parslet::Slice)
+              lines = list_item[:lines]
+              content = if lines
+                          Transformer.lines_to_text_elements(lines)
+                        else
+                          list_item[:text].to_s
+                        end
               attached = list_item[:attached]
               nested = list_item[:nested]
               line_break = list_item[:line_break]
@@ -70,7 +74,7 @@ module Coradoc
               end
 
               Model::List::Item.new(
-                content: text, id:, marker:, attached:, nested:, line_break:
+                content: content, id:, marker:, attached:, nested:, line_break:
               )
             end
 
