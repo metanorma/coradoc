@@ -72,9 +72,33 @@ module Coradoc
         def ulist_marker(nesting_level = 1)
           line_start? >>
             (nesting_level > 1 ? literal_space.maybe : str('')) >>
-            str('*' * nesting_level) >>
+            (
+              asterisk_marker(nesting_level) |
+              dash_marker(nesting_level)
+            )
+        end
+
+        # AsciiDoc standard bullet: `*`, `**`, `***`, ... matching the
+        # nesting level. Excludes table delimiters (`|===`) and deeper
+        # asterisk runs that belong to a sibling level.
+        def asterisk_marker(nesting_level)
+          str('*' * nesting_level) >>
             str('*').absent? >>
             str('===').absent?
+        end
+
+        # Markdown-style dash bullet: `-`. Accepted only at the top level
+        # because Markdown nests via indentation rather than multi-char
+        # markers — deeper levels stay on the AsciiDoc `*` form. Guards
+        # exclude em-dashes (`--`), delimited-block fences (`----`),
+        # and negative-number runs (`-1`, `-42`) which are not list
+        # markers in any common dialect.
+        def dash_marker(nesting_level)
+          return match('').absent? unless nesting_level == 1
+
+          str('-') >>
+            str('-').absent? >>
+            match('[0-9]').absent?
         end
 
         def ulist_item(nesting_level = 1)

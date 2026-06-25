@@ -591,6 +591,58 @@ RSpec.describe 'Integration pipeline fixes' do
     end
   end
 
+  describe 'Fix 19: Markdown-style dash bullet lists (- item)' do
+    it 'parses bare dash list as a bullet_list' do
+      adoc = "- Item 1\n- Item 2\n- Item 3\n"
+      core = parse_to_core(adoc)
+
+      list = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+      expect(list).not_to be_nil
+      expect(list.marker_type).to eq('unordered')
+      expect(list.items.length).to eq(3)
+      expect(list.items.map { |i| i.content }).to eq(['Item 1', 'Item 2', 'Item 3'])
+    end
+
+    it 'parses dash list preceded by a paragraph' do
+      adoc = "Intro.\n\n- A\n- B\n"
+      core = parse_to_core(adoc)
+
+      paras = core.children.select { |c| c.is_a?(Coradoc::CoreModel::ParagraphBlock) }
+      list = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+
+      expect(paras.length).to eq(1)
+      expect(list).not_to be_nil
+      expect(list.items.length).to eq(2)
+    end
+
+    it 'does not confuse em-dash (--) with a list marker' do
+      adoc = "Text -- with em-dash.\n"
+      core = parse_to_core(adoc)
+
+      list = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+      expect(list).to be_nil
+
+      para = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ParagraphBlock) }
+      expect(para.content.to_s).to include('--')
+    end
+
+    it 'does not confuse negative number (-1) with a list marker' do
+      adoc = "-1 is negative.\n"
+      core = parse_to_core(adoc)
+
+      list = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+      expect(list).to be_nil
+    end
+
+    it 'does not confuse horizontal rule (---) with a list marker' do
+      adoc = "Before.\n\n---\n\nAfter.\n"
+      core = parse_to_core(adoc)
+
+      list = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+      expect(list).to be_nil
+    end
+  end
+
   private
 
   def find_first_table(el)
