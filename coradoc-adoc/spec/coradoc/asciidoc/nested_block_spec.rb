@@ -93,7 +93,8 @@ RSpec.describe 'AsciiDoc nested delimited blocks' do
     core = parse_to_core(adoc)
     open_block = core.children.first
     expect(open_block).to be_a(Coradoc::CoreModel::OpenBlock)
-    paragraph = open_block.children.first
-    expect(paragraph.children.map { |c| c.class.name }).to include('Coradoc::CoreModel::Image')
+    image = open_block.children.first
+    expect(image).to be_a(Coradoc::CoreModel::Image)
+    expect(image.src).to eq('inside-open.jpg')
   end
 end

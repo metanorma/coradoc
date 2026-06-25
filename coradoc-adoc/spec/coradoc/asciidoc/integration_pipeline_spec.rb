@@ -643,6 +643,57 @@ RSpec.describe 'Integration pipeline fixes' do
     end
   end
 
+  describe 'Fix 20: image:: block macro unwrapped from paragraph inside typed blocks' do
+    it 'emits image:: inside ==== example block as a direct child' do
+      adoc = "====\nimage::foo.png[Alt text]\n====\n"
+      core = parse_to_core(adoc)
+
+      example = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ExampleBlock) }
+      expect(example).not_to be_nil
+
+      expect(example.children.any? { |c| c.is_a?(Coradoc::CoreModel::Image) }).to eq(true)
+      expect(example.children.none? { |c| c.is_a?(Coradoc::CoreModel::ParagraphBlock) }).to eq(true)
+
+      image = example.children.find { |c| c.is_a?(Coradoc::CoreModel::Image) }
+      expect(image.src).to eq('foo.png')
+      expect(image.alt).to eq('Alt text')
+    end
+
+    it 'emits image:: inside -- open block as a direct child' do
+      adoc = "--\nimage::inside-open.jpg[]\n--\n"
+      core = parse_to_core(adoc)
+
+      open_block = core.children.find { |c| c.is_a?(Coradoc::CoreModel::OpenBlock) }
+      expect(open_block).not_to be_nil
+
+      expect(open_block.children.any? { |c| c.is_a?(Coradoc::CoreModel::Image) }).to eq(true)
+      expect(open_block.children.none? { |c| c.is_a?(Coradoc::CoreModel::ParagraphBlock) }).to eq(true)
+    end
+
+    it 'preserves alt and caption from positional attributes' do
+      adoc = "====\nimage::diagram.png[Diagram, Figure 1]\n====\n"
+      core = parse_to_core(adoc)
+
+      example = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ExampleBlock) }
+      image = example.children.find { |c| c.is_a?(Coradoc::CoreModel::Image) }
+
+      expect(image.alt).to eq('Diagram')
+      expect(image.caption).to eq('Figure 1')
+    end
+
+    it 'round-trips through mirror_json with image as direct child of example' do
+      require "coradoc-mirror"
+
+      adoc = "====\nimage::foo.png[Alt text]\n====\n"
+      core = parse_to_core(adoc)
+      json = JSON.parse(Coradoc.serialize(core, to: :mirror_json))
+
+      example = json["content"].find { |n| n["type"] == "example" }
+      expect(example["content"].map { |n| n["type"] }).to eq(["image"])
+      expect(example["content"].none? { |n| n["type"] == "paragraph" }).to eq(true)
+    end
+  end
+
   private
 
   def find_first_table(el)

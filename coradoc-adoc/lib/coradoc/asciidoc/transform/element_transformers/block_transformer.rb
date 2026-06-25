@@ -128,7 +128,7 @@ module Coradoc
 
             def transform_typed_block(block, klass, extra_attrs = {})
               raw_lines = Array(block.lines)
-              has_nested_blocks = raw_lines.any?(Coradoc::AsciiDoc::Model::Block::Core)
+              has_nested_blocks = raw_lines.any? { |line| block_level_child?(line) }
 
               if has_nested_blocks
                 children = raw_lines.reject do |line|
@@ -194,6 +194,17 @@ module Coradoc
               end
               groups << current if current.any?
               groups
+            end
+
+            # A line that should be emitted as a direct child of the
+            # enclosing block rather than joined into a paragraph sibling.
+            # The AsciiDoc model layer declares level via `block_level?`
+            # (true for Block::Core delimited blocks, BlockImage, Table,
+            # List::Core, Section, CommentBlock, Attached). Inline content
+            # (String, TextElement, LineBreak, PageBreak) returns false and
+            # stays inside paragraphs.
+            def block_level_child?(line)
+              line.is_a?(Coradoc::AsciiDoc::Model::Base) && line.block_level?
             end
           end
         end
