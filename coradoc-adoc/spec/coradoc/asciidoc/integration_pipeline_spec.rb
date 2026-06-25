@@ -456,6 +456,103 @@ RSpec.describe 'Integration pipeline fixes' do
     end
   end
 
+  # Regression: previously the `line_not_text?` predicate did not reject
+  # `//`-prefixed lines, so the paragraph parser consumed `// tag::x[]`
+  # and `// end::x[]` markers as plain text, producing phantom paragraphs
+  # containing the tag markup.
+  describe 'Fix 15: // comments and tag markers do not leak into paragraphs' do
+    it 'drops // tag:: and // end:: lines instead of treating them as paragraphs' do
+      adoc = <<~ADOC
+        Before.
+
+        // tag::tutorial[]
+        Content.
+        // end::tutorial[]
+
+        After.
+      ADOC
+
+      core = parse_to_core(adoc)
+      paragraphs = core.children.select { |c| c.is_a?(Coradoc::CoreModel::ParagraphBlock) }
+      texts = paragraphs.map { |p| p.content.to_s.strip }
+
+      expect(texts).to eq(%w[Before. Content. After.])
+      expect(texts).not_to include(match(/tag::/))
+      expect(texts).not_to include(match(/end::/))
+    end
+  end
+
+  # Regression: `\<<` is the AsciiDoc escape for a literal `<<`. Without
+  # a dedicated escape rule, the backslash was consumed as plain text and
+  # the `<<` re-entered the cross-reference production, producing a link
+  # to a non-existent anchor with garbage in the link text.
+  describe 'Fix 16: \<< escape produces literal << without firing xref' do
+    it 'does not produce a CrossReference for \\<<' do
+      adoc = "Shows syntax: \\<<formulaB-1>> as text.\n"
+
+      core = parse_to_core(adoc)
+      inline = find_all_xrefs(core)
+      expect(inline).to be_empty
+
+      para = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ParagraphBlock) }
+      expect(para.content.to_s).to include('<<')
+    end
+  end
+
+  # Regression: literal blocks (`....`) preserve their body byte-for-byte.
+  # Previously they were routed through the paragraph-grouping code path,
+  # which collapsed intra-block whitespace, joined consecutive non-blank
+  # lines, and stripped leading indentation.
+  describe 'Fix 17: literal block preserves whitespace and line structure' do
+    it 'keeps newlines and indentation intact across the literal body' do
+      adoc = <<~ADOC
+        ....
+        <clause id="test">
+          <p>Content</p>
+        </clause>
+        ....
+      ADOC
+
+      core = parse_to_core(adoc)
+      literal = core.children.find { |c| c.is_a?(Coradoc::CoreModel::LiteralBlock) }
+      expect(literal).not_to be_nil
+      expect(literal.content).to eq("<clause id=\"test\">\n  <p>Content</p>\n</clause>")
+    end
+  end
+
+  # Regression: `image::file[Alt text]` requires the attribute-list parser
+  # to accept spaces in the unquoted positional value. Previously the
+  # charset rejected spaces, the block-image parser failed, and the line
+  # fell through to paragraph parsing where `image:` matched as an inline
+  # macro with a corrupted path.
+  describe 'Fix 18: image:: block macro accepts alt text with spaces' do
+    it 'parses as a top-level image with src and alt preserved' do
+      adoc = <<~ADOC
+        Para before.
+
+        image::foo.png[Alt text]
+
+        Para after.
+      ADOC
+
+      core = parse_to_core(adoc)
+      images = []
+      gather = lambda do |el|
+        return unless el.is_a?(Coradoc::CoreModel::Base)
+
+        images << el if el.is_a?(Coradoc::CoreModel::Image)
+        if el.class.attributes.key?(:children) && el.children
+          el.children.each { |c| gather.call(c) }
+        end
+      end
+      gather.call(core)
+
+      image = images.find { |i| i.src == 'foo.png' }
+      expect(image).not_to be_nil
+      expect(image.alt).to eq('Alt text')
+    end
+  end
+
   private
 
   def find_first_table(el)
