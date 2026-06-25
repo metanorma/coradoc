@@ -28,7 +28,15 @@ module Coradoc
           ['.', 4, nil, ->(opts, attrs) { Model::Block::Literal.new(**opts.merge(attributes: attrs)) }],
           ['_', 4, nil, ->(opts, attrs) { Model::Block::Quote.new(**opts.merge(attributes: attrs)) }],
           ['-', 4, nil, ->(opts, attrs) { Model::Block::SourceCode.new(**opts.merge(attributes: attrs)) }],
-          ['-', 2, 2,  ->(opts, attrs) { Model::Block::Open.new(**opts.merge(attributes: attrs)) }]
+          ['-', 2, 2,  ->(opts, attrs) { Model::Block::Open.new(**opts.merge(attributes: attrs)) }],
+          # Markdown-style triple-backtick fence: behaves as a SourceCode
+          # block. The language tag parsed from the opening fence is passed
+          # through opts[:lang]; extract_block_language prefers block.lang.
+          ['`', 3, nil, ->(opts, attrs) {
+            model_opts = opts.merge(attributes: attrs, delimiter_char: '`')
+            model_opts[:lang] = opts[:lang] if opts.key?(:lang)
+            Model::Block::SourceCode.new(**model_opts)
+          }]
         ].freeze
 
         module_function

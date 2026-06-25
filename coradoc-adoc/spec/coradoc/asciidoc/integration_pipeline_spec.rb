@@ -694,6 +694,71 @@ RSpec.describe 'Integration pipeline fixes' do
     end
   end
 
+  describe 'Fix 21: Markdown-style fenced code blocks (```)' do
+    it 'parses ```ruby ... ``` as a SourceBlock with language' do
+      adoc = "```ruby\nputs 'hi'\nputs 'bye'\n```\n"
+      core = parse_to_core(adoc)
+
+      source = core.children.find { |c| c.is_a?(Coradoc::CoreModel::SourceBlock) }
+      expect(source).not_to be_nil
+      expect(source.language).to eq('ruby')
+      expect(source.content).to eq("puts 'hi'\nputs 'bye'")
+    end
+
+    it 'parses ```ruby ... ``` (with space) as a SourceBlock with language' do
+      adoc = "``` ruby\ncode\n```\n"
+      core = parse_to_core(adoc)
+
+      source = core.children.find { |c| c.is_a?(Coradoc::CoreModel::SourceBlock) }
+      expect(source).not_to be_nil
+      expect(source.language).to eq('ruby')
+    end
+
+    it 'parses bare ``` ... ``` as a SourceBlock with no language' do
+      adoc = "```\nplain code\n```\n"
+      core = parse_to_core(adoc)
+
+      source = core.children.find { |c| c.is_a?(Coradoc::CoreModel::SourceBlock) }
+      expect(source).not_to be_nil
+      expect(source.language).to be_nil
+      expect(source.content).to eq('plain code')
+    end
+
+    it 'does not collapse a fenced block after a paragraph into one paragraph' do
+      adoc = "Text.\n\n```ruby\nputs 'hi'\n```\n"
+      core = parse_to_core(adoc)
+
+      paras = core.children.select { |c| c.is_a?(Coradoc::CoreModel::ParagraphBlock) }
+      source = core.children.find { |c| c.is_a?(Coradoc::CoreModel::SourceBlock) }
+
+      expect(paras.length).to eq(1)
+      expect(paras.first.content).to eq('Text.')
+      expect(source).not_to be_nil
+      expect(source.language).to eq('ruby')
+    end
+
+    it 'preserves ``` inside a ---- source block as literal text' do
+      adoc = "[source]\n----\nUse ``` for code\n----\n"
+      core = parse_to_core(adoc)
+
+      source = core.children.find { |c| c.is_a?(Coradoc::CoreModel::SourceBlock) }
+      expect(source).not_to be_nil
+      expect(source.content).to include('```')
+    end
+
+    it 'round-trips through mirror_json as a sourcecode node' do
+      require "coradoc-mirror"
+
+      adoc = "```ruby\nputs 'hi'\n```\n"
+      core = parse_to_core(adoc)
+      json = JSON.parse(Coradoc.serialize(core, to: :mirror_json))
+
+      source = json["content"].find { |n| n["type"] == "sourcecode" }
+      expect(source).not_to be_nil
+      expect(source["attrs"]["language"]).to eq("ruby")
+    end
+  end
+
   private
 
   def find_first_table(el)
