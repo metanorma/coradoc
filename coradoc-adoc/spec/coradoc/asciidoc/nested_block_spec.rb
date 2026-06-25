@@ -64,4 +64,36 @@ RSpec.describe 'AsciiDoc nested delimited blocks' do
     core = parse_to_core(adoc)
     expect(core.children.first.content).to eq('puts "hi"')
   end
+
+  it 'treats block macros inside a source-cast open block as verbatim text' do
+    adoc = <<~ADOC
+      [source,asciidoc]
+      --
+      image::logo.jpg[]
+
+      image::filename.jpg[alt text]
+      --
+    ADOC
+
+    core = parse_to_core(adoc)
+    src = core.children.first
+    expect(src).to be_a(Coradoc::CoreModel::SourceBlock)
+    expect(src.language).to eq('asciidoc')
+    expect(src.content).to include('image::logo.jpg[]')
+    expect(src.content).to include('image::filename.jpg[alt text]')
+  end
+
+  it 'still parses block macros inside a plain (non-cast) open block' do
+    adoc = <<~ADOC
+      --
+      image::inside-open.jpg[]
+      --
+    ADOC
+
+    core = parse_to_core(adoc)
+    open_block = core.children.first
+    expect(open_block).to be_a(Coradoc::CoreModel::OpenBlock)
+    paragraph = open_block.children.first
+    expect(paragraph.children.map { |c| c.class.name }).to include('Coradoc::CoreModel::Image')
+  end
 end
