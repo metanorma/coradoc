@@ -43,24 +43,26 @@ module Coradoc
           end
 
           def build_description(item, context)
-            definitions = item.definitions
-            return nil unless definitions && !definitions.empty?
-
-            desc_nodes = definitions.map do |defn|
-              context.text_node(defn.to_s)
-            end
-
-            def_children = item.definition_children if item.is_a?(CoreModel::DefinitionItem)
-            if def_children && !def_children.empty?
-              def_children.each do |child|
-                nodes = Handlers::Inline.process_child(child, context)
-                desc_nodes.concat(Array(nodes)) if nodes && !nodes.empty?
-              end
-            end
-
+            desc_nodes = description_nodes(item, context)
             return nil if desc_nodes.empty?
 
             Node::DefinitionDescription.new(content: desc_nodes)
+          end
+
+          # Emit one text node per source — never both. Rich
+          # definition_children (inline nodes) win over plain definitions
+          # (strings) because they preserve formatting; falling back to
+          # the plain string keeps this handler robust for DefinitionItem
+          # instances populated by paths that don't build inline children.
+          def description_nodes(item, context)
+            unless item.is_a?(CoreModel::DefinitionItem)
+              return Array(item.definitions).map { |defn| context.text_node(defn.to_s) }
+            end
+
+            children = item.definition_children
+            return Array(item.definitions).map { |defn| context.text_node(defn.to_s) } if children.empty?
+
+            children.flat_map { |child| Handlers::Inline.process_child(child, context) }
           end
         end
       end
