@@ -257,6 +257,32 @@ RSpec.describe Coradoc::Mirror::CoreModelToMirror do
       expect(mirror_dl.content.first).to be_a(Coradoc::Mirror::Node::DefinitionTerm)
       expect(mirror_dl.content.last).to be_a(Coradoc::Mirror::Node::DefinitionDescription)
     end
+
+    # Regression: previously the handler emitted dd text twice when both
+    # `definitions` and `definition_children` were populated (the latter is
+    # built from the former by ToCoreModel). Each definition source must
+    # produce exactly one text node — never both.
+    it 'does not duplicate definition description text from rich children' do
+      text_inline = Coradoc::CoreModel::InlineElement.new(
+        format_type: 'text', content: 'Bathymetric Publications'
+      )
+      dl = Coradoc::CoreModel::DefinitionList.new(
+        items: [
+          Coradoc::CoreModel::DefinitionItem.new(
+            term: 'B-series',
+            definitions: ['Bathymetric Publications'],
+            definition_children: [text_inline]
+          )
+        ]
+      )
+      doc = make_document(children: [dl])
+      result = transformer.call(doc)
+
+      dd = result.content.first.content.last
+      expect(dd).to be_a(Coradoc::Mirror::Node::DefinitionDescription)
+      expect(dd.content.size).to eq(1)
+      expect(dd.content.first.text).to eq('Bathymetric Publications')
+    end
   end
 
   describe 'table transformation' do
