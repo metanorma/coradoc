@@ -22,6 +22,16 @@ module Coradoc
     option :section_numbers, desc: 'Enable section numbering', type: :boolean, default: false
     option :section_number_levels, desc: 'Section numbering depth (1-6)', type: :numeric, default: 3
     option :lang, desc: 'Document language code', type: :string, default: 'en'
+    option :resolve_includes, desc: 'Resolve include:: directives inline (default: leave as link nodes)',
+           type: :boolean, default: false
+    option :base_dir, desc: 'Base directory for include resolution (default: dirname of FILE)',
+           type: :string
+    option :missing_include, desc: 'Policy for missing includes: error, warn, silent, passthrough',
+           type: :string, default: 'error'
+    option :max_include_depth, desc: 'Maximum include nesting depth', type: :numeric,
+           default: 64
+    option :allow_unsafe_includes, desc: 'Disable path-traversal protection (asciidoctor :unsafe mode)',
+           type: :boolean, default: false
     def convert(file)
       source_format = resolve_format(file, :from)
       target_format = options[:to] ? Coradoc.normalize_format(options[:to]) : Coradoc.resolve_output_format(options[:output])
@@ -38,8 +48,11 @@ module Coradoc
 
       verbose_log "Converting #{file} (#{source_format}) to #{target_format}"
 
+      doc = Coradoc.parse_file(file, format: source_format)
+      doc = resolve_includes!(doc, file) if options[:resolve_includes]
+
       opts = build_convert_options
-      result = Coradoc.convert_file(file, from: source_format, to: target_format, **opts)
+      result = Coradoc.serialize(doc, to: target_format, **opts)
       write_output(result, options[:output])
     rescue Coradoc::Error => e
       error "Error: #{e.message}"
@@ -214,6 +227,18 @@ module Coradoc
 
         opts[key] = SYMBOL_OPTIONS.include?(key) ? value.to_sym : value
       end
+    end
+
+    def resolve_includes!(doc, source_file)
+      base_dir = options[:base_dir] || File.expand_path(File.dirname(source_file))
+      verbose_log "Resolving includes against #{base_dir}"
+      Coradoc.resolve_includes(
+        doc,
+        base_dir: base_dir,
+        missing_include: options[:missing_include].to_sym,
+        max_depth: options[:max_include_depth],
+        allow_unsafe: options[:allow_unsafe_includes]
+      )
     end
   end
 end

@@ -33,6 +33,7 @@ module Coradoc
       autoload :Toc, "#{__dir__}/handlers/toc"
       autoload :Frontmatter, "#{__dir__}/handlers/frontmatter"
       autoload :GenericBlock, "#{__dir__}/handlers/generic_block"
+      autoload :Include, "#{__dir__}/handlers/include"
     end
   end
 end

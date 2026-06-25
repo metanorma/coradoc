@@ -86,22 +86,27 @@ module Coradoc
       registry.list
     end
 
-    # Parse text to a document model
+    # Parse text to a document model.
     #
-    # This is the main entry point for parsing documents. It automatically
-    # selects the appropriate parser based on the format.
+    # Graph mode is the only mode: +include::+ directives survive as
+    # +CoreModel::Include+ link nodes pointing at other files. NO file
+    # I/O happens during parse. The result is a single document that
+    # references other documents via Include edges — a text graph.
+    #
+    # To splice included content inline, call +Coradoc.resolve_includes+
+    # on the parsed document. This is an explicit, separate step so the
+    # caller controls when (and whether) file I/O happens.
     #
     # @param text [String] the document text to parse
     # @param format [Symbol] the source format (:asciidoc, :html, :markdown)
     # @return [Coradoc::CoreModel::Base, Object] the parsed document model
     # @raise [UnsupportedFormatError] if the format is not registered
     #
-    # @example Parse AsciiDoc
-    #   doc = Coradoc.parse("= Title\n\nContent", format: :asciidoc)
-    #   doc = Coradoc.parse(File.read("doc.adoc"), format: :asciidoc)
+    # @example Parse — Include directives stay as link nodes
+    #   doc = Coradoc.parse(text, format: :asciidoc)
     #
-    # @example Parse and get CoreModel
-    #   core = Coradoc.parse(text, format: :asciidoc)  # Returns CoreModel
+    # @example Then flatten — splice included files inline
+    #   flat = Coradoc.resolve_includes(doc, base_dir: Dir.pwd)
     def parse(text, format:)
       format_module = get_format(format)
       unless format_module
@@ -113,6 +118,56 @@ module Coradoc
       text = Hooks.invoke(:before_parse, text, format: format)
       result = format_module.parse_to_core(text)
       Hooks.invoke(:after_parse, result, format: format)
+    end
+
+    # Resolve +include::+ directives in a parsed document.
+    #
+    # Walks the document tree and replaces every +CoreModel::Include+
+    # link node with the parsed content of its target file, recursing
+    # into the result. The original document is left unchanged; a new
+    # subtree is constructed.
+    #
+    # This is the explicit "flatten" step that turns a text graph into
+    # a single spliced document. Callers control:
+    #   - +base_dir+ — where to root relative include paths
+    #   - +missing_include+ — what to do when a target is missing
+    #   - +max_depth+ — recursion cap
+    #   - +allow_unsafe+ — opt out of path-traversal protection
+    #   - +resolver+ — custom resolution strategy (e.g. HTTP, in-memory)
+    #
+    # @param document [Coradoc::CoreModel::Base] parsed document
+    # @param base_dir [String] base directory for relative include paths
+    # @param missing_include [Symbol] :error (default), :warn, :silent, :passthrough
+    # @param max_depth [Integer] recursion cap (default 64)
+    # @param allow_unsafe [Boolean] disable path-traversal protection
+    # @param resolver [Object, nil] custom resolver. Defaults to
+    #   +Coradoc::IncludeResolver::Filesystem+ rooted at +base_dir+.
+    # @return [Coradoc::CoreModel::Base] new document with includes expanded
+    # @raise [Coradoc::IncludeNotFoundError] when a target is missing
+    #   and policy is :error
+    # @raise [Coradoc::IncludeDepthExceededError] when +max_depth+ is hit
+    # @raise [Coradoc::CircularIncludeError] when an include cycle is detected
+    #
+    # @example
+    #   doc = Coradoc.parse(text, format: :asciidoc)
+    #   flat = Coradoc.resolve_includes(doc, base_dir: Dir.pwd)
+    def resolve_includes(document, base_dir:,
+                         missing_include: :error,
+                         max_depth: Coradoc::ResolveIncludes::DEFAULT_MAX_DEPTH,
+                         allow_unsafe: false,
+                         resolver: nil)
+      resolver = Coradoc::IncludeResolver.coerce(
+        resolver,
+        base_dir: base_dir,
+        allow_unsafe: allow_unsafe
+      )
+      Coradoc::ResolveIncludes.call(
+        document,
+        resolver: resolver,
+        base_dir: base_dir,
+        missing_include: missing_include,
+        max_depth: max_depth
+      )
     end
 
     # Convert document text from one format to another
@@ -459,6 +514,9 @@ module Coradoc
   autoload :DocumentManipulator, "#{__dir__}/document_manipulator"
   autoload :Visitor, "#{__dir__}/visitor"
   autoload :PerformanceRegression, "#{__dir__}/performance_regression"
+  autoload :IncludeResolver, "#{__dir__}/include_resolver"
+  autoload :IncludeSelectors, "#{__dir__}/include_selectors"
+  autoload :ResolveIncludes, "#{__dir__}/resolve_includes"
 end
 
 # Format gems self-register via Coradoc.register_format when they are required.

@@ -283,6 +283,62 @@ module Coradoc
     end
   end
 
+  # Error raised when an include directive's target cannot be located.
+  # Honors the +missing_include+ policy: +:error+ raises this; +:warn+,
+  # +:silent+, and +:passthrough+ swallow it.
+  class IncludeNotFoundError < Error
+    attr_reader :target
+
+    def initialize(target)
+      @target = target
+      super("Include target not found: #{target}")
+    end
+  end
+
+  # Error raised when an include chain exceeds the configured depth limit.
+  class IncludeDepthExceededError < Error
+    attr_reader :depth, :target
+
+    def initialize(target:, depth:, max:)
+      @target = target
+      @depth = depth
+      super("Include depth #{depth} exceeds max #{max} at #{target}")
+    end
+  end
+
+  # Error raised when a cycle is detected in the include graph.
+  # The chain is the list of files leading back to the repeated target.
+  class CircularIncludeError < Error
+    attr_reader :chain, :target
+
+    def initialize(target:, chain:)
+      @target = target
+      @chain = chain
+      super("Circular include detected: #{chain.join(' -> ')} -> #{target}")
+    end
+  end
+
+  # Error raised when an include target escapes the resolver's safe base
+  # directory and +allow_unsafe_includes+ is not set.
+  class UnsafeIncludeError < Error
+    attr_reader :target
+
+    def initialize(target)
+      @target = target
+      super("Unsafe include path blocked: #{target}")
+    end
+  end
+
+  # Error raised when an include target exceeds the resolver's size limit.
+  class IncludeTooLargeError < Error
+    attr_reader :target
+
+    def initialize(target)
+      @target = target
+      super("Include target too large to read: #{target}")
+    end
+  end
+
   # Error raised when a requested format is not supported
   #
   # @example
