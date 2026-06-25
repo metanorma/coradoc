@@ -130,12 +130,18 @@ module Coradoc
         end
 
         def dlist_item(_delimiter = nil)
-          (((dlist_term.as(:terms).repeat(1) >> line_ending >>
-            empty_line.repeat(0)).repeat(1) >>
-            dlist_definition) |
-            (dlist_term.repeat(1, 1).as(:terms) >> space >>
-              dlist_definition)
-          ).as(:definition_list_item)
+          # Both forms below produce the same AST shape:
+          #   {terms: [<dlist_term>, ...], definition: <text>}
+          # so the transformer's definition_list_item rule matches uniformly.
+          #
+          # Multi-line form: one or more term-lines (`term::` + newline +
+          # optional blank lines), then the definition on its own line(s).
+          # Single-line form: one term + inline space + definition.
+          term_line = dlist_term >> line_ending >> empty_line.repeat(0)
+
+          ((term_line.repeat(1).as(:terms) >> dlist_definition) |
+           (dlist_term.repeat(1, 1).as(:terms) >> space >>
+             dlist_definition)).as(:definition_list_item)
         end
       end
     end
