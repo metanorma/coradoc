@@ -26,7 +26,10 @@ module Coradoc
     # full before any caller references it. Mirror-level mark dispatch
     # lives in MarkReverseBuilder (mark_reverse_builder.rb).
     module ReverseBuilder
-      REGISTRY = {}.freeze
+      # Not frozen: subclasses call `register` from their class body at
+      # load time, and `registers` may fire late via autoload. Freezing
+      # here breaks the first mirror-to-core round-trip after load.
+      REGISTRY = {}
 
       module_function
 
