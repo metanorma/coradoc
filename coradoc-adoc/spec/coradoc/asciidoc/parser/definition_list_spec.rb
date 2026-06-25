@@ -182,4 +182,28 @@ RSpec.describe 'AsciiDoc definition list parsing' do
       expect(reparsed.attrs.to_adoc(show_empty: false)).to eq('[%metadata]')
     end
   end
+
+  # Regression: previously the multi-line form (`term::\ndef`) produced a
+  # different AST shape than the single-line form (`term:: def`), and the
+  # transformer's fallback rule treated the multi-line shape as an array
+  # of separate term/definition hashes — losing the term entirely.
+  describe 'multi-line definition list form' do
+    it 'preserves both term and definition for multi-line items' do
+      core = parse_to_core(<<~ADOC)
+        Software::
+        The Metanorma toolchain.
+
+        Document metamodels::
+        Provides document structure.
+      ADOC
+
+      dl = core.children.find { |c| c.is_a?(Coradoc::CoreModel::DefinitionList) }
+      expect(dl).not_to be_nil
+      expect(dl.items.length).to eq(2)
+      expect(dl.items[0].term).to eq('Software')
+      expect(dl.items[0].definitions.first).to eq('The Metanorma toolchain.')
+      expect(dl.items[1].term).to eq('Document metamodels')
+      expect(dl.items[1].definitions.first).to eq('Provides document structure.')
+    end
+  end
 end
