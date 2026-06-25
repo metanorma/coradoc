@@ -50,9 +50,7 @@ module Coradoc
             {
               Coradoc::AsciiDoc::Model::Block::Quote => Coradoc::CoreModel::QuoteBlock,
               Coradoc::AsciiDoc::Model::Block::Example => Coradoc::CoreModel::ExampleBlock,
-              Coradoc::AsciiDoc::Model::Block::Side => Coradoc::CoreModel::SidebarBlock,
-              Coradoc::AsciiDoc::Model::Block::Literal => Coradoc::CoreModel::LiteralBlock,
-              Coradoc::AsciiDoc::Model::Block::Pass => Coradoc::CoreModel::PassBlock
+              Coradoc::AsciiDoc::Model::Block::Side => Coradoc::CoreModel::SidebarBlock
             }.each do |block_class, core_model_class|
               Registry.register_with_priority(
                 block_class,
@@ -60,6 +58,22 @@ module Coradoc
                 priority: 10
               )
             end
+
+            # Verbatim typed blocks (literal, pass) preserve their body
+            # byte-for-byte — same line-joining strategy as source/listing.
+            # Routing them through `transform_typed_block` would collapse
+            # intra-block whitespace and join consecutive lines as paragraphs.
+            Registry.register_with_priority(
+              Coradoc::AsciiDoc::Model::Block::Literal,
+              ->(model) { Blk.transform_literal_block(model) },
+              priority: 10
+            )
+
+            Registry.register_with_priority(
+              Coradoc::AsciiDoc::Model::Block::Pass,
+              ->(model) { Blk.transform_pass_block(model) },
+              priority: 10
+            )
 
             Registry.register_with_priority(
               Coradoc::AsciiDoc::Model::Block::Open,
