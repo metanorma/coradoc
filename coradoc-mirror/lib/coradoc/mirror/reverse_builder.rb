@@ -26,7 +26,7 @@ module Coradoc
     # full before any caller references it. Mirror-level mark dispatch
     # lives in MarkReverseBuilder (mark_reverse_builder.rb).
     module ReverseBuilder
-      REGISTRY = {}
+      REGISTRY = {}.freeze
 
       module_function
 
@@ -567,34 +567,6 @@ module Coradoc
 
       LIST_TYPES = %w[bullet_list ordered_list].freeze
       private_constant :LIST_TYPES
-
-      # Walks a typed FrontmatterEntry / FrontmatterValue tree and
-      # rebuilds the CoreModel `data` hash. Inverse of
-      # Handlers::Frontmatter.build_value.
-      module FrontmatterTreeToHash
-        module_function
-
-        def to_hash(entries)
-          entries.each_with_object({}) do |entry, result|
-            result[entry.key] = unwrap_value(entry.value)
-          end
-        end
-
-        def unwrap_value(value)
-          case value.value_type
-          when 'map' then to_hash(value.entries || [])
-          when 'array' then (value.items || []).map { |v| unwrap_value(v) }
-          when 'integer'  then value.integer_value
-          when 'float'    then value.float_value
-          when 'boolean'  then value.boolean_value
-          when 'date'     then value.date_value
-          when 'datetime' then value.datetime_value
-          when 'symbol'   then value.symbol_value&.to_sym
-          when 'nil'      then nil
-          else value.string_value
-          end
-        end
-      end
     end
   end
 end

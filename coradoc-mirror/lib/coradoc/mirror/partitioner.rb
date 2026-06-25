@@ -15,9 +15,15 @@ module Coradoc
       # (clause, annex, abstract, foreword, introduction, terms,
       # definitions, references, content_section, acknowledgements).
       SECTION_TYPES = Set.new(%w[
-        clause annex content_section abstract foreword introduction
-        acknowledgements terms definitions references section
-      ]).freeze
+                                clause annex content_section abstract foreword introduction
+                                acknowledgements terms definitions references section
+                              ]).freeze
+
+      # Mirror node types that are doc-level metadata, not body content.
+      # They pass through the partitioner untouched (in document order)
+      # so the renderer can choose to skip them — they never land in the
+      # preface bucket where they would render as visible body.
+      METADATA_TYPES = Set.new(%w[frontmatter]).freeze
 
       module_function
 
@@ -29,11 +35,16 @@ module Coradoc
       # Once a bibliography appears → :trailing.
       # Footnotes blocks always go into :trailing regardless of state.
       #
+      # Metadata blocks (frontmatter) are returned in their own bucket,
+      # outside the preface/sections/trailing flow, so they survive the
+      # partition round-trip but are never rendered as body content.
+      #
       # @param children [Array<Node>] flat list of built Mirror nodes
       # @return [Hash{Symbol=>Array<Node>}] buckets under :preface,
-      #   :sections, :bibliography, :trailing
+      #   :sections, :bibliography, :trailing, :metadata
       def partition(children)
-        buckets = { preface: [], sections: [], bibliography: [], trailing: [] }
+        buckets = { preface: [], sections: [], bibliography: [],
+                    trailing: [], metadata: [] }
         state = :preface
 
         children.each do |child|
@@ -44,7 +55,9 @@ module Coradoc
             buckets[:bibliography] << child
             state = :trailing
           else
-            if SECTION_TYPES.include?(child.type)
+            if METADATA_TYPES.include?(child.type)
+              buckets[:metadata] << child
+            elsif SECTION_TYPES.include?(child.type)
               buckets[:sections] << child
               state = :sections
             elsif child.type == 'footnotes'

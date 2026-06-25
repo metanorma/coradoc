@@ -116,7 +116,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Frontmatter do
       element = Coradoc::CoreModel::FrontmatterBlock.new(data: data)
 
       node = described_class.call(element, context: context)
-      roundtrip = Coradoc::Mirror::ReverseBuilder::FrontmatterTreeToHash.to_hash(node.attrs.entries)
+      roundtrip = Coradoc::Mirror::FrontmatterTreeToHash.to_hash(node.attrs.entries)
       expect(roundtrip).to eq(data)
     end
   end
