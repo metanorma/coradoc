@@ -13,7 +13,9 @@ module Coradoc
             list_prefix.absent? >>
             list_continuation.absent? >>
             element_id.absent? >>
-            section_prefix.absent?
+            section_prefix.absent? >>
+            comment_line.absent? >>
+            tag.absent?
         end
 
         # NOTE: many_breaks parameter has three states for different parsing contexts:
