@@ -10,6 +10,7 @@ module Coradoc
         Inl = ElementTransformers::InlineTransformer
         Tbl = ElementTransformers::TableTransformer
         Oth = ElementTransformers::OtherTransformer
+        Inc = ElementTransformers::IncludeTransformer
 
         class << self
           def register_all!
@@ -231,8 +232,16 @@ module Coradoc
               ->(model) { Oth.transform_bibliography_entry(model) }
             )
 
-            [
+            # Include directives become first-class CoreModel::Include nodes
+            # (link edges in a text graph). To splice their content inline,
+            # call +Coradoc.resolve_includes(doc, base_dir:)+ on the parsed
+            # document — that step is intentionally separate from parse.
+            Registry.register(
               Coradoc::AsciiDoc::Model::Include,
+              ->(model) { Inc.transform_include(model) }
+            )
+
+            [
               Coradoc::AsciiDoc::Model::Audio,
               Coradoc::AsciiDoc::Model::Video,
               Coradoc::AsciiDoc::Model::ContentList,

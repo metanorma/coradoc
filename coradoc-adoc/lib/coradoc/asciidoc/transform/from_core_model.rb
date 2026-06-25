@@ -388,7 +388,50 @@ module Coradoc
             )
           end
 
+          def transform_include(include)
+            Coradoc::AsciiDoc::Model::Include.new(
+              path: include.target.to_s,
+              attributes: build_include_attributes(include),
+              line_break: include.line_break.to_s
+            )
+          end
+
           private
+
+          def build_include_attributes(include)
+            list = Coradoc::AsciiDoc::Model::AttributeList.new
+            options = include.options
+            return list if options.nil?
+
+            add_tag_attribute(list, options)
+            add_simple_attribute(list, 'lines', options.lines_spec)
+            add_leveloffset_attribute(list, options)
+            add_simple_attribute(list, 'indent', options.indent&.to_s)
+            add_simple_attribute(list, 'encoding', options.file_encoding)
+            list
+          end
+
+          def add_simple_attribute(list, name, value)
+            return if value.nil? || value.to_s.empty?
+
+            list.add_named(name, value.to_s)
+          end
+
+          def add_tag_attribute(list, options)
+            if options.tags_wildcard
+              list.add_named('tags', '*')
+            elsif options.tags_inverted
+              list.add_named('tags', '**')
+            elsif options.tags.any?
+              list.add_named('tags', options.tags.join(';'))
+            end
+          end
+
+          def add_leveloffset_attribute(list, options)
+            return if options.leveloffset.nil?
+
+            list.add_named('leveloffset', options.leveloffset.to_s)
+          end
 
           # If the first CoreModel child is a FrontmatterBlock, serialize
           # it to YAML text via Codec (single source of truth) and pop it

@@ -10,6 +10,7 @@ module Coradoc
         autoload :InlineTransformer, "#{__dir__}/element_transformers/inline_transformer"
         autoload :TableTransformer, "#{__dir__}/element_transformers/table_transformer"
         autoload :OtherTransformer, "#{__dir__}/element_transformers/other_transformer"
+        autoload :IncludeTransformer, "#{__dir__}/element_transformers/include_transformer"
       end
     end
   end

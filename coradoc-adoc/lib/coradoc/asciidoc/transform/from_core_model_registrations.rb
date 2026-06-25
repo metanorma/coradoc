@@ -120,6 +120,11 @@ module Coradoc
               Coradoc::CoreModel::CommentLine,
               ->(model) { FromCoreModel.transform_comment_line(model) }
             )
+
+            Registry.register(
+              Coradoc::CoreModel::Include,
+              ->(model) { FromCoreModel.transform_include(model) }
+            )
           end
         end
       end

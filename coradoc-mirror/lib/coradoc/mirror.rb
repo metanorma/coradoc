@@ -111,6 +111,9 @@ module Coradoc
       # ── Frontmatter ──
       registry.register(CoreModel::FrontmatterBlock, Handlers::Frontmatter)
 
+      # ── Include directive (text-graph edge) ──
+      registry.register(CoreModel::Include, Handlers::Include)
+
       # ── Generic Block (catch-all for unrecognized block types) ──
       registry.register(CoreModel::Block, Handlers::GenericBlock)
 

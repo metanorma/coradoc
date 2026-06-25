@@ -512,6 +512,40 @@ module Coradoc
         end
       end
 
+      # Include directive node — a text-graph edge pointing at another file.
+      # Graph mode emits this; flat mode (ResolveIncludes) replaces it with
+      # the included subtree before serialization.
+      class Include < Node
+        PM_TYPE = 'include'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :target, :string
+          attribute :tags, :string, collection: true
+          attribute :lines, :string
+          attribute :leveloffset, :string
+          attribute :indent, :integer
+          attribute :file_encoding, :string
+          attribute :raw_options, :string
+
+          key_value do
+            map 'target', to: :target
+            map 'tags', to: :tags
+            map 'lines', to: :lines
+            map 'leveloffset', to: :leveloffset
+            map 'indent', to: :indent
+            map 'encoding', to: :file_encoding
+            map 'raw_options', to: :raw_options
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+        end
+      end
+
       # ── Tables ──
 
       class Table < Node

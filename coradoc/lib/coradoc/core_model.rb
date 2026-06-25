@@ -79,5 +79,8 @@ module Coradoc
     autoload :CommentLine, "#{__dir__}/core_model/comment_line"
     autoload :HorizontalRuleBlock, "#{__dir__}/core_model/horizontal_rule_block"
     autoload :IdGenerator, "#{__dir__}/core_model/id_generator"
+    autoload :Include, "#{__dir__}/core_model/include"
+    autoload :IncludeOptions, "#{__dir__}/core_model/include_options"
+    autoload :IncludeLevelOffset, "#{__dir__}/core_model/include_level_offset"
   end
 end
