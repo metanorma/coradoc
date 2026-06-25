@@ -16,7 +16,12 @@ module Coradoc
               )
             end
 
-            def transform_source_block(block)
+            # Verbatim blocks (source, listing, literal, pass) must round-trip
+            # their body byte-for-byte. Each source line becomes one content
+            # line; we join with "\n" so whitespace, indentation, and blank
+            # lines are preserved. Treating these as paragraphs would collapse
+            # whitespace and join consecutive lines into a single flowing text.
+            def transform_verbatim_block(block, klass)
               non_break_lines = Array(block.lines).reject do |line|
                 line.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
                   line.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
@@ -25,14 +30,24 @@ module Coradoc
                 ToCoreModel.extract_text_content(line)
               end.join("\n")
 
-              language = ToCoreModel.extract_block_language(block)
-
-              Coradoc::CoreModel::SourceBlock.new(
+              klass.new(
                 id: block.id,
                 title: ToCoreModel.extract_title_text(block.title),
                 content: content_lines,
-                language: language
+                language: ToCoreModel.extract_block_language(block)
               )
+            end
+
+            def transform_source_block(block)
+              transform_verbatim_block(block, Coradoc::CoreModel::SourceBlock)
+            end
+
+            def transform_literal_block(block)
+              transform_verbatim_block(block, Coradoc::CoreModel::LiteralBlock)
+            end
+
+            def transform_pass_block(block)
+              transform_verbatim_block(block, Coradoc::CoreModel::PassBlock)
             end
 
             # Open blocks (`--`) are generic containers. AsciiDoc allows
@@ -86,22 +101,11 @@ module Coradoc
             end
 
             def transform_listing_from_open(block)
-              content_lines = Array(block.lines).map { |line| ToCoreModel.extract_text_content(line) }.join("\n")
-              Coradoc::CoreModel::ListingBlock.new(
-                id: block.id,
-                title: ToCoreModel.extract_title_text(block.title),
-                content: content_lines,
-                language: ToCoreModel.extract_block_language(block)
-              )
+              transform_verbatim_block(block, Coradoc::CoreModel::ListingBlock)
             end
 
             def transform_literal_from_open(block)
-              content_lines = Array(block.lines).map { |line| ToCoreModel.extract_text_content(line) }.join("\n")
-              Coradoc::CoreModel::LiteralBlock.new(
-                id: block.id,
-                title: ToCoreModel.extract_title_text(block.title),
-                content: content_lines
-              )
+              transform_verbatim_block(block, Coradoc::CoreModel::LiteralBlock)
             end
 
             def transform_block(block, semantic_type_or_delimiter)
