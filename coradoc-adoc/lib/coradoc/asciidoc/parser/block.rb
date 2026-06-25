@@ -22,7 +22,8 @@ module Coradoc
         # - "|" separates cells within the table
 
         def block(n_deep = 3)
-          (example_block(n_deep) |
+          (markdown_code_block(n_deep) |
+          example_block(n_deep) |
           sidebar_block(n_deep) |
           source_block(n_deep) |
           quote_block(n_deep) |
@@ -60,6 +61,38 @@ module Coradoc
           block_style_exact(n_deep, '-', 2)
         end
 
+        # Markdown-style fenced code block: triple-backtick (or longer)
+        # fence with an optional language tag on the opening line. Behaves
+        # as a verbatim source block — same model as `[source,lang]\n----`.
+        # Pragmatic permissiveness for content that originates from (or is
+        # edited alongside) Markdown; not standard AsciiDoc but widely
+        # accepted (GitHub's renderer treats ``` as a listing delimiter).
+        def markdown_code_block(n_deep = 3)
+          capture_key = :"md_fence_#{n_deep}"
+          opening_fence = str('`').repeat(3).capture(capture_key)
+          closing_fence = dynamic do |_s, c|
+            str(c.captures[capture_key].to_s.strip)
+          end
+          language = (space? >> match("[A-Za-z0-9_+.-]").repeat(1).as(:language)).maybe
+
+          block_content_with_closing = dynamic do |_s, c|
+            fence_str = c.captures[capture_key].to_s.strip
+            closing_pattern = closing_fence >> space? >> newline
+
+            content = text_line(false, unguarded: true, verbatim: true) |
+                        empty_line.as(:line_break)
+
+            (closing_pattern.absent? >> content).repeat(1)
+          end
+
+          block_header >>
+            line_start? >>
+            opening_fence.as(:delimiter) >> language >> newline >>
+            block_content_with_closing.as(:lines) >>
+            line_start? >>
+            closing_fence >> space? >> newline
+        end
+
         def block_title
           (line_start? >> block_delimiter.absent?) >>
             str('.') >> space.absent? >> text.as(:title) >> newline
@@ -80,8 +113,9 @@ module Coradoc
           c.repeat(1)
         end
 
-        # Block delimiter: 4+ identical characters (or 2 for open block)
-        # Used by paragraph.rb to reject lines that look like block delimiters.
+        # Block delimiter: 4+ identical characters, or 2 dashes for open
+        # blocks, or 3+ backticks for Markdown-style code fences. Used by
+        # paragraph.rb to reject lines that look like block delimiters.
         # NOTE: repeat(4,) means 4 or more (not exactly 4)
         def block_delimiter
           line_start? >>
@@ -91,7 +125,8 @@ module Coradoc
               str('+') |
               str('.') |
               str('-')).repeat(4) | # 4+ characters for most blocks
-              str('-').repeat(2, 2)) >> # Exactly 2 for open block
+              str('-').repeat(2, 2) | # Exactly 2 for open block
+              str('`').repeat(3)) >> # 3+ for Markdown code fences
             newline
         end
 

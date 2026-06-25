@@ -25,6 +25,10 @@ module Coradoc
                 lines: lines,
                 ordering: ordering
               }
+              # Markdown fences carry the language tag inline (```ruby);
+              # pass it through so the SourceCode classifier entry can set
+              # block.lang directly, which extract_block_language prefers.
+              opts[:lang] = block[:language].to_s if block.key?(:language) && !block[:language].nil?
               BlockTypeClassifier.classify(delimiter, opts, attribute_list)
             end
 
