@@ -28,13 +28,18 @@ module Coradoc
               src = image.src.to_s
               src = src[1..] if src.start_with?(':')
               positional = image.attributes&.positional || []
-              alt = positional.first&.value&.to_s
+              positional_alt = positional.first&.value&.to_s || ''
               caption = positional[1]&.value&.to_s
+              title = image.title&.to_s
+              # AsciiDoc block-title (`.Caption`) is semantically a caption,
+              # but for compatibility with the existing pipeline that treated
+              # it as alt when no positional alt was supplied, fall back to it.
+              alt = positional_alt.empty? ? title : positional_alt
               Coradoc::CoreModel::Image.new(
                 src: src,
                 alt: alt,
                 caption: caption,
-                title: image.title&.to_s,
+                title: title,
                 width: image.attributes&.[]('width'),
                 height: image.attributes&.[]('height')
               )
