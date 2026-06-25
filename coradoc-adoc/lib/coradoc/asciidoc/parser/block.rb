@@ -139,29 +139,57 @@ module Coradoc
             closing_delimiter >> newline
         end
 
-        # Block style parser with EXACT delimiter length (for open blocks)
-        # Open blocks use exactly 2 dashes and cannot nest within themselves
+        # Block style parser with EXACT delimiter length (for open blocks).
+        # Open blocks use exactly 2 dashes. A `[source]`/`[listing]`/`[literal]`
+        # positional attribute casts the body to verbatim — block macros like
+        # `image::` must survive byte-for-byte, same as delimited source blocks.
         def block_style_exact(n_deep = 3, delimiter = '-', exact_chars = 2)
           capture_key = :"delimit_#{delimiter}_exact_#{exact_chars}_#{n_deep}"
+          attr_capture_key = :"#{capture_key}_attrs"
           current_delimiter = str(delimiter).repeat(exact_chars, exact_chars).capture(capture_key)
           closing_delimiter = dynamic do |_s, c|
             str(c.captures[capture_key].to_s.strip)
           end
 
+          # Closure so the call bypasses Parslet's method_missing inside the
+          # dynamic block. capture() stashes the parsed AST (a nested Hash for
+          # a `[source,ruby]` header). Inspect the structure directly so we
+          # don't depend on Ruby's Hash#to_s format (it changed in 3.4).
+          verbatim_cast = lambda do |raw|
+            values = []
+            queue = [raw]
+            while (node = queue.shift)
+              case node
+              when Hash then queue.concat(node.values)
+              when Array then queue.concat(node)
+              else values << node
+              end
+            end
+            castable = %w[source listing literal]
+            values.any? { |v| castable.include?(v.to_s) }
+          end
+
           block_content_with_closing = dynamic do |_s, c|
             delim_str = c.captures[capture_key].to_s.strip
+            raw_header = c.captures[attr_capture_key]
             closing_pattern = str(delim_str) >> newline
 
-            content = block_image
-            content |= block(n_deep - 1) if n_deep.positive?
-            content |= list
-            content |= text_line(false, unguarded: true)
-            content |= empty_line.as(:line_break)
+            content = if verbatim_cast.call(raw_header)
+                        text_line(false, unguarded: true, verbatim: true) |
+                          empty_line.as(:line_break)
+                      else
+                        alt = block_image
+                        alt |= block(n_deep - 1) if n_deep.positive?
+                        alt |= list
+                        alt |= text_line(false, unguarded: true)
+                        alt |= empty_line.as(:line_break)
+                        alt
+                      end
 
             (closing_pattern.absent? >> content).repeat(1)
           end
 
-          block_header >>
+          block_header.capture(attr_capture_key) >>
             line_start? >>
             current_delimiter.as(:delimiter) >> newline >>
             block_content_with_closing.as(:lines) >>
