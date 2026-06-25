@@ -158,7 +158,8 @@ module Coradoc
             str('+++').present? |
             term_type.present? |
             str('footnote').present? |
-            stem_type.present?
+            stem_type.present? |
+            str('\\<<').present?
         end
 
         def inline
@@ -175,6 +176,7 @@ module Coradoc
             superscript |
             subscript |
             attribute_reference |
+            escaped_xref |
             cross_reference |
             term_inline |
             term_inline2 |
@@ -188,8 +190,12 @@ module Coradoc
         end
 
         def text_unformatted
-          # line_not_text? >>
-          (inline.absent? >>
+          # `str('\\<<').absent?` stops text from consuming the backslash of
+          # an escaped xref (`\<<`). Without this guard, the `\` is taken as
+          # plain text, the `<<` re-enters cross_reference, and the literal
+          # escape is destroyed.
+          (str('\\<<').absent? >>
+            inline.absent? >>
             match("[^\n]")
           ).repeat(1)
         end
