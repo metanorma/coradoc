@@ -44,7 +44,7 @@ module Coradoc
         end
 
         def positional_value_unquoted
-          match('[^\]\s,]').repeat(1) >> space.absent?
+          match('[^\],]').repeat(1)
         end
 
         def positional_value_single_quote

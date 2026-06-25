@@ -118,6 +118,7 @@ module Coradoc
 
         def inline_image
           (str('image:').present? >> str('image:') >>
+            str(':').absent? >>
             match('[A-Za-z0-9_.\\-:/&?=+,%#~;]+').repeat(1).as(:path) >>
             (str('[') >> match('[^\\]]').repeat(1).as(:text) >> str(']')).maybe
           ).as(:inline_image)
