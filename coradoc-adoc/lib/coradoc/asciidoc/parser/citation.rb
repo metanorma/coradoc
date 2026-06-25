@@ -14,6 +14,14 @@ module Coradoc
             str('>>')
           ).as(:cross_reference)
         end
+
+        # AsciiDoc escape: `\<<` produces the literal text `<<` without
+        # firing the cross-reference rule. Without this, documentation that
+        # shows AsciiDoc xref syntax as a literal example gets rewritten
+        # into a broken link to a non-existent anchor.
+        def escaped_xref
+          str('\\') >> str('<<').as(:text)
+        end
       end
     end
   end
