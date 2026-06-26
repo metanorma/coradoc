@@ -70,6 +70,8 @@ module Coradoc
 
     def resolve_includes(document, **) = Pipeline.resolve_includes(document, **)
 
+    def resolve_references(document, **) = Pipeline.resolve_references(document, **)
+
     def rewrite_links(...) = Pipeline.rewrite_links(...)
 
     def convert(text, **) = Pipeline.convert(text, **)
@@ -150,6 +152,7 @@ module Coradoc
   autoload :FormatCatalog, "#{__dir__}/format_catalog"
   autoload :Introspection, "#{__dir__}/introspection"
   autoload :Dispatch, "#{__dir__}/dispatch"
+  autoload :Reference, "#{__dir__}/reference"
 end
 
 # Format gems self-register via Coradoc.register_format when they are required.
