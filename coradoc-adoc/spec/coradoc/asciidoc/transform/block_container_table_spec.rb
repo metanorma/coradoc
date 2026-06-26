@@ -32,7 +32,7 @@ RSpec.describe 'Tables nested inside block containers', :asciidoc do
       adoc = "--\n#{table_adoc}\n--\n"
       open_block = first_child_class(adoc)
       expect(open_block).to be_a(Coradoc::CoreModel::OpenBlock)
-      table = open_block.children.find { it.is_a?(Coradoc::CoreModel::Table) }
+      table = open_block.children.find { |c| c.is_a?(Coradoc::CoreModel::Table) }
       expect(table).not_to be_nil
     end
 
