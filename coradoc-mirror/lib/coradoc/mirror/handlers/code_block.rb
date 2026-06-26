@@ -5,49 +5,42 @@ module Coradoc
     module Handlers
       module CodeBlock
         def self.source(element, context:)
-          build_code_block(element, context)
+          build_code_block(element, context, node_class: Node::CodeBlock)
         end
 
         def self.listing(element, context:)
-          build_code_block(element, context)
+          build_code_block(element, context, node_class: Node::CodeBlock)
         end
 
         def self.literal(element, context:)
-          build_code_block(element, context)
+          build_code_block(element, context, node_class: Node::LiteralBlock)
         end
 
         def self.pass(element, context:)
-          build_code_block(element, context, passthrough: true)
+          build_code_block(element, context, node_class: Node::PassBlock, passthrough: true)
+        end
+
+        def self.stem(element, context:)
+          build_code_block(element, context, node_class: Node::StemBlock)
         end
 
         class << self
           private
 
-          def build_code_block(element, context, passthrough: false)
+          def build_code_block(element, context, node_class:, passthrough: false)
             text = extract_text(element)
             js_mode = context.partition_structural
+            attrs = Node::CodeBlock::Attrs.new(
+              title: element.title,
+              language: element.language,
+              passthrough: passthrough || nil,
+              text: js_mode ? text : nil
+            )
 
             if js_mode
-              # @metanorma/mirror JS sourcecode contract: text in attrs.text,
-              # no children. Pre-formatted text rendered via <pre><code>.
-              Node::CodeBlock.new(
-                attrs: Node::CodeBlock::Attrs.new(
-                  title: element.title,
-                  language: element.language,
-                  passthrough: passthrough || nil,
-                  text: text
-                ),
-                content: []
-              )
+              node_class.new(attrs: attrs, content: [])
             else
-              Node::CodeBlock.new(
-                attrs: Node::CodeBlock::Attrs.new(
-                  title: element.title,
-                  language: element.language,
-                  passthrough: passthrough || nil
-                ),
-                content: [context.text_node(text)]
-              )
+              node_class.new(attrs: attrs, content: [context.text_node(text)])
             end
           end
 

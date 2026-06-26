@@ -41,7 +41,8 @@ RSpec.describe 'Integration pipeline fixes' do
     it 'transforms page_break through to CoreModel as nil (filtered out)' do
       core = parse_to_core("= Title\n\nHello\n\n<<<\n\n== Section\n")
       expect(core).to be_a(Coradoc::CoreModel::StructuralElement)
-      expect(core.children.length).to eq(2) # paragraph + section, no page break
+      # title heading (level-0) + paragraph + section, no page break
+      expect(core.children.length).to eq(3)
     end
   end
 

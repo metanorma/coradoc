@@ -70,6 +70,7 @@ module Coradoc
     autoload :SidebarBlock, "#{__dir__}/core_model/sidebar_block"
     autoload :LiteralBlock, "#{__dir__}/core_model/literal_block"
     autoload :PassBlock, "#{__dir__}/core_model/pass_block"
+    autoload :StemBlock, "#{__dir__}/core_model/stem_block"
     autoload :ListingBlock, "#{__dir__}/core_model/listing_block"
     autoload :OpenBlock, "#{__dir__}/core_model/open_block"
     autoload :VerseBlock, "#{__dir__}/core_model/verse_block"

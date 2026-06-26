@@ -11,6 +11,7 @@ module Coradoc
         autoload :TableTransformer, "#{__dir__}/element_transformers/table_transformer"
         autoload :OtherTransformer, "#{__dir__}/element_transformers/other_transformer"
         autoload :IncludeTransformer, "#{__dir__}/element_transformers/include_transformer"
+        autoload :AdmonitionStyles, "#{__dir__}/element_transformers/admonition_styles"
       end
     end
   end

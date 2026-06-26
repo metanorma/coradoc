@@ -47,7 +47,53 @@ module Coradoc
             end
 
             def transform_pass_block(block)
+              style = first_positional_attr(block)
+              return transform_stem_block(block, style) if STEM_STYLES.key?(style.to_s.downcase)
+
               transform_verbatim_block(block, Coradoc::CoreModel::PassBlock)
+            end
+
+            # AsciiDoc recognizes three STEM block styles. The default
+            # `[stem]` resolves to LaTeX; the other two name their
+            # interpreter explicitly. Single source of truth for the
+            # style→language mapping.
+            STEM_STYLES = {
+              'stem' => 'latex',
+              'latexmath' => 'latex',
+              'asciimath' => 'asciimath'
+            }.freeze
+
+            def transform_stem_block(block, style)
+              language = STEM_STYLES.fetch(style.to_s.downcase, 'latex')
+              block = transform_verbatim_block(block, Coradoc::CoreModel::StemBlock)
+              block.language = language
+              block
+            end
+
+            # Dispatch entry point for any block whose AsciiDoc model carries
+            # an attribute list (delimited blocks + open blocks). Per the
+            # AsciiDoc spec, every delimited block accepts admonition styles
+            # in its attribute line. Admonition style wins for example,
+            # sidebar, quote, and open blocks; verbatim blocks (source,
+            # listing) intentionally ignore it because their verbatim
+            # semantics are stronger than the annotation label.
+            def transform_with_admonition_check(block, native_class)
+              style = first_positional_attr(block)
+              return transform_admonition_block(block, style) if AdmonitionStyles.admonition?(style)
+
+              transform_typed_block(block, native_class)
+            end
+
+            def transform_example_block(block)
+              transform_with_admonition_check(block, Coradoc::CoreModel::ExampleBlock)
+            end
+
+            def transform_sidebar_block(block)
+              transform_with_admonition_check(block, Coradoc::CoreModel::SidebarBlock)
+            end
+
+            def transform_quote_block(block)
+              transform_with_admonition_check(block, Coradoc::CoreModel::QuoteBlock)
             end
 
             # Open blocks (`--`) are generic containers. AsciiDoc allows
@@ -60,41 +106,53 @@ module Coradoc
             def transform_open_block(block)
               semantic = open_block_semantic(block)
               case semantic
-              when :source_code
+              when :source
                 transform_source_block(block)
               when :listing
                 transform_listing_from_open(block)
               when :literal
                 transform_literal_from_open(block)
               when :admonition
-                transform_admonition_from_open(block)
+                transform_admonition_block(block, first_positional_attr(block))
               else
                 transform_typed_block(block, Coradoc::CoreModel::OpenBlock)
               end
             end
 
-            ADMONITION_TYPES = %w[note tip warning caution important].freeze
+            VERBATILE_CAST_STYLES = %w[source listing literal].freeze
 
             def open_block_semantic(block)
+              style = first_positional_attr(block)
+              return nil unless style
+
+              case style.to_s.downcase
+              when *VERBATILE_CAST_STYLES then :"#{style.downcase}"
+              else :admonition if AdmonitionStyles.admonition?(style)
+              end
+            end
+
+            # Returns the first positional attribute on the block's
+            # attribute list as a String, or nil if absent. Centralizes the
+            # shape-walking that was previously inlined in
+            # `transform_admonition_from_open` and `open_block_semantic`.
+            def first_positional_attr(block)
               attrs = block.attributes
               return nil unless attrs.is_a?(Coradoc::AsciiDoc::Model::AttributeList)
 
               first = attrs.positional&.first
               return nil unless first.is_a?(Coradoc::AsciiDoc::Model::AttributeListAttribute)
 
-              case first.value.to_s.downcase
-              when 'source' then :source_code
-              when 'listing' then :listing
-              when 'literal' then :literal
-              when *ADMONITION_TYPES then :admonition
-              end
+              first.value.to_s
             end
 
-            def transform_admonition_from_open(block)
-              type = block.attributes.positional.first.value.to_s.downcase
+            # Single admonition dispatch used by every block-form path
+            # (example / sidebar / quote / pass / open). Builds an
+            # AnnotationBlock with annotation_type set from the style and
+            # the block's body lines joined into a single content string.
+            def transform_admonition_block(block, type)
               content_lines = Array(block.lines).map { |line| ToCoreModel.extract_text_content(line) }.join("\n")
               Coradoc::CoreModel::AnnotationBlock.new(
-                annotation_type: type,
+                annotation_type: type.to_s.downcase,
                 content: content_lines,
                 title: ToCoreModel.extract_title_text(block.title)
               )
