@@ -167,6 +167,23 @@ module Coradoc
         visitor.visit(self)
       end
 
+      # True when this node counts as "real body content" for the
+      # purposes of empty-document detection and similar structural
+      # queries. Default is true; metadata and ephemeral nodes
+      # (FrontmatterBlock, CommentBlock, CommentLine) override to
+      # false. Polymorphic dispatch keeps the predicate open for
+      # future "skip-me" types — no central walker to edit (OCP).
+      def body_content?
+        true
+      end
+
+      # True when this node is structurally present but carries no
+      # visible characters. Default is false; inline text and
+      # paragraph blocks override to inspect their text content.
+      def whitespace_only?
+        false
+      end
+
       private
 
       # List of attributes to compare for semantic equivalence

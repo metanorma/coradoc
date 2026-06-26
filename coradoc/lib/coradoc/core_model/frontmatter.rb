@@ -50,6 +50,10 @@ module Coradoc
         schema.nil? && (data.nil? || data.empty?)
       end
 
+      def body_content?
+        false
+      end
+
       # Sub-namespaces (Codec, SchemaResolver, FieldTransform, TextSplitter)
       # live under FrontmatterBlock and autoload lazily.
       autoload :Codec, "#{__dir__}/frontmatter/codec"

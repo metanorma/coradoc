@@ -7,6 +7,10 @@ module Coradoc
       def self.semantic_type
         :paragraph
       end
+
+      def whitespace_only?
+        flat_text.strip.empty?
+      end
     end
   end
 end
