@@ -24,6 +24,18 @@ module Coradoc
         self.class.format_type || format_type
       end
 
+      # Polymorphic classification used by LinkRewriter::Visitor. Returns
+      # :link / :xref when this node carries a rewrite-able target, nil
+      # otherwise. Generic InlineElement instances defer to their
+      # resolved format_type; typed subclasses override with a literal.
+      # Keeps the visitor free of class-keyed case/when (OCP).
+      def link_kind
+        case resolve_format_type
+        when 'link' then :link
+        when 'xref' then :xref
+        end
+      end
+
       FORMAT_TYPES = %w[
         bold italic monospace underline strikethrough
         subscript superscript highlight
@@ -99,11 +111,19 @@ module Coradoc
       def self.format_type
         'link'
       end
+
+      def link_kind
+        :link
+      end
     end
 
     class CrossReferenceElement < InlineElement
       def self.format_type
         'xref'
+      end
+
+      def link_kind
+        :xref
       end
     end
 
