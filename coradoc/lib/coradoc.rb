@@ -44,4 +44,5 @@ module Coradoc
   autoload :Visitor, 'coradoc/visitor'
   autoload :Serializer, 'coradoc/serializer/registry'
   autoload :LinkRewriter, 'coradoc/link_rewriter'
+  autoload :RelativePath, 'coradoc/relative_path'
 end
