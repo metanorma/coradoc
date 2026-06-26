@@ -109,6 +109,27 @@ module Coradoc
         true
       end
 
+      # -- Fluent construction helpers (paired with Base.build) --
+
+      # Append a plain-text inline to this item's children. Returns
+      # self for chaining. Pairs naturally with ListItem.build:
+      #
+      #   ListItem.build do |li|
+      #     li.add_text("See ")
+      #     li.add_link("foo.adoc", text: "Foo")
+      #   end
+      def add_text(text)
+        self.children = Array(children) + [TextContent.new(text: text)]
+        self
+      end
+
+      # Append a +link:+ inline to this item's children. +text+ becomes
+      # the link's visible label; +target+ is the URL/anchor.
+      def add_link(target, text: nil)
+        self.children = Array(children) + [LinkElement.new(target: target, content: text)]
+        self
+      end
+
       private
 
       # Compare two list blocks for equivalence
