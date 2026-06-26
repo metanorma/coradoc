@@ -7,9 +7,10 @@ module Coradoc
     # The set of node types that carry link/xref targets is closed and
     # small: +LinkElement+, +CrossReferenceElement+, plus generic
     # +InlineElement+ instances whose +format_type+ is +'link'+ or
-    # +'xref'+. Encoding that classification here, in one place, is
-    # MECE — every other visitor method just delegates to the canonical
-    # "rewrite children and rebuild immutably" path.
+    # +'xref'+. That classification is owned polymorphically by
+    # +InlineElement#link_kind+ — the visitor just calls it. Adding a
+    # new link-bearing subclass means overriding +link_kind+ on it,
+    # not editing a case/when here (OCP).
     #
     # Verbatim block types are also closed: +SourceBlock+, +ListingBlock+,
     # +LiteralBlock+, +PassBlock+, +StemBlock+. The visitor returns them
@@ -31,7 +32,9 @@ module Coradoc
       # Structural/container classes that own a child collection. Each
       # entry maps the class to the reader method that exposes its
       # children. MECE — every "recurse into the children" case lands
-      # in this table.
+      # in this table. Exposed as a public constant so spec helpers
+      # and other visitors can mirror the same paths without restating
+      # the dispatch (DRY).
       CONTAINER_TYPES = {
         Coradoc::CoreModel::DocumentElement => :children,
         Coradoc::CoreModel::SectionElement => :children,
@@ -48,8 +51,6 @@ module Coradoc
         Coradoc::CoreModel::Bibliography => :entries,
         Coradoc::CoreModel::AnnotationBlock => :children
       }.freeze
-
-      LINK_FORMAT_TYPES = %w[link xref].freeze
 
       def initialize(rewriter)
         @rewriter = rewriter
@@ -101,7 +102,7 @@ module Coradoc
       # matching format_type. Other typed subclasses (Bold, Italic, …)
       # are walked for nested inlines instead of being rewritten.
       def rewrite_inline(inline)
-        kind = link_kind_for(inline)
+        kind = inline.link_kind
 
         rewritten_target = rewrite_target(inline, kind)
         rewritten_nested = rewrite_nested(inline)
@@ -138,22 +139,6 @@ module Coradoc
         return nil if unchanged?(rewritten, nested)
 
         rewritten
-      end
-
-      # Map a node to its link kind (:link, :xref) or nil when the node
-      # is not a rewrite target.
-      def link_kind_for(inline)
-        case inline
-        when Coradoc::CoreModel::LinkElement
-          :link
-        when Coradoc::CoreModel::CrossReferenceElement
-          :xref
-        else
-          format_type = inline.resolve_format_type
-          return nil unless LINK_FORMAT_TYPES.include?(format_type)
-
-          format_type == 'link' ? :link : :xref
-        end
       end
 
       def rebuild_with(node, overrides)
