@@ -41,6 +41,28 @@ module Coradoc
       #   @return [Array<MetadataEntry>] additional metadata entries
       attribute :metadata_entries, MetadataEntry, collection: true
 
+      # Construct an instance and yield it for in-place mutation.
+      #
+      # This is the programmatic-construction entry point for CoreModel
+      # nodes. It calls +new+ exactly as a caller would, then yields
+      # the resulting instance for append-style construction. No new
+      # class hierarchy, no +method_missing+ — the block operates on
+      # the real model object.
+      #
+      # Per-class fluent helpers (e.g., +ListBlock#add_item+,
+      # +ListItem#add_text+) compose naturally with +build+:
+      #
+      #   list = ListBlock.build do |ul|
+      #     children.each { |c| ul.add_item { |li| li.add_link(c[:slug], text: c[:title]) } }
+      #   end
+      #
+      # Without a block, +build(**attrs)+ is identical to +new(**attrs)+.
+      def self.build(**attrs)
+        instance = new(**attrs)
+        yield instance if block_given?
+        instance
+      end
+
       # Get all metadata as a hash, or a specific metadata value by key
       # @overload metadata
       #   @return [Hash] All metadata as key-value pairs

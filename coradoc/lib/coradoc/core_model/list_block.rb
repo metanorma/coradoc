@@ -108,6 +108,23 @@ module Coradoc
       #   @return [Array<ListItem>] collection of list items
       attribute :items, ListItem, collection: true
 
+      # -- Fluent construction helpers (paired with Base.build) --
+
+      # Append a new ListItem, built via ListItem.build. The block
+      # (if given) is yielded the new item so callers can chain
+      # +add_text+ / +add_link+ on it inline:
+      #
+      #   ListBlock.build do |ul|
+      #     children.each { |c| ul.add_item { |li| li.add_link(c[:slug], text: c[:title]) } }
+      #   end
+      #
+      # Returns self for chaining at the list level.
+      def add_item(marker: self.marker_type == 'ordered' ? '.' : '*')
+        item = ListItem.build(marker: marker) { |li| yield li if block_given? }
+        self.items = Array(items) + [item]
+        self
+      end
+
       private
 
       # Attributes to compare for semantic equivalence
