@@ -17,7 +17,7 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
 
   let(:block) { described_class.from_yaml(flat_yaml) }
 
-  describe ':flat mode (default)' do
+  describe 'flat YAML round-trip' do
     it 'round-trips flat YAML unchanged' do
       expect(described_class.to_yaml(block)).to eq("#{flat_yaml}\n")
     end
@@ -43,69 +43,37 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
     end
   end
 
-  describe ':typed mode (discriminator shape)' do
-    let(:typed_yaml) { described_class.to_yaml(block, mode: :typed) }
-    let(:typed_hash) { described_class.to_hash(block, mode: :typed) }
-
-    it 'wraps string values with value_type discriminator' do
-      expect(typed_hash['title']).to eq(
-        'value_type' => 'string',
-        'string_value' => 'Foo'
-      )
+  describe 'typed value preservation via Psych permitted classes' do
+    it 'preserves Date through round-trip' do
+      block = described_class.from_yaml("due: 2024-06-15\n")
+      expect(described_class.to_hash(block)['due']).to eq(Date.new(2024, 6, 15))
     end
 
-    it 'wraps date values with value_type discriminator' do
-      expect(typed_hash['date']).to eq(
-        'value_type' => 'date',
-        'date_value' => '2024-01-01'
-      )
+    it 'preserves Time through round-trip' do
+      block = described_class.from_yaml("at: 2024-06-15T10:30:00Z\n")
+      expect(described_class.to_hash(block)['at']).to be_a(Time)
     end
 
-    it 'wraps array values with items_value discriminator' do
-      expect(typed_hash['tags']).to eq(
-        'value_type' => 'array',
-        'items_value' => [
-          { 'value_type' => 'string', 'string_value' => 'a' },
-          { 'value_type' => 'string', 'string_value' => 'b' }
-        ]
-      )
+    it 'preserves Symbol through round-trip' do
+      block = described_class.from_yaml("status: :draft\n")
+      expect(described_class.to_hash(block)['status']).to eq(:draft)
     end
 
-    it 'wraps boolean values with value_type discriminator' do
-      expect(typed_hash['draft']).to eq(
-        'value_type' => 'boolean',
-        'boolean_value' => false
-      )
+    it 'preserves Integer through round-trip' do
+      block = described_class.from_yaml("count: 42\n")
+      expect(described_class.to_hash(block)['count']).to eq(42)
     end
 
-    it 'emits typed YAML with the discriminator fields' do
-      expect(typed_yaml).to include('value_type: string')
-      expect(typed_yaml).to include('string_value: Foo')
-      expect(typed_yaml).to include('value_type: date')
-      expect(typed_yaml).to include('value_type: array')
-      expect(typed_yaml).to include('value_type: boolean')
+    it 'preserves Boolean through round-trip' do
+      block = described_class.from_yaml("draft: false\n")
+      expect(described_class.to_hash(block)['draft']).to eq(false)
     end
 
-    it 'round-trips :typed YAML back to the same block (mode-agnostic model)' do
-      back = described_class.from_yaml(typed_yaml, mode: :typed)
-      expect(described_class.to_hash(back)).to eq(described_class.to_hash(block))
-    end
-
-    it 'round-trips :typed hash through from_hash(mode: :typed)' do
-      back = described_class.from_hash(typed_hash, mode: :typed)
-      expect(described_class.to_hash(back)).to eq(described_class.to_hash(block))
-    end
-  end
-
-  describe 'mode equivalence' do
-    it 'both modes share the same underlying FrontmatterBlock' do
-      # Mode is purely a serialization concern — the model is mode-agnostic.
-      expect(described_class.to_hash(block, mode: :flat)).to eq(
-        'title' => 'Foo',
-        'date' => Date.new(2024, 1, 1),
-        'tags' => %w[a b],
-        'draft' => false
-      )
+    it 'preserves nil through round-trip' do
+      block = described_class.from_yaml("missing:\n")
+      hash = described_class.to_hash(block)
+      expect(hash.key?('missing')).to be(true)
+      expect(hash['missing']).to be_nil
     end
   end
 
@@ -140,8 +108,17 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
       expect(block.empty?).to be(true)
     end
 
-    it 'returns an empty block on malformed YAML' do
-      block = described_class.from_yaml("title: [unterminated")
+    it 'warns and returns an empty block on malformed YAML' do
+      allow(Coradoc::Logger).to receive(:warn)
+      block = described_class.from_yaml('title: [unterminated')
+      expect(Coradoc::Logger).to have_received(:warn).with(/frontmatter parse failed/)
+      expect(block.empty?).to be(true)
+    end
+
+    it 'warns and returns an empty block on disallowed YAML class' do
+      allow(Coradoc::Logger).to receive(:warn)
+      block = described_class.from_yaml('foo: !ruby/object:Object {}')
+      expect(Coradoc::Logger).to have_received(:warn).with(/frontmatter parse failed/)
       expect(block.empty?).to be(true)
     end
 
@@ -165,7 +142,7 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
         author: Jane
       YAML
       block = described_class.from_yaml(yaml)
-      hash = described_class.to_hash(block, mode: :flat)
+      hash = described_class.to_hash(block)
 
       expect(hash['title']).to eq('My Post')
       expect(hash['description']).to eq('A short summary')
@@ -174,17 +151,33 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
     end
   end
 
-  describe 'integer and null values' do
-    it 'wraps integer and null values correctly in typed mode' do
-      yaml = "count: 42\nmissing:\n"
+  describe 'nested structures' do
+    it 'preserves nested Hash values' do
+      yaml = <<~YAML.strip
+        author:
+          name: Jane
+          email: jane@example.com
+      YAML
       block = described_class.from_yaml(yaml)
-      typed = described_class.to_hash(block, mode: :typed)
-
-      expect(typed['count']).to eq(
-        'value_type' => 'integer',
-        'integer_value' => 42
+      hash = described_class.to_hash(block)
+      expect(hash['author']).to eq(
+        'name' => 'Jane',
+        'email' => 'jane@example.com'
       )
-      expect(typed['missing']).to eq('value_type' => 'null')
+    end
+
+    it 'preserves Array of Hashes' do
+      yaml = <<~YAML.strip
+        authors:
+        - name: Jane
+        - name: Carlos
+      YAML
+      block = described_class.from_yaml(yaml)
+      hash = described_class.to_hash(block)
+      expect(hash['authors']).to eq([
+        { 'name' => 'Jane' },
+        { 'name' => 'Carlos' }
+      ])
     end
   end
 end
