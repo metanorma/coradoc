@@ -170,6 +170,33 @@ module Coradoc
       )
     end
 
+    # Rewrite every link/xref target in a parsed document.
+    #
+    # Walks the document tree and invokes the supplied rewriter for each
+    # link and cross-reference target. The original document is never
+    # mutated — a NEW document is returned.
+    #
+    # Verbatim blocks (+SourceBlock+, +ListingBlock+, +LiteralBlock+,
+    # +PassBlock+, +StemBlock+) are skipped entirely so link-shaped text
+    # inside code/math bodies is never rewritten.
+    #
+    # The rewriter responds to +#call(target:, kind:, context:)+ and
+    # returns the new target String. +kind+ is +:link+ or +:xref+; the
+    # block form is supported for one-liners.
+    #
+    # @param document [Coradoc::CoreModel::Base] parsed document
+    # @param rewriter [#call, nil] callable rewriter; ignored when a block is given
+    # @return [Coradoc::CoreModel::Base] new document with rewritten targets
+    #
+    # @example Canonicalize snake_case targets to kebab-case
+    #   doc = Coradoc.parse(adoc, format: :asciidoc)
+    #   rewritten = Coradoc.rewrite_links(doc) do |target:, kind:, **|
+    #     target.tr('_', '-')
+    #   end
+    def rewrite_links(document, rewriter: nil, &block)
+      Coradoc::LinkRewriter.rewrite(document, rewriter: rewriter, &block)
+    end
+
     # Convert document text from one format to another
     #
     # This is the main entry point for format conversion. It handles the

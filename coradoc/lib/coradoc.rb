@@ -43,4 +43,5 @@ module Coradoc
   autoload :DocumentManipulator, 'coradoc/document_manipulator'
   autoload :Visitor, 'coradoc/visitor'
   autoload :Serializer, 'coradoc/serializer/registry'
+  autoload :LinkRewriter, 'coradoc/link_rewriter'
 end

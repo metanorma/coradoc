@@ -67,6 +67,7 @@ module Coradoc
         items.each do |item|
           next unless item.is_a?(CoreModel::StructuralElement)
           next unless item.section? || item.header?
+          next if item.is_a?(CoreModel::HeaderElement) && item.document_title?
 
           counters[level] = (counters[level] || 0) + 1
           ((level + 1)..@section_number_levels).each { |i| counters[i] = 0 }

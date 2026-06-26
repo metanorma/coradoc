@@ -105,12 +105,24 @@ module Coradoc
         end
 
         def block_content(n_deep = 3)
-          c = block_image
+          block_container_content(n_deep).repeat(1)
+        end
+
+        # Single source of truth for "what can appear inside a non-verbatim
+        # block container". Used by block_content, block_style (non-verbatim
+        # branch), and block_style_exact (non-verbatim branch).
+        #
+        # `table` is listed before `text_line` so a leading `|===` is parsed
+        # as a table rather than mis-bracketed as text. The recursive `block`
+        # alternative handles every other delimited block.
+        def block_container_content(n_deep)
+          c = table.as(:table)
+          c |= block_image
           c |= block(n_deep - 1) if n_deep.positive?
           c |= list
           c |= text_line(false, unguarded: true)
           c |= empty_line.as(:line_break)
-          c.repeat(1)
+          c
         end
 
         # Block delimiter: 4+ identical characters, or 2 dashes for open
@@ -155,12 +167,7 @@ module Coradoc
                         text_line(false, unguarded: true, verbatim: true) |
                           empty_line.as(:line_break)
                       else
-                        c = block_image
-                        c |= block(n_deep - 1) if n_deep.positive?
-                        c |= list
-                        c |= text_line(false, unguarded: true)
-                        c |= empty_line.as(:line_break)
-                        c
+                        block_container_content(n_deep)
                       end
 
             (closing_pattern.absent? >> content).repeat(1)
@@ -213,12 +220,7 @@ module Coradoc
                         text_line(false, unguarded: true, verbatim: true) |
                           empty_line.as(:line_break)
                       else
-                        alt = block_image
-                        alt |= block(n_deep - 1) if n_deep.positive?
-                        alt |= list
-                        alt |= text_line(false, unguarded: true)
-                        alt |= empty_line.as(:line_break)
-                        alt
+                        block_container_content(n_deep)
                       end
 
             (closing_pattern.absent? >> content).repeat(1)

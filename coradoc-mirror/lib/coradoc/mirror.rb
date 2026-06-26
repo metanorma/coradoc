@@ -68,6 +68,8 @@ module Coradoc
                         method_name: :literal)
       registry.register(CoreModel::PassBlock, Handlers::CodeBlock,
                         method_name: :pass)
+      registry.register(CoreModel::StemBlock, Handlers::CodeBlock,
+                        method_name: :stem)
 
       # ── Blocks ──
       registry.register(CoreModel::QuoteBlock, Handlers::Blockquote)

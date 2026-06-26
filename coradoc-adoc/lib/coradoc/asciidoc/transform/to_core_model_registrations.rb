@@ -48,14 +48,19 @@ module Coradoc
               priority: 10
             )
 
+            # Quote / Example / Sidebar blocks all share the same dispatch:
+            # check the attribute style for an admonition label first
+            # (`[NOTE]\n====` → AnnotationBlock), fall back to the block's
+            # native CoreModel type. Single source of truth lives in
+            # BlockTransformer#transform_with_admonition_check.
             {
-              Coradoc::AsciiDoc::Model::Block::Quote => Coradoc::CoreModel::QuoteBlock,
-              Coradoc::AsciiDoc::Model::Block::Example => Coradoc::CoreModel::ExampleBlock,
-              Coradoc::AsciiDoc::Model::Block::Side => Coradoc::CoreModel::SidebarBlock
-            }.each do |block_class, core_model_class|
+              Coradoc::AsciiDoc::Model::Block::Quote => :transform_quote_block,
+              Coradoc::AsciiDoc::Model::Block::Example => :transform_example_block,
+              Coradoc::AsciiDoc::Model::Block::Side => :transform_sidebar_block
+            }.each do |block_class, method|
               Registry.register_with_priority(
                 block_class,
-                ->(model) { Blk.transform_typed_block(model, core_model_class) },
+                ->(model) { Blk.public_send(method, model) },
                 priority: 10
               )
             end

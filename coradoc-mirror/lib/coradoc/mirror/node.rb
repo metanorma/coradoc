@@ -200,6 +200,26 @@ module Coradoc
         end
       end
 
+      # Literal block — preformatted text (`....` delimiter). Same shape
+      # as CodeBlock but distinguished on the wire so consumers can apply
+      # literal-vs-source rendering/styling.
+      class LiteralBlock < CodeBlock
+        PM_TYPE = 'literal'
+      end
+
+      # Pass block — raw passthrough content (`++++` delimiter). Same
+      # shape as CodeBlock; flagged via attrs.passthrough = true.
+      class PassBlock < CodeBlock
+        PM_TYPE = 'pass'
+      end
+
+      # STEM block — mathematical/scientific markup (`[stem|latexmath|
+      # asciimath]\n++++`). Carries a +language+ attr ('latex' default,
+      # 'asciimath' alternative).
+      class StemBlock < CodeBlock
+        PM_TYPE = 'stem'
+      end
+
       class Blockquote < Node
         PM_TYPE = 'quote'
 

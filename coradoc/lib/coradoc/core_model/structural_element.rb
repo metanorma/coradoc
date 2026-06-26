@@ -108,6 +108,15 @@ module Coradoc
         true
       end
 
+      # A level-0 HeaderElement represents the document title (the `= Title`
+      # line in AsciiDoc, the `<h1>` in HTML). It is structurally part of
+      # the body but semantically the document's title, not a section —
+      # section numbering, TOC builders, and other section-aware logic
+      # skip these so the title is not counted as "section 1".
+      def document_title?
+        level.to_i.zero?
+      end
+
       def self.element_type_name
         'header'
       end
