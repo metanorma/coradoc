@@ -21,7 +21,7 @@ module Coradoc
             # line; we join with "\n" so whitespace, indentation, and blank
             # lines are preserved. Treating these as paragraphs would collapse
             # whitespace and join consecutive lines into a single flowing text.
-            def transform_verbatim_block(block, klass)
+            def transform_verbatim_block(block, klass, language_override: nil)
               non_break_lines = Array(block.lines).reject do |line|
                 line.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
                   line.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
@@ -34,7 +34,7 @@ module Coradoc
                 id: block.id,
                 title: ToCoreModel.extract_title_text(block.title),
                 content: content_lines,
-                language: ToCoreModel.extract_block_language(block)
+                language: language_override || ToCoreModel.extract_block_language(block)
               )
             end
 
@@ -65,9 +65,8 @@ module Coradoc
 
             def transform_stem_block(block, style)
               language = STEM_STYLES.fetch(style.to_s.downcase, 'latex')
-              block = transform_verbatim_block(block, Coradoc::CoreModel::StemBlock)
-              block.language = language
-              block
+              transform_verbatim_block(block, Coradoc::CoreModel::StemBlock,
+                                       language_override: language)
             end
 
             # Dispatch entry point for any block whose AsciiDoc model carries
