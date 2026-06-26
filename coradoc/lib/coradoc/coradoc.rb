@@ -170,6 +170,52 @@ module Coradoc
       )
     end
 
+    # Resolve every reference (xref, citation, link, include, image,
+    # footnote) in a parsed document using a unified content-graph
+    # model. Mirrors +resolve_includes+ in shape: two-step, immutable,
+    # returns a NEW document.
+    #
+    # Catalogs compose (Local + Collection + Site + Remote); the
+    # Presentation defines slicing and page boundaries; the
+    # Materializer (looked up by kind × presentation × format) renders
+    # each resolved Edge into a CoreModel inline node.
+    #
+    # @param document [CoreModel::Base] parsed document
+    # @param catalog [Reference::Catalog::*] index of addressable Content
+    # @param presentation [Reference::Presentation::Base] slicing and ordering
+    # @param resolver [Reference::Resolver::Base, nil] defaults to CatalogResolver
+    # @param missing [Symbol] :warn (default), :silent, :error, :passthrough
+    # @param ambiguous [Symbol] :disambiguate (default), :first, :error
+    # @param materialize [Boolean] when true, replace edges with rendered inlines
+    # @return [CoreModel::Base] a new document; input is never mutated
+    #
+    # @example Resolve cross-references into HTML links
+    #   doc = Coradoc.parse(text, format: :asciidoc)
+    #   catalog = Coradoc::Reference::Catalog::Local.from_doc(doc)
+    #   presentation = Coradoc::Reference::Presentation::SingleDocument.new
+    #   resolved = Coradoc.resolve_references(
+    #     doc,
+    #     catalog: catalog,
+    #     presentation: presentation,
+    #     materialize: true
+    #   )
+    def resolve_references(document, catalog:, presentation:,
+                           resolver: nil,
+                           missing: :warn,
+                           ambiguous: :disambiguate,
+                           materialize: false)
+      Coradoc::Reference::Resolution.new(
+        catalog: catalog,
+        presentation: presentation,
+        resolver: resolver || Coradoc::Reference::Resolver::Catalog.new(
+          catalog: catalog, ambiguous: ambiguous, missing: missing
+        ),
+        missing: missing,
+        ambiguous: ambiguous,
+        materialize: materialize
+      ).call(document)
+    end
+
     # Convert document text from one format to another
     #
     # This is the main entry point for format conversion. It handles the
@@ -517,6 +563,7 @@ module Coradoc
   autoload :IncludeResolver, "#{__dir__}/include_resolver"
   autoload :IncludeSelectors, "#{__dir__}/include_selectors"
   autoload :ResolveIncludes, "#{__dir__}/resolve_includes"
+  autoload :Reference, "#{__dir__}/reference"
 end
 
 # Format gems self-register via Coradoc.register_format when they are required.
