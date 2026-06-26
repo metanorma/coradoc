@@ -83,5 +83,6 @@ module Coradoc
     autoload :Include, "#{__dir__}/core_model/include"
     autoload :IncludeOptions, "#{__dir__}/core_model/include_options"
     autoload :IncludeLevelOffset, "#{__dir__}/core_model/include_level_offset"
+    autoload :OutputArtifact, "#{__dir__}/core_model/output_artifact"
   end
 end
