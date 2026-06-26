@@ -7,6 +7,10 @@ module Coradoc
       def self.semantic_type
         :comment
       end
+
+      def body_content?
+        false
+      end
     end
   end
 end

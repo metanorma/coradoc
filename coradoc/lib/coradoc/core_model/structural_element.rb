@@ -52,6 +52,38 @@ module Coradoc
         false
       end
 
+      # Override in subclasses that carry document-title semantics.
+      # HeaderElement at level 0 represents the document title (`= Title`
+      # in AsciiDoc). Consumers that walk the body — TOC builders,
+      # section numbering — skip these so the title is not counted as
+      # "section 1". Polymorphic dispatch (vs. an is_a? guard at the
+      # call site) keeps the predicate open for future subclasses.
+      def document_title?
+        false
+      end
+
+      # Children that count as body content and aren't whitespace-only.
+      # Derived from per-node {#body_content?} and {#whitespace_only?}
+      # predicates — no central walker, no is_a? switch to maintain.
+      def visible_children
+        Array(children).select(&:body_content?).reject(&:whitespace_only?)
+      end
+
+      # True when the body has no visible content anywhere in its subtree.
+      # A document with only frontmatter + comments returns true; a
+      # document with one non-whitespace paragraph returns false.
+      def empty_body?
+        return true if children.nil? || children.empty?
+
+        children.all? do |child|
+          next true unless child.body_content?
+          next true if child.whitespace_only?
+          next child.empty_body? if child.is_a?(StructuralElement)
+
+          false
+        end
+      end
+
       # Derived element_type string for backward compatibility with
       # templates and legacy consumers. Subclasses override this.
       def element_type

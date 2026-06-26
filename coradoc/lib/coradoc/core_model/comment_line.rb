@@ -13,6 +13,10 @@ module Coradoc
         :comment_line
       end
 
+      def body_content?
+        false
+      end
+
       attribute :text, :string
     end
   end
