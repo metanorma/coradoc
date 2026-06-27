@@ -36,14 +36,17 @@ module Coradoc
 
             # Inline image
             rule(inline_image: subtree(:inline_image)) do
+              attrs = AttributeListNormalizer.coerce(inline_image[:attribute_list])
               Model::Image::InlineImage.new(
-                title: inline_image[:text],
                 src: inline_image[:path],
-                attributes: inline_image[:attribute_list]
+                attributes: attrs
               )
             end
 
-            # Inline passthrough (`+++raw content+++`)
+            # Inline passthrough (`+++raw content+++` or `pass:[raw]`).
+            # Both forms carry an opaque payload that survives all
+            # substitutions verbatim; `form` records which syntax was
+            # used so the AsciiDoc serializer can round-trip faithfully.
             rule(inline_passthrough: subtree(:passthrough)) do
               Model::Inline::Passthrough.new(
                 content: passthrough[:raw].to_s,
@@ -54,6 +57,15 @@ module Coradoc
             # Attribute reference
             rule(attribute_reference: simple(:name)) do
               Model::Inline::AttributeReference.new(name:)
+            end
+
+            # Hard line break (` +\n` or `\\n`). Emitted as a dedicated
+            # AsciiDoc model (Inline::HardLineBreak) distinct from
+            # Model::LineBreak, which only represents paragraph-separator
+            # blank lines. Hard breaks carry semantic meaning: HTML/Markdown
+            # renderers map them to <br>.
+            rule(hard_line_break: simple(:_)) do
+              Model::Inline::HardLineBreak.new
             end
 
             # Term

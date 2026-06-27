@@ -71,16 +71,26 @@ module Coradoc
 
             # Dispatch entry point for any block whose AsciiDoc model carries
             # an attribute list (delimited blocks + open blocks). Per the
-            # AsciiDoc spec, every delimited block accepts admonition styles
-            # in its attribute line. Admonition style wins for example,
-            # sidebar, quote, and open blocks; verbatim blocks (source,
-            # listing) intentionally ignore it because their verbatim
-            # semantics are stronger than the annotation label.
+            # AsciiDoc spec, every delimited block accepts both admonition
+            # labels and verbatim/stem casts in its attribute line. The cast
+            # is resolved by +block_cast_semantic+ in MECE order:
+            # admonition > stem > verbatim > fallback.
             def transform_with_admonition_check(block, native_class)
-              style = first_positional_attr(block)
-              return transform_admonition_block(block, style) if AdmonitionStyles.admonition?(style)
-
-              transform_typed_block(block, native_class)
+              semantic = block_cast_semantic(block)
+              case semantic
+              when :admonition
+                transform_admonition_block(block, first_positional_attr(block))
+              when :stem
+                transform_stem_block(block, first_positional_attr(block))
+              when :source
+                transform_source_block(block)
+              when :listing
+                transform_listing_from_open(block)
+              when :literal
+                transform_literal_from_open(block)
+              else
+                transform_typed_block(block, native_class)
+              end
             end
 
             def transform_example_block(block)
@@ -98,36 +108,32 @@ module Coradoc
             # Open blocks (`--`) are generic containers. AsciiDoc allows
             # casting them to a different block type via positional
             # attributes: verbatim types (`[source]`, `[listing]`,
-            # `[literal]`) and admonition labels (`[NOTE]`, `[TIP]`,
+            # `[literal]`), STEM types (`[stem]`, `[latexmath]`,
+            # `[asciimath]`), and admonition labels (`[NOTE]`, `[TIP]`,
             # `[WARNING]`, `[CAUTION]`, `[IMPORTANT]`). When such a cast
             # is present, the block behaves like the corresponding
             # delimited block. Anything else stays an OpenBlock.
             def transform_open_block(block)
-              semantic = open_block_semantic(block)
-              case semantic
-              when :source
-                transform_source_block(block)
-              when :listing
-                transform_listing_from_open(block)
-              when :literal
-                transform_literal_from_open(block)
-              when :admonition
-                transform_admonition_block(block, first_positional_attr(block))
-              else
-                transform_typed_block(block, Coradoc::CoreModel::OpenBlock)
-              end
+              transform_with_admonition_check(block, Coradoc::CoreModel::OpenBlock)
             end
 
             VERBATILE_CAST_STYLES = %w[source listing literal].freeze
 
-            def open_block_semantic(block)
+            # Resolve a delimited block's cast from its first positional
+            # attribute. Single source of truth for the cast ladder used
+            # by every block-form transformer (example/sidebar/quote/open).
+            # Returns one of: :admonition, :stem, :source, :listing,
+            # :literal, or nil (no cast — use the block's native class).
+            def block_cast_semantic(block)
               style = first_positional_attr(block)
               return nil unless style
 
-              case style.to_s.downcase
-              when *VERBATILE_CAST_STYLES then :"#{style.downcase}"
-              else :admonition if AdmonitionStyles.admonition?(style)
-              end
+              style_str = style.to_s.downcase
+              return :admonition if AdmonitionStyles.admonition?(style)
+              return :stem if STEM_STYLES.key?(style_str)
+              return style_str.to_sym if VERBATILE_CAST_STYLES.include?(style_str)
+
+              nil
             end
 
             # Returns the first positional attribute on the block's
@@ -148,10 +154,14 @@ module Coradoc
             # (example / sidebar / quote / pass / open). Builds an
             # AnnotationBlock with annotation_type set from the style and
             # the block's body lines joined into a single content string.
+            # Type is canonicalised via AdmonitionStyles so every code path
+            # (line admonition, block admonition, attribute-cast admonition)
+            # produces the same uppercase key.
             def transform_admonition_block(block, type)
+              canonical = AdmonitionStyles.canonicalize(type) || type.to_s
               content_lines = Array(block.lines).map { |line| ToCoreModel.extract_text_content(line) }.join("\n")
               Coradoc::CoreModel::AnnotationBlock.new(
-                annotation_type: type.to_s.downcase,
+                annotation_type: canonical,
                 content: content_lines,
                 title: ToCoreModel.extract_title_text(block.title)
               )

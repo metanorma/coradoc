@@ -149,8 +149,13 @@ module Coradoc
         end
 
         def dlist_definition
-          text
-            .as(:definition) >> line_ending >> empty_line.repeat(0)
+          # AsciiDoc convention: the definition body is indented relative
+          # to the term. That leading whitespace is structural (marks
+          # the line as a continuation of the dlist item), not content.
+          # Consume it without capturing so downstream CoreModel text
+          # doesn't carry the source indentation into HTML/Markdown.
+          (match('[ \t]').repeat(0) >> text.as(:definition)) >>
+            line_ending >> empty_line.repeat(0)
         end
 
         def dlist_item(_delimiter = nil)

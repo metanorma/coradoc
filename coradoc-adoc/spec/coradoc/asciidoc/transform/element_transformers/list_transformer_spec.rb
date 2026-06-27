@@ -51,9 +51,9 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::ListTransforme
 
       outer_item = result.items[0]
       expect(outer_item.content).to eq('Outer')
-      expect(outer_item.children.last).to be_a(Coradoc::CoreModel::ListBlock)
-      expect(outer_item.children.last.marker_type).to eq('unordered')
-      expect(outer_item.children.last.items[0].content).to eq('Nested')
+      expect(outer_item.nested_list).to be_a(Coradoc::CoreModel::ListBlock)
+      expect(outer_item.nested_list.marker_type).to eq('unordered')
+      expect(outer_item.nested_list.items[0].content).to eq('Nested')
     end
 
     it 'transforms a list item with inline markup' do

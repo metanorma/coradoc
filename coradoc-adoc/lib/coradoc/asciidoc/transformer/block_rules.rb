@@ -37,12 +37,15 @@ module Coradoc
               Model::Block::Example.new(title: '', lines: example)
             end
 
-            # Admonition
+            # Admonition. Canonicalise the type to uppercase so round-trips
+            # through HTML/Markdown/DocBook all see the same key used by
+            # icon and CSS-class lookups.
             rule(
               admonition_type: simple(:admonition_type),
               content: sequence(:content)
             ) do
-              Model::Admonition.new(content: content, type: admonition_type.to_s)
+              canonical = Coradoc::AsciiDoc::Transform::ElementTransformers::AdmonitionStyles.canonicalize(admonition_type.to_s)
+              Model::Admonition.new(content: content, type: canonical)
             end
 
             # Block image

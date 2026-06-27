@@ -20,10 +20,22 @@ module Coradoc
           cell_opts = {}
           style = parse_format(format, cell_opts)
 
-          unescaped_content = content.to_s.gsub(/\\([|!,:;])/, '\1')
+          unescaped_content = cell_content_to_string(content).gsub(/\\([|!,:;])/, '\1')
           cell_opts[:content] = parse_inline_content(unescaped_content, style)
 
           Model::TableCell.new(**cell_opts)
+        end
+
+        # Coerce the parser-supplied cell content into a plain String.
+        # The cell parser emits `text:` as either a single Parslet::Slice
+        # or an Array of slices (from `.repeat(0)`). An empty Array must
+        # map to "" — Ruby's `[].to_s` returns "[]", which previously
+        # leaked into TableCell content as a phantom "[]" cell.
+        def cell_content_to_string(content)
+          return '' if content.nil?
+          return content.map(&:to_s).join if content.is_a?(Array)
+
+          content.to_s
         end
 
         # Coerce a raw parser cell value into a TableCell.

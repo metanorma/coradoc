@@ -120,18 +120,36 @@ module Coradoc
           (str('image:').present? >> str('image:') >>
             str(':').absent? >>
             match('[A-Za-z0-9_.\\-:/&?=+,%#~;]+').repeat(1).as(:path) >>
-            (str('[') >> match('[^\\]]').repeat(1).as(:text) >> str(']')).maybe
+            attribute_list(:attribute_list).maybe
           ).as(:inline_image)
         end
 
         # Triple-plus inline passthrough: `+++raw content+++`. The content
         # passes through all substitutions verbatim. Common use is to embed
         # raw HTML in AsciiDoc documents.
-        def inline_passthrough
+        def inline_passthrough_triple_plus
           (str('+++') >>
             (str('+++').absent? >> match('[^\n]')).repeat(1).as(:raw) >>
             str('+++')
           ).as(:inline_passthrough)
+        end
+
+        # `pass:[raw]` macro form. Equivalent semantic to triple-plus:
+        # the bracket payload survives all substitutions verbatim. Common
+        # use is inside monospace spans to keep characters like `<` from
+        # being re-interpreted as xref markers. The optional `subs` segment
+        # (`pass:quotes[...]`) is consumed but currently ignored — the
+        # payload is always passed through raw.
+        def inline_passthrough_macro
+          (str('pass:').present? >> str('pass:') >>
+            match('[a-zA-Z,+]').repeat(0) >>
+            str('[') >> (str(']]').absent? >> match('[^\]\n]')).repeat(1).as(:raw) >>
+            str(']')
+          ).as(:inline_passthrough)
+        end
+
+        def inline_passthrough
+          inline_passthrough_triple_plus | inline_passthrough_macro
         end
 
         def underline
@@ -157,10 +175,26 @@ module Coradoc
             str('link:').present? |
             str('image:').present? |
             str('+++').present? |
+            str('pass:').present? |
             term_type.present? |
             str('footnote').present? |
             stem_type.present? |
-            str('\\<<').present?
+            str('\\<<').present? |
+            hard_line_break_marker?
+        end
+
+        # AsciiDoc hard line break: a space followed by `+` at end of line,
+        # or a backslash at end of line. Both forms render as `<br>` inside
+        # the enclosing paragraph/verse. Recognised ahead of `text_unformatted`
+        # so the marker isn't swallowed as plain text.
+        def hard_line_break_marker?
+          (str(' +') >> str("\n")).present? |
+            (str('\\') >> str("\n")).present?
+        end
+
+        def hard_line_break
+          ((str(' +') >> str("\n")) |
+             (str('\\') >> str("\n"))).as(:hard_line_break)
         end
 
         def inline
@@ -187,7 +221,8 @@ module Coradoc
             inline_image |
             inline_passthrough |
             underline |
-            small
+            small |
+            hard_line_break
         end
 
         def text_unformatted
