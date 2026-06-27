@@ -17,6 +17,7 @@ module Coradoc
           autoload :Italic, 'coradoc/asciidoc/serializer/serializers/inline/italic'
           autoload :Link, 'coradoc/asciidoc/serializer/serializers/inline/link'
           autoload :Monospace, 'coradoc/asciidoc/serializer/serializers/inline/monospace'
+          autoload :Passthrough, 'coradoc/asciidoc/serializer/serializers/inline/passthrough'
           autoload :Quotation, 'coradoc/asciidoc/serializer/serializers/inline/quotation'
           autoload :Small, 'coradoc/asciidoc/serializer/serializers/inline/small'
           autoload :Span, 'coradoc/asciidoc/serializer/serializers/inline/span'

@@ -2,7 +2,6 @@
 
 require 'bundler/setup'
 require 'coradoc'
-require 'coradoc/input'
 require 'coradoc/asciidoc'
 require 'coradoc/html'
 require 'coradoc/markdown'

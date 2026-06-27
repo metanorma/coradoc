@@ -3,9 +3,9 @@
 require 'spec_helper'
 require 'nokogiri'
 
-RSpec.describe Coradoc::Input::Html::Converters do
+RSpec.describe Coradoc::Html::Converters do
   describe 'Converter::Td' do
-    let(:converter) { Coradoc::Input::Html::Converters::Td.new }
+    let(:converter) { Coradoc::Html::Converters::Td.new }
 
     describe '#to_coradoc' do
       it 'creates a TableCell from a td element with text content' do
@@ -122,7 +122,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Text' do
-    let(:converter) { Coradoc::Input::Html::Converters::Text.new }
+    let(:converter) { Coradoc::Html::Converters::Text.new }
 
     describe '#to_coradoc' do
       it 'creates a TextElement from a text node with content' do
@@ -227,7 +227,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Tr' do
-    let(:converter) { Coradoc::Input::Html::Converters::Tr.new }
+    let(:converter) { Coradoc::Html::Converters::Tr.new }
 
     describe '#to_coradoc' do
       it 'creates a TableRow from a tr element with td children' do

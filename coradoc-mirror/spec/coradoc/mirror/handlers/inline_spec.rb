@@ -73,5 +73,43 @@ RSpec.describe Coradoc::Mirror::Handlers::Inline do
       expect(node.text).to eq('italic text')
       expect(node.marks.first.type).to eq('emphasis')
     end
+
+    it 'dispatches RawInlineElement to a typed raw_inline node' do
+      raw = Coradoc::CoreModel::RawInlineElement.new(
+        content: '<abbr title="x">WYSIWYM</abbr>'
+      )
+      node = described_class.call(raw, context: context)
+
+      expect(node).to be_a(Coradoc::Mirror::Node::RawInline)
+      expect(node.type).to eq('raw_inline')
+      expect(node.text).to eq('<abbr title="x">WYSIWYM</abbr>')
+    end
+
+    it 'returns nil for empty raw content' do
+      raw = Coradoc::CoreModel::RawInlineElement.new(content: '')
+      node = described_class.call(raw, context: context)
+      expect(node).to be_nil
+    end
+  end
+
+  describe 'round-trip raw_inline' do
+    it 'mirror_json → CoreModel → mirror_json preserves the typed node' do
+      original = Coradoc::CoreModel::ParagraphBlock.new(
+        children: [Coradoc::CoreModel::RawInlineElement.new(content: '<b>x</b>')]
+      )
+      json1 = Coradoc.serialize(original, to: :mirror_json)
+
+      node = Coradoc::Mirror.from_hash(JSON.parse(json1))
+      document = Coradoc::Mirror::MirrorToCoreModel.new.call(node)
+
+      raw = Array(document.children).find do |child|
+        child.is_a?(Coradoc::CoreModel::RawInlineElement)
+      end
+      expect(raw).not_to be_nil
+      expect(raw.content).to eq('<b>x</b>')
+
+      json2 = Coradoc.serialize(document, to: :mirror_json)
+      expect(json2).to eq(json1)
+    end
   end
 end

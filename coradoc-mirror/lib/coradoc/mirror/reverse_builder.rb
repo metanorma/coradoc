@@ -89,6 +89,7 @@ module Coradoc
       require_relative 'reverse_builder/toc'
       require_relative 'reverse_builder/toc_entry'
       require_relative 'reverse_builder/text'
+      require_relative 'reverse_builder/raw_inline'
       require_relative 'reverse_builder/soft_break'
       require_relative 'reverse_builder/generic_block'
     end

@@ -12,10 +12,35 @@ module Coradoc
   end
 end
 
-# Load HTML input module to register with Coradoc::Input
-require_relative 'html/input'
-# Load HTML output module to register with Coradoc::Output
-require_relative 'html/output'
+module Coradoc
+  module Html
+    autoload :InputConfig, 'coradoc/html/input_config'
+    autoload :Cleaner, 'coradoc/html/cleaner'
+    autoload :Errors, 'coradoc/html/errors'
+    autoload :Plugin, 'coradoc/html/plugin'
+    autoload :Postprocessor, 'coradoc/html/postprocessor'
+    autoload :Converters, 'coradoc/html/converters'
+    autoload :HtmlConverter, 'coradoc/html/html_converter'
+
+    def self.input_config
+      @input_config ||= InputConfig.new
+      yield @input_config if block_given?
+      @input_config
+    end
+
+    def self.reset_input_config!
+      @input_config = nil
+    end
+
+    def self.cleaner
+      @cleaner ||= Cleaner.new
+    end
+
+    def self.to_coradoc(html, options = {})
+      HtmlConverter.to_core_model(html, options)
+    end
+  end
+end
 
 module Coradoc
   module Html
@@ -77,7 +102,7 @@ module Coradoc
 
     # Parse HTML content and return CoreModel elements (may be an Array)
     def self.parse(html, options = {})
-      ::Coradoc::Input::Html.to_coradoc(html, options)
+      HtmlConverter.to_core_model(html, options)
     end
 
     # Parse HTML content directly into a CoreModel document

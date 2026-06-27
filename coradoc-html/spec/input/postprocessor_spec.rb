@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Coradoc::Input::Html::Postprocessor do
+RSpec.describe Coradoc::Html::Postprocessor do
   describe '.process' do
     it 'returns the tree unchanged' do
       tree = [CoreModel::Block.new(block_semantic_type: :paragraph, content: 'test')]

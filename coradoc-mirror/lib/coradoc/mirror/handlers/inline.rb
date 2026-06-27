@@ -106,6 +106,8 @@ module Coradoc
               Node::SoftBreak.new
             when CoreModel::TextElement
               build_text_only(element, context)
+            when CoreModel::RawInlineElement
+              build_raw_inline(element, context)
             when CoreModel::InlineElement
               handle_generic_inline(element, context)
             end
@@ -187,6 +189,18 @@ module Coradoc
             return nil if text.empty?
 
             context.text_node(text)
+          end
+
+          # Passthrough content carries its own raw output-format markup
+          # (HTML, XML, etc.). Emit a typed RawInline node so renderers
+          # can skip escaping unambiguously — never a plain text node,
+          # which would force every downstream consumer to choose between
+          # XSS risk and visible literal markup.
+          def build_raw_inline(element, _context)
+            text = element.content.to_s
+            return nil if text.empty?
+
+            Node::RawInline.new(text: text)
           end
 
           def extract_inline_text(element)

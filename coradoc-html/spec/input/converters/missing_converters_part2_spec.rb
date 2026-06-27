@@ -3,9 +3,9 @@
 require 'spec_helper'
 require 'nokogiri'
 
-RSpec.describe Coradoc::Input::Html::Converters do
+RSpec.describe Coradoc::Html::Converters do
   describe 'Converter::Li' do
-    let(:converter) { Coradoc::Input::Html::Converters::Li.new }
+    let(:converter) { Coradoc::Html::Converters::Li.new }
 
     describe '#to_coradoc' do
       it 'creates a ListItem from an li element with text content' do
@@ -75,7 +75,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Mark' do
-    let(:converter) { Coradoc::Input::Html::Converters::Mark.new }
+    let(:converter) { Coradoc::Html::Converters::Mark.new }
 
     describe '#to_coradoc' do
       it 'creates a HighlightElement from a mark element with text' do
@@ -129,7 +129,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::PassThrough' do
-    let(:converter) { Coradoc::Input::Html::Converters::PassThrough.new }
+    let(:converter) { Coradoc::Html::Converters::PassThrough.new }
 
     describe '#to_coradoc' do
       it 'returns the raw HTML string for an element' do
@@ -176,7 +176,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Sub' do
-    let(:converter) { Coradoc::Input::Html::Converters::Sub.new }
+    let(:converter) { Coradoc::Html::Converters::Sub.new }
 
     describe '#to_coradoc' do
       it 'creates a SubscriptElement from a sub element with text' do
@@ -242,7 +242,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Sup' do
-    let(:converter) { Coradoc::Input::Html::Converters::Sup.new }
+    let(:converter) { Coradoc::Html::Converters::Sup.new }
 
     describe '#to_coradoc' do
       it 'creates a SuperscriptElement from a sup element with text' do

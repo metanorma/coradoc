@@ -20,18 +20,13 @@
 #
 # @example Manipulating documents
 #   doc = Coradoc.parse(text, format: :asciidoc)
-#   html = Coradoc.manipulate(doc)
-#              .transform_text(&:upcase)
-#              .add_toc
-#              .to_html
+#   html = Coradoc.serialize(doc, to: :html)
 #
 # @example Building documents programmatically
-#   doc = Coradoc.build do
-#     title "My Document"
-#     section "Intro" do
-#       paragraph "Hello world"
-#     end
-#   end.to_core
+#   doc = Coradoc.build do |d|
+#     d.title = "My Document"
+#     d.children << Coradoc::CoreModel::ParagraphBlock.new(content: "Hello")
+#   end
 #   Coradoc.serialize(doc, to: :html)
 
 require_relative 'coradoc/coradoc'
@@ -39,10 +34,7 @@ require_relative 'coradoc/version'
 
 module Coradoc
   autoload :CLI, 'coradoc/cli'
-  autoload :DocumentBuilder, 'coradoc/document_builder'
-  autoload :DocumentManipulator, 'coradoc/document_manipulator'
   autoload :Visitor, 'coradoc/visitor'
-  autoload :Serializer, 'coradoc/serializer/registry'
   autoload :LinkRewriter, 'coradoc/link_rewriter'
   autoload :RelativePath, 'coradoc/relative_path'
 end

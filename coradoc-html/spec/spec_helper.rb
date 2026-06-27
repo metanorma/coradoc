@@ -49,13 +49,7 @@ RSpec.configure do |config|
 
   # Clean up after each test
   config.after do
-    if defined?(Coradoc::Input::Html)
-      begin
-        Coradoc::Input::Html.instance_variable_set(:@config, nil)
-      rescue StandardError
-        nil
-      end
-    end
+    Coradoc::Html.reset_input_config!
   end
 end
 

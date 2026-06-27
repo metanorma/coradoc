@@ -12,6 +12,8 @@
 <br>
 {% elsif element.format_type == "span" %}
 <span{% if element.css_class %} class="{{ element.css_class }}"{% endif %}>{{ element.text }}</span>
+{% elsif element.format_type == "raw_inline" %}
+{{ element.text }}
 {% elsif element.html_tag %}
 <{{ element.html_tag }}>{{ element.text }}</{{ element.html_tag }}>
 {% else %}

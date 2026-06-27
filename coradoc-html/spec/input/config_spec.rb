@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'nokogiri'
 
-RSpec.describe Coradoc::Input::Html::Config do
+RSpec.describe Coradoc::Html::InputConfig do
   let(:config) { described_class.new }
 
   describe '#with' do

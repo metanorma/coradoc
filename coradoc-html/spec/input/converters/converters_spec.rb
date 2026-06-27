@@ -4,7 +4,7 @@ require 'spec_helper'
 require 'nokogiri'
 require 'coradoc/html'
 
-RSpec.describe Coradoc::Input::Html::Converters do
+RSpec.describe Coradoc::Html::Converters do
   let(:converter_module) { described_class }
 
   # Helper to map model names to CoreModel classes
@@ -103,14 +103,14 @@ RSpec.describe Coradoc::Input::Html::Converters do
 
   describe '.register' do
     it 'registers converters for HTML elements' do
-      expect(converter_module.lookup(:p)).to be_a(Coradoc::Input::Html::Converters::P)
-      expect(converter_module.lookup(:h1)).to be_a(Coradoc::Input::Html::Converters::H)
-      expect(converter_module.lookup(:div)).to be_a(Coradoc::Input::Html::Converters::Div)
+      expect(converter_module.lookup(:p)).to be_a(Coradoc::Html::Converters::P)
+      expect(converter_module.lookup(:h1)).to be_a(Coradoc::Html::Converters::H)
+      expect(converter_module.lookup(:div)).to be_a(Coradoc::Html::Converters::Div)
     end
   end
 
   describe 'Converter::P' do
-    let(:converter) { Coradoc::Input::Html::Converters::P.new }
+    let(:converter) { Coradoc::Html::Converters::P.new }
 
     describe '#to_coradoc' do
       it 'creates a Block from p element' do
@@ -137,7 +137,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::H' do
-    let(:converter) { Coradoc::Input::Html::Converters::H.new }
+    let(:converter) { Coradoc::Html::Converters::H.new }
 
     describe '#to_coradoc' do
       it 'creates a StructuralElement from heading element' do
@@ -153,7 +153,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Strong' do
-    let(:converter) { Coradoc::Input::Html::Converters::Strong.new }
+    let(:converter) { Coradoc::Html::Converters::Strong.new }
 
     describe '#to_coradoc' do
       it 'converts strong to bold InlineElement' do
@@ -171,7 +171,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Em' do
-    let(:converter) { Coradoc::Input::Html::Converters::Em.new }
+    let(:converter) { Coradoc::Html::Converters::Em.new }
 
     describe '#to_coradoc' do
       it 'converts em to italic InlineElement' do
@@ -188,7 +188,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Code' do
-    let(:converter) { Coradoc::Input::Html::Converters::Code.new }
+    let(:converter) { Coradoc::Html::Converters::Code.new }
 
     describe '#to_coradoc' do
       it 'converts code to monospace InlineElement' do
@@ -205,7 +205,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::A' do
-    let(:converter) { Coradoc::Input::Html::Converters::A.new }
+    let(:converter) { Coradoc::Html::Converters::A.new }
 
     describe '#to_coradoc' do
       it 'converts anchor with href to link' do
@@ -237,7 +237,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Ul' do
-    let(:converter) { Coradoc::Input::Html::Converters::Ol.new }
+    let(:converter) { Coradoc::Html::Converters::Ol.new }
 
     describe '#to_coradoc' do
       it 'converts ul to unordered list' do
@@ -254,7 +254,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Ol' do
-    let(:converter) { Coradoc::Input::Html::Converters::Ol.new }
+    let(:converter) { Coradoc::Html::Converters::Ol.new }
 
     describe '#to_coradoc' do
       it 'converts ol to ordered list' do
@@ -270,7 +270,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Table' do
-    let(:converter) { Coradoc::Input::Html::Converters::Table.new }
+    let(:converter) { Coradoc::Html::Converters::Table.new }
 
     describe '#to_coradoc' do
       it 'converts table to Table model' do
@@ -368,7 +368,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Blockquote' do
-    let(:converter) { Coradoc::Input::Html::Converters::Blockquote.new }
+    let(:converter) { Coradoc::Html::Converters::Blockquote.new }
 
     describe '#to_coradoc' do
       it 'converts blockquote to Quote block' do
@@ -384,7 +384,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Pre' do
-    let(:converter) { Coradoc::Input::Html::Converters::Pre.new }
+    let(:converter) { Coradoc::Html::Converters::Pre.new }
 
     describe '#to_coradoc' do
       it 'converts pre to listing block' do
@@ -400,7 +400,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Hr' do
-    let(:converter) { Coradoc::Input::Html::Converters::Hr.new }
+    let(:converter) { Coradoc::Html::Converters::Hr.new }
 
     describe '#to_coradoc' do
       it 'converts hr to break' do
@@ -416,7 +416,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Br' do
-    let(:converter) { Coradoc::Input::Html::Converters::Br.new }
+    let(:converter) { Coradoc::Html::Converters::Br.new }
 
     describe '#to_coradoc' do
       it 'converts br to line break' do
@@ -432,7 +432,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Q' do
-    let(:converter) { Coradoc::Input::Html::Converters::Q.new }
+    let(:converter) { Coradoc::Html::Converters::Q.new }
 
     describe '#to_coradoc' do
       it 'converts q to quote inline' do
@@ -448,7 +448,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Img' do
-    let(:converter) { Coradoc::Input::Html::Converters::Img.new }
+    let(:converter) { Coradoc::Html::Converters::Img.new }
 
     describe '#to_coradoc' do
       it 'converts img to Image' do
@@ -489,7 +489,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Div' do
-    let(:converter) { Coradoc::Input::Html::Converters::Div.new }
+    let(:converter) { Coradoc::Html::Converters::Div.new }
 
     describe '#to_coradoc' do
       it 'converts div to Block' do
@@ -505,7 +505,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Math' do
-    let(:converter) { Coradoc::Input::Html::Converters::Math.new }
+    let(:converter) { Coradoc::Html::Converters::Math.new }
 
     describe '#to_coradoc' do
       it 'converts math to StemElement' do
@@ -522,7 +522,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Audio' do
-    let(:converter) { Coradoc::Input::Html::Converters::Audio.new }
+    let(:converter) { Coradoc::Html::Converters::Audio.new }
 
     describe '#to_coradoc' do
       it 'converts audio to Block with audio semantic type' do
@@ -540,7 +540,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Video' do
-    let(:converter) { Coradoc::Input::Html::Converters::Video.new }
+    let(:converter) { Coradoc::Html::Converters::Video.new }
 
     describe '#to_coradoc' do
       it 'converts video to Block with video semantic type' do
@@ -559,11 +559,11 @@ RSpec.describe Coradoc::Input::Html::Converters do
 
   describe 'shared MediaBase behavior' do
     it 'Audio and Video share MediaBase superclass' do
-      expect(Coradoc::Input::Html::Converters::Audio.superclass).to eq(
-        Coradoc::Input::Html::Converters::MediaBase
+      expect(Coradoc::Html::Converters::Audio.superclass).to eq(
+        Coradoc::Html::Converters::MediaBase
       )
-      expect(Coradoc::Input::Html::Converters::Video.superclass).to eq(
-        Coradoc::Input::Html::Converters::MediaBase
+      expect(Coradoc::Html::Converters::Video.superclass).to eq(
+        Coradoc::Html::Converters::MediaBase
       )
     end
 
@@ -572,14 +572,14 @@ RSpec.describe Coradoc::Input::Html::Converters do
       doc = Nokogiri::HTML.fragment(html)
       node = doc.at('audio')
 
-      audio_converter = Coradoc::Input::Html::Converters::Audio.new
+      audio_converter = Coradoc::Html::Converters::Audio.new
       result = audio_converter.to_coradoc(node, {})
       expect(result.title).to eq('English')
     end
   end
 
   describe 'Converter::A content extraction' do
-    let(:converter) { Coradoc::Input::Html::Converters::A.new }
+    let(:converter) { Coradoc::Html::Converters::A.new }
 
     it 'extracts text from inline content for cross-references' do
       html = '<a href="#section1">Go to section</a>'
@@ -673,7 +673,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Base#node_has_ancestor?' do
-    let(:base) { Coradoc::Input::Html::Converters::Base.new }
+    let(:base) { Coradoc::Html::Converters::Base.new }
 
     it 'finds a string ancestor name' do
       html = '<div><p><strong>Bold</strong></p></div>'
@@ -704,13 +704,13 @@ RSpec.describe Coradoc::Input::Html::Converters do
 
   describe 'singleton converter instances' do
     it 'Bypass::INSTANCE is reused across registrations' do
-      instance = Coradoc::Input::Html::Converters::Bypass::INSTANCE
+      instance = Coradoc::Html::Converters::Bypass::INSTANCE
       converter = described_class.lookup(:span)
       expect(converter).to equal(instance)
     end
 
     it 'Skip::INSTANCE is reused across registrations' do
-      instance = Coradoc::Input::Html::Converters::Skip::INSTANCE
+      instance = Coradoc::Html::Converters::Skip::INSTANCE
       converter = described_class.lookup(:script)
       expect(converter).to equal(instance)
     end

@@ -25,7 +25,7 @@ module Coradoc
             when Coradoc::CoreModel::Base
               model
             when Nokogiri::XML::Document, Nokogiri::XML::Node
-              ::Coradoc::Input::Html::HtmlConverter.to_core_model(model)
+              ::Coradoc::Html::HtmlConverter.to_core_model(model)
             when Array
               model.map { |item| transform(item) }
             else

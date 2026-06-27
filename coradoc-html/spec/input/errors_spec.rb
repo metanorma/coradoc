@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Coradoc::Input::Html::Errors do
+RSpec.describe Coradoc::Html::Errors do
   describe 'Error' do
     it 'inherits from Coradoc::Error' do
       expect(described_class::Error).to be < Coradoc::Error
