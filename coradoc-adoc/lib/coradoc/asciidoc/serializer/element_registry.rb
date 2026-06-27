@@ -6,7 +6,7 @@ module Coradoc
       # Registry for mapping Coradoc model classes to their AsciiDoc serializers.
       # This is the authoritative source for model→serializer mappings.
       #
-      # Pattern mirrors Input::Html::Converters registry for symmetry.
+      # Pattern mirrors Html::Converters registry for symmetry.
       #
       # @example Registering a custom serializer
       #   ElementRegistry.override(Model::Paragraph, CustomParagraphSerializer)

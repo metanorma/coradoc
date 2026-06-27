@@ -166,6 +166,15 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
 
         expect(result).to be_a(Coradoc::AsciiDoc::Model::Inline::CrossReference)
       end
+
+      it 'transforms RawInlineElement to Inline::Passthrough' do
+        raw = Coradoc::CoreModel::RawInlineElement.new(content: '<abbr>WYSIWYM</abbr>')
+
+        result = transformer.transform(raw)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Inline::Passthrough)
+        expect(result.content).to eq('<abbr>WYSIWYM</abbr>')
+      end
     end
 
     context 'when transforming a footnote' do

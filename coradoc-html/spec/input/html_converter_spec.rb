@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'nokogiri'
 
-RSpec.describe Coradoc::Input::Html::HtmlConverter do
+RSpec.describe Coradoc::Html::HtmlConverter do
   describe '.to_core_model' do
     it 'converts a simple HTML string to CoreModel' do
       html = '<p>Hello World</p>'
@@ -64,7 +64,7 @@ RSpec.describe Coradoc::Input::Html::HtmlConverter do
     end
 
     it 'uses provided plugin_instances from options' do
-      plugin = Coradoc::Input::Html::Plugin.new
+      plugin = Coradoc::Html::Plugin.new
       instances = described_class.prepare_plugin_instances(plugin_instances: [plugin])
       expect(instances).to eq([plugin])
     end

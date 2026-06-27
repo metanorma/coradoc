@@ -162,6 +162,25 @@ module Coradoc
         end
       end
 
+      # Raw inline passthrough — content the source format marked as "do
+      # not process, emit verbatim." Distinct from `text` so renderers can
+      # skip escaping without sniffing content for `<...>`. AsciiDoc's
+      # `+++raw+++` is the canonical producer.
+      class RawInline < Node
+        PM_TYPE = 'raw_inline'
+
+        attribute :text, :string
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'text', to: :text
+        end
+
+        def text_content
+          text.to_s
+        end
+      end
+
       # ── Paragraph / block text ──
 
       class Paragraph < Node

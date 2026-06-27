@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'nokogiri'
 
-RSpec.describe Coradoc::Input::Html::Plugin do
+RSpec.describe Coradoc::Html::Plugin do
   let(:plugin_class) { described_class.new }
   let(:plugin) { plugin_class.new }
 

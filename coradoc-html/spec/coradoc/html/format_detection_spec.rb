@@ -33,21 +33,4 @@ RSpec.describe Coradoc::Html::FormatDetection do
       expect(detector.html_extension?('html_report.txt')).to be false
     end
   end
-
-  describe 'processor integration' do
-    it 'is used by Input::Html' do
-      expect(Coradoc::Input::Html.processor_match?('test.html')).to be true
-      expect(Coradoc::Input::Html.processor_match?('test.adoc')).to be false
-    end
-
-    it 'is used by Output::HtmlStatic' do
-      expect(Coradoc::Output::HtmlStatic.processor_match?('test.htm')).to be true
-      expect(Coradoc::Output::HtmlStatic.processor_match?('test.xml')).to be false
-    end
-
-    it 'is used by Output::HtmlSpa' do
-      expect(Coradoc::Output::HtmlSpa.processor_match?('test.HTML')).to be true
-      expect(Coradoc::Output::HtmlSpa.processor_match?('test.pdf')).to be false
-    end
-  end
 end

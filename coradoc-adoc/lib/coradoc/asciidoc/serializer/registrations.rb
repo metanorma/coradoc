@@ -77,6 +77,7 @@ module Coradoc
             Serializers::Inline::Italic
             Serializers::Inline::Link
             Serializers::Inline::Monospace
+            Serializers::Inline::Passthrough
             Serializers::Inline::Quotation
             Serializers::Inline::Small
             Serializers::Inline::Span

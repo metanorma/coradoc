@@ -253,18 +253,23 @@ module Coradoc
       Hooks.invoke(:after_serialize, result, format: to)
     end
 
-    # Create a DocumentManipulator for chainable operations
+    # Build a DocumentElement programmatically.
     #
-    # @param document [Coradoc::CoreModel::Base] the document to manipulate
-    # @return [DocumentManipulator] a new manipulator instance
+    # Yields a fresh +CoreModel::DocumentElement+ to the block for in-place
+    # mutation via +Base.build+. No parallel Builder hierarchy — the block
+    # operates on the real model object. Per-class fluent helpers
+    # (+ListBlock#add_item+, +ListItem#add_text+, etc.) compose naturally.
     #
-    # @example Chainable document manipulation
-    #   html = Coradoc.manipulate(doc)
-    #     .transform_text(&:upcase)
-    #     .add_toc
-    #     .to_html
-    def manipulate(document)
-      DocumentManipulator.new(document)
+    # @yieldparam document [Coradoc::CoreModel::DocumentElement]
+    # @return [Coradoc::CoreModel::DocumentElement]
+    #
+    # @example
+    #   doc = Coradoc.build do |d|
+    #     d.title = "My Document"
+    #     d.children << Coradoc::CoreModel::ParagraphBlock.new(content: "hi")
+    #   end
+    def build(&block)
+      CoreModel::DocumentElement.build(children: [], &block)
     end
 
     # Detect format from a file extension
@@ -538,7 +543,6 @@ module Coradoc
   autoload :Transform, "#{__dir__}/transform"
   autoload :Input, "#{__dir__}/input"
   autoload :Output, "#{__dir__}/output"
-  autoload :DocumentManipulator, "#{__dir__}/document_manipulator"
   autoload :Visitor, "#{__dir__}/visitor"
   autoload :PerformanceRegression, "#{__dir__}/performance_regression"
   autoload :IncludeResolver, "#{__dir__}/include_resolver"

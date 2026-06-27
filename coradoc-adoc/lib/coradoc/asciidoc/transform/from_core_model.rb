@@ -319,6 +319,8 @@ module Coradoc
                 type: inline.stem_type || 'latexmath',
                 content: inline.content
               )
+            when 'raw_inline'
+              Coradoc::AsciiDoc::Model::Inline::Passthrough.new(content: inline.content)
             else
               Coradoc::AsciiDoc::Model::TextElement.new(content: inline.content)
             end

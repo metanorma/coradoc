@@ -353,7 +353,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
 
     it 'transforms HTML to CoreModel' do
       # Parse HTML to AsciiDoc model
-      adoc_models = Coradoc::Input::Html.to_coradoc(html_content, {})
+      adoc_models = Coradoc::Html.to_coradoc(html_content, {})
 
       expect(adoc_models).not_to be_nil
       expect(adoc_models).to be_an(Array)
@@ -385,7 +385,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
       HTML
 
       # Step 1: Parse HTML to AsciiDoc model
-      html_models = Coradoc::Input::Html.to_coradoc(html_input, {})
+      html_models = Coradoc::Html.to_coradoc(html_input, {})
       expect(html_models).not_to be_nil
       expect(html_models).to be_an(Array)
 
@@ -721,7 +721,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
     end
 
     it 'transforms HTML to CoreModel to Markdown' do
-      html_models = Coradoc::Input::Html.to_coradoc(html_content, {})
+      html_models = Coradoc::Html.to_coradoc(html_content, {})
       expect(html_models).not_to be_nil
 
       core_doc = Coradoc::CoreModel::DocumentElement.new(
@@ -752,7 +752,7 @@ RSpec.describe 'Cross-Format Integration', type: :integration do
     it 'transforms HTML to CoreModel to DOCX model' do
       skip 'DOCX gem not loaded' unless defined?(Coradoc::Docx)
 
-      html_models = Coradoc::Input::Html.to_coradoc(html_content, {})
+      html_models = Coradoc::Html.to_coradoc(html_content, {})
       core_doc = Coradoc::CoreModel::DocumentElement.new(
         title: 'Title',
         children: html_models.map { |m| Coradoc::AsciiDoc::Transform::ToCoreModel.transform(m) }.compact

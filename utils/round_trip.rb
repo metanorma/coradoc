@@ -46,7 +46,7 @@ adoc_files.each do |file_path|
   doc = Coradoc::Transformer.transform(ast[:document])
   puts 'generating...'
   generated_adoc = Coradoc::Generator.gen_adoc(doc)
-  cleaned_adoc = Coradoc::Input::HTML.cleaner.tidy(generated_adoc)
+  cleaned_adoc = Coradoc::Html.cleaner.tidy(generated_adoc)
   File.write("#{file_path}.roundtrip", cleaned_adoc)
   `diff -B #{file_path} #{file_path}.roundtrip > #{file_path}.roundtrip.diff`
   # rescue

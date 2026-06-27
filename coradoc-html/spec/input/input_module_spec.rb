@@ -2,45 +2,32 @@
 
 require 'spec_helper'
 
-RSpec.describe Coradoc::Input::Html do
-  describe '.config' do
-    it 'returns a Config instance' do
-      expect(described_class.config).to be_a(Coradoc::Input::Html::Config)
+RSpec.describe Coradoc::Html do
+  describe '.input_config' do
+    it 'returns an InputConfig instance' do
+      expect(described_class.input_config).to be_a(Coradoc::Html::InputConfig)
     end
 
     it 'yields config when block given' do
-      described_class.config do |c|
-        expect(c).to be_a(Coradoc::Input::Html::Config)
+      described_class.input_config do |c|
+        expect(c).to be_a(Coradoc::Html::InputConfig)
       end
     end
-  end
 
-  describe '.processor_id' do
-    it 'returns :html' do
-      expect(described_class.processor_id).to eq(:html)
+    it 'caches the same instance across calls' do
+      expect(described_class.input_config).to equal(described_class.input_config)
+    end
+
+    it 'reset_input_config! clears the cache' do
+      first = described_class.input_config
+      described_class.reset_input_config!
+      expect(described_class.input_config).not_to equal(first)
     end
   end
 
-  describe '.processor_match?' do
-    it 'matches .html files' do
-      expect(described_class.processor_match?('doc.html')).to be true
-    end
-
-    it 'matches .htm files' do
-      expect(described_class.processor_match?('doc.htm')).to be true
-    end
-
-    it 'does not match other extensions' do
-      expect(described_class.processor_match?('doc.md')).to be false
-    end
-  end
-
-  describe '.processor_execute' do
-    it 'converts HTML to CoreModel elements' do
-      html = '<p>Hello</p>'
-      result = described_class.processor_execute(html, {})
-      expect(result).to be_a(Array)
-      expect(result.first).to be_a(Coradoc::CoreModel::Base)
+  describe '.cleaner' do
+    it 'returns a Cleaner instance' do
+      expect(described_class.cleaner).to be_a(Coradoc::Html::Cleaner)
     end
   end
 
@@ -49,15 +36,6 @@ RSpec.describe Coradoc::Input::Html do
       html = '<h1>Title</h1><p>Content</p>'
       result = described_class.to_coradoc(html)
       expect(result).to be_a(Array)
-    end
-  end
-
-  describe '.clean_output' do
-    it 'cleans up extra whitespace' do
-      input = "Hello\n\n\n\nWorld"
-      result = described_class.clean_output(input, {})
-
-      expect(result).not_to include("\n\n\n")
     end
   end
 end

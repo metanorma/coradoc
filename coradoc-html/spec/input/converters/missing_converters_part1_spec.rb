@@ -3,9 +3,9 @@
 require 'spec_helper'
 require 'nokogiri'
 
-RSpec.describe Coradoc::Input::Html::Converters do
+RSpec.describe Coradoc::Html::Converters do
   describe 'Converter::Aside' do
-    let(:converter) { Coradoc::Input::Html::Converters::Aside.new }
+    let(:converter) { Coradoc::Html::Converters::Aside.new }
 
     describe '#to_coradoc' do
       it 'creates a SidebarBlock from an aside element' do
@@ -54,7 +54,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Dl' do
-    let(:converter) { Coradoc::Input::Html::Converters::Dl.new }
+    let(:converter) { Coradoc::Html::Converters::Dl.new }
 
     describe '#to_coradoc' do
       it 'creates a ListBlock with definition marker_type from a dl element' do
@@ -141,7 +141,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Figure' do
-    let(:converter) { Coradoc::Input::Html::Converters::Figure.new }
+    let(:converter) { Coradoc::Html::Converters::Figure.new }
 
     describe '#to_coradoc' do
       it 'creates an ExampleBlock from a figure element' do
@@ -209,7 +209,7 @@ RSpec.describe Coradoc::Input::Html::Converters do
   end
 
   describe 'Converter::Head' do
-    let(:converter) { Coradoc::Input::Html::Converters::Head.new }
+    let(:converter) { Coradoc::Html::Converters::Head.new }
 
     # Helper: Nokogiri::HTML.fragment drops <head> since it's a structural
     # element, so we parse a full document and extract the <head> node.

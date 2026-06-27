@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Coradoc::Input::Html::Cleaner do
+RSpec.describe Coradoc::Html::Cleaner do
   let(:cleaner) { described_class.new }
 
   describe '#tidy' do
