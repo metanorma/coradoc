@@ -23,45 +23,21 @@ module Coradoc
         def strip_fullwidth_spaces(content)
           return content unless content.is_a?(Array)
 
-          content.each do |item|
-            next unless item.is_a?(Coradoc::CoreModel::InlineElement)
-            next unless item.content.is_a?(String)
-
-            item.content = item.content.gsub(/\A　+|　+\z/, '')
-          end
-
-          strip_edge_whitespace(content)
+          content = strip_fullwidth_per_element(content)
+          content = Coradoc::CoreModel::InlineContent.strip_edges(content)
           reject_empty_elements(content)
         end
 
-        def strip_edge_whitespace(content)
-          first = content.find { |item| text_element?(item) }
-          strip_left(first) if first
+        # Strip CJK fullwidth spaces from the leading/trailing edge of
+        # every InlineElement's content. Returns a new array; inputs
+        # are not mutated.
+        def strip_fullwidth_per_element(content)
+          content.map do |item|
+            next item unless item.is_a?(Coradoc::CoreModel::InlineElement)
+            next item unless item.content.is_a?(String)
 
-          last = content.reverse.find { |item| text_element?(item) }
-          strip_right(last) if last
-        end
-
-        def strip_left(item)
-          case item
-          when Coradoc::CoreModel::InlineElement
-            item.content = item.content.lstrip if item.content.is_a?(String)
-          when String
-            item.replace(item.lstrip)
+            item.with_content(item.content.gsub(/\A　+|　+\z/, ''))
           end
-        end
-
-        def strip_right(item)
-          case item
-          when Coradoc::CoreModel::InlineElement
-            item.content = item.content.rstrip if item.content.is_a?(String)
-          when String
-            item.replace(item.rstrip)
-          end
-        end
-
-        def text_element?(item)
-          item.is_a?(Coradoc::CoreModel::InlineElement) || item.is_a?(String)
         end
 
         def reject_empty_elements(content)

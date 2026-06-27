@@ -10,8 +10,6 @@ module Coradoc
       # This transformer converts CoreModel to HTML strings by delegating
       # to the existing theme/renderer pipeline.
       class FromCoreModel
-        include Coradoc::Transform::Base
-
         class << self
           # Transform a CoreModel to HTML string
           #
@@ -29,6 +27,8 @@ module Coradoc
             end
           end
         end
+
+        def transform(model, options = {}) = self.class.transform(model, options)
       end
     end
   end

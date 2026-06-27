@@ -83,7 +83,9 @@ module Coradoc
       ELEMENT_CSS_CLASS = {
         example: 'example',
         sidebar: 'sidebar',
-        literal: 'literal'
+        literal: 'literal',
+        stem: 'stem',
+        term: 'term'
       }.freeze
 
       def self.tag_for(element_type)

@@ -86,29 +86,11 @@ module Coradoc
             after.text[0]&.match?(/\w|,|;|"|\.\?!/)
         end
 
-        # Extract plain text from a mixed content array.
-        # Handles String, InlineElement (via .content), and other
-        # CoreModel::Base (via .content or .title).
+        # Extract plain text from a mixed content array. Delegates to
+        # CoreModel::InlineContent.text_of — single source of truth for
+        # nil/Array/InlineElement/StructuralElement handling.
         def extract_text_from_content(content)
-          return content if content.is_a?(String)
-          return '' if content.nil?
-
-          content.map do |item|
-            case item
-            when String
-              item
-            when Coradoc::CoreModel::InlineElement
-              item.content.to_s
-            when Coradoc::CoreModel::Base
-              if item.content
-                item.content.to_s
-              else
-                ''
-              end
-            else
-              item.to_s
-            end
-          end.join
+          Coradoc::CoreModel::InlineContent.text_of(content)
         end
       end
     end

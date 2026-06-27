@@ -27,11 +27,9 @@ module Coradoc
         end
 
         def css_class
-          case format_type
-          when 'stem' then 'stem'
-          when 'term' then 'term'
-          when 'span' then @model.metadata('class')
-          end
+          return @model.metadata('class') if format_type == 'span'
+
+          TagMapping.css_class_for(format_type)
         end
 
         def term_ref

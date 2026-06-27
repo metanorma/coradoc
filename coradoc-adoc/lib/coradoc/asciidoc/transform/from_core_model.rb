@@ -5,8 +5,6 @@ module Coradoc
     module Transform
       # Transforms CoreModel to AsciiDoc models
       class FromCoreModel
-        include Coradoc::Transform::Base
-
         @registered = false
 
         class << self
@@ -569,6 +567,8 @@ module Coradoc
             end
           end
         end
+
+        def transform(model) = self.class.transform(model)
       end
     end
   end

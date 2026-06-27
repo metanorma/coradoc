@@ -24,6 +24,13 @@ module Coradoc
         self.class.format_type || format_type
       end
 
+      # Return a duplicate of this element with its content replaced.
+      # Used by InlineContent.strip_edges (and other edge-cleanup
+      # callers) so that mutations never leak through the public API.
+      def with_content(new_content)
+        dup.tap { |copy| copy.content = new_content }
+      end
+
       # Polymorphic classification used by LinkRewriter::Visitor. Returns
       # :link / :xref when this node carries a rewrite-able target, nil
       # otherwise. Generic InlineElement instances defer to their
@@ -35,14 +42,6 @@ module Coradoc
         when 'xref' then :xref
         end
       end
-
-      FORMAT_TYPES = %w[
-        bold italic monospace underline strikethrough
-        subscript superscript highlight
-        link xref stem footnote
-        hard_line_break text span term
-        line_break quotation
-      ].freeze
 
       attribute :format_type, :string
       attribute :content, :string
@@ -169,24 +168,31 @@ module Coradoc
       end
     end
 
-    FORMAT_TYPE_CLASS_MAP = {
-      'bold' => BoldElement,
-      'italic' => ItalicElement,
-      'monospace' => MonospaceElement,
-      'underline' => UnderlineElement,
-      'strikethrough' => StrikethroughElement,
-      'subscript' => SubscriptElement,
-      'superscript' => SuperscriptElement,
-      'highlight' => HighlightElement,
-      'link' => LinkElement,
-      'xref' => CrossReferenceElement,
-      'stem' => StemElement,
-      'footnote' => FootnoteElement,
-      'hard_line_break' => HardLineBreakElement,
-      'text' => TextElement,
-      'span' => SpanElement,
-      'term' => TermElement,
-      'line_break' => LineBreakElement
-    }.freeze
+    # Wire-name table: bidirectional string ↔ class index. Single source
+    # of truth for serialization names and runtime dispatch. Reopened
+    # onto InlineElement so the subclasses above are defined first.
+    class InlineElement
+      FORMAT_TYPE_CLASS_MAP = {
+        'bold' => BoldElement,
+        'italic' => ItalicElement,
+        'monospace' => MonospaceElement,
+        'underline' => UnderlineElement,
+        'strikethrough' => StrikethroughElement,
+        'subscript' => SubscriptElement,
+        'superscript' => SuperscriptElement,
+        'highlight' => HighlightElement,
+        'link' => LinkElement,
+        'xref' => CrossReferenceElement,
+        'stem' => StemElement,
+        'footnote' => FootnoteElement,
+        'hard_line_break' => HardLineBreakElement,
+        'text' => TextElement,
+        'span' => SpanElement,
+        'term' => TermElement,
+        'line_break' => LineBreakElement
+      }.freeze
+
+      FORMAT_TYPES = FORMAT_TYPE_CLASS_MAP.keys.freeze
+    end
   end
 end

@@ -115,5 +115,9 @@ RSpec.describe Coradoc::CoreModel::InlineElement do
     it 'is frozen' do
       expect(described_class::FORMAT_TYPES).to be_frozen
     end
+
+    it 'is derived from FORMAT_TYPE_CLASS_MAP keys (single source of truth)' do
+      expect(described_class::FORMAT_TYPES).to eq(described_class::FORMAT_TYPE_CLASS_MAP.keys)
+    end
   end
 end

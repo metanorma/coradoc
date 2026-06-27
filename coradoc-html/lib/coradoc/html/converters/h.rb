@@ -43,21 +43,7 @@ module Coradoc
         private
 
         def extract_title_text(content)
-          return '' if content.nil? || content.empty?
-
-          if content.is_a?(Array)
-            content.map do |c|
-              if c.is_a?(Coradoc::CoreModel::InlineElement)
-                c.content.to_s
-              else
-                c.to_s
-              end
-            end.join.strip
-          elsif content.is_a?(Coradoc::CoreModel::InlineElement)
-            content.content.to_s
-          else
-            content.to_s
-          end
+          Coradoc::CoreModel::InlineContent.text_of(content).strip
         end
       end
 

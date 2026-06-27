@@ -76,19 +76,11 @@ module Coradoc
           [text_parts.join, elements]
         end
 
-        # Extract text from a CoreModel object
+        # Extract text from a CoreModel object via the shared
+        # CoreModel::InlineContent helper. Kept as a thin wrapper so
+        # callers in Markup can pass single elements without wrapping.
         def extract_text_from_model(model)
-          return '' if model.nil?
-
-          if model.is_a?(Coradoc::CoreModel::Base) && model.content.is_a?(String)
-            model.content
-          elsif model.is_a?(Coradoc::CoreModel::StructuralElement) && model.children.is_a?(Array)
-            model.children.map { |c| extract_text_from_model(c) }.join
-          elsif model.is_a?(Coradoc::CoreModel::Base) && model.title.is_a?(String)
-            model.title
-          else
-            model.to_s
-          end
+          Coradoc::CoreModel::InlineContent.text_of(model)
         end
 
         # Subclasses should override this to return the format type

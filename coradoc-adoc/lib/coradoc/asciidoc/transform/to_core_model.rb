@@ -4,8 +4,6 @@ module Coradoc
   module AsciiDoc
     module Transform
       class ToCoreModel
-        include Coradoc::Transform::Base
-
         @registered = false
 
         class << self
@@ -133,6 +131,8 @@ module Coradoc
             text
           end
         end
+
+        def transform(model) = self.class.transform(model)
       end
     end
   end
