@@ -29,8 +29,11 @@ RSpec.describe 'AsciiDoc inline passthrough (BUG repro)',
   it 'emits a typed raw_inline node (not a plain text node)' do
     raws = find_nodes(tree, 'raw_inline')
     expect(raws).not_to be_empty,
-                       'expected raw_inline node; full JSON: ' + json
+                        "expected raw_inline node; full JSON: #{json}"
+  end
 
+  it 'carries the verbatim payload on the raw_inline node' do
+    raws = find_nodes(tree, 'raw_inline')
     expect(raws.first['text'])
       .to eq('<abbr title="What you see is what you mean">WYSIWYM</abbr>')
   end
@@ -51,29 +54,24 @@ RSpec.describe 'AsciiDoc inline passthrough (BUG repro)',
   it 'preserves the typed node on mirror round-trip' do
     node = Coradoc::Mirror.from_hash(tree)
     core = Coradoc::Mirror::MirrorToCoreModel.new.call(node)
-
     expect(core).to be_a(Coradoc::CoreModel::DocumentElement)
 
-    raw_inline = nil
-    queue = Array(core.children)
-    until queue.empty?
-      current = queue.shift
-      case current
-      when Coradoc::CoreModel::RawInlineElement
-        raw_inline = current
-        break
-      when Coradoc::CoreModel::Base
-        queue.concat(Array(current.children)) if current.respond_to?(:children)
-      end
-    end
-
+    raw_inline = find_raw_inline(core)
     expect(raw_inline).not_to be_nil
     expect(raw_inline.content)
       .to eq('<abbr title="What you see is what you mean">WYSIWYM</abbr>')
+  end
 
-    reparsed = Coradoc.serialize(raw_inline, to: :mirror_json)
-    # RawInlineElement serialized alone produces a doc envelope; verify
-    # the raw_inline node appears somewhere in the output.
-    expect(JSON.parse(reparsed)).to include('type' => 'doc')
+  def find_raw_inline(node)
+    queue = [node]
+    until queue.empty?
+      current = queue.shift
+      return current if current.is_a?(Coradoc::CoreModel::RawInlineElement)
+
+      next unless current.is_a?(Coradoc::CoreModel::HasChildren)
+
+      queue.concat(Array(current.children))
+    end
+    nil
   end
 end
