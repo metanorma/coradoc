@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'inline_element_drop'
-
 module Coradoc
   module Html
     module Drop
@@ -13,7 +11,9 @@ module Coradoc
       # escaping so the rendered output mirrors the author's intent.
       #
       # The Liquid template is shared with InlineElementDrop — only the
-      # data preparation differs.
+      # data preparation differs. InlineElementDrop is autoloaded by the
+      # Drop namespace shell (drop.rb) and is guaranteed to load before
+      # this class via DropFactory.eager_load! ordering.
       class RawInlineElementDrop < InlineElementDrop
         def text
           extract_text(@model.content).to_s
