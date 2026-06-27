@@ -52,434 +52,67 @@ module Coradoc
   # @see Coradoc::UnsupportedFormatError Unsupported format errors
 
   class << self
-    # Get the format registry
-    #
-    # @return [Registry] the format registry
-    def registry
-      @registry ||= Registry.new
-    end
+    # ---- Format registry (delegates to FormatCatalog) ----
 
-    # Register a format gem
-    #
-    # @param format_name [Symbol] the format name (e.g., :asciidoc, :html, :markdown)
-    # @param format_module [Module] the format module
-    # @param options [Hash] optional configuration (e.g., extensions: [])
-    # @return [void]
+    def registry = FormatCatalog.registry
+
     def register_format(format_name, format_module, **options)
-      format_module.extend(FormatModule::Interface) unless format_module.is_a?(FormatModule::Interface)
-      registry.register(format_name, format_module, options)
-      FormatModule.validate!(format_module, format_name)
+      FormatCatalog.register_format(format_name, format_module, **options)
     end
 
-    # Get a registered format
-    #
-    # @param format_name [Symbol] the format name
-    # @return [Module, nil] the format module or nil if not found
-    def get_format(format_name)
-      registry.get(format_name)
-    end
+    def get_format(format_name) = FormatCatalog.get_format(format_name)
 
-    # List all registered formats
-    #
-    # @return [Array<Symbol>] list of registered format names
-    def registered_formats
-      registry.list
-    end
+    def registered_formats = FormatCatalog.registered_formats
 
-    # Parse text to a document model.
-    #
-    # Graph mode is the only mode: +include::+ directives survive as
-    # +CoreModel::Include+ link nodes pointing at other files. NO file
-    # I/O happens during parse. The result is a single document that
-    # references other documents via Include edges — a text graph.
-    #
-    # To splice included content inline, call +Coradoc.resolve_includes+
-    # on the parsed document. This is an explicit, separate step so the
-    # caller controls when (and whether) file I/O happens.
-    #
-    # @param text [String] the document text to parse
-    # @param format [Symbol] the source format (:asciidoc, :html, :markdown)
-    # @return [Coradoc::CoreModel::Base, Object] the parsed document model
-    # @raise [UnsupportedFormatError] if the format is not registered
-    #
-    # @example Parse — Include directives stay as link nodes
-    #   doc = Coradoc.parse(text, format: :asciidoc)
-    #
-    # @example Then flatten — splice included files inline
-    #   flat = Coradoc.resolve_includes(doc, base_dir: Dir.pwd)
-    def parse(text, format:)
-      format_module = get_format(format)
-      unless format_module
-        raise UnsupportedFormatError,
-              "Format '#{format}' is not registered. " \
-              "Available formats: #{registered_formats.join(', ')}"
-      end
+    # ---- Pipeline (delegates to Pipeline) ----
 
-      text = Hooks.invoke(:before_parse, text, format: format)
-      result = format_module.parse_to_core(text)
-      Hooks.invoke(:after_parse, result, format: format)
-    end
+    def parse(text, format:) = Pipeline.parse(text, format: format)
 
-    # Resolve +include::+ directives in a parsed document.
-    #
-    # Walks the document tree and replaces every +CoreModel::Include+
-    # link node with the parsed content of its target file, recursing
-    # into the result. The original document is left unchanged; a new
-    # subtree is constructed.
-    #
-    # This is the explicit "flatten" step that turns a text graph into
-    # a single spliced document. Callers control:
-    #   - +base_dir+ — where to root relative include paths
-    #   - +missing_include+ — what to do when a target is missing
-    #   - +max_depth+ — recursion cap
-    #   - +allow_unsafe+ — opt out of path-traversal protection
-    #   - +resolver+ — custom resolution strategy (e.g. HTTP, in-memory)
-    #
-    # @param document [Coradoc::CoreModel::Base] parsed document
-    # @param base_dir [String] base directory for relative include paths
-    # @param missing_include [Symbol] :error (default), :warn, :silent, :passthrough
-    # @param max_depth [Integer] recursion cap (default 64)
-    # @param allow_unsafe [Boolean] disable path-traversal protection
-    # @param resolver [Object, nil] custom resolver. Defaults to
-    #   +Coradoc::IncludeResolver::Filesystem+ rooted at +base_dir+.
-    # @return [Coradoc::CoreModel::Base] new document with includes expanded
-    # @raise [Coradoc::IncludeNotFoundError] when a target is missing
-    #   and policy is :error
-    # @raise [Coradoc::IncludeDepthExceededError] when +max_depth+ is hit
-    # @raise [Coradoc::CircularIncludeError] when an include cycle is detected
-    #
-    # @example
-    #   doc = Coradoc.parse(text, format: :asciidoc)
-    #   flat = Coradoc.resolve_includes(doc, base_dir: Dir.pwd)
-    def resolve_includes(document, base_dir:,
-                         missing_include: :error,
-                         max_depth: Coradoc::ResolveIncludes::DEFAULT_MAX_DEPTH,
-                         allow_unsafe: false,
-                         resolver: nil)
-      resolver = Coradoc::IncludeResolver.coerce(
-        resolver,
-        base_dir: base_dir,
-        allow_unsafe: allow_unsafe
-      )
-      Coradoc::ResolveIncludes.call(
-        document,
-        resolver: resolver,
-        base_dir: base_dir,
-        missing_include: missing_include,
-        max_depth: max_depth
-      )
-    end
+    def resolve_includes(document, **) = Pipeline.resolve_includes(document, **)
 
-    # Rewrite every link/xref target in a parsed document.
-    #
-    # Walks the document tree and invokes the supplied rewriter for each
-    # link and cross-reference target. The original document is never
-    # mutated — a NEW document is returned.
-    #
-    # Verbatim blocks (+SourceBlock+, +ListingBlock+, +LiteralBlock+,
-    # +PassBlock+, +StemBlock+) are skipped entirely so link-shaped text
-    # inside code/math bodies is never rewritten.
-    #
-    # The rewriter responds to +#call(target:, kind:, context:)+ and
-    # returns the new target String. +kind+ is +:link+ or +:xref+; the
-    # block form is supported for one-liners.
-    #
-    # @param document [Coradoc::CoreModel::Base] parsed document
-    # @param rewriter [#call, nil] callable rewriter; ignored when a block is given
-    # @return [Coradoc::CoreModel::Base] new document with rewritten targets
-    #
-    # @example Canonicalize snake_case targets to kebab-case
-    #   doc = Coradoc.parse(adoc, format: :asciidoc)
-    #   rewritten = Coradoc.rewrite_links(doc) do |target:, kind:, **|
-    #     target.tr('_', '-')
-    #   end
-    def rewrite_links(document, rewriter: nil, &block)
-      Coradoc::LinkRewriter.rewrite(document, rewriter: rewriter, &block)
-    end
+    def rewrite_links(...) = Pipeline.rewrite_links(...)
 
-    # Convert document text from one format to another
-    #
-    # This is the main entry point for format conversion. It handles the
-    # complete pipeline: parse -> transform to CoreModel -> transform to target -> serialize
-    #
-    # @param text [String] the source document text
-    # @param from [Symbol] the source format (:asciidoc, :html, :markdown)
-    # @param to [Symbol] the target format (:asciidoc, :html, :markdown)
-    # @param options [Hash] additional options for the conversion
-    # @return [String] the converted document text
-    # @raise [UnsupportedFormatError] if a format is not registered
-    #
-    # @example Convert AsciiDoc to HTML
-    #   html = Coradoc.convert(adoc_text, from: :asciidoc, to: :html)
-    #
-    # @example Convert HTML to AsciiDoc
-    #   adoc = Coradoc.convert(html_text, from: :html, to: :asciidoc)
-    def convert(text, from:, to:, **)
-      # Parse to CoreModel
-      core = parse(text, format: from)
+    def convert(text, **) = Pipeline.convert(text, **)
 
-      # Convert to target format
-      serialize(core, to: to, **)
-    end
+    def to_core(model) = Pipeline.to_core(model)
 
-    # Transform a model to CoreModel
-    #
-    # @param model [Object] a format-specific model
-    # @return [Coradoc::CoreModel::Base] the CoreModel representation
-    def to_core(model)
-      return model if model.is_a?(CoreModel::Base)
+    def serialize(model, **) = Pipeline.serialize(model, **)
 
-      registry.each_value do |format_module|
-        next unless format_module.handles_model?(model)
+    def build(...) = Pipeline.build(...)
 
-        return format_module.to_core(model)
-      end
+    def parse_file(path, **) = Pipeline.parse_file(path, **)
 
-      raise TransformationError, "No transformer found for #{model.class}"
-    end
+    def convert_file(path, **) = Pipeline.convert_file(path, **)
 
-    # Serialize a CoreModel to a specific format
-    #
-    # @param model [Coradoc::CoreModel::Base] the CoreModel to serialize
-    # @param to [Symbol] the target format
-    # @param options [Hash] additional options
-    # @return [String] the serialized document
-    def serialize(model, to:, **)
-      format_module = get_format(to)
-      raise UnsupportedFormatError, "Format '#{to}' is not registered" unless format_module
+    # ---- Format detection (delegates to FormatCatalog) ----
 
-      model = Hooks.invoke(:before_serialize, model, format: to)
-      result = format_module.serialize(model, **)
-      Hooks.invoke(:after_serialize, result, format: to)
-    end
+    def detect_format(filename) = FormatCatalog.detect_format(filename)
 
-    # Build a DocumentElement programmatically.
-    #
-    # Yields a fresh +CoreModel::DocumentElement+ to the block for in-place
-    # mutation via +Base.build+. No parallel Builder hierarchy — the block
-    # operates on the real model object. Per-class fluent helpers
-    # (+ListBlock#add_item+, +ListItem#add_text+, etc.) compose naturally.
-    #
-    # @yieldparam document [Coradoc::CoreModel::DocumentElement]
-    # @return [Coradoc::CoreModel::DocumentElement]
-    #
-    # @example
-    #   doc = Coradoc.build do |d|
-    #     d.title = "My Document"
-    #     d.children << Coradoc::CoreModel::ParagraphBlock.new(content: "hi")
-    #   end
-    def build(&block)
-      CoreModel::DocumentElement.build(children: [], &block)
-    end
+    def binary_format?(format) = FormatCatalog.binary_format?(format)
 
-    # Detect format from a file extension
-    #
-    # @param filename [String] Filename or extension to detect
-    # @return [Symbol, nil] the detected format symbol
-    #
-    # @example
-    #   Coradoc.detect_format("document.adoc")  # => :asciidoc
-    #   Coradoc.detect_format("file.md")        # => :markdown
-    def detect_format(filename)
-      ext = File.extname(filename).downcase
-      registry.each_key do |name|
-        opts = registry.options_for(name)
-        return name if opts[:extensions]&.include?(ext)
-      end
-      nil
-    end
+    def normalize_format(name) = FormatCatalog.normalize_format(name)
 
-    # Parse a document from a file path
-    #
-    # Handles both text formats (reads file content) and binary formats
-    # (passes file path directly to the format module).
-    #
-    # @param path [String] path to the document file
-    # @param format [Symbol, nil] source format (auto-detected if nil)
-    # @return [Coradoc::CoreModel::Base] the parsed CoreModel document
-    # @raise [UnsupportedFormatError] if format is not detected or registered
-    #
-    # @example
-    #   doc = Coradoc.parse_file("document.adoc")
-    #   doc = Coradoc.parse_file("report.docx", format: :docx)
-    def parse_file(path, format: nil)
-      raise FileNotFoundError, path unless File.exist?(path)
+    def serialize_format?(format) = FormatCatalog.serialize_format?(format)
 
-      source_format = format || detect_format(path)
-      raise UnsupportedFormatError, "Could not detect format for: #{path}" unless source_format
+    def parse_format?(format) = FormatCatalog.parse_format?(format)
 
-      format_module = get_format(source_format)
-      raise UnsupportedFormatError, "Format '#{source_format}' is not registered" unless format_module
+    def format_capabilities = FormatCatalog.capabilities
 
-      if binary_format?(source_format)
-        format_module.parse_to_core(path)
-      else
-        content = File.read(path)
-        content = Hooks.invoke(:before_parse, content, format: source_format)
-        result = format_module.parse_file_to_core(path, content)
-        Hooks.invoke(:after_parse, result, format: source_format)
-      end
-    end
+    def resolve_output_format(output_file, **) = FormatCatalog.resolve_output_format(output_file, **)
 
-    # Convert a file from one format to another
-    #
-    # @param path [String] path to the source document file
-    # @param from [Symbol, nil] source format (auto-detected if nil)
-    # @param to [Symbol] target format
-    # @param options [Hash] additional options
-    # @return [String] the converted document text
-    #
-    # @example
-    #   html = Coradoc.convert_file("document.adoc", to: :html)
-    #   adoc = Coradoc.convert_file("report.docx", to: :asciidoc)
-    def convert_file(path, to:, from: nil, **)
-      source_format = from || detect_format(path)
-      raise UnsupportedFormatError, "Could not detect format for: #{path}" unless source_format
+    # ---- Introspection (delegates to Introspection) ----
 
-      core = parse_file(path, format: source_format)
-      serialize(core, to: to, **)
-    end
+    def file_info(path) = Introspection.file_info(path)
 
-    # Check if a format requires binary (file path) input
-    #
-    # @param format [Symbol] the format to check
-    # @return [Boolean] true if the format is binary
-    def binary_format?(format)
-      opts = registry.options_for(format)
-      opts&.fetch(:binary, false) == true
-    end
+    def validate_file(path, **) = Introspection.validate_file(path, **)
 
-    # Normalize a format name string to a symbol
-    #
-    # Handles common aliases like "adoc" → :asciidoc, "md" → :markdown.
-    #
-    # @param name [String, Symbol, nil] the format name to normalize
-    # @return [Symbol, nil] the normalized format symbol, or nil
-    def normalize_format(name)
-      return nil unless name
+    def document_stats(doc) = Introspection.document_stats(doc)
 
-      key = name.to_s.downcase
-      registry.each_key do |fmt_name|
-        opts = registry.options_for(fmt_name)
-        return fmt_name if opts[:aliases]&.include?(key)
-      end
-      key.to_sym
-    end
+    def describe_element(elem) = Introspection.describe_element(elem)
 
-    # Check if a format supports serialization (writing output)
-    #
-    # @param format [Symbol] the format to check
-    # @return [Boolean] true if the format can serialize
-    def serialize_format?(format)
-      mod = get_format(format)
-      return false unless mod
+    # ---- Utilities that stay on the top-level façade ----
 
-      mod.serialize?
-    end
-
-    # Check if a format supports parsing (reading input)
-    #
-    # @param format [Symbol] the format to check
-    # @return [Boolean] true if the format can parse
-    def parse_format?(format)
-      mod = get_format(format)
-      return false unless mod
-
-      mod.public_methods.include?(:parse_to_core) || mod.public_methods.include?(:parse)
-    end
-
-    # Get capability summary for all registered formats
-    #
-    # Returns a hash mapping each format name to its capabilities
-    # (parse: bool, serialize: bool). Useful for CLI display and introspection.
-    #
-    # @return [Hash<Symbol, Hash<Symbol, Boolean>>]
-    def format_capabilities
-      registered_formats.each_with_object({}) do |name, caps|
-        caps[name] = {
-          parse: parse_format?(name),
-          serialize: serialize_format?(name)
-        }
-      end
-    end
-
-    # Resolve the output format from a filename, with a default
-    #
-    # @param output_file [String, nil] output filename to detect from
-    # @param default [Symbol] default format when detection fails (default: :html)
-    # @return [Symbol] the resolved format
-    def resolve_output_format(output_file, default: :html)
-      return default unless output_file
-
-      detect_format(output_file) || default
-    end
-
-    # Get file metadata for display
-    #
-    # @param path [String] path to the file
-    # @return [Hash] metadata including :size, :format, and :lines (for text formats)
-    def file_info(path)
-      fmt = detect_format(path)
-      info = { size: File.size(path), format: fmt }
-      info[:lines] = File.foreach(path).count unless binary_format?(fmt)
-      info
-    end
-
-    # Validate a document file
-    #
-    # Parses the file and validates against auto-generated schema.
-    # Returns a Coradoc::Validation::Result.
-    #
-    # @param path [String] path to the document file
-    # @param format [Symbol, nil] source format (auto-detected if nil)
-    # @return [Coradoc::Validation::Result] validation result
-    # @raise [UnsupportedFormatError] if format is not detected or registered
-    def validate_file(path, format: nil)
-      doc = parse_file(path, format: format)
-
-      schema = Validation::SchemaGenerator.generate(doc.class)
-      return schema.validate(doc) if schema
-
-      Validation::Result.new
-    end
-
-    # Gather statistics about a parsed document
-    #
-    # @param doc [CoreModel::Base] parsed document
-    # @return [Hash] statistics including element counts, title, etc.
-    def document_stats(doc)
-      stats = {}
-
-      stats[:title] = doc.title if doc.title
-
-      if doc.is_a?(CoreModel::StructuralElement)
-        stats[:child_count] = count_elements(doc)
-        stats[:element_counts] = count_element_types(doc)
-      end
-
-      stats
-    end
-
-    # Describe an element for display
-    #
-    # @param elem [Object] element to describe
-    # @return [String] human-readable description
-    def describe_element(elem)
-      return elem.to_s unless elem.is_a?(CoreModel::Base)
-
-      type = elem.class.name.split('::').last
-      if elem.title
-        "#{type}: #{elem.title}"
-      elsif elem.is_a?(CoreModel::Block) && elem.content
-        preview = elem.content.to_s[0..50]
-        preview += '...' if elem.content.to_s.length > 50
-        "#{type}: #{preview}"
-      else
-        type
-      end
-    end
-
-    # Strip unicode whitespace from a string
+    # Strip unicode whitespace from a string.
     #
     # @param string [String] the string to strip
     # @param only [Symbol, nil] what to strip: :begin, :end, or nil for both
@@ -496,38 +129,6 @@ module Coradoc
         string.sub(/^\p{Zs}+/, '').sub(/\p{Zs}+$/, '')
       end
     end
-
-    private
-
-    def count_elements(doc)
-      return 0 unless doc.is_a?(CoreModel::StructuralElement)
-
-      doc.children.sum do |child|
-        1 + (child.is_a?(CoreModel::StructuralElement) ? count_elements(child) : 0)
-      end
-    end
-
-    def count_element_types(doc)
-      counts = Hash.new(0)
-      visitor = Class.new(Visitor::Base) do
-        define_method(:visit) do |element|
-          if element.is_a?(CoreModel::Base)
-            has_element_type = element.is_a?(CoreModel::StructuralElement) || element.is_a?(CoreModel::Block)
-            type_key = if has_element_type && element.element_type
-                         element.element_type
-                       else
-                         element.class.name.split('::').last
-                                .gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '')
-                       end
-            counts[type_key] += 1
-          end
-          super(element)
-        end
-      end.new
-      visitor.visit(doc)
-      counts.reject! { |_, v| v.zero? }
-      counts
-    end
   end
 
   autoload :Error, "#{__dir__}/errors"
@@ -540,14 +141,15 @@ module Coradoc
   autoload :FormatModule, "#{__dir__}/format_module"
   autoload :CoreModel, "#{__dir__}/core_model"
   autoload :Registry, "#{__dir__}/registry"
-  autoload :Transform, "#{__dir__}/transform"
-  autoload :Input, "#{__dir__}/input"
-  autoload :Output, "#{__dir__}/output"
   autoload :Visitor, "#{__dir__}/visitor"
   autoload :PerformanceRegression, "#{__dir__}/performance_regression"
   autoload :IncludeResolver, "#{__dir__}/include_resolver"
   autoload :IncludeSelectors, "#{__dir__}/include_selectors"
   autoload :ResolveIncludes, "#{__dir__}/resolve_includes"
+  autoload :Pipeline, "#{__dir__}/pipeline"
+  autoload :FormatCatalog, "#{__dir__}/format_catalog"
+  autoload :Introspection, "#{__dir__}/introspection"
+  autoload :Dispatch, "#{__dir__}/dispatch"
 end
 
 # Format gems self-register via Coradoc.register_format when they are required.

@@ -8,6 +8,10 @@ module Coradoc
     # Third-party gems can register additional handlers without modifying
     # core classes (OCP).
     #
+    # Lookup (including ancestor walking) is delegated to
+    # `Coradoc::Dispatch.hierarchical`. This class keeps the Entry shape and
+    # the handler-invocation semantics — those are mirror-specific.
+    #
     # @example Registering a handler
     #   registry = Coradoc::Mirror.default_registry
     #   registry.register(MyCustomBlock, MyHandler)
@@ -17,12 +21,11 @@ module Coradoc
     #   registry.register(Coradoc::CoreModel::ParagraphBlock, MyParagraphHandler)
     #
     class HandlerRegistry
-      # Structured entry for a registered handler.
       Entry = Struct.new(:handler, :method_name, :concat, :extra_kwargs,
                          keyword_init: true)
 
       def initialize
-        @handlers = {}
+        @dispatch = Coradoc::Dispatch.hierarchical
       end
 
       # Register a handler for a CoreModel class.
@@ -38,46 +41,32 @@ module Coradoc
       #   to the handler
       def register(model_class, handler, method_name: :call, concat: false,
                    extra_kwargs: {})
-        @handlers[model_class] = Entry.new(
-          handler: handler,
-          method_name: method_name,
-          concat: concat,
-          extra_kwargs: extra_kwargs
+        @dispatch.register(
+          model_class,
+          Entry.new(
+            handler: handler,
+            method_name: method_name,
+            concat: concat,
+            extra_kwargs: extra_kwargs
+          )
         )
       end
 
       # Find the handler entry for a given CoreModel element.
       #
-      # Walks the element's class ancestors to find the most specific
-      # registered handler. This allows registering a handler for a
-      # base class (e.g., Block) that applies to all subclasses,
-      # while also registering specific handlers for subclasses.
+      # Walks the element's class ancestors (via Dispatch.hierarchical) to
+      # find the most specific registered handler. This allows registering
+      # a handler for a base class (e.g., Block) that applies to all
+      # subclasses, while also registering specific handlers for subclasses.
       #
       # @param element [CoreModel::Base] element to find handler for
       # @return [Entry, nil]
-      TERMINAL_ANCESTORS = [Object, BasicObject].freeze
-
       def entry_for(element)
-        entry = @handlers[element.class]
-        return entry if entry
-
-        element.class.ancestors.each do |ancestor|
-          next if ancestor == element.class
-          break if TERMINAL_ANCESTORS.include?(ancestor)
-
-          entry = @handlers[ancestor]
-          return entry if entry
-        end
-
-        nil
+        @dispatch.lookup(element.class)
       end
 
-      # Check if a handler is registered for a CoreModel class.
-      #
-      # @param model_class [Class]
-      # @return [Boolean]
       def registered?(model_class)
-        @handlers.key?(model_class)
+        @dispatch.registered?(model_class)
       end
 
       # Invoke the handler for a given element.
