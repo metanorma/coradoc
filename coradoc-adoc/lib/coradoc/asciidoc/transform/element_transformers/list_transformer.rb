@@ -67,18 +67,26 @@ module Coradoc
               )
               li.children = children
 
-              if item.nested.is_a?(Coradoc::AsciiDoc::Model::List::Core)
-                nested_core = transform_list(item.nested, list_marker_type(item.nested))
-                li.children << nested_core
-              elsif item.nested.is_a?(Array)
-                item.nested.each do |n|
-                  next unless n.is_a?(Coradoc::AsciiDoc::Model::List::Core)
-
-                  li.children << transform_list(n, list_marker_type(n))
-                end
-              end
-
+              nested_lists = extract_nested_lists(item)
+              li.nested_list = nested_lists.first if nested_lists.size == 1
               li
+            end
+
+            # Pull every nested List::Core off the AsciiDoc model item and
+            # transform each into a CoreModel::ListBlock. Returns [] when
+            # the item has no nested lists. Single source of truth for the
+            # nested-list shape so transform_list_item and any future caller
+            # share the same extraction logic.
+            def extract_nested_lists(item)
+              nested = item.nested
+              return [] if nested.nil?
+
+              candidates = nested.is_a?(Array) ? nested : [nested]
+              candidates.filter_map do |n|
+                next unless n.is_a?(Coradoc::AsciiDoc::Model::List::Core)
+
+                transform_list(n, list_marker_type(n))
+              end
             end
 
             def list_marker_type(list)

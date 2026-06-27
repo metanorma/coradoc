@@ -354,8 +354,9 @@ RSpec.describe 'Integration pipeline fixes' do
       expect(top_list.marker_type).to eq('unordered')
 
       first_item = top_list.items.first
-      nested = first_item.children.find { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+      nested = first_item.nested_list
       expect(nested).not_to be_nil
+      expect(nested).to be_a(Coradoc::CoreModel::ListBlock)
       expect(nested.marker_type).to eq('unordered')
     end
 
@@ -375,8 +376,9 @@ RSpec.describe 'Integration pipeline fixes' do
       expect(top_list.marker_type).to eq('ordered')
 
       first_item = top_list.items.first
-      nested = first_item.children.find { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+      nested = first_item.nested_list
       expect(nested).not_to be_nil
+      expect(nested).to be_a(Coradoc::CoreModel::ListBlock)
       expect(nested.marker_type).to eq('ordered')
     end
   end

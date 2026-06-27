@@ -122,7 +122,7 @@ RSpec.describe 'Open block cast to verbatim block', type: :integration do
       core = Coradoc.parse(source, format: :asciidoc)
       block = core.children.first
       expect(block).to be_a(Coradoc::CoreModel::AnnotationBlock)
-      expect(block.annotation_type).to eq('note')
+      expect(block.annotation_type).to eq('NOTE')
     end
 
     it 'VitePress renders as a container admonition' do

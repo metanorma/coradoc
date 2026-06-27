@@ -10,38 +10,38 @@ RSpec.describe 'Block-form admonitions', :asciidoc do
 
   %w[note tip warning caution important].each do |type|
     context "with [#{type.upcase}] on an example block (====)" do
-      it "produces AnnotationBlock with annotation_type '#{type}'" do
+      it "produces AnnotationBlock with annotation_type '#{type.upcase}'" do
         adoc = "[#{type.upcase}]\n====\nbody text\n====\n"
         block = first_child(adoc)
         expect(block).to be_a(Coradoc::CoreModel::AnnotationBlock)
-        expect(block.annotation_type).to eq(type)
+        expect(block.annotation_type).to eq(type.upcase)
       end
     end
 
     context "with [#{type.upcase}] on a sidebar block (****)" do
-      it "produces AnnotationBlock with annotation_type '#{type}'" do
+      it "produces AnnotationBlock with annotation_type '#{type.upcase}'" do
         adoc = "[#{type.upcase}]\n****\nbody text\n****\n"
         block = first_child(adoc)
         expect(block).to be_a(Coradoc::CoreModel::AnnotationBlock)
-        expect(block.annotation_type).to eq(type)
+        expect(block.annotation_type).to eq(type.upcase)
       end
     end
 
     context "with [#{type.upcase}] on a quote block (____)" do
-      it "produces AnnotationBlock with annotation_type '#{type}'" do
+      it "produces AnnotationBlock with annotation_type '#{type.upcase}'" do
         adoc = "[#{type.upcase}]\n____\nbody text\n____\n"
         block = first_child(adoc)
         expect(block).to be_a(Coradoc::CoreModel::AnnotationBlock)
-        expect(block.annotation_type).to eq(type)
+        expect(block.annotation_type).to eq(type.upcase)
       end
     end
 
     context "with [#{type.upcase}] on an open block (--)" do
-      it "produces AnnotationBlock with annotation_type '#{type}'" do
+      it "produces AnnotationBlock with annotation_type '#{type.upcase}'" do
         adoc = "[#{type.upcase}]\n--\nbody text\n--\n"
         block = first_child(adoc)
         expect(block).to be_a(Coradoc::CoreModel::AnnotationBlock)
-        expect(block.annotation_type).to eq(type)
+        expect(block.annotation_type).to eq(type.upcase)
       end
     end
   end
@@ -73,7 +73,7 @@ RSpec.describe 'Block-form admonitions', :asciidoc do
       styles.register('danger')
       block = first_child("[DANGER]\n====\nwatch out\n====\n")
       expect(block).to be_a(Coradoc::CoreModel::AnnotationBlock)
-      expect(block.annotation_type).to eq('danger')
+      expect(block.annotation_type).to eq('DANGER')
     end
   end
 

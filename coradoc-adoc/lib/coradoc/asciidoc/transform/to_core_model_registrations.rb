@@ -172,9 +172,11 @@ module Coradoc
             Registry.register(
               Coradoc::AsciiDoc::Model::Inline::AttributeReference,
               lambda { |model|
+                name = model.name.to_s
                 Coradoc::CoreModel::InlineElement.new(
                   format_type: 'attribute_reference',
-                  content: "{#{model.name}}"
+                  target: name,
+                  content: "{#{name}}"
                 )
               }
             )
@@ -244,6 +246,16 @@ module Coradoc
             Registry.register(
               Coradoc::AsciiDoc::Model::Include,
               ->(model) { Inc.transform_include(model) }
+            )
+
+            # Inline hard line break — distinct from the structural
+            # Model::LineBreak (which represents paragraph-separator blank
+            # lines and is dropped at the CoreModel boundary). Hard breaks
+            # are semantic and round-trip as CoreModel::HardLineBreakElement
+            # so HTML/Markdown renderers can map them to <br>.
+            Registry.register(
+              Coradoc::AsciiDoc::Model::Inline::HardLineBreak,
+              ->(_model) { Coradoc::CoreModel::HardLineBreakElement.new(content: '') }
             )
 
             [

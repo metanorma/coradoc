@@ -319,6 +319,8 @@ module Coradoc
               )
             when 'raw_inline'
               Coradoc::AsciiDoc::Model::Inline::Passthrough.new(content: inline.content)
+            when 'hard_line_break'
+              Coradoc::AsciiDoc::Model::Inline::HardLineBreak.new
             else
               Coradoc::AsciiDoc::Model::TextElement.new(content: inline.content)
             end

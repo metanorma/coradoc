@@ -15,9 +15,10 @@ module Coradoc
             end
 
             def transform_admonition(admonition)
+              canonical = Coradoc::AsciiDoc::Transform::ElementTransformers::AdmonitionStyles.canonicalize(admonition.type) || admonition.type.to_s
               children = ToCoreModel.transform_inline_content(admonition.content)
               block = Coradoc::CoreModel::AnnotationBlock.new(
-                annotation_type: admonition.type,
+                annotation_type: canonical,
                 content: ToCoreModel.extract_text_content(admonition.content)
               )
               block.children = children

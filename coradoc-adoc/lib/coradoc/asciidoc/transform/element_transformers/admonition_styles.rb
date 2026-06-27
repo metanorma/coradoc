@@ -26,6 +26,21 @@ module Coradoc
               BUILTIN.include?(name) || custom.include?(name)
             end
 
+            # Canonical uppercase form for +style+, or nil if unknown.
+            # Single source of truth for the canonical casing used in
+            # CoreModel::AnnotationBlock#annotation_type and AsciiDoc
+            # round-trip output.
+            def canonicalize(style)
+              return nil unless admonition?(style)
+
+              style.to_s.upcase
+            end
+
+            # All registered style names (BUILTIN + custom), lowercased.
+            def all_styles
+              (BUILTIN + custom).freeze
+            end
+
             # Register an additional admonition style. Open for extension.
             def register(style)
               name = style.to_s.downcase

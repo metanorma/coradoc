@@ -13,6 +13,7 @@ module Coradoc
               children = CalloutMerger.call(children)
               children = prepend_frontmatter(children, doc.frontmatter)
               children = insert_title_heading_after_frontmatter(children, title_text)
+              children = resolve_attribute_references(children, attributes)
 
               Coradoc::CoreModel::DocumentElement.new(
                 id: doc.id,
@@ -56,6 +57,16 @@ module Coradoc
                 child.is_a?(Coradoc::CoreModel::FrontmatterBlock)
               end
               children.insert(frontmatter_count, title_heading)
+            end
+
+            # Resolve `{name}` attribute references in the body against the
+            # document's own declared attributes. Single source of truth:
+            # the resolver lives in core so other format gems can reuse it
+            # when they have equivalent reference macros.
+            def resolve_attribute_references(children, attributes)
+              return children if attributes.nil? || attributes.keys.empty?
+
+              Coradoc::CoreModel::AttributeReferenceResolver.call(children, attributes)
             end
 
             def transform_section(section, parent_id: nil)
