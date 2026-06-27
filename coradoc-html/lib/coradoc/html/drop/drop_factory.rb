@@ -33,6 +33,20 @@ module Coradoc
           drop&.new(model)&.template_type
         end
 
+        # Walk the Drop namespace and trigger each declared autoload so the
+        # drop class body evaluates and self-registers. Called eagerly from
+        # drop.rb after autoloads are declared.
+        EAGER_LOAD_ORDER = %i[Base DropFactory AnnotationDrop BlockDrop ListBlockDrop ListItemDrop
+                              TableDrop TableRowDrop TableCellDrop ImageDrop InlineElementDrop RawInlineElementDrop
+                              BibliographyEntryDrop BibliographyDrop TocEntryDrop TocDrop DefinitionItemDrop
+                              DefinitionListDrop TermDrop FootnoteDrop TextContentDrop DocumentDrop].freeze
+        private_constant :EAGER_LOAD_ORDER
+
+        def self.eager_load!
+          EAGER_LOAD_ORDER.each { |sym| Drop.const_get(sym) }
+          true
+        end
+
         class << self
           private
 
@@ -48,26 +62,3 @@ module Coradoc
     end
   end
 end
-
-# Load all drops — each self-registers with DropFactory.
-# Registration order doesn't matter (sorted by ancestor depth).
-require_relative 'annotation_drop'
-require_relative 'block_drop'
-require_relative 'list_block_drop'
-require_relative 'list_item_drop'
-require_relative 'table_drop'
-require_relative 'table_row_drop'
-require_relative 'table_cell_drop'
-require_relative 'image_drop'
-require_relative 'inline_element_drop'
-require_relative 'raw_inline_element_drop'
-require_relative 'bibliography_entry_drop'
-require_relative 'bibliography_drop'
-require_relative 'toc_entry_drop'
-require_relative 'toc_drop'
-require_relative 'definition_item_drop'
-require_relative 'definition_list_drop'
-require_relative 'term_drop'
-require_relative 'footnote_drop'
-require_relative 'text_content_drop'
-require_relative 'document_drop'

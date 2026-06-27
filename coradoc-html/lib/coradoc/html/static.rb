@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'renderer'
-
 module Coradoc
   module Html
     autoload :ConverterBase, "#{__dir__}/converter_base"
