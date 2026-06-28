@@ -29,6 +29,13 @@ module Coradoc
       attribute :type, :string, default: -> { self.class::PM_TYPE }
       attribute :content, Node, collection: true
       attribute :marks, Mark, collection: true
+      # Parser metadata, single source of truth on the wire side too.
+      # Carried in memory so CoreModel → Mirror → CoreModel round-trips
+      # preserve the source location. Intentionally absent from every
+      # subclass `key_value` block: source_line is not part of the
+      # ProseMirror JSON contract — editor consumers don't need it, and
+      # serializing it would leak parser internals onto the wire.
+      attribute :source_line, :integer
 
       key_value do
         map 'type', to: :type, render_default: true

@@ -86,8 +86,8 @@ module Coradoc
         # @example Iterate
         #   content.each { |item| puts item }
         #
-        def each(&block)
-          @items.each(&block)
+        def each(&)
+          @items.each(&)
         end
 
         # Add an item to the content
@@ -199,8 +199,8 @@ module Coradoc
         # @example Map
         #   content.map(&:class) # => [String, Bold, String]
         #
-        def map(&block)
-          @items.map(&block)
+        def map(&)
+          @items.map(&)
         end
 
         # Select items matching predicate
@@ -211,8 +211,8 @@ module Coradoc
         # @example Select strings
         #   content.select { |i| i.is_a?(String) }
         #
-        def select(&block)
-          @items.select(&block)
+        def select(&)
+          @items.select(&)
         end
 
         # Reject items matching predicate
@@ -220,8 +220,8 @@ module Coradoc
         # @yield [Object] Each item
         # @return [Array] Remaining items
         #
-        def reject(&block)
-          @items.reject(&block)
+        def reject(&)
+          @items.reject(&)
         end
 
         # Check if content includes an item

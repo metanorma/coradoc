@@ -72,7 +72,6 @@ module Coradoc
               opts = { rows: Transformer.regroup_table_rows(rows, attrs), attrs: attrs }
               opts[:id] = id if id
               opts[:title] = title unless title.nil? || title.empty?
-              opts[:source_line] = SourceLineExtractor.extract(table)
               Model::Table.new(**opts)
             end
 
@@ -85,8 +84,7 @@ module Coradoc
               Model::Title.new(
                 content: text,
                 level_int: level.size - 1,
-                line_break: line_break,
-                source_line: SourceLineExtractor.extract(level)
+                line_break: line_break
               )
             end
 
@@ -100,8 +98,7 @@ module Coradoc
                 content: text,
                 level_int: level.size - 1,
                 line_break: line_break,
-                id: name,
-                source_line: SourceLineExtractor.extract(name)
+                id: name
               )
             end
 
@@ -120,8 +117,7 @@ module Coradoc
                 id: id,
                 attribute_list: attribute_list,
                 contents: contents,
-                sections: sections,
-                source_line: SourceLineExtractor.extract(section)
+                sections: sections
               )
             end
 

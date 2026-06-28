@@ -62,10 +62,15 @@ module Coradoc
           result
         end
 
+        # Two adjacent TextElements in the content array indicate the
+        # parser split a paragraph across source lines. Join them with a
+        # space (soft break) unless the second one carries a hard-break
+        # marker — the model owns that predicate, so this method does
+        # not reach into parser-specific line_break string values.
         def soft_break_before?(previous, current)
           previous.is_a?(Model::TextElement) &&
             current.is_a?(Model::TextElement) &&
-            current.line_break != '+'
+            !current.hard_break?
         end
 
         def visit_model(model)

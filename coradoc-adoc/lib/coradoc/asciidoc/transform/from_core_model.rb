@@ -300,8 +300,11 @@ module Coradoc
           end
 
           def transform_image(image)
-            target_class = image.inline ? Coradoc::AsciiDoc::Model::Image::InlineImage
-                                        : Coradoc::AsciiDoc::Model::Image::BlockImage
+            target_class = if image.inline
+                             Coradoc::AsciiDoc::Model::Image::InlineImage
+                           else
+                             Coradoc::AsciiDoc::Model::Image::BlockImage
+                           end
             target_class.new(**image_attributes(image))
           end
 

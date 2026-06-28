@@ -46,9 +46,7 @@ module Coradoc
           normalized_cells = cells.map { |cell| TableCellBuilder.normalize_cell(cell) }
 
           col_count = explicit_col_count
-          if col_count.nil? || col_count.zero?
-            col_count = infer_column_count(normalized_cells)
-          end
+          col_count = infer_column_count(normalized_cells) if col_count.nil? || col_count.zero?
           col_count = normalized_cells.size if col_count.nil? || col_count.zero?
 
           rows = []

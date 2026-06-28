@@ -73,14 +73,14 @@ module Coradoc
           closing_fence = dynamic do |_s, c|
             str(c.captures[capture_key].to_s.strip)
           end
-          language = (space? >> match("[A-Za-z0-9_+.-]").repeat(1).as(:language)).maybe
+          language = (space? >> match('[A-Za-z0-9_+.-]').repeat(1).as(:language)).maybe
 
           block_content_with_closing = dynamic do |_s, c|
-            fence_str = c.captures[capture_key].to_s.strip
+            c.captures[capture_key].to_s.strip
             closing_pattern = closing_fence >> space? >> newline
 
             content = text_line(false, unguarded: true, verbatim: true) |
-                        empty_line.as(:line_break)
+                      empty_line.as(:line_break)
 
             (closing_pattern.absent? >> content).repeat(1)
           end

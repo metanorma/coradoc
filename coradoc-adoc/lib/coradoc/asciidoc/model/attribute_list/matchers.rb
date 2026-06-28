@@ -5,8 +5,8 @@ module Coradoc
     module Model
       class AttributeList < Base
         module Matchers
-          def one(*args)
-            One.new(*args)
+          def one(*)
+            One.new(*)
           end
 
           class One
@@ -19,8 +19,8 @@ module Coradoc
             end
           end
 
-          def many(*args)
-            Many.new(*args)
+          def many(*)
+            Many.new(*)
           end
 
           # NOTE: The Many matcher validates that all values in an array/string match

@@ -29,13 +29,13 @@ RSpec.describe Coradoc::Mirror::Partitioner do
   describe '.partition' do
     it 'places frontmatter in the metadata bucket, NOT preface' do
       fm = frontmatter_with([
-        Coradoc::Mirror::Node::FrontmatterEntry.new(
-          key: 'title',
-          value: Coradoc::Mirror::Node::FrontmatterValue.new(
-            value_type: 'string', string_value: 'Doc'
-          )
-        )
-      ])
+                              Coradoc::Mirror::Node::FrontmatterEntry.new(
+                                key: 'title',
+                                value: Coradoc::Mirror::Node::FrontmatterValue.new(
+                                  value_type: 'string', string_value: 'Doc'
+                                )
+                              )
+                            ])
       buckets = described_class.partition([fm, para, clause])
 
       expect(buckets[:metadata]).to eq([fm])

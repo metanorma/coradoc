@@ -54,7 +54,7 @@ module Coradoc
           include Coradoc::AsciiDoc::Model::Anchorable
 
           attribute :id, :string
-          attribute :title, :string, default: -> { nil } # Polymorphic: string or array of Model objects
+          attribute :title, :string, default: -> {} # Polymorphic: string or array of Model objects
           attribute :attributes, Coradoc::AsciiDoc::Model::AttributeList, default: lambda {
             Coradoc::AsciiDoc::Model::AttributeList.new
           }

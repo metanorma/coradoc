@@ -208,7 +208,11 @@ module Coradoc
           def extract_inline_text(element)
             return element.content.to_s if element.content && !element.content.to_s.empty?
 
-            return element.nested_elements.map { |nested| extract_inline_text(nested) }.join if element.is_a?(CoreModel::InlineElement) && element.nested_elements
+            if element.is_a?(CoreModel::InlineElement) && element.nested_elements
+              return element.nested_elements.map do |nested|
+                extract_inline_text(nested)
+              end.join
+            end
 
             if (element.is_a?(CoreModel::InlineElement) || element.is_a?(CoreModel::Block)) && element.children && !element.children.empty?
               return element.children.map do |child|

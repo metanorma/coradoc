@@ -23,8 +23,7 @@ module Coradoc
                 title: title,
                 delimiter_len: delimiter.size,
                 lines: lines,
-                ordering: ordering,
-                source_line: SourceLineExtractor.extract(block)
+                ordering: ordering
               }
               # Markdown fences carry the language tag inline (```ruby);
               # pass it through so the SourceCode classifier entry can set
@@ -37,8 +36,7 @@ module Coradoc
             rule(example: sequence(:example)) do
               Model::Block::Example.new(
                 title: '',
-                lines: example,
-                source_line: SourceLineExtractor.extract(example)
+                lines: example
               )
             end
 
@@ -52,8 +50,7 @@ module Coradoc
               canonical = Coradoc::AsciiDoc::Transform::ElementTransformers::AdmonitionStyles.canonicalize(admonition_type.to_s)
               Model::Admonition.new(
                 content: content,
-                type: canonical,
-                source_line: SourceLineExtractor.extract(admonition_type)
+                type: canonical
               )
             end
 
@@ -72,7 +69,6 @@ module Coradoc
                 src: path,
                 attributes: residual,
                 line_break: "\n",
-                source_line: SourceLineExtractor.extract(block_image),
                 **promoted
               )
             end

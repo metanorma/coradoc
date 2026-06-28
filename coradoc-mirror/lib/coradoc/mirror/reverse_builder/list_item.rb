@@ -1,13 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Coradoc
   module Mirror
     module ReverseBuilder
       class ListItem < Base
-        registers 'list_item'
-
         LIST_TYPES = %w[bullet_list ordered_list].freeze
         private_constant :LIST_TYPES
 

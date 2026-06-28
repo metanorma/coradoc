@@ -164,7 +164,24 @@ module Coradoc
         value, concat = result
         return unless value
 
+        propagate_source_line(value, element)
         concat ? content.concat(Array(value)) : content << value
+      end
+
+      # Copy parser-attached source_line from the CoreModel element onto
+      # every Mirror node the handler produced. Single touchpoint for the
+      # entire CoreModel → Mirror direction — handlers stay focused on
+      # per-type mapping and don't repeat this concern (DRY).
+      def propagate_source_line(value, element)
+        line = element.source_line
+        return unless line
+
+        Array(value).each do |node|
+          next unless node.is_a?(Node)
+          next if node.source_line
+
+          node.source_line = line
+        end
       end
 
       def build_document_attrs(document)

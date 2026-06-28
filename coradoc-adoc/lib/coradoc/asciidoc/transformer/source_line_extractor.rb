@@ -37,7 +37,6 @@ module Coradoc
           when Coradoc::AsciiDoc::Model::Base then node.source_line
           when Hash then extract_from_hash(node)
           when Array then extract_from_array(node)
-          else nil
           end
         end
 

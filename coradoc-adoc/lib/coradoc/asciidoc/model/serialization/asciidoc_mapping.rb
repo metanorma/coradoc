@@ -6,8 +6,7 @@ module Coradoc
       module Serialization
         # Define the DSL for defining mappings in Asciidoc format
         class AsciidocMapping < Lutaml::Model::Mapping
-          attr_reader :mappings
-          attr_writer :mappings
+          attr_accessor :mappings
 
           def initialize
             super
@@ -33,8 +32,8 @@ module Coradoc
 
           private
 
-          def add_mapping(name, to, **options)
-            @mappings << AsciidocMappingRule.new(name, to: to, **options)
+          def add_mapping(name, to, **)
+            @mappings << AsciidocMappingRule.new(name, to: to, **)
           end
         end
       end

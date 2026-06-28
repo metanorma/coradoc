@@ -14,23 +14,19 @@ module Coradoc
                  }) do
               Model::CommentLine.new(
                 text: comment_text,
-                line_break: line_break,
-                source_line: SourceLineExtractor.extract(comment_text)
+                line_break: line_break
               )
             end
 
             rule(comment_block: { comment_text: simple(:comment_text) }) do
               Model::CommentBlock.new(
-                text: comment_text,
-                source_line: SourceLineExtractor.extract(comment_text)
+                text: comment_text
               )
             end
 
             # Page break
             rule(page_break: simple(:page_break)) do
-              Model::Break::PageBreak.new(
-                source_line: SourceLineExtractor.extract(page_break)
-              )
+              Model::Break::PageBreak.new
             end
 
             # Tag
@@ -39,8 +35,7 @@ module Coradoc
                 name: tag[:name],
                 attrs: tag[:attribute_list],
                 line_break: tag[:line_break],
-                prefix: tag[:prefix],
-                source_line: SourceLineExtractor.extract(tag)
+                prefix: tag[:prefix]
               )
             end
 
@@ -63,9 +58,8 @@ module Coradoc
             end
 
             rule(attribute_array: sequence(:attributes)) do
-              attr_list = Model::AttributeList.new(
-                source_line: SourceLineExtractor.extract(attributes)
-              )
+              attr_list = Model::AttributeList.new
+
               attributes.each do |a|
                 case a
                 when Parslet::Slice
@@ -119,8 +113,7 @@ module Coradoc
               Model::Include.new(
                 path: path.to_s,
                 attributes: attribute_list,
-                line_break: line_break,
-                source_line: SourceLineExtractor.extract(path)
+                line_break: line_break
               )
             end
 
@@ -135,8 +128,7 @@ module Coradoc
               Model::Audio.new(
                 src: path.to_s,
                 attributes: attribute_list,
-                line_break: line_break,
-                source_line: SourceLineExtractor.extract(path)
+                line_break: line_break
               )
             end
 
@@ -151,8 +143,7 @@ module Coradoc
               Model::Video.new(
                 src: path.to_s,
                 attributes: attribute_list,
-                line_break: line_break,
-                source_line: SourceLineExtractor.extract(path)
+                line_break: line_break
               )
             end
 
@@ -180,8 +171,7 @@ module Coradoc
                 date: attrs[:date],
                 from: attrs[:from],
                 to: attrs[:to],
-                content: Transformer.lines_to_text_elements(lines),
-                source_line: SourceLineExtractor.extract(reviewer_note)
+                content: Transformer.lines_to_text_elements(lines)
               )
             end
           end

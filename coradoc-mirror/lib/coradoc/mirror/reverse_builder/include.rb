@@ -1,15 +1,11 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Coradoc
   module Mirror
     module ReverseBuilder
       # Include directive: round-trips back to a CoreModel::Include link
       # node. The text graph is preserved through mirror_json → core.
       class Include < Base
-        registers 'include'
-
         def build(node)
           attrs = node.attrs
           CoreModel::Include.new(

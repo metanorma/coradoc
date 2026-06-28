@@ -25,12 +25,12 @@ module Coradoc
         class Strikethrough < Base
           attribute :content,
                     Lutaml::Model::Serializable,
-                    default: -> { nil },
+                    default: -> {},
                     polymorphic: [
                       Lutaml::Model::Type::String,
                       :array
                     ]
-          attribute :text, :string, default: -> { nil }
+          attribute :text, :string, default: -> {}
           attribute :unconstrained, :boolean, default: -> { false }
         end
       end

@@ -70,10 +70,10 @@ module Coradoc
             return false
           end
 
-          key = "#{format_type}_constrained".to_sym
+          key = :"#{format_type}_constrained"
           return true if ast.key?(key)
 
-          unconstrained_key = "#{format_type}_unconstrained".to_sym
+          unconstrained_key = :"#{format_type}_unconstrained"
           return false if ast.key?(unconstrained_key)
 
           true
@@ -158,8 +158,8 @@ module Coradoc
         def extract_inline_content(ast, format_type)
           content_key = format_type.to_sym
           content = ast[content_key] ||
-                    ast["#{format_type}_constrained".to_sym] ||
-                    ast["#{format_type}_unconstrained".to_sym]
+                    ast[:"#{format_type}_constrained"] ||
+                    ast[:"#{format_type}_unconstrained"]
 
           extract_text_content(content)
         end

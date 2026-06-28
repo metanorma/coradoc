@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Coradoc
   module Mirror
     module ReverseBuilder
@@ -9,10 +7,6 @@ module Coradoc
       # information lives in the original AsciiDoc and is preserved only
       # on the forward side; the reverse side collapses them.
       class Section < Base
-        registers 'section', 'clause', 'annex', 'content_section',
-                  'abstract', 'foreword', 'introduction',
-                  'acknowledgements', 'terms', 'definitions', 'references'
-
         def build(node)
           attrs = node.attrs
           CoreModel::SectionElement.new(

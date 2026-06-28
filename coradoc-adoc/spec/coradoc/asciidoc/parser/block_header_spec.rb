@@ -36,6 +36,7 @@ RSpec.describe Coradoc::AsciiDoc::Parser::BlockHeader do
   describe 'on a source block' do
     describe 'with no header' do
       let(:input) { "----\nplain code\n----\n" }
+
       include_examples 'no duplicate-subtree warning'
 
       it 'builds a SourceCode with nil attributes' do
@@ -47,6 +48,7 @@ RSpec.describe Coradoc::AsciiDoc::Parser::BlockHeader do
 
     describe 'with a single attribute list' do
       let(:input) { "[source,ruby]\n----\nputs 'hi'\n----\n" }
+
       include_examples 'no duplicate-subtree warning'
 
       it 'captures every positional value' do
@@ -58,6 +60,7 @@ RSpec.describe Coradoc::AsciiDoc::Parser::BlockHeader do
 
     describe 'with multiple stacked attribute lists' do
       let(:input) { "[role=quote]\n[source,ruby]\n----\nputs 'hi'\n----\n" }
+
       include_examples 'no duplicate-subtree warning'
 
       it 'merges positional and named values across both lists' do
@@ -71,6 +74,7 @@ RSpec.describe Coradoc::AsciiDoc::Parser::BlockHeader do
 
     describe 'with title, id, and a single attribute list' do
       let(:input) { ".My Title\n[#demo]\n[source,ruby]\n----\ncode\n----\n" }
+
       include_examples 'no duplicate-subtree warning'
 
       it 'captures title, id, and attributes' do
@@ -93,6 +97,7 @@ RSpec.describe Coradoc::AsciiDoc::Parser::BlockHeader do
         |===
       ADOC
     end
+
     include_examples 'no duplicate-subtree warning'
 
     it 'merges both attribute lists into one AttributeList on the Table' do
@@ -108,6 +113,7 @@ RSpec.describe Coradoc::AsciiDoc::Parser::BlockHeader do
 
   describe 'on a block image' do
     let(:input) { "[#img1]\nimage::diagram.png[Diagram]\n" }
+
     include_examples 'no duplicate-subtree warning'
 
     it 'captures id and attributes' do
@@ -151,7 +157,7 @@ RSpec.describe Coradoc::AsciiDoc::Transformer::AttributeListNormalizer do
   end
 
   it 'merges multiple AttributeLists into a single one' do
-    first = build_list(positional: %w[source], named: [['role', 'quote']])
+    first = build_list(positional: %w[source], named: [%w[role quote]])
     second = build_list(positional: %w[ruby])
 
     merged = normalizer.coerce([first, second])

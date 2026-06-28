@@ -74,8 +74,7 @@ module Coradoc
               end
 
               Model::List::Item.new(
-                content: content, id:, marker:, attached:, nested:, line_break:,
-                source_line: SourceLineExtractor.extract(list_item)
+                content: content, id:, marker:, attached:, nested:, line_break:
               )
             end
 
@@ -87,8 +86,7 @@ module Coradoc
             # Unordered list
             rule(unordered: sequence(:list_items)) do
               Model::List::Unordered.new(
-                items: list_items,
-                source_line: SourceLineExtractor.extract(list_items)
+                items: list_items
               )
             end
 
@@ -98,16 +96,14 @@ module Coradoc
             ) do
               Model::List::Unordered.new(
                 items: list_items,
-                attrs: attribute_list,
-                source_line: SourceLineExtractor.extract(attribute_list)
+                attrs: attribute_list
               )
             end
 
             # Ordered list
             rule(ordered: sequence(:list_items)) do
               Model::List::Ordered.new(
-                items: list_items,
-                source_line: SourceLineExtractor.extract(list_items)
+                items: list_items
               )
             end
 
@@ -117,8 +113,7 @@ module Coradoc
             ) do
               Model::List::Ordered.new(
                 items: list_items,
-                attrs: attribute_list,
-                source_line: SourceLineExtractor.extract(attribute_list)
+                attrs: attribute_list
               )
             end
 

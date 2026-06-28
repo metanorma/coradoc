@@ -16,23 +16,23 @@ module Coradoc
         # returning a Model::Block::* instance. `max_length` nil means
         # unbounded.
         DELIMITER_CLASSIFICATIONS = [
-          ['*', 4, nil, ->(opts, attrs) {
+          ['*', 4, nil, lambda { |opts, attrs|
             if attrs && attrs.positional == [] && attrs.named.first&.name == 'reviewer'
-              Model::Block::ReviewerComment.new(**opts.merge(attributes: attrs))
+              Model::Block::ReviewerComment.new(**opts, attributes: attrs)
             else
-              Model::Block::Side.new(**opts.merge(attributes: attrs))
+              Model::Block::Side.new(**opts, attributes: attrs)
             end
           }],
-          ['=', 4, nil, ->(opts, attrs) { Model::Block::Example.new(**opts.merge(attributes: attrs)) }],
-          ['+', 4, nil, ->(opts, attrs) { Model::Block::Pass.new(**opts.merge(attributes: attrs)) }],
-          ['.', 4, nil, ->(opts, attrs) { Model::Block::Literal.new(**opts.merge(attributes: attrs)) }],
-          ['_', 4, nil, ->(opts, attrs) { Model::Block::Quote.new(**opts.merge(attributes: attrs)) }],
-          ['-', 4, nil, ->(opts, attrs) { Model::Block::SourceCode.new(**opts.merge(attributes: attrs)) }],
-          ['-', 2, 2,  ->(opts, attrs) { Model::Block::Open.new(**opts.merge(attributes: attrs)) }],
+          ['=', 4, nil, ->(opts, attrs) { Model::Block::Example.new(**opts, attributes: attrs) }],
+          ['+', 4, nil, ->(opts, attrs) { Model::Block::Pass.new(**opts, attributes: attrs) }],
+          ['.', 4, nil, ->(opts, attrs) { Model::Block::Literal.new(**opts, attributes: attrs) }],
+          ['_', 4, nil, ->(opts, attrs) { Model::Block::Quote.new(**opts, attributes: attrs) }],
+          ['-', 4, nil, ->(opts, attrs) { Model::Block::SourceCode.new(**opts, attributes: attrs) }],
+          ['-', 2, 2, ->(opts, attrs) { Model::Block::Open.new(**opts, attributes: attrs) }],
           # Markdown-style triple-backtick fence: behaves as a SourceCode
           # block. The language tag parsed from the opening fence is passed
           # through opts[:lang]; extract_block_language prefers block.lang.
-          ['`', 3, nil, ->(opts, attrs) {
+          ['`', 3, nil, lambda { |opts, attrs|
             model_opts = opts.merge(attributes: attrs, delimiter_char: '`')
             model_opts[:lang] = opts[:lang] if opts.key?(:lang)
             Model::Block::SourceCode.new(**model_opts)

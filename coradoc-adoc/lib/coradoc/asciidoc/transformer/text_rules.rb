@@ -10,8 +10,7 @@ module Coradoc
             # Text Model
             rule(text: simple(:text)) do
               Model::TextElement.new(
-                content: text.to_s,
-                source_line: Transformer::SourceLineExtractor.extract(text)
+                content: text.to_s
               )
             end
 
@@ -22,31 +21,27 @@ module Coradoc
             rule(text: simple(:text), line_break: simple(:line_break)) do
               Model::TextElement.new(
                 content: text.to_s,
-                line_break: line_break,
-                source_line: Transformer::SourceLineExtractor.extract(text)
+                line_break: line_break
               )
             end
 
             rule(text: sequence(:text), line_break: simple(:line_break)) do
               Model::TextElement.new(
                 content: text,
-                line_break: line_break,
-                source_line: Transformer::SourceLineExtractor.extract(text)
+                line_break: line_break
               )
             end
 
             rule(id: simple(:id), text: simple(:text)) do
               Model::TextElement.new(
                 content: text.to_s,
-                id: id.to_s,
-                source_line: Transformer::SourceLineExtractor.extract(id)
+                id: id.to_s
               )
             end
 
             rule(text: sequence(:text)) do
               Model::TextElement.new(
-                content: text,
-                source_line: Transformer::SourceLineExtractor.extract(text)
+                content: text
               )
             end
 
@@ -58,8 +53,7 @@ module Coradoc
               Model::TextElement.new(
                 content: text.to_s,
                 id: id.to_s,
-                line_break: line_break,
-                source_line: Transformer::SourceLineExtractor.extract(id)
+                line_break: line_break
               )
             end
 
@@ -71,16 +65,14 @@ module Coradoc
               Model::TextElement.new(
                 content: text,
                 id: id.to_s,
-                line_break: line_break,
-                source_line: Transformer::SourceLineExtractor.extract(id)
+                line_break: line_break
               )
             end
 
             # Line break
             rule(line_break: simple(:line_break)) do
               Model::LineBreak.new(
-                line_break:,
-                source_line: Transformer::SourceLineExtractor.extract(line_break)
+                line_break:
               )
             end
 
@@ -95,8 +87,7 @@ module Coradoc
                 content: Transformer.lines_to_text_elements(paragraph[:lines]),
                 id: paragraph[:id],
                 attributes: paragraph[:attribute_list],
-                title: paragraph[:title],
-                source_line: Transformer::SourceLineExtractor.extract(paragraph)
+                title: paragraph[:title]
               )
             end
           end
