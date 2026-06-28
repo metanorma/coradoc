@@ -130,6 +130,35 @@ RSpec.describe Coradoc::AsciiDoc::Transform::InlineTransformVisitor do
         texts = result.map { |r| r.is_a?(Coradoc::CoreModel::TextContent) ? r.text : r.content.to_s }
         expect(texts).not_to include(' ')
       end
+
+      # Soft-break spaces must only be synthesised between two
+      # adjacent TextElements — i.e. real source line breaks. When
+      # an inline element (Bold, Passthrough, Image, etc.) sits
+      # between two TextElements, the source had them on the same
+      # line, so no space should be synthesised. Without this guard,
+      # `Before +pass:[RAW]+ after` would emit a double space around
+      # the passthrough, and `foo +\nbar` (hard break) would emit a
+      # stray space between the hard break and "bar".
+      it 'does not insert space around an inline element between TextElements' do
+        items = [
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'Before '),
+          Coradoc::AsciiDoc::Model::Inline::Bold.new(content: 'middle'),
+          Coradoc::AsciiDoc::Model::TextElement.new(content: ' after')
+        ]
+        result = visitor.transform(items)
+        text_contents = result.select { |r| r.is_a?(Coradoc::CoreModel::TextContent) }
+        expect(text_contents.map(&:text)).to eq(['Before ', ' after'])
+      end
+
+      it 'does not insert space between TextElement and Passthrough' do
+        items = [
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'Before '),
+          Coradoc::AsciiDoc::Model::Inline::Passthrough.new(content: 'RAW')
+        ]
+        result = visitor.transform(items)
+        text_contents = result.select { |r| r.is_a?(Coradoc::CoreModel::TextContent) }
+        expect(text_contents.map(&:text)).to eq(['Before '])
+      end
     end
 
     context 'with unknown type' do

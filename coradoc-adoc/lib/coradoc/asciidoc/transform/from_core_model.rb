@@ -38,18 +38,12 @@ module Coradoc
                          Coradoc::AsciiDoc::Model::Header.new(title: '')
                        end
 
-              # Pull FrontmatterBlock out first so strip_title_heading sees
-              # the body children in their natural order (frontmatter →
-              # title heading → body). The reverse-direction strip then
-              # matches on a level-0 HeaderElement wherever it sits among
-              # the remaining children.
               without_frontmatter, frontmatter = extract_frontmatter(Array(element.children))
-              without_title = strip_title_heading(without_frontmatter, element.title)
 
               Coradoc::AsciiDoc::Model::Document.new(
                 id: element.id,
                 header: header,
-                sections: flatten_children(without_title),
+                sections: flatten_children(without_frontmatter),
                 frontmatter: frontmatter
               )
             when CoreModel::SectionElement
@@ -66,27 +60,6 @@ module Coradoc
                 contents: flatten_children(element.children)
               )
             end
-          end
-
-          # The forward direction (DocumentTransformer#insert_title_heading_after_frontmatter)
-          # emits a level-0 HeaderElement after any FrontmatterBlock so
-          # consumers that walk the children see the title. On the reverse
-          # path, that HeaderElement would round-trip back as a separate
-          # body element and the title would be emitted twice (once via
-          # the document header, once via the heading child). Drop it
-          # before serialization when it carries the same text as the
-          # document title.
-          def strip_title_heading(children, document_title)
-            return children unless document_title && !document_title.strip.empty?
-
-            index = children.find_index do |child|
-              child.is_a?(CoreModel::HeaderElement) &&
-                child.level.to_i.zero? &&
-                child.title.to_s == document_title.to_s
-            end
-            return children unless index
-
-            children.reject.with_index { |_, i| i == index }
           end
 
           # Transforms each CoreModel child and flattens one level so a

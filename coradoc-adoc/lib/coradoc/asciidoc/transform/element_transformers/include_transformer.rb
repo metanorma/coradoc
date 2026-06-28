@@ -21,7 +21,8 @@ module Coradoc
                 target: model.path.to_s,
                 options: options,
                 raw_options: raw,
-                line_break: model.line_break.to_s
+                line_break: model.line_break.to_s,
+                source_line: model.source_line
               )
             end
 

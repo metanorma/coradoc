@@ -12,16 +12,25 @@ module Coradoc
                    comment_text: simple(:comment_text),
                    line_break: simple(:line_break)
                  }) do
-              Model::CommentLine.new(text: comment_text, line_break: line_break)
+              Model::CommentLine.new(
+                text: comment_text,
+                line_break: line_break,
+                source_line: SourceLineExtractor.extract(comment_text)
+              )
             end
 
             rule(comment_block: { comment_text: simple(:comment_text) }) do
-              Model::CommentBlock.new(text: comment_text)
+              Model::CommentBlock.new(
+                text: comment_text,
+                source_line: SourceLineExtractor.extract(comment_text)
+              )
             end
 
             # Page break
             rule(page_break: simple(:page_break)) do
-              Model::Break::PageBreak.new
+              Model::Break::PageBreak.new(
+                source_line: SourceLineExtractor.extract(page_break)
+              )
             end
 
             # Tag
@@ -30,7 +39,8 @@ module Coradoc
                 name: tag[:name],
                 attrs: tag[:attribute_list],
                 line_break: tag[:line_break],
-                prefix: tag[:prefix]
+                prefix: tag[:prefix],
+                source_line: SourceLineExtractor.extract(tag)
               )
             end
 
@@ -45,7 +55,7 @@ module Coradoc
             end
 
             rule(positional: simple(:positional)) do
-              positional.to_s
+              positional
             end
 
             rule(attribute_array: nil) do
@@ -53,11 +63,16 @@ module Coradoc
             end
 
             rule(attribute_array: sequence(:attributes)) do
-              attr_list = Model::AttributeList.new
+              attr_list = Model::AttributeList.new(
+                source_line: SourceLineExtractor.extract(attributes)
+              )
               attributes.each do |a|
-                if a.is_a?(String)
+                case a
+                when Parslet::Slice
+                  attr_list.add_positional(a.to_s)
+                when String
                   attr_list.add_positional(a)
-                elsif a.is_a?(Model::Attribute)
+                when Model::Attribute
                   attr_list.add_named(a.key, a.value)
                 end
               end
@@ -104,7 +119,8 @@ module Coradoc
               Model::Include.new(
                 path: path.to_s,
                 attributes: attribute_list,
-                line_break: line_break
+                line_break: line_break,
+                source_line: SourceLineExtractor.extract(path)
               )
             end
 
@@ -119,7 +135,8 @@ module Coradoc
               Model::Audio.new(
                 src: path.to_s,
                 attributes: attribute_list,
-                line_break: line_break
+                line_break: line_break,
+                source_line: SourceLineExtractor.extract(path)
               )
             end
 
@@ -134,7 +151,8 @@ module Coradoc
               Model::Video.new(
                 src: path.to_s,
                 attributes: attribute_list,
-                line_break: line_break
+                line_break: line_break,
+                source_line: SourceLineExtractor.extract(path)
               )
             end
 
@@ -162,7 +180,8 @@ module Coradoc
                 date: attrs[:date],
                 from: attrs[:from],
                 to: attrs[:to],
-                content: Transformer.lines_to_text_elements(lines)
+                content: Transformer.lines_to_text_elements(lines),
+                source_line: SourceLineExtractor.extract(reviewer_note)
               )
             end
           end

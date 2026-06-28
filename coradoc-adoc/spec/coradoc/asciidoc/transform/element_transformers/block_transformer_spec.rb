@@ -15,8 +15,43 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::BlockTransform
       expect(result).to be_a(Coradoc::CoreModel::ParagraphBlock)
       expect(result.id).to eq('para-1')
       expect(result.content).to eq('Hello world')
+      expect(result.lines).to eq(['Hello world'])
       expect(result.children.size).to eq(1)
       expect(result.children.first).to be_a(Coradoc::CoreModel::TextContent)
+    end
+
+    it 'preserves source line structure for multi-line paragraphs' do
+      para = Coradoc::AsciiDoc::Model::Paragraph.new(
+        content: [
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'This is line one'),
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'of a paragraph'),
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'that spans three.')
+        ]
+      )
+
+      result = described_class.transform_paragraph(para)
+
+      expect(result).to be_a(Coradoc::CoreModel::ParagraphBlock)
+      # `content` is the rendered view — soft-wrapped lines joined with
+      # spaces so they read as flowing prose.
+      expect(result.content).to eq('This is line one of a paragraph that spans three.')
+      # `lines` is the source-line view — each entry corresponds to one
+      # line in the AsciiDoc source.
+      expect(result.lines).to eq(['This is line one', 'of a paragraph', 'that spans three.'])
+    end
+
+    it 'filters out LineBreak and PageBreak items when extracting source lines' do
+      para = Coradoc::AsciiDoc::Model::Paragraph.new(
+        content: [
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'Before'),
+          Coradoc::AsciiDoc::Model::LineBreak.new,
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'After')
+        ]
+      )
+
+      result = described_class.transform_paragraph(para)
+
+      expect(result.lines).to eq(%w[Before After])
     end
 
     it 'transforms a paragraph with inline elements' do
@@ -33,7 +68,12 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::BlockTransform
 
       expect(result).to be_a(Coradoc::CoreModel::ParagraphBlock)
       expect(result.content).to match(/Hello\s+bold\s*world/)
-      expect(result.children.size).to eq(4)
+      # Inline elements between two TextElements do NOT synthesize a
+      # soft-break space — the visitor only inserts " " between two
+      # adjacent TextElements (i.e. real source line breaks). An
+      # inline element sitting between two text runs means the source
+      # had them on the same line.
+      expect(result.children.size).to eq(3)
       expect(result.children.find { |c| c.is_a?(Coradoc::CoreModel::BoldElement) }).not_to be_nil
       expect(result.children.find { |c| c.is_a?(Coradoc::CoreModel::BoldElement) }.content).to eq('bold')
     end
@@ -77,6 +117,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::BlockTransform
       expect(result.title).to eq('Example')
       expect(result.language).to eq('ruby')
       expect(result.content).to eq("def test\n  true\nend")
+      expect(result.lines).to eq(['def test', '  true', 'end'])
     end
 
     it 'handles source block without language' do
@@ -107,6 +148,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::BlockTransform
       expect(result.id).to eq('blk-1')
       expect(result.title).to eq('Note')
       expect(result.content).to eq('Note content')
+      expect(result.lines).to eq(['Note content'])
       expect(result.block_semantic_type).to eq('example')
       expect(result.delimiter_type).to eq('====')
     end

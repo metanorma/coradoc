@@ -14,9 +14,8 @@ module Coradoc
       def parse(text, format:)
         format_module = FormatCatalog.get_format(format)
         unless format_module
-          raise UnsupportedFormatError,
-                "Format '#{format}' is not registered. " \
-                "Available formats: #{FormatCatalog.registered_formats.join(', ')}"
+          raise UnsupportedFormatError.new(format,
+                                           available: FormatCatalog.registered_formats)
         end
 
         text = Hooks.invoke(:before_parse, text, format: format)
@@ -66,7 +65,7 @@ module Coradoc
 
       def serialize(model, to:, **)
         format_module = FormatCatalog.get_format(to)
-        raise UnsupportedFormatError, "Format '#{to}' is not registered" unless format_module
+        raise UnsupportedFormatError.new(to, available: FormatCatalog.registered_formats) unless format_module
 
         model = Hooks.invoke(:before_serialize, model, format: to)
         result = format_module.serialize(model, **)
@@ -84,7 +83,10 @@ module Coradoc
         raise UnsupportedFormatError, "Could not detect format for: #{path}" unless source_format
 
         format_module = FormatCatalog.get_format(source_format)
-        raise UnsupportedFormatError, "Format '#{source_format}' is not registered" unless format_module
+        unless format_module
+          raise UnsupportedFormatError.new(source_format,
+                                           available: FormatCatalog.registered_formats)
+        end
 
         if FormatCatalog.binary_format?(source_format)
           format_module.parse_to_core(path)

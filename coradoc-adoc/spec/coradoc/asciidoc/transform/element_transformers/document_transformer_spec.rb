@@ -27,14 +27,13 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::DocumentTransf
       expect(result).to be_a(Coradoc::CoreModel::DocumentElement)
       expect(result.id).to eq('doc-1')
       expect(result.title).to eq('My Document')
-      # The document title is prepended as a level-0 HeaderElement so
-      # body-walking consumers see it. The Paragraph follows.
-      expect(result.children.size).to eq(2)
-      expect(result.children[0]).to be_a(Coradoc::CoreModel::HeaderElement)
-      expect(result.children[0].level).to eq(0)
-      expect(result.children[0].title).to eq('My Document')
-      expect(result.children[1]).to be_a(Coradoc::CoreModel::ParagraphBlock)
-      expect(result.children[1].content).to eq('Content')
+      # The document title is the canonical source of truth on
+      # DocumentElement#title. It is NOT duplicated into the body as a
+      # level-0 HeaderElement — that synthesis caused the title to render
+      # twice in the mirror layer (attrs.title + floating_title).
+      expect(result.children.size).to eq(1)
+      expect(result.children[0]).to be_a(Coradoc::CoreModel::ParagraphBlock)
+      expect(result.children[0].content).to eq('Content')
     end
 
     it 'handles a document without header' do

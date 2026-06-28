@@ -8,10 +8,13 @@ module Coradoc
           class << self
             def transform_paragraph(para)
               children = ToCoreModel.transform_inline_content(para.content)
+              source_lines = ToCoreModel.extract_source_lines(para.content)
 
               Coradoc::CoreModel::ParagraphBlock.new(
                 id: para.id,
                 content: ToCoreModel.extract_text_content(para.content),
+                lines: source_lines,
+                source_line: para.source_line,
                 children: children
               )
             end
@@ -22,19 +25,15 @@ module Coradoc
             # lines are preserved. Treating these as paragraphs would collapse
             # whitespace and join consecutive lines into a single flowing text.
             def transform_verbatim_block(block, klass, language_override: nil)
-              non_break_lines = Array(block.lines).reject do |line|
-                line.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
-                  line.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
-              end
-              content_lines = non_break_lines.map do |line|
-                ToCoreModel.extract_text_content(line)
-              end.join("\n")
+              source_lines = ToCoreModel.extract_source_lines(block.lines)
 
               klass.new(
                 id: block.id,
                 title: ToCoreModel.extract_title_text(block.title),
-                content: content_lines,
-                language: language_override || ToCoreModel.extract_block_language(block)
+                content: source_lines.join("\n"),
+                lines: source_lines,
+                language: language_override || ToCoreModel.extract_block_language(block),
+                source_line: block.source_line
               )
             end
 
@@ -74,7 +73,7 @@ module Coradoc
             # AsciiDoc spec, every delimited block accepts both admonition
             # labels and verbatim/stem casts in its attribute line. The cast
             # is resolved by +block_cast_semantic+ in MECE order:
-            # admonition > stem > verbatim > fallback.
+            # admonition > stem > verbatim > typed-cast > fallback.
             def transform_with_admonition_check(block, native_class)
               semantic = block_cast_semantic(block)
               case semantic
@@ -88,6 +87,9 @@ module Coradoc
                 transform_listing_from_open(block)
               when :literal
                 transform_literal_from_open(block)
+              when :typed_cast
+                style = first_positional_attr(block).to_s.downcase
+                transform_typed_block(block, TYPED_BLOCK_CAST_STYLES.fetch(style))
               else
                 transform_typed_block(block, native_class)
               end
@@ -119,11 +121,25 @@ module Coradoc
 
             VERBATILE_CAST_STYLES = %w[source listing literal].freeze
 
+            # Positional style → typed CoreModel class for blocks whose
+            # attribute line casts an open block into a richer semantic
+            # type (e.g. `[sidebar]\n--\n...\n--`). Single source of
+            # truth: adding a new style cast is one line here, no edits
+            # to dispatch (OCP).
+            TYPED_BLOCK_CAST_STYLES = {
+              'sidebar' => Coradoc::CoreModel::SidebarBlock,
+              'example' => Coradoc::CoreModel::ExampleBlock,
+              'quote' => Coradoc::CoreModel::QuoteBlock,
+              'abstract' => Coradoc::CoreModel::AbstractBlock,
+              'partintro' => Coradoc::CoreModel::PartintroBlock
+            }.freeze
+
             # Resolve a delimited block's cast from its first positional
             # attribute. Single source of truth for the cast ladder used
             # by every block-form transformer (example/sidebar/quote/open).
             # Returns one of: :admonition, :stem, :source, :listing,
-            # :literal, or nil (no cast — use the block's native class).
+            # :literal, :typed_cast, or nil (no cast — use the block's
+            # native class).
             def block_cast_semantic(block)
               style = first_positional_attr(block)
               return nil unless style
@@ -131,6 +147,7 @@ module Coradoc
               style_str = style.to_s.downcase
               return :admonition if AdmonitionStyles.admonition?(style)
               return :stem if STEM_STYLES.key?(style_str)
+              return :typed_cast if TYPED_BLOCK_CAST_STYLES.key?(style_str)
               return style_str.to_sym if VERBATILE_CAST_STYLES.include?(style_str)
 
               nil
@@ -163,7 +180,8 @@ module Coradoc
               Coradoc::CoreModel::AnnotationBlock.new(
                 annotation_type: canonical,
                 content: content_lines,
-                title: ToCoreModel.extract_title_text(block.title)
+                title: ToCoreModel.extract_title_text(block.title),
+                source_line: block.source_line
               )
             end
 
@@ -176,7 +194,7 @@ module Coradoc
             end
 
             def transform_block(block, semantic_type_or_delimiter)
-              content_lines = ToCoreModel.extract_block_lines(block)
+              source_lines = ToCoreModel.extract_source_lines(block.lines)
               semantic_type = if semantic_type_or_delimiter.is_a?(Symbol)
                                 semantic_type_or_delimiter
                               else
@@ -188,8 +206,10 @@ module Coradoc
                 delimiter_type: semantic_type_or_delimiter.is_a?(String) ? semantic_type_or_delimiter : nil,
                 id: block.id,
                 title: ToCoreModel.extract_title_text(block.title),
-                content: content_lines,
-                language: ToCoreModel.extract_block_language(block)
+                content: source_lines.join("\n"),
+                lines: source_lines,
+                language: ToCoreModel.extract_block_language(block),
+                source_line: block.source_line
               )
             end
 
@@ -216,6 +236,7 @@ module Coradoc
                   title: ToCoreModel.extract_title_text(block.title),
                   children: children,
                   language: ToCoreModel.extract_block_language(block),
+                  source_line: block.source_line,
                   **extra_attrs
                 )
               else
@@ -230,7 +251,8 @@ module Coradoc
                   inline = [Coradoc::CoreModel::TextContent.new(text: '')] if inline.empty?
                   Coradoc::CoreModel::ParagraphBlock.new(
                     content: ToCoreModel.extract_text_content(group),
-                    children: Array(inline)
+                    children: Array(inline),
+                    source_line: ToCoreModel.extract_source_line(group)
                   )
                 end
 
@@ -240,6 +262,7 @@ module Coradoc
                   content: content_lines,
                   children: children,
                   language: ToCoreModel.extract_block_language(block),
+                  source_line: block.source_line,
                   **extra_attrs
                 )
               end

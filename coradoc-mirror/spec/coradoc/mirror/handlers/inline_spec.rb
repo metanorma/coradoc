@@ -112,4 +112,47 @@ RSpec.describe Coradoc::Mirror::Handlers::Inline do
       expect(json2).to eq(json1)
     end
   end
+
+  describe 'hard line break (foo +\nbar)' do
+    # Author-requested explicit break must map to a distinct ProseMirror
+    # node type so downstream renderers can emit `<br>` rather than a
+    # soft line wrap. Collapsing to SoftBreak silently lost the break.
+    it 'dispatches HardLineBreakElement to a hard_break node' do
+      hard_break = Coradoc::CoreModel::HardLineBreakElement.new(content: '')
+      node = described_class.call(hard_break, context: context)
+
+      expect(node).to be_a(Coradoc::Mirror::Node::HardBreak)
+      expect(node.type).to eq('hard_break')
+    end
+
+    it 'dispatches LineBreakElement to a soft_break node' do
+      soft_break = Coradoc::CoreModel::LineBreakElement.new(content: '')
+      node = described_class.call(soft_break, context: context)
+
+      expect(node).to be_a(Coradoc::Mirror::Node::SoftBreak)
+      expect(node.type).to eq('soft_break')
+    end
+
+    it 'round-trips hard_break through mirror_json → CoreModel → mirror_json' do
+      original = Coradoc::CoreModel::ParagraphBlock.new(
+        children: [
+          Coradoc::CoreModel::TextContent.new(text: 'foo'),
+          Coradoc::CoreModel::HardLineBreakElement.new(content: ''),
+          Coradoc::CoreModel::TextContent.new(text: 'bar')
+        ]
+      )
+      json1 = Coradoc.serialize(original, to: :mirror_json)
+
+      parsed_node = Coradoc::Mirror.from_hash(JSON.parse(json1))
+      document = Coradoc::Mirror::MirrorToCoreModel.new.call(parsed_node)
+
+      hard_break = Array(document.children).find do |child|
+        child.is_a?(Coradoc::CoreModel::HardLineBreakElement)
+      end
+      expect(hard_break).not_to be_nil
+
+      json2 = Coradoc.serialize(document, to: :mirror_json)
+      expect(json2).to eq(json1)
+    end
+  end
 end

@@ -303,6 +303,60 @@ module Coradoc
         end
       end
 
+      # Abstract block — `[abstract]\n====\n...\n====` in AsciiDoc. Carries
+      # the same shape as Sidebar/Example but a distinct wire type so the
+      # block-level construct does not collide with the section-level
+      # `abstract` (one of Section's PM_ALIASES). The block preserves its
+      # block identity through round-trip; renderers that want a section
+      # view should look at SectionElement-style sources instead.
+      class Abstract < Node
+        PM_TYPE = 'abstract_block'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :title, :string
+          attribute :id, :string
+
+          key_value do
+            map 'title', to: :title
+            map 'id', to: :id
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
+      # Partintro block — `[partintro]\n====\n...\n====` in AsciiDoc, used
+      # to introduce a "part" in multi-part documents. Distinct wire type
+      # for the same reason as Abstract (no collision with potential
+      # section-level uses of "partintro").
+      class Partintro < Node
+        PM_TYPE = 'partintro_block'
+
+        class Attrs < Lutaml::Model::Serializable
+          attribute :title, :string
+          attribute :id, :string
+
+          key_value do
+            map 'title', to: :title
+            map 'id', to: :id
+          end
+        end
+
+        attribute :attrs, Attrs
+
+        key_value do
+          map 'type', to: :type, render_default: true
+          map 'attrs', to: :attrs
+          map 'content', to: :content, polymorphic: Node::POLYMORPHIC
+        end
+      end
+
       class OpenBlock < Node
         PM_TYPE = 'open_block'
 
@@ -342,6 +396,15 @@ module Coradoc
 
       class SoftBreak < Node
         PM_TYPE = 'soft_break'
+      end
+
+      # Hard line break — author-requested explicit break (`foo +\nbar` in
+      # AsciiDoc, `<br>` semantics in HTML). Distinct from SoftBreak so
+      # downstream renderers can map it to `<br>` rather than collapsing
+      # the break into a soft newline-or-space convention. ProseMirror's
+      # schema uses `hard_break` for the same purpose.
+      class HardBreak < Node
+        PM_TYPE = 'hard_break'
       end
 
       # ── Admonition (NOTE, TIP, WARNING, CAUTION, IMPORTANT) ──

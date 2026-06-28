@@ -35,6 +35,13 @@ module Coradoc
 
         attribute :id, :string
 
+        # 1-indexed source line where this element begins, when known.
+        # Populated by the Parslet transformer from the matched Slice's
+        # line_and_column. nil for programmatically constructed models.
+        # Single source of truth for source-position propagation through
+        # AsciiDoc::Model → CoreModel (Issue 1, STATUS-2026-06-28).
+        attribute :source_line, :integer
+
         # Element classification for spacing and serialization decisions.
         # Subclasses override these to declare their level.
         def block_level?
