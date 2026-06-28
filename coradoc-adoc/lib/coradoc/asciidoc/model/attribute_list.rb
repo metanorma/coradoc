@@ -87,6 +87,20 @@ module Coradoc
           )
         end
 
+        # Remove the first named attribute matching `name` and return its
+        # scalar value (or nil if absent). Used by promoters that lift a
+        # named attr out of the residual bag into a typed field.
+        # @param name [String, Symbol]
+        # @return [String, nil]
+        def delete_named(name)
+          name_str = name.to_s
+          idx = named.index { |n| n.name.to_s == name_str }
+          return nil unless idx
+
+          removed = @named.delete_at(idx)
+          removed.value.first&.to_s
+        end
+
         # Validate named attributes against validators
         #
         # @param validators [Hash] Hash of name => matcher pairs
@@ -209,12 +223,24 @@ module Coradoc
           positional.empty? && named.empty?
         end
 
-        # Get a named attribute value by name
+        # Get the scalar value of the first named attribute matching `name`.
+        # Returns the first element of the underlying multi-value array, or
+        # nil if the name is absent. Use {#fetch_all} to retrieve the full
+        # multi-value array.
         # @param name [String, Symbol] The attribute name
-        # @return [Object, nil] The attribute value or nil if not found
+        # @return [String, nil]
         def [](name)
           name_str = name.to_s
-          named.find { |n| n.name.to_s == name_str }&.value
+          named.find { |n| n.name.to_s == name_str }&.value&.first&.to_s
+        end
+
+        # Get the full multi-value array for a named attribute.
+        # @param name [String, Symbol]
+        # @return [Array<String>] (empty when absent)
+        def fetch_all(name)
+          name_str = name.to_s
+          found = named.find { |n| n.name.to_s == name_str }
+          found ? found.value : []
         end
 
         # Get a named attribute value with default
@@ -222,7 +248,8 @@ module Coradoc
         # @param default [Object] The default value if not found
         # @return [Object] The attribute value or default
         def fetch(name, default = nil)
-          self[name] || default
+          value = self[name]
+          value.nil? ? default : value
         end
       end
     end

@@ -54,12 +54,16 @@ module Coradoc
               title = block_image[:title]
               path = block_image[:path]
               attrs = AttributeListNormalizer.coerce(block_image[:attribute_list_macro])
+              promoted, residual = Model::Image::AttributeExtractor.call(
+                attrs, Model::Image::BlockImage
+              )
               Model::Image::BlockImage.new(
                 title: title,
                 id: id,
                 src: path,
-                attributes: attrs,
-                line_break: "\n"
+                attributes: residual,
+                line_break: "\n",
+                **promoted
               )
             end
           end

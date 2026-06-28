@@ -82,11 +82,36 @@ RSpec.describe Coradoc::AsciiDoc::Model::Image do
       end
     end
 
-    describe '#alt alias' do
-      it 'aliases title' do
-        image = described_class.new(title: 'Alt text')
+    describe 'typed attribute promotion declarations' do
+      it 'declares alt as the only promoted positional slot' do
+        expect(described_class.promoted_positional).to eq(%i[alt])
+      end
+
+      it 'declares width, height, link, role as promoted named slots' do
+        expect(described_class.promoted_named).to eq(%i[width height link role])
+      end
+    end
+
+    describe 'typed attribute fields' do
+      it 'accepts alt as its own typed field (not aliased to title)' do
+        image = described_class.new(alt: 'Alt text', title: 'Caption')
 
         expect(image.alt).to eq('Alt text')
+        expect(image.title).to eq('Caption')
+      end
+
+      it 'accepts role, width, height, link as typed fields' do
+        image = described_class.new(
+          role: 'thumb',
+          width: '640',
+          height: '480',
+          link: 'https://example.org'
+        )
+
+        expect(image.role).to eq('thumb')
+        expect(image.width).to eq('640')
+        expect(image.height).to eq('480')
+        expect(image.link).to eq('https://example.org')
       end
     end
 
@@ -122,6 +147,30 @@ RSpec.describe Coradoc::AsciiDoc::Model::Image do
 
         expect(image).to be_a(Coradoc::AsciiDoc::Model::Anchorable)
       end
+    end
+  end
+
+  describe Coradoc::AsciiDoc::Model::Image::InlineImage do
+    it 'overrides promoted_positional to include role (2nd positional)' do
+      expect(described_class.promoted_positional).to eq(%i[alt role])
+    end
+
+    it 'inherits the standard promoted_named set from Core' do
+      expect(described_class.promoted_named).to eq(%i[width height link role])
+    end
+
+    it 'reports inline? as true' do
+      expect(described_class.new).to be_inline
+    end
+  end
+
+  describe Coradoc::AsciiDoc::Model::Image::BlockImage do
+    it 'overrides promoted_positional to include caption (2nd positional)' do
+      expect(described_class.promoted_positional).to eq(%i[alt caption])
+    end
+
+    it 'inherits the standard promoted_named set from Core' do
+      expect(described_class.promoted_named).to eq(%i[width height link role])
     end
   end
 end

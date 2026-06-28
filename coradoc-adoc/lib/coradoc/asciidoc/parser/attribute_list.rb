@@ -44,7 +44,10 @@ module Coradoc
         end
 
         def positional_value_unquoted
-          match('[^\],]').repeat(1)
+          # Exclude `=` so that `key=value` is matched by `named_attribute`
+          # rather than swallowed as a single positional token. A positional
+          # value that legitimately contains `=` must be quoted.
+          match('[^\],=]').repeat(1)
         end
 
         def positional_value_single_quote

@@ -9,30 +9,21 @@ module Coradoc
         # Images can be block-level (standalone paragraphs) or inline (within text).
         # This base class provides common functionality for both types.
         #
-        # @!attribute [r] id
-        #   @return [String, nil] Optional identifier for the image
+        # Typed promotion of attribute-list slots
+        # ---------------------------------------
         #
-        # @!attribute [r] title
-        #   @return [String, nil] Optional image title/alt text
+        # Semantically meaningful image attributes (`alt`, `role`, `width`,
+        # `height`, `link`) are declared as typed lutaml-model fields on
+        # `Core` itself — not as validators on a generic bag. The class-level
+        # {promoted_positional} and {promoted_named} methods are the single
+        # source of truth for which slots get lifted into typed fields and in
+        # what order; subclasses override them to reflect syntax differences
+        # (e.g. inline images treat the 2nd positional as `role`, block images
+        # do not).
         #
-        # @!attribute [r] src
-        #   @return [String] The image source URL or path
-        #
-        # @!attribute [r] attributes
-        #   @return [Coradoc::AsciiDoc::Model::Image::Core::AttributeList] Image-specific attributes
-        #
-        # @!attribute [r] annotate_missing
-        #   @return [String, nil] Annotation text for missing images
-        #
-        # @!attribute [r] line_break
-        #   @return [String] Line break character (default: "")
-        #
-        # @!attribute [r] colons
-        #   @return [String, nil] Colon positioning for attributes
-        #
-        # @see Coradoc::AsciiDoc::Model::Image::BlockImage Block-level images
-        # @see Coradoc::AsciiDoc::Model::Image::InlineImage Inline images
-        #
+        # The lift itself is performed by {AttributeExtractor}, a pure function
+        # over (AttributeList, target_class) → (extracted_hash, residual_list).
+        # Anything not promoted stays in `attributes` for round-trip fidelity.
         class Core < Coradoc::AsciiDoc::Model::Base
           # Autoload nested AttributeList class
           autoload :AttributeList, 'coradoc/asciidoc/model/image/core/attribute_list'
@@ -42,6 +33,12 @@ module Coradoc
           attribute :id, :string
           attribute :title, :string
           attribute :src, :string
+          attribute :alt, :string
+          attribute :caption, :string
+          attribute :role, :string
+          attribute :width, :string
+          attribute :height, :string
+          attribute :link, :string
           attribute :attributes,
                     Coradoc::AsciiDoc::Model::Image::Core::AttributeList,
                     default: lambda {
@@ -51,17 +48,29 @@ module Coradoc
           attribute :line_break, :string, default: -> { '' }
           attribute :colons, :string
 
-          # Aliases for common attribute accessors
           alias path src
-          alias alt title
+
+          # Positional attribute-list slots that this image class promotes to
+          # typed fields, in order. Subclasses override to reflect their
+          # syntax. Index 0 → alt for all image kinds; index 1 → role for
+          # inline images only.
+          # @return [Array<Symbol>]
+          def self.promoted_positional
+            %i[alt]
+          end
+
+          # Named attribute-list keys that this image class promotes to typed
+          # fields. The same set applies to both inline and block images.
+          # @return [Array<Symbol>]
+          def self.promoted_named
+            %i[width height link role]
+          end
 
           # Custom to_adoc implementation that uses ElementRegistry directly
           # to avoid recursion issues with image serialization.
           #
           # @return [String] AsciiDoc representation of this image
           def to_adoc
-            # Use the registered serializer rather than Coradoc::AsciiDoc::Serializer.serialize
-            # to avoid recursion
             serializer_class = Coradoc::AsciiDoc::Serializer::ElementRegistry.lookup(self.class)
             serializer_class.new.to_adoc(self)
           end

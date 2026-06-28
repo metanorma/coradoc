@@ -26,24 +26,22 @@ module Coradoc
             end
 
             def transform_image(image)
-              src = image.src.to_s
-              src = src[1..] if src.start_with?(':')
-              positional = image.attributes&.positional || []
-              positional_alt = positional.first&.value&.to_s || ''
-              caption = positional[1]&.value&.to_s
-              title = image.title&.to_s
-              # AsciiDoc block-title (`.Caption`) is semantically a caption,
-              # but for compatibility with the existing pipeline that treated
-              # it as alt when no positional alt was supplied, fall back to it.
-              alt = positional_alt.empty? ? title : positional_alt
-              Coradoc::CoreModel::Image.new(
-                src: src,
-                alt: alt,
-                caption: caption,
-                title: title,
-                width: image.attributes&.[]('width'),
-                height: image.attributes&.[]('height')
-              )
+              Coradoc::CoreModel::Image.new(**image_attributes(image))
+            end
+
+            def image_attributes(image)
+              {
+                src: normalize_image_src(image.src),
+                alt: image.alt, title: image.title, caption: image.caption,
+                width: image.width, height: image.height,
+                link: image.link, role: image.role,
+                inline: image.is_a?(Coradoc::AsciiDoc::Model::Image::InlineImage)
+              }
+            end
+
+            def normalize_image_src(src)
+              s = src.to_s
+              s.start_with?(':') ? s[1..] : s
             end
 
             def transform_bibliography(bib)
