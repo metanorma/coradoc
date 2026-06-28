@@ -329,16 +329,15 @@ module Coradoc
           def transform_image(image)
             target_class = image.inline ? Coradoc::AsciiDoc::Model::Image::InlineImage
                                         : Coradoc::AsciiDoc::Model::Image::BlockImage
-            target_class.new(
-              src: image.src,
-              alt: image.alt,
-              title: image.title,
-              caption: image.caption,
-              width: image.width,
-              height: image.height,
-              link: image.link,
-              role: image.role
-            )
+            target_class.new(**image_attributes(image))
+          end
+
+          def image_attributes(image)
+            {
+              src: image.src, alt: image.alt, title: image.title,
+              caption: image.caption, width: image.width, height: image.height,
+              link: image.link, role: image.role
+            }
           end
 
           def transform_bibliography(bib)
