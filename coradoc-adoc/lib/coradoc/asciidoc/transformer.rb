@@ -33,6 +33,7 @@ module Coradoc
       autoload :BlockTypeClassifier, "#{__dir__}/transformer/block_type_classifier"
       autoload :TableLayout, "#{__dir__}/transformer/table_layout"
       autoload :TableCellBuilder, "#{__dir__}/transformer/table_cell_builder"
+      autoload :SourceLineExtractor, "#{__dir__}/transformer/source_line_extractor"
 
       # Apply all rule modules (triggers autoload)
       HeaderRules.apply(self)
@@ -139,7 +140,11 @@ module Coradoc
                           text_content
                         end
 
-          Model::TextElement.new(content: transformed, line_break: line[:line_break])
+          Model::TextElement.new(
+            content: transformed,
+            line_break: line[:line_break],
+            source_line: SourceLineExtractor.extract(line)
+          )
         end
       end
 

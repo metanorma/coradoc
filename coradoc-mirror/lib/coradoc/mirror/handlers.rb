@@ -17,6 +17,8 @@ module Coradoc
       autoload :Blockquote, "#{__dir__}/handlers/blockquote"
       autoload :Example, "#{__dir__}/handlers/example"
       autoload :Sidebar, "#{__dir__}/handlers/sidebar"
+      autoload :Abstract, "#{__dir__}/handlers/abstract"
+      autoload :Partintro, "#{__dir__}/handlers/partintro"
       autoload :OpenBlock, "#{__dir__}/handlers/open_block"
       autoload :Verse, "#{__dir__}/handlers/verse"
       autoload :Comment, "#{__dir__}/handlers/comment"

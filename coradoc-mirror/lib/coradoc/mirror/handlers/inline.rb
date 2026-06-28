@@ -102,7 +102,9 @@ module Coradoc
               build_span_mark(element, context)
             when CoreModel::FootnoteElement
               build_footnote_node(element, context)
-            when CoreModel::HardLineBreakElement, CoreModel::LineBreakElement
+            when CoreModel::HardLineBreakElement
+              Node::HardBreak.new
+            when CoreModel::LineBreakElement
               Node::SoftBreak.new
             when CoreModel::TextElement
               build_text_only(element, context)

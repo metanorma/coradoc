@@ -13,7 +13,12 @@ module Coradoc
         # block-form transformer that needs to decide between an admonition
         # and the block's native type.
         module AdmonitionStyles
-          BUILTIN = %w[note tip warning caution important editor todo].freeze
+          # Generic `[admonition]` (capitalized as ADMONITION by
+          # +canonicalize+) is the spec-defined generic admonition style.
+          # It is rarely used directly but exists in the AsciiDoc spec;
+          # treating it as a real admonition prevents it from collapsing
+          # to an ExampleBlock when applied to a delimited block.
+          BUILTIN = %w[note tip warning caution important editor todo admonition].freeze
 
           @custom = []
 

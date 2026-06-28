@@ -16,11 +16,15 @@ module Coradoc
               end
 
               if marker_type == 'definition'
-                Coradoc::CoreModel::DefinitionList.new(items: items)
+                Coradoc::CoreModel::DefinitionList.new(
+                  items: items,
+                  source_line: list.source_line
+                )
               else
                 Coradoc::CoreModel::ListBlock.new(
                   marker_type: marker_type,
-                  items: items
+                  items: items,
+                  source_line: list.source_line
                 )
               end
             end
@@ -45,7 +49,8 @@ module Coradoc
                 term: ToCoreModel.extract_text_content(term_children),
                 definitions: [ToCoreModel.extract_text_content(def_children)],
                 term_children: term_children,
-                definition_children: def_children
+                definition_children: def_children,
+                source_line: item.source_line
               )
               di.id = item.id if item.id
 
@@ -63,7 +68,8 @@ module Coradoc
 
               li = Coradoc::CoreModel::ListItem.new(
                 content: ToCoreModel.extract_text_content(content_val),
-                marker: item.marker
+                marker: item.marker,
+                source_line: item.source_line
               )
               li.children = children
 

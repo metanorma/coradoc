@@ -23,14 +23,38 @@ module Coradoc
             transformer ? transformer.call(model) : model
           end
 
-          def extract_block_lines(block)
-            non_break_lines = Array(block.lines).reject do |line|
-              line.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
-                line.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
+          # Returns the source-line view of an AsciiDoc content array as
+          # an Array<String>. Single source of truth for source-line
+          # extraction — every transformer that needs to populate
+          # CoreModel::Block#lines goes through here so the filtering
+          # rules (skip Model::LineBreak and Model::Break::PageBreak,
+          # which carry no renderable text) apply consistently.
+          def extract_source_lines(content)
+            Array(content).filter_map do |item|
+              next if item.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
+                      item.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
+
+              extract_text_content(item).to_s
             end
-            non_break_lines.map do |line|
-              extract_text_content(line)
-            end.join("\n")
+          end
+
+          def extract_block_lines(block)
+            extract_source_lines(block.lines).join("\n")
+          end
+
+          # Extracts the source_line of the first AsciiDoc::Model::Base in
+          # +content+. Single source of truth for source-line propagation
+          # from AsciiDoc::Model trees into CoreModel objects built from
+          # grouped content (e.g., paragraphs inside typed blocks).
+          # Returns nil when no model carries a source_line.
+          def extract_source_line(content)
+            Array(content).each do |item|
+              next unless item.is_a?(Coradoc::AsciiDoc::Model::Base)
+
+              line = item.source_line
+              return line if line
+            end
+            nil
           end
 
           def extract_title_text(title)

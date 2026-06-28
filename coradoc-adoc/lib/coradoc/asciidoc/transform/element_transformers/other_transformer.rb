@@ -10,7 +10,8 @@ module Coradoc
               Coradoc::CoreModel::Term.new(
                 text: term.term.to_s,
                 type: term.type&.to_s || 'preferred',
-                lang: term.lang&.to_s || 'en'
+                lang: term.lang&.to_s || 'en',
+                source_line: term.source_line
               )
             end
 
@@ -19,7 +20,8 @@ module Coradoc
               children = ToCoreModel.transform_inline_content(admonition.content)
               block = Coradoc::CoreModel::AnnotationBlock.new(
                 annotation_type: canonical,
-                content: ToCoreModel.extract_text_content(admonition.content)
+                content: ToCoreModel.extract_text_content(admonition.content),
+                source_line: admonition.source_line
               )
               block.children = children
               block
@@ -35,7 +37,8 @@ module Coradoc
                 alt: image.alt, title: image.title, caption: image.caption,
                 width: image.width, height: image.height,
                 link: image.link, role: image.role,
-                inline: image.is_a?(Coradoc::AsciiDoc::Model::Image::InlineImage)
+                inline: image.is_a?(Coradoc::AsciiDoc::Model::Image::InlineImage),
+                source_line: image.source_line
               }
             end
 
@@ -53,7 +56,8 @@ module Coradoc
                 id: bib.id,
                 title: bib.title.to_s,
                 level: nil,
-                entries: entries
+                entries: entries,
+                source_line: bib.source_line
               )
             end
 
@@ -61,7 +65,8 @@ module Coradoc
               Coradoc::CoreModel::BibliographyEntry.new(
                 anchor_name: entry.anchor_name,
                 document_id: entry.document_id,
-                ref_text: entry.ref_text.to_s
+                ref_text: entry.ref_text.to_s,
+                source_line: entry.source_line
               )
             end
           end

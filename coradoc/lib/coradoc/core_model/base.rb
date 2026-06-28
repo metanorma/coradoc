@@ -41,6 +41,13 @@ module Coradoc
       #   @return [Array<MetadataEntry>] additional metadata entries
       attribute :metadata_entries, MetadataEntry, collection: true
 
+      # 1-indexed source line where this element begins, when known.
+      # Populated by format transformers (e.g., AsciiDoc's SourceLineExtractor)
+      # so consumers can map AST nodes back to the source text. nil for
+      # programmatically constructed models. Single source of truth across
+      # all CoreModel types (Issue 1, STATUS-2026-06-28).
+      attribute :source_line, :integer
+
       # Construct an instance and yield it for in-place mutation.
       #
       # This is the programmatic-construction entry point for CoreModel

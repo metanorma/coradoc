@@ -360,7 +360,7 @@ module Coradoc
     private
 
     def build_message
-      msg = "Format '#{requested_format}' is not supported"
+      msg = "Format '#{requested_format}' is not registered"
       msg += ". Available formats: #{available_formats.join(', ')}" if available_formats.any?
       msg
     end

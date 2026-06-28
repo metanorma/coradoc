@@ -14,7 +14,8 @@ module Coradoc
               Coradoc::CoreModel::Table.new(
                 id: table.id,
                 title: table.title&.to_s,
-                rows: rows
+                rows: rows,
+                source_line: table.source_line
               )
             end
 
@@ -24,7 +25,8 @@ module Coradoc
               end
               Coradoc::CoreModel::TableRow.new(
                 cells: cells,
-                header: row.header
+                header: row.header,
+                source_line: row.source_line
               )
             end
 
@@ -38,7 +40,8 @@ module Coradoc
                 colspan: cell.colspan,
                 rowspan: cell.rowspan,
                 style: cell.style_name,
-                children: children
+                children: children,
+                source_line: cell.source_line
               )
             end
           end

@@ -62,6 +62,8 @@ module Coradoc
       require_relative 'reverse_builder/blockquote'
       require_relative 'reverse_builder/example'
       require_relative 'reverse_builder/sidebar'
+      require_relative 'reverse_builder/abstract'
+      require_relative 'reverse_builder/partintro'
       require_relative 'reverse_builder/open_block'
       require_relative 'reverse_builder/verse'
       require_relative 'reverse_builder/horizontal_rule'
@@ -91,6 +93,7 @@ module Coradoc
       require_relative 'reverse_builder/text'
       require_relative 'reverse_builder/raw_inline'
       require_relative 'reverse_builder/soft_break'
+      require_relative 'reverse_builder/hard_break'
       require_relative 'reverse_builder/generic_block'
     end
   end

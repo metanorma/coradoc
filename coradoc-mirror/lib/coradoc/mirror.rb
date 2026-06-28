@@ -75,6 +75,8 @@ module Coradoc
       registry.register(CoreModel::QuoteBlock, Handlers::Blockquote)
       registry.register(CoreModel::ExampleBlock, Handlers::Example)
       registry.register(CoreModel::SidebarBlock, Handlers::Sidebar)
+      registry.register(CoreModel::AbstractBlock, Handlers::Abstract)
+      registry.register(CoreModel::PartintroBlock, Handlers::Partintro)
       registry.register(CoreModel::OpenBlock, Handlers::OpenBlock)
       registry.register(CoreModel::VerseBlock, Handlers::Verse)
       registry.register(CoreModel::CommentBlock, Handlers::Comment)

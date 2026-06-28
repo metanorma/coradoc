@@ -69,6 +69,8 @@ module Coradoc
     autoload :ExampleBlock, "#{__dir__}/core_model/example_block"
     autoload :QuoteBlock, "#{__dir__}/core_model/quote_block"
     autoload :SidebarBlock, "#{__dir__}/core_model/sidebar_block"
+    autoload :AbstractBlock, "#{__dir__}/core_model/abstract_block"
+    autoload :PartintroBlock, "#{__dir__}/core_model/partintro_block"
     autoload :LiteralBlock, "#{__dir__}/core_model/literal_block"
     autoload :PassBlock, "#{__dir__}/core_model/pass_block"
     autoload :StemBlock, "#{__dir__}/core_model/stem_block"

@@ -22,7 +22,8 @@ module Coradoc
             rule(link: subtree(:link)) do
               Model::Inline::Link.new(
                 path: link[:path].to_s,
-                name: link[:text]&.to_s
+                name: link[:text]&.to_s,
+                source_line: SourceLineExtractor.extract(link)
               )
             end
 
@@ -31,7 +32,10 @@ module Coradoc
               href = xref[:href].to_s
               text = xref[:text]
               args = text ? [text.to_s] : []
-              Model::Inline::CrossReference.new(href:, args:)
+              Model::Inline::CrossReference.new(
+                href:, args:,
+                source_line: SourceLineExtractor.extract(xref)
+              )
             end
 
             # Inline image
@@ -43,6 +47,7 @@ module Coradoc
               Model::Image::InlineImage.new(
                 src: inline_image[:path],
                 attributes: residual,
+                source_line: SourceLineExtractor.extract(inline_image),
                 **promoted
               )
             end
@@ -54,13 +59,17 @@ module Coradoc
             rule(inline_passthrough: subtree(:passthrough)) do
               Model::Inline::Passthrough.new(
                 content: passthrough[:raw].to_s,
-                form: 'triple'
+                form: 'triple',
+                source_line: SourceLineExtractor.extract(passthrough)
               )
             end
 
             # Attribute reference
             rule(attribute_reference: simple(:name)) do
-              Model::Inline::AttributeReference.new(name:)
+              Model::Inline::AttributeReference.new(
+                name:,
+                source_line: SourceLineExtractor.extract(name)
+              )
             end
 
             # Hard line break (` +\n` or `\\n`). Emitted as a dedicated
@@ -68,8 +77,10 @@ module Coradoc
             # Model::LineBreak, which only represents paragraph-separator
             # blank lines. Hard breaks carry semantic meaning: HTML/Markdown
             # renderers map them to <br>.
-            rule(hard_line_break: simple(:_)) do
-              Model::Inline::HardLineBreak.new
+            rule(hard_line_break: simple(:hard_line_break)) do
+              Model::Inline::HardLineBreak.new(
+                source_line: SourceLineExtractor.extract(hard_line_break)
+              )
             end
 
             # Term
@@ -77,30 +88,45 @@ module Coradoc
               term_type: simple(:term_type),
               term: simple(:term)
             ) do
-              Coradoc::AsciiDoc::Model::Term.new(term:, type: term_type, lang: :en)
+              Coradoc::AsciiDoc::Model::Term.new(
+                term:, type: term_type, lang: :en,
+                source_line: SourceLineExtractor.extract(term_type)
+              )
             end
 
             # Footnote
             rule(footnote: simple(:footnote)) do
               text_str = footnote.to_s
-              Coradoc::AsciiDoc::Model::Inline::Footnote.new(text: text_str)
+              Coradoc::AsciiDoc::Model::Inline::Footnote.new(
+                text: text_str,
+                source_line: SourceLineExtractor.extract(footnote)
+              )
             end
 
             rule(footnote: simple(:footnote), id: simple(:id)) do
               text_str = footnote.to_s
-              Coradoc::AsciiDoc::Model::Inline::Footnote.new(text: text_str, id: id.to_s)
+              Coradoc::AsciiDoc::Model::Inline::Footnote.new(
+                text: text_str, id: id.to_s,
+                source_line: SourceLineExtractor.extract(footnote)
+              )
             end
 
             # Footnote with empty content (reference to named footnote)
             rule(footnote: sequence(:footnote), id: simple(:id)) do
               text_str = footnote.map(&:to_s).join
-              Coradoc::AsciiDoc::Model::Inline::Footnote.new(text: text_str, id: id.to_s)
+              Coradoc::AsciiDoc::Model::Inline::Footnote.new(
+                text: text_str, id: id.to_s,
+                source_line: SourceLineExtractor.extract(footnote)
+              )
             end
 
             # Footnote with empty content and no id
             rule(footnote: sequence(:footnote)) do
               text_str = footnote.map(&:to_s).join
-              Coradoc::AsciiDoc::Model::Inline::Footnote.new(text: text_str)
+              Coradoc::AsciiDoc::Model::Inline::Footnote.new(
+                text: text_str,
+                source_line: SourceLineExtractor.extract(footnote)
+              )
             end
 
             # Inline formatting rules generated from a single registry.
@@ -114,11 +140,17 @@ module Coradoc
 
               rule(constrained_key => subtree(:subtree)) do
                 content = Transformer.extract_inline_content(subtree)
-                klass.new(content: content, unconstrained: false)
+                klass.new(
+                  content: content, unconstrained: false,
+                  source_line: SourceLineExtractor.extract(subtree)
+                )
               end
               rule(unconstrained_key => subtree(:subtree)) do
                 content = Transformer.extract_inline_content(subtree)
-                klass.new(content: content, unconstrained: true)
+                klass.new(
+                  content: content, unconstrained: true,
+                  source_line: SourceLineExtractor.extract(subtree)
+                )
               end
             end
 
@@ -127,7 +159,8 @@ module Coradoc
               Model::Inline::Span.new(
                 text: span_constrained[:text],
                 unconstrained: false,
-                attributes: span_constrained[:attribute_list]
+                attributes: span_constrained[:attribute_list],
+                source_line: SourceLineExtractor.extract(span_constrained)
               )
             end
 
@@ -136,31 +169,42 @@ module Coradoc
               Model::Inline::Span.new(
                 text: span_unconstrained[:text],
                 unconstrained: true,
-                attributes: span_unconstrained[:attribute_list]
+                attributes: span_unconstrained[:attribute_list],
+                source_line: SourceLineExtractor.extract(span_unconstrained)
               )
             end
 
             # Superscript
             rule(superscript: subtree(:superscript)) do
               content = Transformer.extract_simple_inline_content(superscript)
-              Model::Inline::Superscript.new(content:)
+              Model::Inline::Superscript.new(
+                content:,
+                source_line: SourceLineExtractor.extract(superscript)
+              )
             end
 
             # Subscript
             rule(subscript: subtree(:subscript)) do
               content = Transformer.extract_simple_inline_content(subscript)
-              Model::Inline::Subscript.new(content:)
+              Model::Inline::Subscript.new(
+                content:,
+                source_line: SourceLineExtractor.extract(subscript)
+              )
             end
 
             # Highlight (simple)
             rule(highlight: simple(:text)) do
-              Model::Highlight.new(content: text)
+              Model::Highlight.new(
+                content: text,
+                source_line: SourceLineExtractor.extract(text)
+              )
             end
             # Stem
             rule(stem: subtree(:stem)) do
               Coradoc::AsciiDoc::Model::Inline::Stem.new(
                 type: stem[:stem_type],
-                content: stem[:content]
+                content: stem[:content],
+                source_line: SourceLineExtractor.extract(stem)
               )
             end
           end
