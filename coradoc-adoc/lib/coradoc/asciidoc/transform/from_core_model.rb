@@ -327,10 +327,17 @@ module Coradoc
           end
 
           def transform_image(image)
-            Coradoc::AsciiDoc::Model::Image::BlockImage.new(
+            target_class = image.inline ? Coradoc::AsciiDoc::Model::Image::InlineImage
+                                        : Coradoc::AsciiDoc::Model::Image::BlockImage
+            target_class.new(
               src: image.src,
-              title: image.alt,
-              attributes: build_image_attributes(image)
+              alt: image.alt,
+              title: image.title,
+              caption: image.caption,
+              width: image.width,
+              height: image.height,
+              link: image.link,
+              role: image.role
             )
           end
 
@@ -530,6 +537,10 @@ module Coradoc
               content.map { |item| create_text_elements(item) }
             when Coradoc::CoreModel::InlineElement
               transform_inline(content)
+            when Coradoc::CoreModel::TextContent
+              Coradoc::AsciiDoc::Model::TextElement.new(content: content.text.to_s)
+            when Coradoc::CoreModel::Base
+              transform(content)
             when Coradoc::AsciiDoc::Model::Base
               content
             when Lutaml::Model::Serializable
@@ -552,13 +563,6 @@ module Coradoc
           def build_attributes(block)
             attrs = {}
             attrs['language'] = block.language if block.language
-            attrs
-          end
-
-          def build_image_attributes(image)
-            attrs = {}
-            attrs['width'] = image.width if image.width
-            attrs['height'] = image.height if image.height
             attrs
           end
 

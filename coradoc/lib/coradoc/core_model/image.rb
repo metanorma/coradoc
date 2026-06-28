@@ -44,8 +44,11 @@ module Coradoc
 
       # @!attribute link
       #   @return [String, nil] URL to link to when image is clicked
-      #   @note Not yet wired by any transformer; reserved for future use
       attribute :link, :string
+
+      # @!attribute role
+      #   @return [String, nil] CSS role/class for the image (AsciiDoc role attr)
+      attribute :role, :string
 
       # @!attribute inline
       #   @return [Boolean] whether this is an inline image
@@ -59,7 +62,7 @@ module Coradoc
       private
 
       def comparable_attributes
-        super + %i[src alt caption width height link inline]
+        super + %i[src alt caption width height link role inline]
       end
     end
   end

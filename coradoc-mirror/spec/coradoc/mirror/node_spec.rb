@@ -42,15 +42,18 @@ RSpec.describe Coradoc::Mirror::Node do
       expect(code.attrs.passthrough).to be true
     end
 
-    it 'Image has src, alt, caption, width, height accessors under attrs' do
+    it 'Image has src, alt, caption, width, height, role accessors under attrs' do
       img = described_class::Image.new(
-        attrs: described_class::Image::Attrs.new(src: 'img.png', alt: 'Alt', caption: 'Cap', width: '100')
+        attrs: described_class::Image::Attrs.new(
+          src: 'img.png', alt: 'Alt', caption: 'Cap', width: '100', role: 'figure'
+        )
       )
       expect(img.attrs.src).to eq('img.png')
       expect(img.attrs.alt).to eq('Alt')
       expect(img.attrs.caption).to eq('Cap')
       expect(img.attrs.width).to eq('100')
       expect(img.attrs.height).to be_nil
+      expect(img.attrs.role).to eq('figure')
     end
 
     it 'TableCell has colspan, rowspan, alignment, header accessors under attrs' do

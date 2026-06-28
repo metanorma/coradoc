@@ -383,7 +383,8 @@ module Coradoc
           def transform_image(image)
             Coradoc::Markdown::Image.new(
               src: image.src,
-              alt: image.alt.to_s
+              alt: image.alt.to_s,
+              title: image.title
             )
           end
 

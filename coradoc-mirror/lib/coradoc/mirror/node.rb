@@ -496,6 +496,7 @@ module Coradoc
           attribute :caption, :string
           attribute :width, :string
           attribute :height, :string
+          attribute :role, :string
           attribute :inline, :boolean
 
           key_value do
@@ -505,6 +506,7 @@ module Coradoc
             map 'caption', to: :caption
             map 'width', to: :width
             map 'height', to: :height
+            map 'role', to: :role
             map 'inline', to: :inline
           end
         end

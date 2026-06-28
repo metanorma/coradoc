@@ -46,6 +46,16 @@ RSpec.describe Coradoc::CoreModel::Image do
 
       expect(image.link).to eq('fullsize.png')
     end
+
+    it 'accepts a role attribute' do
+      image = described_class.new(
+        src: 'icon.png',
+        alt: 'Icon',
+        role: 'thumb'
+      )
+
+      expect(image.role).to eq('thumb')
+    end
   end
 
   describe '#semantically_equivalent?' do

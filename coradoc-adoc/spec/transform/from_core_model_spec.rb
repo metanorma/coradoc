@@ -92,7 +92,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
     end
 
     context 'when transforming an image' do
-      it 'transforms a CoreModel image to AsciiDoc' do
+      it 'transforms a CoreModel block image to AsciiDoc BlockImage' do
         image = Coradoc::CoreModel::Image.new(
           src: 'diagram.png',
           alt: 'System Diagram'
@@ -103,6 +103,36 @@ RSpec.describe Coradoc::AsciiDoc::Transform::FromCoreModel do
         expect(result).to be_a(Coradoc::AsciiDoc::Model::Image::BlockImage)
         expect(result.path).to eq('diagram.png')
         expect(result.alt).to eq('System Diagram')
+      end
+
+      it 'promotes typed fields (width, height, link, role) onto the result' do
+        image = Coradoc::CoreModel::Image.new(
+          src: 'diagram.png',
+          alt: 'System Diagram',
+          width: '800',
+          height: '600',
+          link: 'https://example.org',
+          role: 'figure'
+        )
+
+        result = transformer.transform(image)
+
+        expect(result.width).to eq('800')
+        expect(result.height).to eq('600')
+        expect(result.link).to eq('https://example.org')
+        expect(result.role).to eq('figure')
+      end
+
+      it 'produces an InlineImage when CoreModel image is inline' do
+        image = Coradoc::CoreModel::Image.new(
+          src: 'icon.png',
+          alt: 'Icon',
+          inline: true
+        )
+
+        result = transformer.transform(image)
+
+        expect(result).to be_a(Coradoc::AsciiDoc::Model::Image::InlineImage)
       end
     end
 

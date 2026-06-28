@@ -60,12 +60,12 @@ RSpec.describe Coradoc::AsciiDoc::Model::AttributeList do
   end
 
   describe '#[] and #fetch' do
-    it 'returns named attribute value by name' do
+    it 'returns the scalar value of the first matching named attribute' do
       attrs = described_class.new
       attrs.add_named('role', 'note')
 
-      expect(attrs[:role]).to eq(['note'])
-      expect(attrs['role']).to eq(['note'])
+      expect(attrs[:role]).to eq('note')
+      expect(attrs['role']).to eq('note')
     end
 
     it 'returns nil for missing attribute' do
@@ -84,6 +84,55 @@ RSpec.describe Coradoc::AsciiDoc::Model::AttributeList do
       attrs = described_class.new
 
       expect(attrs.fetch(:missing)).to be_nil
+    end
+  end
+
+  describe '#fetch_all' do
+    it 'returns the full multi-value array' do
+      attrs = described_class.new
+      attrs.add_named('cols', %w[1 2 3])
+
+      expect(attrs.fetch_all('cols')).to eq(%w[1 2 3])
+      expect(attrs.fetch_all(:cols)).to eq(%w[1 2 3])
+    end
+
+    it 'returns the single-element array for scalar values' do
+      attrs = described_class.new
+      attrs.add_named('role', 'note')
+
+      expect(attrs.fetch_all(:role)).to eq(['note'])
+    end
+
+    it 'returns an empty array for missing names' do
+      attrs = described_class.new
+
+      expect(attrs.fetch_all(:missing)).to eq([])
+    end
+  end
+
+  describe '#delete_named' do
+    it 'removes the first matching named attribute and returns its scalar value' do
+      attrs = described_class.new
+      attrs.add_named('role', 'note')
+      attrs.add_named('width', '640')
+
+      expect(attrs.delete_named('role')).to eq('note')
+      expect(attrs.named.map(&:name)).to eq(['width'])
+    end
+
+    it 'returns nil when the name is absent (and leaves the list unchanged)' do
+      attrs = described_class.new
+      attrs.add_named('role', 'note')
+
+      expect(attrs.delete_named('missing')).to be_nil
+      expect(attrs.named.size).to eq(1)
+    end
+
+    it 'matches Symbol and String names interchangeably' do
+      attrs = described_class.new
+      attrs.add_named('role', 'note')
+
+      expect(attrs.delete_named(:role)).to eq('note')
     end
   end
 

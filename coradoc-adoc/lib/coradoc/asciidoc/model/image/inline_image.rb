@@ -10,6 +10,13 @@ module Coradoc
           end
 
           attribute :colons, :string, default: -> { ':' }
+
+          # Inline images use the 2nd positional slot for the role, per
+          # Asciidoctor: `image:target[alt, role, width=N, ...]`.
+          # @return [Array<Symbol>]
+          def self.promoted_positional
+            %i[alt role]
+          end
         end
       end
     end

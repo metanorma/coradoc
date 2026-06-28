@@ -38,39 +38,63 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::OtherTransform
   end
 
   describe '.transform_image' do
-    it 'transforms an image block' do
-      attrs = Coradoc::AsciiDoc::Model::AttributeList.new(
-        positional: [Coradoc::AsciiDoc::Model::AttributeListAttribute.new(value: 'alt text')],
-        named: [
-          Coradoc::AsciiDoc::Model::NamedAttribute.new(name: 'width', value: '100'),
-          Coradoc::AsciiDoc::Model::NamedAttribute.new(name: 'height', value: '200')
-        ]
-      )
-      title = Coradoc::AsciiDoc::Model::Title.new(content: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'alt text')])
-
+    it 'transforms a block image, lifting typed fields directly from the model' do
       image = Coradoc::AsciiDoc::Model::Image::BlockImage.new(
         src: 'img.png',
-        title: title,
-        attributes: attrs
+        alt: 'alt text',
+        title: 'Caption',
+        width: '800',
+        height: '600',
+        link: 'https://example.org',
+        role: 'figure'
       )
-      # Simulating the behavior where attributes might be a hash in the image model (as accessed via [])
-      # If the image model responds to attributes[], let's just use what it provides
-      allow_any_instance_of(Coradoc::AsciiDoc::Model::Block::Image).to receive(:attributes).and_return({ 'width' => '100', 'height' => '200' }) if false
 
-      # Wait, I cannot use allow_any_instance_of. I'll just rely on the real object.
-      # If attributes acts like a hash, I should define it that way if it's open, but it's an AttributeList.
-      # Let's check how the transformer uses it: `image.attributes&.[]('width')`
-      # In Coradoc::AsciiDoc::Model::Block::Image, attributes is usually an AttributeList or hash.
-      
-      # For safety, let's just test with a real model, and see what its attributes method returns.
-      # Actually `Coradoc::AsciiDoc::Model::Block::Image` might not have attributes as a hash.
-      # We'll just pass nil or an empty object if it crashes, but let's try.
       result = described_class.transform_image(image)
 
       expect(result).to be_a(Coradoc::CoreModel::Image)
       expect(result.src).to eq('img.png')
       expect(result.alt).to eq('alt text')
-      # Not asserting width/height since we don't know if AttributeList responds to [] with string keys
+      expect(result.title).to eq('Caption')
+      expect(result.width).to eq('800')
+      expect(result.height).to eq('600')
+      expect(result.link).to eq('https://example.org')
+      expect(result.role).to eq('figure')
+      expect(result.inline).to be false
+    end
+
+    it 'sets inline=true for InlineImage sources' do
+      image = Coradoc::AsciiDoc::Model::Image::InlineImage.new(
+        src: 'icon.png',
+        alt: 'Icon',
+        role: 'inline-role'
+      )
+
+      result = described_class.transform_image(image)
+
+      expect(result.inline).to be true
+      expect(result.alt).to eq('Icon')
+      expect(result.role).to eq('inline-role')
+    end
+
+    it 'strips a single leading colon from the src' do
+      image = Coradoc::AsciiDoc::Model::Image::BlockImage.new(src: ':images/foo.png')
+
+      result = described_class.transform_image(image)
+
+      expect(result.src).to eq('images/foo.png')
+    end
+
+    it 'never misreads the 2nd positional as caption (regression for inline role bug)' do
+      image = Coradoc::AsciiDoc::Model::Image::InlineImage.new(
+        src: 'foo.png',
+        alt: 'Alt',
+        role: 'SomeRole'
+      )
+
+      result = described_class.transform_image(image)
+
+      expect(result.caption).to be_nil
+      expect(result.role).to eq('SomeRole')
     end
   end
 

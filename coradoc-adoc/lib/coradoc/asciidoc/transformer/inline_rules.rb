@@ -37,9 +37,13 @@ module Coradoc
             # Inline image
             rule(inline_image: subtree(:inline_image)) do
               attrs = AttributeListNormalizer.coerce(inline_image[:attribute_list])
+              promoted, residual = Model::Image::AttributeExtractor.call(
+                attrs, Model::Image::InlineImage
+              )
               Model::Image::InlineImage.new(
                 src: inline_image[:path],
-                attributes: attrs
+                attributes: residual,
+                **promoted
               )
             end
 
