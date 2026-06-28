@@ -55,11 +55,15 @@ RSpec.describe Coradoc::Markdown::Serializer::Config do
     end
 
     it 'rejects unknown definition_list_nested' do
-      expect { described_class.new(definition_list_nested: :bogus) }.to raise_error(ArgumentError, /Unknown definition_list_nested/)
+      expect do
+        described_class.new(definition_list_nested: :bogus)
+      end.to raise_error(ArgumentError, /Unknown definition_list_nested/)
     end
 
     it 'rejects non-boolean suppress_comments' do
-      expect { described_class.new(suppress_comments: :yes) }.to raise_error(ArgumentError, /suppress_comments must be boolean/)
+      expect do
+        described_class.new(suppress_comments: :yes)
+      end.to raise_error(ArgumentError, /suppress_comments must be boolean/)
     end
 
     it 'rejects non-boolean autolinks' do

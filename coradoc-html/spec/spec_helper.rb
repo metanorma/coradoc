@@ -39,9 +39,7 @@ RSpec.configure do |config|
 
   config.before(:context, :requires_frontend_dist) do
     dist_dir = File.expand_path('../frontend/dist', __dir__)
-    unless File.directory?(dist_dir)
-      skip "Frontend dist not built. Run: cd frontend && npm install && npm run build"
-    end
+    skip 'Frontend dist not built. Run: cd frontend && npm install && npm run build' unless File.directory?(dist_dir)
   end
 
   # Enable flags like --only-failures and --next-failure

@@ -13,9 +13,7 @@ module Coradoc
             marker = element.ordered ? '1.' : '-'
             element.items.flat_map do |item|
               lines = [render_item(item, marker, _ctx)]
-              if item.sublist
-                lines += call(item.sublist, _ctx).split("\n").map { |l| "    #{l}" }
-              end
+              lines += call(item.sublist, _ctx).split("\n").map { |l| "    #{l}" } if item.sublist
               lines
             end.join("\n")
           end

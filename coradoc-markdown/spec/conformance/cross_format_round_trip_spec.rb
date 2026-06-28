@@ -73,13 +73,13 @@ RSpec.describe 'Cross-format round-trip (AsciiDoc → Markdown → CoreModel)', 
     it 'preserves an image with alt text' do
       # Use AsciiDoc title-block syntax (`.Caption`) since the parser
       # currently drops the inline `[alt]` attribute list.
-      _c1, c2, md = adoc_to_md_to_core(".Logo\nimage::logo.png[]\n")
+      _c1, _, md = adoc_to_md_to_core(".Logo\nimage::logo.png[]\n")
       expect(md).to include('logo.png')
       expect(md).to include('Logo')
     end
 
     it 'preserves a comment block by suppressing it (default)' do
-      _c1, c2, md = adoc_to_md_to_core("////\nhidden\n////\n")
+      _c1, _, md = adoc_to_md_to_core("////\nhidden\n////\n")
       expect(md).not_to include('hidden')
     end
 
@@ -94,7 +94,7 @@ RSpec.describe 'Cross-format round-trip (AsciiDoc → Markdown → CoreModel)', 
 
   describe 'inline preservation' do
     it 'preserves bold and italic' do
-      _c1, c2, md = adoc_to_md_to_core("*bold* and _italic_\n")
+      _c1, _, md = adoc_to_md_to_core("*bold* and _italic_\n")
       expect(md).to include('**bold**')
       expect(md).to include('*italic*')
     end
@@ -105,7 +105,7 @@ RSpec.describe 'Cross-format round-trip (AsciiDoc → Markdown → CoreModel)', 
     end
 
     it 'preserves a link' do
-      _c1, c2, md = adoc_to_md_to_core("https://example.com[Example]\n")
+      _c1, _, md = adoc_to_md_to_core("https://example.com[Example]\n")
       expect(md).to include('https://example.com')
       expect(md).to include('Example')
     end
@@ -180,7 +180,7 @@ RSpec.describe 'Cross-format round-trip (Markdown → AsciiDoc → CoreModel)', 
   end
 
   it 'preserves bold and italic' do
-    _c1, c2, adoc = md_to_adoc_to_core("**bold** and *italic*\n")
+    _c1, _, adoc = md_to_adoc_to_core("**bold** and *italic*\n")
     expect(adoc).to include('**bold**')
     expect(adoc).to include('*italic*')
   end

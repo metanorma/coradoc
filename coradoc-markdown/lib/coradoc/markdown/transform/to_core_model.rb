@@ -165,7 +165,9 @@ module Coradoc
               cells = if row.is_a?(Array)
                         row.map { |c| Coradoc::CoreModel::TableCell.new(content: c.to_s, header: false) }
                       else
-                        row.to_s.split(' | ').map { |c| Coradoc::CoreModel::TableCell.new(content: c.to_s, header: false) }
+                        row.to_s.split(' | ').map do |c|
+                          Coradoc::CoreModel::TableCell.new(content: c.to_s, header: false)
+                        end
                       end
               rows << Coradoc::CoreModel::TableRow.new(cells: cells)
             end

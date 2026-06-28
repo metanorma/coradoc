@@ -62,7 +62,7 @@ RSpec.describe 'Markdown serialization round-trip', :aggregate_failures do
       [
         ['- [ ] todo', false],
         ['- [x] done', true]
-      ].each do |(src, checked)|
+      ].each do |(src, _checked)|
         _c1, c2, text2 = roundtrip("#{src}\n")
         expect(text2).to include(src), "expected #{src.inspect} to survive"
         lists = c2.children.select { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
@@ -130,11 +130,11 @@ RSpec.describe 'Markdown serialization round-trip', :aggregate_failures do
 
     it 'round-trips strong/emphasis/code' do
       [
-        "**bold**",
-        "*italic*",
-        "`code`",
-        "~~strike~~",
-        "==highlight=="
+        '**bold**',
+        '*italic*',
+        '`code`',
+        '~~strike~~',
+        '==highlight=='
       ].each do |inline|
         _c1, c2, text2 = roundtrip("#{inline} text\n")
         expect(text2).to include(inline), "expected #{inline.inspect} to survive"
@@ -156,7 +156,7 @@ RSpec.describe 'Markdown serialization round-trip', :aggregate_failures do
       expect(text2).to include('[^1]')
       expect(text2).to include('[^1]: note text')
       footnotes = []
-      walk = ->(node) do
+      walk = lambda do |node|
         case node
         when Coradoc::CoreModel::Footnote then footnotes << node
         when Coradoc::CoreModel::Base then Array(node.children).each { |c| walk.call(c) }
@@ -195,7 +195,7 @@ RSpec.describe 'Markdown serialization round-trip', :aggregate_failures do
         ```
       MD
 
-      c1, c2, text2 = roundtrip(src)
+      _, c2, text2 = roundtrip(src)
 
       # Serializer output should contain the same content
       expect(text2).to include('# Heading One')
@@ -260,19 +260,19 @@ RSpec.describe 'Markdown serialization round-trip', :aggregate_failures do
     end
 
     it 'round-trips inline math' do
-      _c1, c2, text2 = roundtrip("inline $a + b$ math\n")
+      _c1, _, text2 = roundtrip("inline $a + b$ math\n")
       expect(text2).to include('$a + b$')
       expect(text2).to include('inline')
     end
 
     it 'round-trips an image with a title' do
-      _c1, c2, text2 = roundtrip("![alt](img.png \"Title\")\n")
+      _c1, _, text2 = roundtrip("![alt](img.png \"Title\")\n")
       expect(text2).to include('![alt](img.png "Title")')
       expect(text2).to include('img.png')
     end
 
     it 'round-trips a link with a title' do
-      _c1, c2, text2 = roundtrip("[text](https://example.com \"Site\")\n")
+      _c1, _, text2 = roundtrip("[text](https://example.com \"Site\")\n")
       expect(text2).to include('[text](https://example.com "Site")')
     end
 
@@ -283,5 +283,4 @@ RSpec.describe 'Markdown serialization round-trip', :aggregate_failures do
       expect(c2.children.map(&:flat_text).join).to include('b')
     end
   end
-
 end

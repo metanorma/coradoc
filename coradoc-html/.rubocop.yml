@@ -1,3 +1,5 @@
+inherit_from: ../.rubocop_todo.yml
+
 AllCops:
   TargetRubyVersion: 3.3
   NewCops: enable
@@ -14,11 +16,10 @@ Gemspec/DevelopmentDependencies:
 Lint/DuplicateBranch:
   Exclude:
     - 'lib/coradoc/html/config.rb'
-    - 'lib/coradoc/html/input/converters/ol.rb'
-    - 'lib/coradoc/html/input/converters/text.rb'
-    - 'lib/coradoc/html/input/plugins/plateau.rb'
+    - 'lib/coradoc/html/converters/ol.rb'
+    - 'lib/coradoc/html/converters/text.rb'
+    - 'lib/coradoc/html/plugins/plateau.rb'
     - 'lib/coradoc/html/transform/to_core_model.rb'
-    - 'spec/input/converters/converters_spec.rb'
 
 Lint/MissingSuper:
   Exclude:
@@ -55,15 +56,15 @@ Metrics/PerceivedComplexity:
 Naming/PredicateName:
   Exclude:
     - 'spec/**/*'
-    - 'lib/coradoc/html/input/converters/p.rb'
+    - 'lib/coradoc/html/converters/p.rb'
 
 Performance/CollectionLiteralInLoop:
   Exclude:
-    - 'lib/coradoc/html/input/converters/dl.rb'
+    - 'lib/coradoc/html/converters/dl.rb'
 
 Performance/MethodObjectAsBlock:
   Exclude:
-    - 'lib/coradoc/html/input/plugins/plateau.rb'
+    - 'lib/coradoc/html/plugins/plateau.rb'
 
 RSpec/DescribeClass:
   Exclude:
@@ -123,12 +124,12 @@ Style/Documentation:
 
 Style/EmptyElse:
   Exclude:
-    - 'lib/coradoc/html/input/converters/text.rb'
+    - 'lib/coradoc/html/converters/text.rb'
 
 Style/HashLikeCase:
   Exclude:
-    - 'lib/coradoc/html/input/converters/table.rb'
-    - 'lib/coradoc/html/input/converters/td.rb'
+    - 'lib/coradoc/html/converters/table.rb'
+    - 'lib/coradoc/html/converters/td.rb'
 
 Layout/LineLength:
   Max: 129

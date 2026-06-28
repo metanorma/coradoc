@@ -6,8 +6,7 @@ module Coradoc
       module Serialization
         # Define the DSL for defining mappings in Asciidoc format
         class AsciidocMapping < Lutaml::Model::Mapping
-          attr_reader :mappings
-          attr_writer :mappings
+          attr_accessor :mappings
 
           def initialize
             super
