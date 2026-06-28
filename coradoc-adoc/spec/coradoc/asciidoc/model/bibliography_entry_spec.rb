@@ -21,7 +21,7 @@ RSpec.describe Coradoc::AsciiDoc::Model::BibliographyEntry do
     end
 
     it 'recurses through nested arrays' do
-      expect(described_class.coerce_ref_text(['a', ['b', 'c']])).to eq('abc')
+      expect(described_class.coerce_ref_text(['a', %w[b c]])).to eq('abc')
     end
   end
 

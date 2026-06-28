@@ -19,7 +19,27 @@ module Coradoc
         builder_class = ReverseBuilder.lookup(node.type)
         raise Error, "Unknown mirror node type: #{node.type}" unless builder_class
 
-        builder_class.new(self).build(node)
+        result = builder_class.new(self).build(node)
+        propagate_source_line(result, node)
+        result
+      end
+
+      # Copy parser-attached source_line from the Mirror node onto every
+      # CoreModel node the builder produced. Single touchpoint for the
+      # entire Mirror → CoreModel direction — builders stay focused on
+      # per-type mapping and don't repeat this concern (DRY).
+      def propagate_source_line(result, node)
+        return unless node.is_a?(Node)
+
+        line = node.source_line
+        return unless line
+
+        Array(result).each do |built|
+          next unless built.is_a?(CoreModel::Base)
+          next if built.source_line
+
+          built.source_line = line
+        end
       end
 
       # ── Shared helpers (single source of truth — used by every

@@ -1,13 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Coradoc
   module Mirror
     module ReverseBuilder
       class Table < Base
-        registers 'table'
-
         def build(node)
           rows = []
           node.content&.each do |child|

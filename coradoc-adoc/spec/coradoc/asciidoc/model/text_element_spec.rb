@@ -23,6 +23,25 @@ RSpec.describe Coradoc::AsciiDoc::Model::TextElement do
     end
   end
 
+  describe 'line-break predicates' do
+    it 'reports a hard break when line_break is +', :aggregate_failures do
+      text = described_class.new(content: 'x', line_break: '+')
+      expect(text.hard_break?).to be(true)
+      expect(text.soft_break?).to be(false)
+    end
+
+    it 'reports a soft break when line_break is empty', :aggregate_failures do
+      text = described_class.new(content: 'x', line_break: '')
+      expect(text.soft_break?).to be(true)
+      expect(text.hard_break?).to be(false)
+    end
+
+    it 'reports a soft break when line_break is unset' do
+      text = described_class.new(content: 'x')
+      expect(text.soft_break?).to be(true)
+    end
+  end
+
   describe '#to_s' do
     it 'returns content as string' do
       text = described_class.new(content: 'Hello World')

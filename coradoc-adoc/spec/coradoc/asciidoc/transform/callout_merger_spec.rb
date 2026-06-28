@@ -34,7 +34,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::CalloutMerger do
     end
 
     it 'attaches a single callout paragraph to a preceding ListingBlock' do
-      src = Coradoc::CoreModel::ListingBlock.new(content: "line <1>")
+      src = Coradoc::CoreModel::ListingBlock.new(content: 'line <1>')
       para = Coradoc::CoreModel::ParagraphBlock.new(content: '<1> annotation')
 
       result = described_class.call([src, para])
@@ -60,7 +60,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::CalloutMerger do
     end
 
     it 'collects callouts across multiple consecutive paragraphs' do
-      src = Coradoc::CoreModel::SourceBlock.new(content: "code <1>")
+      src = Coradoc::CoreModel::SourceBlock.new(content: 'code <1>')
       first = Coradoc::CoreModel::ParagraphBlock.new(content: '<1> First')
       second = Coradoc::CoreModel::ParagraphBlock.new(content: '<2> Second')
 
@@ -73,7 +73,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::CalloutMerger do
     end
 
     it 'stops merging when a non-callout paragraph appears' do
-      src = Coradoc::CoreModel::SourceBlock.new(content: "code <1>")
+      src = Coradoc::CoreModel::SourceBlock.new(content: 'code <1>')
       callout = Coradoc::CoreModel::ParagraphBlock.new(content: '<1> note')
       regular = Coradoc::CoreModel::ParagraphBlock.new(content: 'Just text')
 
@@ -87,7 +87,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::CalloutMerger do
 
     it 'preserves order of unrelated children' do
       para1 = Coradoc::CoreModel::ParagraphBlock.new(content: 'Intro')
-      src = Coradoc::CoreModel::SourceBlock.new(content: "code <1>")
+      src = Coradoc::CoreModel::SourceBlock.new(content: 'code <1>')
       callout = Coradoc::CoreModel::ParagraphBlock.new(content: '<1> note')
       para2 = Coradoc::CoreModel::ParagraphBlock.new(content: 'Outro')
 
@@ -101,7 +101,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::CalloutMerger do
     end
 
     it 'does not attach a callout paragraph to a non-verbatim block' do
-      quote = Coradoc::CoreModel::QuoteBlock.new(content: "quoted <1>")
+      quote = Coradoc::CoreModel::QuoteBlock.new(content: 'quoted <1>')
       para = Coradoc::CoreModel::ParagraphBlock.new(content: '<1> note')
 
       result = described_class.call([quote, para])

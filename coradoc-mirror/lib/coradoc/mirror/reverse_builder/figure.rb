@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Coradoc
   module Mirror
     module ReverseBuilder
@@ -9,8 +7,6 @@ module Coradoc
       # caption. Reverse: collapse back to a single CoreModel::Image,
       # promoting the caption child to `caption:` if present.
       class Figure < Base
-        registers 'figure'
-
         def build(node)
           image_child = node.content&.find { |c| c.is_a?(Node) && c.type == 'image' }
           return nil unless image_child

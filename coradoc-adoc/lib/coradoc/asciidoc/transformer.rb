@@ -142,8 +142,7 @@ module Coradoc
 
           Model::TextElement.new(
             content: transformed,
-            line_break: line[:line_break],
-            source_line: SourceLineExtractor.extract(line)
+            line_break: line[:line_break]
           )
         end
       end
@@ -152,6 +151,31 @@ module Coradoc
       # @deprecated Use {.transform} instead
       def self.legacy_transform(syntax_tree)
         new.apply(syntax_tree)
+      end
+
+      # Single deepening seam for source_line propagation. Parslet's
+      # transform pipeline funnels every rule block through
+      # +call_on_match(bindings, block)+; overriding it lets us post-
+      # process the block's result and inject +source_line+ from the
+      # matched bindings, so individual rules no longer need to call
+      # SourceLineExtractor.extract themselves (DRY — was 47 call
+      # sites across 7 rule files).
+      #
+      # Safety:
+      #   * Only Model::Base results get an injection — Strings, Arrays,
+      #     and intermediate hashes pass through unchanged.
+      #   * Existing explicit source_line values are preserved — the
+      #     injection is fill-in-the-blank, never overwrite.
+      #   * No Slice in the bindings → SourceLineExtractor returns nil,
+      #     no injection (synthetic transformations stay clean).
+      def call_on_match(bindings, block)
+        result = super
+        return result unless result.is_a?(Model::Base)
+        return result if result.source_line
+
+        line = self.class::SourceLineExtractor.extract(bindings)
+        result.source_line = line if line
+        result
       end
     end
   end

@@ -41,12 +41,12 @@ RSpec.describe Coradoc::Mirror::FrontmatterQuery do
 
     it 'preserves nested maps, arrays, integers, booleans, dates' do
       data = {
-        'title'    => 'Doc',
-        'tags'     => %w[a b c],
-        'count'    => 7,
-        'draft'    => false,
-        'published'=> Date.new(2026, 6, 24),
-        'author'   => { 'name' => 'Ada', 'email' => 'ada@example.com' }
+        'title' => 'Doc',
+        'tags' => %w[a b c],
+        'count' => 7,
+        'draft' => false,
+        'published' => Date.new(2026, 6, 24),
+        'author' => { 'name' => 'Ada', 'email' => 'ada@example.com' }
       }
       core = Coradoc::CoreModel::DocumentElement.new(
         children: [Coradoc::CoreModel::FrontmatterBlock.new(data: data)]

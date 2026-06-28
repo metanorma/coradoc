@@ -688,15 +688,15 @@ RSpec.describe 'Integration pipeline fixes' do
     end
 
     it 'round-trips through mirror_json with image as direct child of example' do
-      require "coradoc-mirror"
+      require 'coradoc-mirror'
 
       adoc = "====\nimage::foo.png[Alt text]\n====\n"
       core = parse_to_core(adoc)
       json = JSON.parse(Coradoc.serialize(core, to: :mirror_json))
 
-      example = json["content"].find { |n| n["type"] == "example" }
-      expect(example["content"].map { |n| n["type"] }).to eq(["image"])
-      expect(example["content"].none? { |n| n["type"] == "paragraph" }).to eq(true)
+      example = json['content'].find { |n| n['type'] == 'example' }
+      expect(example['content'].map { |n| n['type'] }).to eq(['image'])
+      expect(example['content'].none? { |n| n['type'] == 'paragraph' }).to eq(true)
     end
   end
 
@@ -753,15 +753,15 @@ RSpec.describe 'Integration pipeline fixes' do
     end
 
     it 'round-trips through mirror_json as a sourcecode node' do
-      require "coradoc-mirror"
+      require 'coradoc-mirror'
 
       adoc = "```ruby\nputs 'hi'\n```\n"
       core = parse_to_core(adoc)
       json = JSON.parse(Coradoc.serialize(core, to: :mirror_json))
 
-      source = json["content"].find { |n| n["type"] == "sourcecode" }
+      source = json['content'].find { |n| n['type'] == 'sourcecode' }
       expect(source).not_to be_nil
-      expect(source["attrs"]["language"]).to eq("ruby")
+      expect(source['attrs']['language']).to eq('ruby')
     end
   end
 

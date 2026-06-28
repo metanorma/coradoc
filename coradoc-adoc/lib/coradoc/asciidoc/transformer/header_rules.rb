@@ -22,8 +22,7 @@ module Coradoc
               id = nil if id && id.empty?
 
               Model::Header.new(
-                id:, title:, author:, revision:,
-                source_line: SourceLineExtractor.extract(header)
+                id:, title:, author:, revision:
               )
             end
 
@@ -38,8 +37,7 @@ module Coradoc
               email: simple(:email)
             ) do
               Model::Author.new(
-                first_name:, last_name:, email:, middle_name: nil,
-                source_line: SourceLineExtractor.extract(first_name)
+                first_name:, last_name:, email:, middle_name: nil
               )
             end
 
@@ -50,8 +48,7 @@ module Coradoc
               remark: simple(:remark)
             ) do
               Model::Revision.new(
-                number:, date:, remark:,
-                source_line: SourceLineExtractor.extract(number)
+                number:, date:, remark:
               )
             end
           end

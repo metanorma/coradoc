@@ -1,13 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Coradoc
   module Mirror
     module ReverseBuilder
       class Verse < Base
-        registers 'verse'
-
         def build(node)
           CoreModel::VerseBlock.new(
             content: extract_text(node),

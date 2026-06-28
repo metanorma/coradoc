@@ -41,7 +41,7 @@ RSpec.describe Coradoc::AsciiDoc::Transformer do
     end
 
     it 'merges multiple AttributeLists into a single one' do
-      first = build_list(positional: %w[source], named: [['role', 'quote']])
+      first = build_list(positional: %w[source], named: [%w[role quote]])
       second = build_list(positional: %w[ruby])
 
       merged = normalizer.coerce([first, second])
@@ -55,8 +55,8 @@ RSpec.describe Coradoc::AsciiDoc::Transformer do
     end
 
     it 'lets later named keys override earlier ones' do
-      first = build_list(named: [['role', 'a']])
-      second = build_list(named: [['role', 'b']])
+      first = build_list(named: [%w[role a]])
+      second = build_list(named: [%w[role b]])
 
       merged = normalizer.coerce([first, second])
       role_values = merged.named.select { |n| n.name == 'role' }.flat_map(&:value)
@@ -68,8 +68,8 @@ RSpec.describe Coradoc::AsciiDoc::Transformer do
     let(:normalizer) { Coradoc::AsciiDoc::Transformer::AttributeListNormalizer }
 
     it 'concatenates positional and named across lists' do
-      a = build_list(positional: %w[x], named: [['k1', 'v1']])
-      b = build_list(positional: %w[y], named: [['k2', 'v2']])
+      a = build_list(positional: %w[x], named: [%w[k1 v1]])
+      b = build_list(positional: %w[y], named: [%w[k2 v2]])
 
       merged = normalizer.merge([a, b])
       expect(merged.positional.map(&:value)).to eq(%w[x y])

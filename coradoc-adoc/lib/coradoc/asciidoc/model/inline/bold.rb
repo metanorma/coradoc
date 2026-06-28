@@ -25,7 +25,7 @@ module Coradoc
         class Bold < Base
           attribute :content,
                     Lutaml::Model::Serializable,
-                    default: -> { nil },
+                    default: -> {},
                     polymorphic: [
                       Lutaml::Model::Type::String,
                       :array

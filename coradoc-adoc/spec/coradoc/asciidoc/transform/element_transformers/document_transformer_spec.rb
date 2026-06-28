@@ -8,17 +8,17 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::DocumentTransf
       header = Coradoc::AsciiDoc::Model::Header.new(
         title: Coradoc::AsciiDoc::Model::Title.new(content: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'My Document')])
       )
-      
+
       para = Coradoc::AsciiDoc::Model::Paragraph.new(
         content: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'Content')]
       )
-      
+
       doc = Coradoc::AsciiDoc::Model::Document.new(
         id: 'doc-1',
         header: header,
         sections: [para]
       )
-      
+
       # We mock the attribute extraction since ToCoreModel might not have a proper Document with attribute lists
       # Wait, no doubles! We just let ToCoreModel.extract_document_attributes run.
 
@@ -55,9 +55,9 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::DocumentTransf
       para = Coradoc::AsciiDoc::Model::Paragraph.new(
         content: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'Section Content')]
       )
-      
+
       title = Coradoc::AsciiDoc::Model::Title.new(content: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'Section One')])
-      
+
       section = Coradoc::AsciiDoc::Model::Section.new(
         id: 'sec-1',
         level: 1,

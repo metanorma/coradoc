@@ -1,13 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Coradoc
   module Mirror
     module ReverseBuilder
       class Text < Base
-        registers 'text'
-
         def build(node)
           text = node.text || ''
           marks = node.marks || []

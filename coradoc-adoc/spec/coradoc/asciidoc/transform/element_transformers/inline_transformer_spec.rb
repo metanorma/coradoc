@@ -12,7 +12,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::InlineTransfor
       result = described_class.transform_inline(inline, 'mark')
 
       expect(result).to be_a(Coradoc::CoreModel::InlineElement)
-      
+
       expect(result.content).to eq('highlight')
     end
 

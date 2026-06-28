@@ -5,12 +5,19 @@ require 'spec_helper'
 RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::OtherTransformer do
   describe '.transform_term' do
     it 'transforms a term' do
-      # Note: Coradoc::AsciiDoc::Model::Term might be defined slightly differently
+      # NOTE: Coradoc::AsciiDoc::Model::Term might be defined slightly differently
       # We just stub an OpenStruct-like object if it's missing, but we assume it exists as per model
       # actually we should use the real model if it exists, let's use OpenStruct if it's not a real AsciiDoc model
       # wait, the instructions say use real model objects, never double.
       # Let's see if Coradoc::AsciiDoc::Model::Term exists.
-      term = defined?(Coradoc::AsciiDoc::Model::Term) ? Coradoc::AsciiDoc::Model::Term.new(term: 'Apple', type: 'preferred', lang: 'en') : Struct.new(:term, :type, :lang).new('Apple', 'preferred', 'en')
+      term = if defined?(Coradoc::AsciiDoc::Model::Term)
+               Coradoc::AsciiDoc::Model::Term.new(term: 'Apple',
+                                                  type: 'preferred', lang: 'en')
+             else
+               Struct.new(:term, :type, :lang).new(
+                 'Apple', 'preferred', 'en'
+               )
+             end
 
       result = described_class.transform_term(term)
 
