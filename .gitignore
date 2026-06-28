@@ -41,7 +41,6 @@ coverage/
 
 # rubocop
 .rubocop-https-*
-.rubocop_todo.yml
 
 # Dev tool configs
 .irbrc

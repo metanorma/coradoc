@@ -374,7 +374,7 @@ module Coradoc
             )
           end
 
-          CALLOUT_MARKER_IN_CELL = /\s*<\d+>(?=\s|\z)/.freeze
+          CALLOUT_MARKER_IN_CELL = /\s*<\d+>(?=\s|\z)/
 
           def strip_cell_callouts(text)
             text.to_s.gsub(CALLOUT_MARKER_IN_CELL, '')
