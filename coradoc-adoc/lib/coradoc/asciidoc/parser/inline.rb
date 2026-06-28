@@ -71,7 +71,7 @@ module Coradoc
 
         def monospace_constrained
           (str('`') >>
-            match('[^`\n]').repeat(1).as(:text).repeat(1, 1) >>
+            constrained_span_content('`').as(:text).repeat(1, 1) >>
              str('`') >> str('`').absent?
           ).as(:monospace_constrained)
         end
@@ -234,6 +234,27 @@ module Coradoc
             inline.absent? >>
             match("[^\n]")
           ).repeat(1)
+        end
+
+        # Content model for a constrained inline span (`` `…` ``, `*…*`,
+        # `_…_`, `#…#`). Allows the corresponding unconstrained marker
+        # pair (`` `` ``, `**`, `__`, `##`) to appear inside the content
+        # rather than terminating the span at the first marker character.
+        #
+        # Asciidoctor treats the contents of a constrained span as an
+        # inline literal — nested constrained markers do not close the
+        # span. Without this allowance, `` `<<\`\`x\`\`>>` `` fails to
+        # match as a single monospace span: the parser sees the inner
+        # `` `` `` as a failed single-backtick close attempt, backtracks
+        # out of `monospace_constrained`, and the `<<…>>` payload then
+        # fires the `cross_reference` rule with the backticks glued
+        # onto the target.
+        #
+        # Single source of truth for every constrained rule's content
+        # model — adding a new constrained marker reuses this helper
+        # rather than re-spelling the alternation (DRY).
+        def constrained_span_content(marker)
+          (match("[^#{marker}\n]") | str(marker * 2)).repeat(1)
         end
 
         def text_formatted
