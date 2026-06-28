@@ -32,7 +32,7 @@ RSpec.describe 'Image typed attributes (BUG-image-named-attrs)' do
     let(:adoc) { "image:foo.png[Alt text, width=640, height=480]\n" }
     let(:attrs) { first_image_attrs(mirror_json(adoc)) }
 
-    it 'emits width and height as scalar strings, not JSON arrays' do
+    it 'emits width and height as scalar strings, not JSON arrays', :aggregate_failures do
       expect(attrs['width']).to eq('640')
       expect(attrs['height']).to eq('480')
     end
@@ -41,7 +41,7 @@ RSpec.describe 'Image typed attributes (BUG-image-named-attrs)' do
       expect(attrs['inline']).to be true
     end
 
-    it 'does not wrap inline images in figure nodes' do
+    it 'does not wrap inline images in figure nodes', :aggregate_failures do
       content = mirror_json(adoc).dig('content', 0, 'content', 0, 'content')
       types = Array(content).map { |n| n['type'] }
       expect(types).not_to include('figure')
@@ -56,7 +56,7 @@ RSpec.describe 'Image typed attributes (BUG-image-named-attrs)' do
       content.find { |n| n['type'] == 'image' }
     end
 
-    it 'records the 2nd positional as role, not caption' do
+    it 'records the 2nd positional as role, not caption', :aggregate_failures do
       expect(image_node['attrs']['role']).to eq('SomeRole')
       expect(image_node['attrs']['caption']).to be_nil
     end
@@ -71,7 +71,7 @@ RSpec.describe 'Image typed attributes (BUG-image-named-attrs)' do
     let(:adoc) { ".My Caption\nimage::block.png[Alt]\n" }
     let(:json) { mirror_json(adoc) }
 
-    it 'wraps the image in a figure node' do
+    it 'wraps the image in a figure node', :aggregate_failures do
       figure = json.dig('content', 0, 'content', 0)
       expect(figure['type']).to eq('figure')
       types = Array(figure['content']).map { |n| n['type'] }
@@ -79,7 +79,7 @@ RSpec.describe 'Image typed attributes (BUG-image-named-attrs)' do
       expect(types).to include('caption')
     end
 
-    it 'records the block title as the figure caption' do
+    it 'records the block title as the figure caption', :aggregate_failures do
       figure = json.dig('content', 0, 'content', 0)
       expect(figure['type']).to eq('figure')
       expect(figure['attrs']['title']).to eq('My Caption')
@@ -96,7 +96,7 @@ RSpec.describe 'Image typed attributes (BUG-image-named-attrs)' do
     let(:adoc) { "image::b.png[Alt, width=800, height=600, role=figure]\n" }
     let(:attrs) { first_image_attrs(mirror_json(adoc)) }
 
-    it 'promotes named width/height/role' do
+    it 'promotes named width/height/role', :aggregate_failures do
       expect(attrs['width']).to eq('800')
       expect(attrs['height']).to eq('600')
       expect(attrs['role']).to eq('figure')
