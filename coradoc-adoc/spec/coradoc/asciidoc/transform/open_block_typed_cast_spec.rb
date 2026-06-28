@@ -14,7 +14,7 @@ RSpec.describe 'Open-block typed casts', :asciidoc do
   end
 
   describe '[sidebar] cast' do
-    it 'casts an open block into a SidebarBlock' do
+    it 'casts an open block into a SidebarBlock', :aggregate_failures do
       block = first_child("[sidebar]\n--\nSide content\n--\n")
 
       expect(block).to be_a(Coradoc::CoreModel::SidebarBlock)
@@ -23,7 +23,7 @@ RSpec.describe 'Open-block typed casts', :asciidoc do
   end
 
   describe '[example] cast' do
-    it 'casts an open block into an ExampleBlock' do
+    it 'casts an open block into an ExampleBlock', :aggregate_failures do
       block = first_child("[example]\n--\nExample body\n--\n")
 
       expect(block).to be_a(Coradoc::CoreModel::ExampleBlock)
@@ -32,7 +32,7 @@ RSpec.describe 'Open-block typed casts', :asciidoc do
   end
 
   describe '[quote] cast' do
-    it 'casts an open block into a QuoteBlock' do
+    it 'casts an open block into a QuoteBlock', :aggregate_failures do
       block = first_child("[quote]\n--\nQuoted text\n--\n")
 
       expect(block).to be_a(Coradoc::CoreModel::QuoteBlock)
@@ -49,7 +49,7 @@ RSpec.describe 'Open-block typed casts', :asciidoc do
   end
 
   describe 'cast precedence (admonition > typed)' do
-    it 'prefers admonition when both could apply' do
+    it 'prefers admonition when both could apply', :aggregate_failures do
       # [NOTE] is an admonition label, not a typed-cast style.
       # The cast ladder resolves admonition before typed-cast.
       block = first_child("[NOTE]\n--\nwatch out\n--\n")

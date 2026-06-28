@@ -14,7 +14,7 @@ RSpec.describe 'Named block style preservation', :asciidoc do
   end
 
   describe '[abstract] block style' do
-    it 'casts a delimited block into an AbstractBlock' do
+    it 'casts a delimited block into an AbstractBlock', :aggregate_failures do
       block = first_child("[abstract]\n====\nAbstract text\n====\n")
 
       expect(block).to be_a(Coradoc::CoreModel::AbstractBlock)
@@ -27,7 +27,7 @@ RSpec.describe 'Named block style preservation', :asciidoc do
       expect(block).to be_a(Coradoc::CoreModel::AbstractBlock)
     end
 
-    it 'reports :abstract as its semantic type' do
+    it 'reports :abstract as its semantic type', :aggregate_failures do
       block = first_child("[abstract]\n====\nx\n====\n")
 
       expect(block.class.semantic_type).to eq(:abstract)
@@ -42,7 +42,7 @@ RSpec.describe 'Named block style preservation', :asciidoc do
   end
 
   describe '[partintro] block style' do
-    it 'casts a delimited block into a PartintroBlock' do
+    it 'casts a delimited block into a PartintroBlock', :aggregate_failures do
       block = first_child("[partintro]\n====\nPart intro\n====\n")
 
       expect(block).to be_a(Coradoc::CoreModel::PartintroBlock)
@@ -55,7 +55,7 @@ RSpec.describe 'Named block style preservation', :asciidoc do
       expect(block).to be_a(Coradoc::CoreModel::PartintroBlock)
     end
 
-    it 'reports :partintro as its semantic type' do
+    it 'reports :partintro as its semantic type', :aggregate_failures do
       block = first_child("[partintro]\n====\nx\n====\n")
 
       expect(block.class.semantic_type).to eq(:partintro)
@@ -76,7 +76,7 @@ RSpec.describe 'Named block style preservation', :asciidoc do
       expect(block.annotation_type).to eq('ADMONITION')
     end
 
-    it 'takes precedence over the native ExampleBlock type' do
+    it 'takes precedence over the native ExampleBlock type', :aggregate_failures do
       # The cast ladder resolves admonition before typed-cast, so
       # `[admonition]` on an `====` block is an admonition, not an example.
       block = first_child("[admonition]\n====\nx\n====\n")
@@ -85,7 +85,7 @@ RSpec.describe 'Named block style preservation', :asciidoc do
       expect(block).to be_a(Coradoc::CoreModel::AnnotationBlock)
     end
 
-    it 'works on open blocks too' do
+    it 'works on open blocks too', :aggregate_failures do
       block = first_child("[admonition]\n--\nx\n--\n")
 
       expect(block).to be_a(Coradoc::CoreModel::AnnotationBlock)
@@ -95,7 +95,7 @@ RSpec.describe 'Named block style preservation', :asciidoc do
 
   describe 'cast ladder still recognises existing admonitions' do
     %w[note tip warning caution important].each do |style|
-      it "[#{style.upcase}] still maps to AnnotationBlock with #{style.upcase} type" do
+      it "[#{style.upcase}] still maps to AnnotationBlock with #{style.upcase} type", :aggregate_failures do
         block = first_child("[#{style.upcase}]\n====\nx\n====\n")
 
         expect(block).to be_a(Coradoc::CoreModel::AnnotationBlock)
