@@ -20,13 +20,13 @@ module Coradoc
         def ordered_list(nesting_level = 1)
           attrs = (attribute_list >> newline).maybe
           r = olist_item(nesting_level)
-          attrs >> olist_item(nesting_level).present? >> r.repeat(1).as(:ordered)
+          attrs >> (empty_line.repeat(0) >> r).repeat(1).as(:ordered)
         end
 
         def unordered_list(nesting_level = 1)
           attrs = (attribute_list >> newline).maybe
           r = ulist_item(nesting_level)
-          attrs >> r.repeat(1).as(:unordered)
+          attrs >> (empty_line.repeat(0) >> r).repeat(1).as(:unordered)
         end
 
         def definition_list(_delimiter = nil)
@@ -53,7 +53,7 @@ module Coradoc
         def olist_item(nesting_level = 1)
           item = olist_marker(nesting_level).as(:marker) >>
                  match("\n").absent? >> space >>
-                 (text_line(true, unguarded: true) >>
+                 (text_line(false, unguarded: true) >>
                   list_item_continuation_lines).as(:lines)
 
           att = (list_continuation.present? >>
@@ -105,7 +105,7 @@ module Coradoc
           item = ulist_marker(nesting_level).as(:marker) >>
                  str(' [[[').absent? >>
                  match("\n").absent? >> space >>
-                 (text_line(true, unguarded: true) >>
+                 (text_line(false, unguarded: true) >>
                   list_item_continuation_lines).as(:lines)
 
           att = (list_continuation.present? >>
@@ -127,8 +127,15 @@ module Coradoc
         # list marker, block delimiter, attribute list, section, element
         # id, table boundary, list continuation, or list prefix).
         # `line_not_text?` (from Paragraph) is that exact lookahead.
+        #
+        # Each iteration matches exactly one source line via
+        # `text_line(false, ...)` (single-newline termination). The
+        # `.repeat(0)` walks multiple continuation lines one at a time.
+        # Using `text_line(true, ...)` here would let `line_ending.repeat(1)`
+        # greedy-match across blank lines, silently absorbing the
+        # follow-up paragraph into the last list item's content.
         def list_item_continuation_lines
-          (line_not_text? >> text_line(true, unguarded: true)).repeat(0)
+          (line_not_text? >> text_line(false, unguarded: true)).repeat(0)
         end
 
         def dlist_delimiter
