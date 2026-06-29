@@ -4,6 +4,27 @@ module Coradoc
   module AsciiDoc
     module Parser
       module Inline
+        # AsciiDoc typographic quote syntax: a 2-char pattern that
+        # Asciidoctor substitutes with the corresponding Unicode curly
+        # quote. Single source of truth for the pattern → Unicode char
+        # mapping; the transformer reads this table.
+        #
+        # The patterns MUST be recognised before +monospace_constrained+
+        # in the +inline+ alternation, otherwise the lone backtick in
+        # +`"`+ or +`"``+ fires monospace and the surrounding quote
+        # collapses to straight ASCII quotes wrapped around a spurious
+        # code span.
+        TYPOGRAPHIC_QUOTE_PATTERNS = {
+          '"`' => "“",  # U+201C left double
+          '`"' => "”",  # U+201D right double
+          "'`" => "‘",  # U+2018 left single
+          "`'" => "’"   # U+2019 right single
+        }.freeze
+
+        def typographic_quote
+          (str('"`') | str('`"') | str("'`") | str("`'")).as(:typographic_quote)
+        end
+
         def attribute_reference
           str('{').present? >> str('{') >>
             match('[a-zA-Z0-9_-]').repeat(1).as(:attribute_reference) >>
@@ -170,6 +191,7 @@ module Coradoc
 
         def inline_chars?
           match('[\[*#_{<^~`]').present? |
+            typographic_quote.present? |
             str('http').present? |
             str('https').present? |
             str('link:').present? |
@@ -198,7 +220,8 @@ module Coradoc
         end
 
         def inline
-          bold_unconstrained |
+          typographic_quote |
+            bold_unconstrained |
             bold_constrained |
             span_unconstrained |
             span_constrained |

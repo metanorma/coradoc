@@ -67,6 +67,19 @@ module Coradoc
               )
             end
 
+            # Typographic quotes — Asciidoctor's curly-quote substitution.
+            # Each 2-char pattern collapses to a single Unicode character
+            # at parse time so downstream consumers (HTML, Markdown) see
+            # the literal typographic char without any post-processing.
+            # The mapping is the single source of truth declared on the
+            # parser side (Parser::Inline::TYPOGRAPHIC_QUOTE_PATTERNS).
+            rule(typographic_quote: simple(:pattern)) do
+              char = Coradoc::AsciiDoc::Parser::Inline::TYPOGRAPHIC_QUOTE_PATTERNS.fetch(
+                pattern.to_s, pattern.to_s
+              )
+              Model::TextElement.new(content: char)
+            end
+
             # Hard line break (` +\n` or `\\n`). Emitted as a dedicated
             # AsciiDoc model (Inline::HardLineBreak) distinct from
             # Model::LineBreak, which only represents paragraph-separator
