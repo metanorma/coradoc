@@ -41,11 +41,13 @@ RSpec.describe 'Integration pipeline fixes' do
     it 'transforms page_break through to CoreModel as nil (filtered out)' do
       core = parse_to_core("= Title\n\nHello\n\n<<<\n\n== Section\n")
       expect(core).to be_a(Coradoc::CoreModel::StructuralElement)
-      # The document title lives on DocumentElement#title only — it is
-      # NOT duplicated as a level-0 HeaderElement in children. Children
-      # are: paragraph + section. No page break.
+      # The document title is emitted both on DocumentElement#title AND
+      # as a level-0 HeaderElement at the top of the body so renderers
+      # walking children see the H1. Children are: title heading +
+      # paragraph + section. No page break.
       expect(core.title).to eq('Title')
-      expect(core.children.length).to eq(2)
+      expect(core.children.length).to eq(3)
+      expect(core.children[0]).to be_a(Coradoc::CoreModel::HeaderElement)
     end
   end
 

@@ -27,23 +27,24 @@ module Coradoc
           def transform_structural_element(element)
             case element
             when CoreModel::DocumentElement
-              header = if element.title
-                         Coradoc::AsciiDoc::Model::Header.new(
-                           title: Coradoc::AsciiDoc::Model::Title.new(
-                             content: element.title,
-                             level_int: 0
-                           )
-                         )
-                       else
-                         Coradoc::AsciiDoc::Model::Header.new(title: '')
-                       end
-
               without_frontmatter, frontmatter = extract_frontmatter(Array(element.children))
+              without_title_heading, title_text = extract_title_heading(without_frontmatter, element.title)
+
+              header = if title_text
+                          Coradoc::AsciiDoc::Model::Header.new(
+                            title: Coradoc::AsciiDoc::Model::Title.new(
+                              content: title_text,
+                              level_int: 0
+                            )
+                          )
+                        else
+                          Coradoc::AsciiDoc::Model::Header.new(title: '')
+                        end
 
               Coradoc::AsciiDoc::Model::Document.new(
                 id: element.id,
                 header: header,
-                sections: flatten_children(without_frontmatter),
+                sections: flatten_children(without_title_heading),
                 frontmatter: frontmatter
               )
             when CoreModel::SectionElement
@@ -454,6 +455,26 @@ module Coradoc
 
             yaml = CoreModel::FrontmatterBlock::Codec.to_yaml(first)
             [children.drop(1), yaml.nil? || yaml.empty? ? nil : yaml]
+          end
+
+          # Pull the level-0 HeaderElement (the document title) out of the
+          # body so the AsciiDoc serializer can render it as `= Title`
+          # via Model::Header instead of double-rendering it as a body
+          # section. Returns [remaining_children, title_text]. Falls
+          # back to +fallback_title+ when no HeaderElement is present
+          # (preserves backward compatibility with callers that build
+          # DocumentElement programmatically and put the title only on
+          # DocumentElement#title rather than in the children list).
+          def extract_title_heading(children, fallback_title)
+            title_idx = children.index do |c|
+              c.is_a?(CoreModel::HeaderElement) && c.level.to_i.zero?
+            end
+            return [children, fallback_title] unless title_idx
+
+            heading = children[title_idx]
+            title_text = heading.title || fallback_title
+            remaining = children[0...title_idx] + children[(title_idx + 1)..]
+            [remaining, title_text]
           end
 
           def resolve_semantic_type(block)
