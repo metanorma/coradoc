@@ -55,22 +55,25 @@ module Coradoc
             transformed = visit_content(item)
             next if transformed.empty?
 
-            result << CoreModel::TextContent.new(text: ' ') if soft_break_before?(previous, item)
+            result << CoreModel::TextContent.new(text: ' ') if line_break_between?(previous, item)
             result.concat(transformed)
             previous = item
           end
           result
         end
 
-        # Two adjacent TextElements in the content array indicate the
-        # parser split a paragraph across source lines. Join them with a
-        # space (soft break) unless the second one carries a hard-break
-        # marker — the model owns that predicate, so this method does
-        # not reach into parser-specific line_break string values.
-        def soft_break_before?(previous, current)
-          previous.is_a?(Model::TextElement) &&
-            current.is_a?(Model::TextElement) &&
-            !current.hard_break?
+        # Two adjacent TextElements only warrant a synthesised soft-break
+        # space when the parser actually split them across a source line —
+        # i.e. the previous TextElement carries a non-empty line_break.
+        # Adjacent inline elements whose source was a single line
+        # (e.g. text + typographic-quote + text) do NOT need a synthesised
+        # space: their source adjacency is exact, and adding one would
+        # introduce spurious double-spaces (TODO.bugs/15A).
+        def line_break_between?(previous, current)
+          return false unless previous.is_a?(Model::TextElement)
+          return false if current.is_a?(Model::TextElement) && current.hard_break?
+
+          !previous.line_break.to_s.empty?
         end
 
         def visit_model(model)

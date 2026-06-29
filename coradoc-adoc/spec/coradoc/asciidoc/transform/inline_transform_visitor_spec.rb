@@ -101,12 +101,20 @@ RSpec.describe Coradoc::AsciiDoc::Transform::InlineTransformVisitor do
         expect(result.last).to be_a(Coradoc::CoreModel::ItalicElement)
       end
 
-      it 'inserts space between adjacent TextElements' do
-        te1 = Coradoc::AsciiDoc::Model::TextElement.new(content: 'hello')
+      it 'inserts space between adjacent TextElements when previous ended with a line break' do
+        te1 = Coradoc::AsciiDoc::Model::TextElement.new(content: 'hello', line_break: "\n")
         te2 = Coradoc::AsciiDoc::Model::TextElement.new(content: 'world')
         result = visitor.transform([te1, te2])
         texts = result.map { |r| r.is_a?(Coradoc::CoreModel::TextContent) ? r.text : r.content.to_s }
         expect(texts).to eq(['hello', ' ', 'world'])
+      end
+
+      it 'does not insert space between adjacent TextElements on the same line' do
+        te1 = Coradoc::AsciiDoc::Model::TextElement.new(content: 'hello')
+        te2 = Coradoc::AsciiDoc::Model::TextElement.new(content: 'world')
+        result = visitor.transform([te1, te2])
+        texts = result.map { |r| r.is_a?(Coradoc::CoreModel::TextContent) ? r.text : r.content.to_s }
+        expect(texts).to eq(['hello', 'world'])
       end
 
       it 'does not insert space before first item' do
