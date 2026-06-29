@@ -27,7 +27,7 @@ module Coradoc
         def section_block(level = 2)
           return nil if level > 8
 
-          block_header >>
+          section_header >>
             section_title(level).as(:title) >>
             contents.as(:contents).maybe
         end
