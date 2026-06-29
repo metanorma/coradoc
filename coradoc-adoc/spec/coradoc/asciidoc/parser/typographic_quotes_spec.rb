@@ -5,22 +5,31 @@ require 'coradoc/asciidoc'
 
 # AsciiDoc's typographic quote syntax (`` "` `` / `` `" `` / `` '` `` /
 # `` `' ``) substitutes straight ASCII quotes with curly Unicode quotes.
-# Before this fix, the backtick in the 2-char pattern was parsed as
-# constrained monospace, leaving the surrounding quote as a straight
-# literal and wrapping the quoted text in a spurious `code` mark.
-# When the quoted text contained an inline mark (`__italic__`,
-# `**bold**`), the inner mark was never recognised and the entire
-# span — including the marker characters — was absorbed as raw
-# content of the misidentified monospace.
+# Single-line marks (italic, bold) inside curly quotes are recognised
+# correctly. Multi-line unconstrained marks (italic __ / bold **) span
+# line breaks inside curly quotes — the parser's mark content
+# excludes newlines by default, so relaxing that exclusion makes
+# multi-line marks work the way Asciidoctor does.
 #
 # Coverage below locks in:
 #   * Each of the four patterns emits the correct Unicode char.
-#   * Inner inline marks (italic, bold) are recognised inside quotes.
-#   * Plain monospace (`` `...` ``) still works when not preceded
-#     by a quote char.
+#   * Inner text is NOT wrapped in a spurious MonospaceElement.
+#   * Single-line italic / bold inside quotes work.
+#   * Multi-line italic / bold inside quotes work (TODO.bugs/15B).
+#   * Source whitespace is preserved exactly — no synthesised
+#     double-spaces around the quote (TODO.bugs/15A).
+#   * Plain monospace (`code`) still works when not preceded by a
+#     quote char.
+#   * Unconstrained marks outside quote context still work.
 RSpec.describe 'Typographic quote substitution', :asciidoc do
   def first_paragraph_children(adoc)
     Coradoc.parse(adoc, format: :asciidoc).children.first.children
+  end
+
+  def text_only(children)
+    children.flat_map do |c|
+      c.is_a?(Coradoc::CoreModel::TextContent) ? c.text : c.content.to_s
+    end.join
   end
 
   describe 'curly double quotes' do
@@ -39,11 +48,6 @@ RSpec.describe 'Typographic quote substitution', :asciidoc do
     it 'does not wrap the inner text in a MonospaceElement' do
       expect(children.none?(Coradoc::CoreModel::MonospaceElement)).to be(true)
     end
-
-    it 'preserves the inner text as plain text' do
-      texts = children.map { |c| c.is_a?(Coradoc::CoreModel::TextContent) ? c.text : '' }
-      expect(texts.join).to include('hello world')
-    end
   end
 
   describe 'curly single quotes' do
@@ -60,41 +64,90 @@ RSpec.describe 'Typographic quote substitution', :asciidoc do
     end
   end
 
-  describe 'inline marks inside curly double quotes' do
-    let(:children) { first_paragraph_children('"`__important__`" was the key word.') }
+  describe 'source whitespace preserved (TODO.bugs/15A regression guard)' do
+    # The straight `"` chars in the source are PART of the typographic
+    # pattern (the open pattern is `"` + `` ` ``, the close is `` ` `` + `"`)
+    # and get consumed/replaced by the curly chars. The expected joined
+    # text therefore contains only the curly quotes, with the source's
+    # surrounding ASCII spaces preserved exactly.
+    it 'preserves single spaces around quoted text without synthesising extras' do
+      children = first_paragraph_children('He said "`hello world`" to me.')
+      joined = text_only(children)
+      expect(joined).to eq("He said “hello world” to me.")
+    end
 
+    it 'preserves leading space after the closer' do
+      children = first_paragraph_children('He said "`hello`" to me.')
+      joined = text_only(children)
+      expect(joined).to eq("He said “hello” to me.")
+    end
+
+    it 'does not synthesise extra spaces between adjacent text and quote tokens' do
+      children = first_paragraph_children('a "`x`" b')
+      texts = children.map do |c|
+        c.is_a?(Coradoc::CoreModel::TextContent) ? c.text : c.content.to_s
+      end
+      expect(texts).to eq(['a ', '“', 'x', '”', ' b'])
+    end
+  end
+
+  describe 'multi-line marks inside curly quotes (TODO.bugs/15B)' do
+    it 'recognises __italic__ spanning a line break' do
+      children = first_paragraph_children("\"`__Setting\nstandards__`\"")
+      italic = children.find { |c| c.is_a?(Coradoc::CoreModel::ItalicElement) }
+      expect(italic).not_to be_nil
+      expect(italic.content).to include("Setting\nstandards")
+    end
+
+    it 'recognises **bold** spanning a line break' do
+      children = first_paragraph_children("\"`**Setting\nstandards**`\"")
+      bold = children.find { |c| c.is_a?(Coradoc::CoreModel::BoldElement) }
+      expect(bold).not_to be_nil
+      expect(bold.content).to include("Setting\nstandards")
+    end
+
+    it 'does not leak raw __ markers in multi-line italic output' do
+      children = first_paragraph_children("\"`__Setting\nstandards__`\"")
+      joined = text_only(children)
+      expect(joined).not_to include('__')
+    end
+
+    it 'does not leak raw ** markers in multi-line bold output' do
+      children = first_paragraph_children("\"`**Setting\nstandards**`\"")
+      joined = text_only(children)
+      expect(joined).not_to include('**')
+    end
+  end
+
+  describe 'inline marks inside curly quotes (single-line, regression)' do
     it 'recognises __italic__ as ItalicElement' do
+      children = first_paragraph_children('"`__Setting__`"')
       italic = children.find { |c| c.is_a?(Coradoc::CoreModel::ItalicElement) }
       expect(italic).not_to be_nil
     end
 
-    it 'produces correct text in the italic element' do
-      italic = children.find { |c| c.is_a?(Coradoc::CoreModel::ItalicElement) }
-      expect(italic.content).to include('important')
-    end
-
-    it 'does not leave raw __ markers in the output' do
-      combined = children.flat_map do |c|
-        c.is_a?(Coradoc::CoreModel::TextContent) ? c.text : c.content.to_s
-      end.join
-      expect(combined).not_to include('__')
-    end
-  end
-
-  describe 'inline marks inside curly double quotes (bold)' do
-    let(:children) { first_paragraph_children('"`**critical**`" was another.') }
-
-    it 'recognises **bold** as BoldElement', :aggregate_failures do
+    it 'recognises **bold** as BoldElement' do
+      children = first_paragraph_children('"`**critical**`"')
       bold = children.find { |c| c.is_a?(Coradoc::CoreModel::BoldElement) }
       expect(bold).not_to be_nil
-      expect(bold.content).to include('critical')
+    end
+
+    it 'recognises _constrained italic_ as ItalicElement' do
+      children = first_paragraph_children('"`_Setting_`"')
+      italic = children.find { |c| c.is_a?(Coradoc::CoreModel::ItalicElement) }
+      expect(italic).not_to be_nil
+    end
+
+    it 'recognises *constrained bold* as BoldElement' do
+      children = first_paragraph_children('"`*Setting*`"')
+      bold = children.find { |c| c.is_a?(Coradoc::CoreModel::BoldElement) }
+      expect(bold).not_to be_nil
     end
   end
 
   describe 'plain monospace still works' do
-    let(:children) { first_paragraph_children('Type `code` here.') }
-
-    it 'wraps plain `code` in a MonospaceElement', :aggregate_failures do
+    it 'wraps plain `code` in a MonospaceElement' do
+      children = first_paragraph_children('Type `code` here.')
       mono = children.find { |c| c.is_a?(Coradoc::CoreModel::MonospaceElement) }
       expect(mono).not_to be_nil
       expect(mono.content).to include('code')
@@ -118,6 +171,13 @@ RSpec.describe 'Typographic quote substitution', :asciidoc do
       children = first_paragraph_children('This is ``code`` text.')
       mono = children.find { |c| c.is_a?(Coradoc::CoreModel::MonospaceElement) }
       expect(mono.content).to include('code')
+    end
+
+    it '__multi-line italic__ outside quotes produces ItalicElement spanning newlines' do
+      children = first_paragraph_children("__Setting\nstandards__")
+      italic = children.find { |c| c.is_a?(Coradoc::CoreModel::ItalicElement) }
+      expect(italic).not_to be_nil
+      expect(italic.content).to include("Setting\nstandards")
     end
   end
 end

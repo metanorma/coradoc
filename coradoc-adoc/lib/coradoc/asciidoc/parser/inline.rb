@@ -41,7 +41,7 @@ module Coradoc
 
         def bold_unconstrained
           (str('**').present? >> str('**') >>
-            match('[^*\n]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^*]').repeat(1).as(:text).repeat(1, 1) >>
              str('**')
           ).as(:bold_unconstrained)
         end
@@ -71,7 +71,7 @@ module Coradoc
 
         def italic_unconstrained
           (str('__') >>
-            match('[^_\n]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^_]').repeat(1).as(:text).repeat(1, 1) >>
              str('__')
           ).as(:italic_unconstrained)
         end
@@ -99,7 +99,7 @@ module Coradoc
 
         def monospace_unconstrained
           (str('``') >>
-            match('[^`\n]').repeat(1).as(:text).repeat(1, 1) >>
+            match('[^\`]').repeat(1).as(:text).repeat(1, 1) >>
              str('``')
           ).as(:monospace_unconstrained)
         end
