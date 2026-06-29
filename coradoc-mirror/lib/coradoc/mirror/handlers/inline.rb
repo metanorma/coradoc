@@ -123,10 +123,54 @@ module Coradoc
           end
 
           def build_simple_mark(element, context, mark_class)
+            # When the mark carries parsed children (Bug 16B — nested
+            # inline marks like `**bold \`code\`**`), walk the children
+            # and apply this mark to each text leaf. Inner mark elements
+            # get the outer mark added to their marks list, producing
+            # ProseMirror's flat text-node-with-marks shape.
+            if element.children&.any?
+              return flatten_marked_children(element.children, [mark_class.new], context)
+            end
+
             text = extract_inline_text(element)
             return nil if text.empty?
 
             context.text_node(text, marks: [mark_class.new])
+          end
+
+          # Walk a list of children, attaching the active set of marks
+          # to each text leaf. When a child is itself an InlineElement
+          # with its own mark (e.g. CodeElement inside BoldElement),
+          # the inner mark is added to the active set and recursion
+          # proceeds into its children. Produces the conjunction of
+          # marks for each text run that ProseMirror expects:
+          #   **a `b` c** → text("a ", [bold]), text("b", [bold, code]), text(" c", [bold])
+          def flatten_marked_children(children, active_marks, context)
+            result = []
+            children.each do |child|
+              case child
+              when CoreModel::TextContent
+                next if child.text.nil? || child.text.empty?
+
+                result << context.text_node(child.text, marks: active_marks.dup)
+              when CoreModel::InlineElement
+                inner_mark_class = SIMPLE_MARK_TYPES[child.class]
+                if inner_mark_class && child.children&.any?
+                  combined = active_marks + [inner_mark_class.new]
+                  result.concat(flatten_marked_children(child.children, combined, context))
+                elsif inner_mark_class
+                  text = extract_inline_text(child)
+                  next if text.empty?
+
+                  combined = active_marks + [inner_mark_class.new]
+                  result << context.text_node(text, marks: combined)
+                else
+                  nested = dispatch_inline(child, context)
+                  result << nested if nested
+                end
+              end
+            end
+            result
           end
 
           def build_link_mark(element, context)
