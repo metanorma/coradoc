@@ -4,25 +4,18 @@ module Coradoc
   module AsciiDoc
     module Parser
       module Inline
-        # AsciiDoc typographic quote syntax: a 2-char pattern that
-        # Asciidoctor substitutes with the corresponding Unicode curly
-        # quote. Single source of truth for the pattern → Unicode char
-        # mapping; the transformer reads this table.
-        #
-        # The patterns MUST be recognised before +monospace_constrained+
-        # in the +inline+ alternation, otherwise the lone backtick in
-        # +`"`+ or +`"``+ fires monospace and the surrounding quote
-        # collapses to straight ASCII quotes wrapped around a spurious
-        # code span.
-        TYPOGRAPHIC_QUOTE_PATTERNS = {
-          '"`' => "“",  # U+201C left double
-          '`"' => "”",  # U+201D right double
-          "'`" => "‘",  # U+2018 left single
-          "`'" => "’"   # U+2019 right single
-        }.freeze
+        # Typographic quote patterns are owned by the shared
+        # {Coradoc::AsciiDoc::TypographicQuotes} module so both the
+        # parser and the transformer reference the same source of
+        # truth without one layer reaching across the other.
 
         def typographic_quote
-          (str('"`') | str('`"') | str("'`") | str("`'")).as(:typographic_quote)
+          patterns = AsciiDoc::TypographicQuotes::PATTERNS
+          combined = patterns.reduce(nil) do |acc, pat|
+            atom = str(pat)
+            acc ? (acc | atom) : atom
+          end
+          combined.as(:typographic_quote)
         end
 
         def attribute_reference
@@ -31,19 +24,54 @@ module Coradoc
             str('}')
         end
 
+        # ── Constrained / unconstrained mark builders ──
+        #
+        # Single source of truth for the four constrained + four
+        # unconstrained inline mark rules. Before this extraction each
+        # rule hand-rolled the same open → content → close → lookahead
+        # shape with subtly different guards (presence checks, newline
+        # exclusions, inner-marker allowances). Now each rule is a
+        # 1-line wrapper over one of two parameterised builders.
+        #
+        # The constrained builder adds a `marker.absent?` guard on both
+        # ends so single-marker constrained never matches when a
+        # double-marker unconstrained is intended (e.g. `*` defers to
+        # `**`). The alternation order in `inline` handles this too,
+        # but the guard is belt-and-suspenders — it keeps each rule
+        # self-contained for unit testing.
+        #
+        # The unconstrained builder allows newlines in the content
+        # (Asciidoctor's behaviour for `__`, `**`, `##`, ``` `` ``` — a
+        # mark can span line breaks). This was Bug 15B's fix scope;
+        # highlight_unconstrained was previously inconsistent (excluded
+        # newlines). All four are now uniform.
+
+        def constrained_mark(marker, reject_paragraph_break: false, content: nil)
+          open_guard = str(marker) >> str(marker).absent?
+          content_rule = content || default_constrained_content(marker)
+          close_guard = str(marker) >> str(marker).absent?
+          sequence = open_guard >> content_rule >> close_guard
+          sequence = sequence >> str("\n\n").absent? if reject_paragraph_break
+          sequence
+        end
+
+        def default_constrained_content(marker)
+          match("[^#{marker}\n]").repeat(1).as(:text).repeat(1, 1)
+        end
+
+        def unconstrained_mark(marker)
+          double = marker * 2
+          str(double) >>
+            match("[^#{marker}]").repeat(1).as(:text).repeat(1, 1) >>
+            str(double)
+        end
+
         def bold_constrained
-          (str('*').present? >> str('*') >>
-            match('[^*\n]').repeat(1).as(:text).repeat(1, 1) >>
-             str('*') >> str('*').absent? >>
-             str("\n\n").absent?
-          ).as(:bold_constrained)
+          constrained_mark('*', reject_paragraph_break: true).as(:bold_constrained)
         end
 
         def bold_unconstrained
-          (str('**').present? >> str('**') >>
-            match('[^*]').repeat(1).as(:text).repeat(1, 1) >>
-             str('**')
-          ).as(:bold_unconstrained)
+          unconstrained_mark('*').as(:bold_unconstrained)
         end
 
         def span_constrained
@@ -63,45 +91,28 @@ module Coradoc
         end
 
         def italic_constrained
-          (str('_') >> str('_').absent? >>
-            match('[^_\n]').repeat(1).as(:text).repeat(1, 1) >>
-             str('_') >> str('_').absent?
-          ).as(:italic_constrained)
+          constrained_mark('_').as(:italic_constrained)
         end
 
         def italic_unconstrained
-          (str('__') >>
-            match('[^_]').repeat(1).as(:text).repeat(1, 1) >>
-             str('__')
-          ).as(:italic_unconstrained)
+          unconstrained_mark('_').as(:italic_unconstrained)
         end
 
         def highlight_constrained
-          (str('#') >>
-            match('[^#\n]').repeat(1).as(:text).repeat(1, 1) >>
-             str('#') >> str('#').absent?
-          ).as(:highlight_constrained)
+          constrained_mark('#').as(:highlight_constrained)
         end
 
         def highlight_unconstrained
-          (str('##') >>
-            match('[^#\n]').repeat(1).as(:text).repeat(1, 1) >>
-             str('##')
-          ).as(:highlight_unconstrained)
+          unconstrained_mark('#').as(:highlight_unconstrained)
         end
 
         def monospace_constrained
-          (str('`') >>
-            constrained_span_content('`').as(:text).repeat(1, 1) >>
-             str('`') >> str('`').absent?
-          ).as(:monospace_constrained)
+          content = constrained_span_content('`').as(:text).repeat(1, 1)
+          constrained_mark('`', content: content).as(:monospace_constrained)
         end
 
         def monospace_unconstrained
-          (str('``') >>
-            match('[^\`]').repeat(1).as(:text).repeat(1, 1) >>
-             str('``')
-          ).as(:monospace_unconstrained)
+          unconstrained_mark('`').as(:monospace_unconstrained)
         end
 
         def superscript
@@ -219,33 +230,31 @@ module Coradoc
              (str('\\') >> str("\n"))).as(:hard_line_break)
         end
 
+        # Priority-ordered registry of inline rules. The ORDER IS LOAD-BEARING:
+        # typographic_quote MUST come before monospace_constrained (Bug 14);
+        # each unconstrained rule MUST come before its constrained sibling
+        # (`` `` `` before `` ` ``, `**` before `*`, `__` before `_`).
+        # Adding a new inline rule = appending one symbol here (OCP).
+        INLINE_RULE_ORDER = %i[
+          typographic_quote
+          bold_unconstrained bold_constrained
+          span_unconstrained span_constrained
+          italic_unconstrained italic_constrained
+          highlight_unconstrained highlight_constrained
+          monospace_unconstrained monospace_constrained
+          superscript subscript
+          attribute_reference
+          escaped_xref cross_reference
+          term_inline term_inline2
+          footnote stem
+          link inline_image
+          inline_passthrough
+          underline small
+          hard_line_break
+        ].freeze
+
         def inline
-          typographic_quote |
-            bold_unconstrained |
-            bold_constrained |
-            span_unconstrained |
-            span_constrained |
-            italic_unconstrained |
-            italic_constrained |
-            highlight_unconstrained |
-            highlight_constrained |
-            monospace_unconstrained |
-            monospace_constrained |
-            superscript |
-            subscript |
-            attribute_reference |
-            escaped_xref |
-            cross_reference |
-            term_inline |
-            term_inline2 |
-            footnote |
-            stem |
-            link |
-            inline_image |
-            inline_passthrough |
-            underline |
-            small |
-            hard_line_break
+          INLINE_RULE_ORDER.map { |name| send(name) }.reduce(:|)
         end
 
         def text_unformatted

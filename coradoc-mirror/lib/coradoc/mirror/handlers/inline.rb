@@ -123,19 +123,24 @@ module Coradoc
           end
 
           def build_simple_mark(element, context, mark_class)
-            # When the mark carries parsed children (Bug 16B — nested
-            # inline marks like `**bold \`code\`**`), walk the children
-            # and apply this mark to each text leaf. Inner mark elements
-            # get the outer mark added to their marks list, producing
-            # ProseMirror's flat text-node-with-marks shape.
-            if element.children&.any?
-              return flatten_marked_children(element.children, [mark_class.new], context)
+            # InlineElement always has children after the dual-shape fix
+            # (Bug 16A follow-up). Walk the children and apply this mark
+            # to each text leaf. Inner mark elements get the outer mark
+            # added to their marks list, producing ProseMirror's flat
+            # text-node-with-marks shape.
+            #
+            # Fallback: programmatically constructed elements (e.g. in
+            # specs or other format gems) may not have children. Fall
+            # back to the content string in that case.
+            children = element.children
+            if children.nil? || children.empty?
+              text = extract_inline_text(element)
+              return nil if text.empty?
+
+              return context.text_node(text, marks: [mark_class.new])
             end
 
-            text = extract_inline_text(element)
-            return nil if text.empty?
-
-            context.text_node(text, marks: [mark_class.new])
+            flatten_marked_children(children, [mark_class.new], context)
           end
 
           # Walk a list of children, attaching the active set of marks
