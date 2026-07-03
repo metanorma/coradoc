@@ -71,13 +71,13 @@ module Coradoc
             # Each 2-char pattern collapses to a single Unicode character
             # at parse time so downstream consumers (HTML, Markdown) see
             # the literal typographic char without any post-processing.
-            # The mapping is the single source of truth declared on the
-            # parser side (Parser::Inline::TYPOGRAPHIC_QUOTE_PATTERNS).
+            # The mapping lives in the shared TypographicQuotes module
+            # (not on Parser or Transformer) so both layers reference
+            # the same source of truth.
             rule(typographic_quote: simple(:pattern)) do
-              char = Coradoc::AsciiDoc::Parser::Inline::TYPOGRAPHIC_QUOTE_PATTERNS.fetch(
-                pattern.to_s, pattern.to_s
+              Model::TextElement.new(
+                content: Coradoc::AsciiDoc::TypographicQuotes.char_for(pattern)
               )
-              Model::TextElement.new(content: char)
             end
 
             # Hard line break (` +\n` or `\\n`). Emitted as a dedicated

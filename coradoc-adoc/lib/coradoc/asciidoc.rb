@@ -28,6 +28,7 @@ end
 module Coradoc
   module AsciiDoc
     autoload :DelimiterMapping, "#{__dir__}/asciidoc/delimiter_mapping"
+    autoload :TypographicQuotes, "#{__dir__}/asciidoc/typographic_quotes"
     autoload :Model, "#{__dir__}/asciidoc/model"
     autoload :Parser, "#{__dir__}/asciidoc/parser"
     autoload :Transformer, "#{__dir__}/asciidoc/transformer"
