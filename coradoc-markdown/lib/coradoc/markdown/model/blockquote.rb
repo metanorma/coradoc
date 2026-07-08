@@ -11,11 +11,6 @@ module Coradoc
     #
     class Blockquote < Base
       attribute :content, :string
-
-      def initialize(content: '')
-        super()
-        @content = content
-      end
     end
   end
 end

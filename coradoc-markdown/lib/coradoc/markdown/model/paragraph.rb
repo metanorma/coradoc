@@ -9,20 +9,7 @@ module Coradoc
     #
     class Paragraph < Base
       attribute :text, :string
-
-      # Mixed content (strings and inline model objects)
-      # @return [Array] mixed content array
-      attr_reader :children
-
-      def initialize(text: '', children: [])
-        super()
-        @text = text
-        @children = children
-      end
-
-      def children=(value)
-        @children = value || []
-      end
+      attribute :children, Base, collection: true, default: []
     end
   end
 end

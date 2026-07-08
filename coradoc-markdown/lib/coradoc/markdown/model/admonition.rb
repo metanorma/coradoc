@@ -27,14 +27,13 @@ module Coradoc
       # Mixed inline content (strings and inline model objects) carried
       # from the CoreModel children so serializers can preserve cross
       # references, code spans, etc. When empty, fall back to `content`.
-      attr_reader :children
+      attribute :children, Coradoc::Markdown::Base, collection: true, default: []
 
-      def initialize(admonition_type:, content:, title: nil, children: [], **rest)
-        super
-        @admonition_type = admonition_type.to_s.downcase
-        @content = content
-        @title = title
-        @children = Array(children)
+      # Normalize type on assignment. Callers can pass "NOTE", "Note",
+      # or "note" — storage is always lowercase so downstream comparison
+      # and CSS class generation don't need to repeat the normalization.
+      def admonition_type=(value)
+        super(value.to_s.downcase)
       end
     end
   end

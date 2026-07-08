@@ -12,11 +12,6 @@ module Coradoc
     #   - With id/classes    → emit `<div id="...">...</div>` wrapper
     class OpenBlock < Base
       attribute :children, Coradoc::Markdown::Base, collection: true, default: []
-
-      def initialize(children: [], **rest)
-        super
-        @children = Array(children)
-      end
     end
   end
 end

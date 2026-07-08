@@ -15,13 +15,6 @@ module Coradoc
       attribute :content, :string
       attribute :attribution, :string
       attribute :citetitle, :string
-
-      def initialize(content:, attribution: nil, citetitle: nil, **rest)
-        super
-        @content = content
-        @attribution = attribution
-        @citetitle = citetitle
-      end
     end
   end
 end

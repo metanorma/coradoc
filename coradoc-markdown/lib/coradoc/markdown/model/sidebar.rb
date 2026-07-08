@@ -13,13 +13,6 @@ module Coradoc
       attribute :content, :string
       attribute :title, :string
       attribute :children, Coradoc::Markdown::Base, collection: true, default: []
-
-      def initialize(content:, title: nil, children: [], **rest)
-        super
-        @content = content
-        @title = title
-        @children = Array(children)
-      end
     end
   end
 end

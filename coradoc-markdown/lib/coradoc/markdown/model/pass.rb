@@ -11,11 +11,6 @@ module Coradoc
     # inside a `nomarkdown` kramdown extension or raw HTML passthrough.
     class Pass < Base
       attribute :content, :string
-
-      def initialize(content:, **rest)
-        super
-        @content = content
-      end
     end
   end
 end

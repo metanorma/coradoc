@@ -13,12 +13,6 @@ module Coradoc
     class CodeBlock < Base
       attribute :language, :string
       attribute :code, :string
-
-      def initialize(language: nil, code: '')
-        super()
-        @language = language
-        @code = code
-      end
     end
   end
 end
