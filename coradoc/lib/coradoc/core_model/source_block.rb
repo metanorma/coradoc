@@ -7,6 +7,10 @@ module Coradoc
       def self.semantic_type
         :source_code
       end
+
+      def prose?
+        false
+      end
     end
   end
 end

@@ -32,24 +32,74 @@ module Coradoc
             private
 
             def transform_definition_item(item)
-              term_content = item.terms
+              term_parts = Array(item.terms)
               def_content = item.contents
 
-              term_parts = term_content.is_a?(Array) ? term_content : [term_content]
-              parsed_terms = term_parts.flat_map do |part|
-                ToCoreModel.parse_inline_text(part)
+              # Process each term independently so multi-term `<dt>`'s
+              # (e.g. AsciiDoc `term1::\nterm2::\ndef`) preserve their
+              # distinct identities in CoreModel#terms. Each entry in
+              # `term_strings` is one term's plain text; `term_children`
+              # is the parallel array of typed inline children. The
+              # singular `term` accessor is set to the first term for
+              # backward compatibility with consumers that haven't
+              # migrated to the `terms` collection.
+              term_strings = term_parts.map do |part|
+                parsed = ToCoreModel.parse_inline_text(part)
+                ToCoreModel.extract_text_content(ToCoreModel.transform_inline_content(parsed))
               end
 
-              parsed_defs = ToCoreModel.parse_inline_text(def_content)
+              # Inline children for the FIRST term only. The CoreModel
+              # `term_children` accessor is singular; carrying per-term
+              # children for multi-term `<dt>`'s would require a
+              # collection of arrays. The common case (single-term dt
+              # with inline markup) is fully supported; multi-term dt
+              # with inline markup on later terms degrades to text-only
+              # for those later terms (acceptable per asciidoctor's
+              # observed behaviour — multi-term inline markup is rare).
+              primary_term_children = if term_parts.any?
+                                        parsed = ToCoreModel.parse_inline_text(term_parts.first)
+                                        ToCoreModel.transform_inline_content(parsed)
+                                      else
+                                        []
+                                      end
 
-              term_children = ToCoreModel.transform_inline_content(parsed_terms)
-              def_children = ToCoreModel.transform_inline_content(parsed_defs)
+              # contents is typed on DefinitionItem as Array<TextElement>
+              # (see model/list/definition_item.rb). Each TextElement's
+              # `to_s` handles the polymorphic content shape (String,
+              # Array, or nested Serializable). Join the per-line text
+              # elements into a single paragraph string so the inline
+              # parser sees the full multi-line dd content as one
+              # soft-wrapped paragraph.
+              #
+              # When dd has no inline definition (term-only item where
+              # the dd is populated entirely by `+`-continuation blocks),
+              # def_content is empty and we skip populating definitions
+              # entirely — avoids emitting an empty <text></text> node
+              # ahead of the attached blocks.
+              def_text = def_content.map(&:to_s).reject(&:empty?).join(' ')
+              has_definition = !def_text.empty?
 
+              parsed_defs = has_definition ? ToCoreModel.parse_inline_text(def_text) : []
+              def_children = has_definition ? ToCoreModel.transform_inline_content(parsed_defs) : []
+
+              # Transform `+`-continuation blocks (paragraphs, admonitions,
+              # delimited blocks) into their CoreModel equivalents. Each
+              # becomes a child of the dd, rendered after the definition
+              # paragraph. Passes through ToCoreModel.transform so any
+              # registered block transformer applies (paragraph, source,
+              # admonition, etc.).
+              attached_children = Array(item.attached).filter_map do |block|
+                ToCoreModel.transform(block)
+              end
+
+              primary_term = term_strings.first.to_s
               di = Coradoc::CoreModel::DefinitionItem.new(
-                term: ToCoreModel.extract_text_content(term_children),
-                definitions: [ToCoreModel.extract_text_content(def_children)],
-                term_children: term_children,
+                term: primary_term,
+                terms: term_strings,
+                definitions: has_definition ? [ToCoreModel.extract_text_content(def_children)] : [],
+                term_children: primary_term_children,
                 definition_children: def_children,
+                attached_children: attached_children,
                 source_line: item.source_line
               )
               di.id = item.id if item.id

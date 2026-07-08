@@ -18,26 +18,10 @@ module Coradoc
         # `parse_nested_inline_children` returns `[]`, and the mark
         # keeps its flat content shape.
         #
-        # The depth guard prevents stack overflow on pathological input
-        # (e.g. `*****...*****` with 20+ nesting levels). The realistic
-        # maximum is 2–3 levels; the guard allows 5 for headroom.
-        module NestedMarkRecognition
-          MAX_DEPTH = 5
-          THREAD_KEY = :coradoc_nested_mark_depth
-
-          def self.enter
-            Thread.current[THREAD_KEY] ||= 0
-            Thread.current[THREAD_KEY] += 1
-            yield
-          ensure
-            Thread.current[THREAD_KEY] -= 1
-          end
-
-          def self.too_deep?
-            (Thread.current[THREAD_KEY] || 0) >= MAX_DEPTH
-          end
-        end
-
+        # Realistic nesting is 2–3 levels. Pathological input
+        # (`*****…*****` with hundreds of levels) raises
+        # `SystemStackError` naturally — that's Ruby's contract, not a
+        # bespoke guard.
         class InlineTransformer
           class << self
             def transform_inline(inline, format_type)
@@ -45,22 +29,16 @@ module Coradoc
               raw_content = ToCoreModel.extract_text_content(inline.content)
 
               # Recursively parse the mark's content to recognise nested
-              # inline marks (Bug 16B). The parsed children are stored on
-              # the InlineElement alongside the flat content string for
-              # round-trip fidelity.
-              #
-              # Children is ALWAYS populated — flat marks get
-              # [TextContent(content)]; nested marks get the parsed
-              # children. This eliminates the dual-shape ambiguity
-              # (Bug 16A follow-up).
+              # inline marks (Bug 16B). Only populate `children` when the
+              # parser found real nested marks — flat marks keep children
+              # empty, and the Mirror handler's `build_simple_mark` falls
+              # back to the `content` string. Saves one TextContent
+              # allocation per flat mark (the common case).
               children = parse_nested_inline_children(raw_content)
-              children = [Coradoc::CoreModel::TextContent.new(text: raw_content)] if children.empty?
 
-              klass.new(
-                content: raw_content,
-                children: children,
-                source_line: inline.source_line
-              )
+              kwargs = { content: raw_content, source_line: inline.source_line }
+              kwargs[:children] = children if children.any?
+              klass.new(**kwargs)
             end
 
             # Re-parse a mark's raw content string through the inline
@@ -68,22 +46,16 @@ module Coradoc
             # content contains nested inline marks; returns [] when
             # the content is plain text (no nested marks to preserve).
             # The empty return is the recursion terminator.
-            #
-            # The NestedMarkRecognition module tracks recursion depth
-            # per-thread so the cycle is bounded and visible.
             def parse_nested_inline_children(text)
               return [] if text.nil? || text.to_s.empty?
-              return [] if NestedMarkRecognition.too_deep?
 
-              NestedMarkRecognition.enter do
-                parsed = ToCoreModel.parse_and_transform_inline(text.to_s)
-                return [] unless parsed.is_a?(Array)
+              parsed = ToCoreModel.parse_and_transform_inline(text.to_s)
+              return [] unless parsed.is_a?(Array)
 
-                has_marks = parsed.any? do |child|
-                  child.is_a?(Coradoc::CoreModel::InlineElement)
-                end
-                has_marks ? parsed : []
+              has_marks = parsed.any? do |child|
+                child.is_a?(Coradoc::CoreModel::InlineElement)
               end
+              has_marks ? parsed : []
             end
 
             def transform_inline_text(inline, format_type)
