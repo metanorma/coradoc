@@ -24,14 +24,6 @@ module Coradoc
       # When present, the flat-PHP-Markdown-Extra syntax is no longer
       # sufficient and the serializer falls back to HTML <dl>/<dt>/<dd>.
       attribute :nested, Coradoc::Markdown::DefinitionList
-
-      def initialize(text: '', definitions: [], nested: nil, text_children: [], **rest)
-        super
-        @text = text
-        @definitions = definitions
-        @nested = nested
-        @text_children = Array(text_children)
-      end
     end
   end
 end

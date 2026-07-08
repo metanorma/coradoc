@@ -11,12 +11,6 @@ module Coradoc
       attribute :level, :integer, default: 1
       attribute :text, :string
 
-      def initialize(level: 1, text: '')
-        super()
-        @level = level
-        @text = text
-      end
-
       # Generate an auto ID from the heading text
       #
       # @return [String] A slugified version of the text suitable for use as an ID

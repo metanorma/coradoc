@@ -11,11 +11,6 @@ module Coradoc
     # Markdown: indented code block (4 leading spaces per line).
     class Literal < Base
       attribute :content, :string
-
-      def initialize(content:, **rest)
-        super
-        @content = content
-      end
     end
   end
 end
