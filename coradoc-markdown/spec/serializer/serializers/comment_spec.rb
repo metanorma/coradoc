@@ -30,7 +30,7 @@ RSpec.describe Coradoc::Markdown::Serializer::Serializers::Comment do
     end
 
     it 'strips whitespace around text' do
-      padded = Coradoc::Markdown::Comment.new(text: "  padded  ")
+      padded = Coradoc::Markdown::Comment.new(text: '  padded  ')
       result = Coradoc::Markdown::Serializer.call(padded, suppress_comments: false)
       expect(result).to eq('<!-- padded -->')
     end

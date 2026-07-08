@@ -68,7 +68,7 @@ RSpec.describe 'Markdown Serialization Spec — conformance' do
   describe 'Bare URL uses autolink' do
     it 'serializes bare URLs as autolinks' do
       md = adoc_to_md("See https://example.com for info.\n")
-      expect(md).not_to match(/\[https:\/\/example\.com\]\(/)
+      expect(md).not_to match(%r{\[https://example\.com\]\(})
       expect(md).to include('https://example.com')
     end
   end

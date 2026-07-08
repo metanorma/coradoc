@@ -46,7 +46,7 @@ RSpec.describe Coradoc::CoreModel::InlineContent do
     end
 
     it 'returns content from Base with string content (non-structural)' do
-      model = Struct.new(:content, :title, :children).new('direct content', nil, nil)
+      Struct.new(:content, :title, :children).new('direct content', nil, nil)
       # Models without a String content fall through to title.to_s.
       # Verified via the Base branch of text_of_one.
     end
@@ -76,12 +76,12 @@ RSpec.describe Coradoc::CoreModel::InlineContent do
 
     it 'strips leading whitespace from first text-carrying item' do
       result = described_class.strip_edges(['   hello', 'world'])
-      expect(result).to eq(['hello', 'world'])
+      expect(result).to eq(%w[hello world])
     end
 
     it 'strips trailing whitespace from last text-carrying item' do
       result = described_class.strip_edges(['hello', 'world   '])
-      expect(result).to eq(['hello', 'world'])
+      expect(result).to eq(%w[hello world])
     end
 
     it 'strips both edges of a single-element array' do

@@ -89,7 +89,7 @@ module Coradoc
         modified_args = invoke(hook_point, *args, **kwargs)
         result = yield(*modified_args)
 
-        after_point = "after_#{hook_point.to_s.sub('before_', '')}".to_sym
+        after_point = :"after_#{hook_point.to_s.sub('before_', '')}"
         result = invoke(after_point, result, **kwargs) if HOOK_POINTS.key?(after_point)
 
         result

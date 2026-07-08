@@ -36,6 +36,7 @@ module Coradoc
 
           first_idx = content.index { |i| text_carrier?(i) }
           return content if first_idx.nil?
+
           last_idx = content.rindex { |i| text_carrier?(i) }
 
           content.map.with_index do |item, idx|

@@ -17,10 +17,10 @@ module Coradoc
       attr_reader :counts
 
       def visit(element)
-        return super(element) unless element.is_a?(CoreModel::Base)
+        return super unless element.is_a?(CoreModel::Base)
 
         @counts[type_key_for(element)] += 1
-        super(element)
+        super
       end
 
       private

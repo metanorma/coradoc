@@ -23,15 +23,15 @@ module Coradoc
     option :section_number_levels, desc: 'Section numbering depth (1-6)', type: :numeric, default: 3
     option :lang, desc: 'Document language code', type: :string, default: 'en'
     option :resolve_includes, desc: 'Resolve include:: directives inline (default: leave as link nodes)',
-           type: :boolean, default: false
+                              type: :boolean, default: false
     option :base_dir, desc: 'Base directory for include resolution (default: dirname of FILE)',
-           type: :string
+                      type: :string
     option :missing_include, desc: 'Policy for missing includes: error, warn, silent, passthrough',
-           type: :string, default: 'error'
+                             type: :string, default: 'error'
     option :max_include_depth, desc: 'Maximum include nesting depth', type: :numeric,
-           default: 64
+                               default: 64
     option :allow_unsafe_includes, desc: 'Disable path-traversal protection (asciidoctor :unsafe mode)',
-           type: :boolean, default: false
+                                   type: :boolean, default: false
     def convert(file)
       source_format = resolve_format(file, :from)
       target_format = options[:to] ? Coradoc.normalize_format(options[:to]) : Coradoc.resolve_output_format(options[:output])

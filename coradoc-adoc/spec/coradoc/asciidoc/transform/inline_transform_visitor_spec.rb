@@ -114,7 +114,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::InlineTransformVisitor do
         te2 = Coradoc::AsciiDoc::Model::TextElement.new(content: 'world')
         result = visitor.transform([te1, te2])
         texts = result.map { |r| r.is_a?(Coradoc::CoreModel::TextContent) ? r.text : r.content.to_s }
-        expect(texts).to eq(['hello', 'world'])
+        expect(texts).to eq(%w[hello world])
       end
 
       it 'does not insert space before first item' do

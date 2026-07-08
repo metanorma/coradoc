@@ -16,7 +16,7 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
     end
 
     it 'returns empty block for malformed YAML' do
-      block = described_class.from_yaml("foo: [unclosed")
+      block = described_class.from_yaml('foo: [unclosed')
       expect(block).to be_empty
     end
 

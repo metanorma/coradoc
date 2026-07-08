@@ -58,7 +58,7 @@ module Coradoc
         private
 
         def matched_offset(trimmed)
-          %r{\A(?<sign>[+-]?)(?<digits>\d+)\z}.match(trimmed) do |m|
+          /\A(?<sign>[+-]?)(?<digits>\d+)\z/.match(trimmed) do |m|
             digits = m[:digits].to_i
             signed = m[:sign] == '-' ? -digits : digits
             mode = m[:sign].empty? ? 'absolute' : 'relative'

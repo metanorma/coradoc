@@ -600,8 +600,8 @@ module Coradoc
       #
       # @yield Schema definition block
       # @return [Schema] The defined schema
-      def define(&block)
-        Schema.define(&block)
+      def define(&)
+        Schema.define(&)
       end
 
       # Generate a validation schema from a CoreModel class
@@ -614,8 +614,8 @@ module Coradoc
       #   schema = Coradoc::Validation.auto_schema(Coradoc::CoreModel::Block)
       #   result = schema.validate(document)
       #
-      def auto_schema(model_class, **options)
-        SchemaGenerator.generate(model_class, **options)
+      def auto_schema(model_class, **)
+        SchemaGenerator.generate(model_class, **)
       end
 
       # Validate a document with default schema

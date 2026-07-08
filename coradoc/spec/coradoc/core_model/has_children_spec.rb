@@ -26,7 +26,7 @@ RSpec.describe Coradoc::CoreModel::HasChildren do
   # children.
   exclude_examples = [
     [Coradoc::CoreModel::TextContent, false],
-    [Coradoc::CoreModel::Table, false],            # has :rows, not :children
+    [Coradoc::CoreModel::Table, false], # has :rows, not :children
     [Coradoc::CoreModel::Image, false],
     [Coradoc::CoreModel::Metadata, false],
     [Coradoc::CoreModel::ElementAttribute, false]

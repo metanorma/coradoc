@@ -54,8 +54,8 @@ RSpec.describe Coradoc::Html::LayoutRenderer do
           document, body_html,
           author: 'Caller', description: 'Caller desc'
         )
-        author_tags = html.scan(/<meta name="author"/).length
-        desc_tags = html.scan(/<meta name="description"/).length
+        author_tags = html.scan('<meta name="author"').length
+        desc_tags = html.scan('<meta name="description"').length
         expect(author_tags).to eq(1)
         expect(desc_tags).to eq(1)
         expect(html).to include('content="Caller"')
@@ -65,8 +65,8 @@ RSpec.describe Coradoc::Html::LayoutRenderer do
 
       it 'keeps frontmatter author/description when opts omits them' do
         html = described_class.new.render_static(document, body_html, {})
-        author_tags = html.scan(/<meta name="author"/).length
-        desc_tags = html.scan(/<meta name="description"/).length
+        author_tags = html.scan('<meta name="author"').length
+        desc_tags = html.scan('<meta name="description"').length
         expect(author_tags).to eq(1)
         expect(desc_tags).to eq(1)
         expect(html).to include('From Frontmatter')

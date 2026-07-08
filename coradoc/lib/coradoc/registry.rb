@@ -102,24 +102,24 @@ module Coradoc
     #
     # @yield [Symbol, Object] name and item
     # @return [Enumerator]
-    def each(&block)
-      @items.each(&block)
+    def each(&)
+      @items.each(&)
     end
 
     # Iterate over item values
     #
     # @yield [Object]
     # @return [Enumerator]
-    def each_value(&block)
-      @items.each_value(&block)
+    def each_value(&)
+      @items.each_value(&)
     end
 
     # Iterate over item names
     #
     # @yield [Symbol]
     # @return [Enumerator]
-    def each_key(&block)
-      @items.each_key(&block)
+    def each_key(&)
+      @items.each_key(&)
     end
 
     # Find an item whose processor_match? returns true for the given filename

@@ -113,9 +113,7 @@ module Coradoc
           return rows if rows.nil? || rows.empty?
 
           col_count = parse_cols_attribute(attrs)
-          if col_count.nil? && rows.first.is_a?(Model::TableRow) && rows.first.columns.any?
-            col_count = rows.first.columns.sum { |c| (c.colspan || 1).to_i }
-          end
+          col_count = rows.first.columns.sum { |c| (c.colspan || 1).to_i } if col_count.nil? && rows.first.is_a?(Model::TableRow) && rows.first.columns.any?
 
           all_cells = rows.flat_map do |r|
             r.is_a?(Model::TableRow) ? r.columns : []

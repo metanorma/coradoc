@@ -89,6 +89,7 @@ module Coradoc
 
     def apply_default(key)
       return @default.call(key) if @default
+
       nil
     end
   end

@@ -107,7 +107,7 @@ RSpec.describe 'AsciiDoc → Markdown conversion gaps (BUG-all-remaining-gaps)',
         ****
       ADOC
       expect(md).to include(':::info')
-      expect(md).to include("```ruby")
+      expect(md).to include('```ruby')
       expect(md).to include("puts 'hi'")
       expect(md).to include(':::')
     end

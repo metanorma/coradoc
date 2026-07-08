@@ -245,7 +245,7 @@ RSpec.describe Coradoc::UnsupportedFormatError do
       error = described_class.new(:docx, available: [:asciidoc])
 
       expect(error.message).to eq("Format 'docx' is not registered. Available formats: asciidoc")
-      expect(error.message.scan(/Format '/).count).to eq(1)
+      expect(error.message.scan('Format \'').count).to eq(1)
     end
   end
 

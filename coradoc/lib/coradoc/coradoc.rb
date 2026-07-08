@@ -56,8 +56,8 @@ module Coradoc
 
     def registry = FormatCatalog.registry
 
-    def register_format(format_name, format_module, **options)
-      FormatCatalog.register_format(format_name, format_module, **options)
+    def register_format(format_name, format_module, **)
+      FormatCatalog.register_format(format_name, format_module, **)
     end
 
     def get_format(format_name) = FormatCatalog.get_format(format_name)

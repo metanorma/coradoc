@@ -119,7 +119,7 @@ module Coradoc
       #   end
       #
       # Returns self for chaining at the list level.
-      def add_item(marker: self.marker_type == 'ordered' ? '.' : '*')
+      def add_item(marker: marker_type == 'ordered' ? '.' : '*')
         item = ListItem.build(marker: marker) { |li| yield li if block_given? }
         self.items = Array(items) + [item]
         self

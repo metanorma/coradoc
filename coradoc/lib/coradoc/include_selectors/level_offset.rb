@@ -50,8 +50,6 @@ module Coradoc
             node.level || 1
           when Coradoc::CoreModel::StructuralElement, Coradoc::CoreModel::Block
             walk_for_first_level(node.children)
-          else
-            nil
           end
         end
 

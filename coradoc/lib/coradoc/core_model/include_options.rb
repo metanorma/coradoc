@@ -73,6 +73,7 @@ module Coradoc
 
         def parse_tags(raw)
           return [] if raw.nil?
+
           trimmed = raw.strip
           return [] if trimmed.empty? || trimmed == '*' || trimmed == '**'
 

@@ -175,9 +175,9 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
       block = described_class.from_yaml(yaml)
       hash = described_class.to_hash(block)
       expect(hash['authors']).to eq([
-        { 'name' => 'Jane' },
-        { 'name' => 'Carlos' }
-      ])
+                                      { 'name' => 'Jane' },
+                                      { 'name' => 'Carlos' }
+                                    ])
     end
   end
 end

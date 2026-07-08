@@ -11,12 +11,12 @@ module Coradoc
     # Out-of-bounds clamps gracefully (SPEC 3.4). One-based indexing
     # (asciidoctor convention).
     module Lines
-      SPEC_PART = %r{
+      SPEC_PART = /
         \A
         (?<start>\d+)
         (?:\.\.(?<finish>\d+))?
         \z
-      }x.freeze
+      /x
 
       # @param text [String]
       # @param options [Coradoc::CoreModel::IncludeOptions]
