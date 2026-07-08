@@ -43,4 +43,28 @@ RSpec.describe Coradoc::FormatCatalog do
       expect(described_class.resolve_output_format(nil, default: :html)).to eq(:html)
     end
   end
+
+  describe '.lazy_load_format / .get_format (TODO 30)' do
+    # When the user requires only `coradoc` (not `coradoc/asciidoc`),
+    # the format gem may be in the bundle but not yet loaded. The
+    # registry miss triggers a `require "coradoc/<format>"` retry so
+    # users don't need to know the require path of every format gem
+    # they depend on.
+    it 'returns nil for an unresolvable format name' do
+      expect(described_class.lazy_load_format(:nonexistent_format_xyz)).to be_nil
+    end
+
+    it 'returns nil for nil or empty format names' do
+      expect(described_class.lazy_load_format(nil)).to be_nil
+      expect(described_class.lazy_load_format('')).to be_nil
+    end
+
+    it 'loads a registered format gem on first lookup' do
+      # coradoc-adoc is required by spec_helper, so :asciidoc is already
+      # registered. We verify the lazy-load path doesn't break the
+      # happy case — calling get_format on an already-loaded format
+      # returns it without re-requiring.
+      expect(described_class.get_format(:asciidoc)).to be(Coradoc::AsciiDoc)
+    end
+  end
 end

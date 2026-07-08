@@ -189,8 +189,8 @@ RSpec.describe Coradoc::Query do
     describe '#filter' do
       it 'filters results with selector' do
         mock_elements = [
-          double('el1', class: 'Section', id: 'a', role: nil),
-          double('el2', class: 'Paragraph', id: 'b', role: nil)
+          Struct.new(:class, :id, :role).new('Section', 'a', nil),
+          Struct.new(:class, :id, :role).new('Paragraph', 'b', nil)
         ]
         result = described_class.new(mock_elements)
 
@@ -232,7 +232,8 @@ RSpec.describe Coradoc::Query do
       end
 
       it 'returns empty result for empty selector' do
-        result = described_class.query(double('doc'), '')
+        doc = Struct.new(:placeholder).new('any doc')
+        result = described_class.query(doc, '')
         expect(result.empty?).to be true
       end
     end

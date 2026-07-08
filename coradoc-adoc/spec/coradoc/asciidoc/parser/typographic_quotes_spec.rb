@@ -73,13 +73,13 @@ RSpec.describe 'Typographic quote substitution', :asciidoc do
     it 'preserves single spaces around quoted text without synthesising extras' do
       children = first_paragraph_children('He said "`hello world`" to me.')
       joined = text_only(children)
-      expect(joined).to eq("He said “hello world” to me.")
+      expect(joined).to eq('He said “hello world” to me.')
     end
 
     it 'preserves leading space after the closer' do
       children = first_paragraph_children('He said "`hello`" to me.')
       joined = text_only(children)
-      expect(joined).to eq("He said “hello” to me.")
+      expect(joined).to eq('He said “hello” to me.')
     end
 
     it 'does not synthesise extra spaces between adjacent text and quote tokens' do
