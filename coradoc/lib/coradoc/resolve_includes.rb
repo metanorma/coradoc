@@ -24,8 +24,8 @@ module Coradoc
     DEFAULT_MAX_DEPTH = 64
 
     class << self
-      def call(core, resolver:, base_dir:, **opts)
-        new(resolver: resolver, base_dir: base_dir, **opts).call(core)
+      def call(core, resolver:, base_dir:, **)
+        new(resolver: resolver, base_dir: base_dir, **).call(core)
       end
     end
 

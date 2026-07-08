@@ -51,7 +51,7 @@ module Coradoc
               return children if children.any? { |c| title_heading?(c) }
 
               title_id = doc_id || Coradoc::CoreModel::IdGenerator
-                                    .generate_from_title(title_text)
+                         .generate_from_title(title_text)
               title_heading = Coradoc::CoreModel::HeaderElement.new(
                 level: 0,
                 title: title_text,

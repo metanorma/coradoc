@@ -42,8 +42,8 @@ module Coradoc
         )
       end
 
-      def rewrite_links(document, rewriter: nil, &block)
-        Coradoc::LinkRewriter.rewrite(document, rewriter: rewriter, &block)
+      def rewrite_links(document, rewriter: nil, &)
+        Coradoc::LinkRewriter.rewrite(document, rewriter: rewriter, &)
       end
 
       def convert(text, from:, to:, **)
@@ -72,8 +72,8 @@ module Coradoc
         Hooks.invoke(:after_serialize, result, format: to)
       end
 
-      def build(&block)
-        CoreModel::DocumentElement.build(children: [], &block)
+      def build(&)
+        CoreModel::DocumentElement.build(children: [], &)
       end
 
       def parse_file(path, format: nil)

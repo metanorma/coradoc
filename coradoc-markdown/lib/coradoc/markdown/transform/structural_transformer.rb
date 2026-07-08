@@ -80,7 +80,7 @@ module Coradoc
           def transform_bibliography_entry(entry)
             FromCoreModel.transform_bibliography_entry(entry)
           end
-end
+        end
 
         # Register with FromCoreModel
         FromCoreModel.register(CoreModel::StructuralElement, method(:transform_structural_element))

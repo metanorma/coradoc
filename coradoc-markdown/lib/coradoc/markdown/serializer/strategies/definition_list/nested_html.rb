@@ -35,7 +35,7 @@ module Coradoc
               end
 
               def render_term(term)
-                dt = "<dt>#{term.text.to_s}</dt>"
+                dt = "<dt>#{term.text}</dt>"
                 dds = term.definitions.map { |d| render_dd(d) }.join
                 nested = term.nested ? "\n  #{render_dl(term.nested)}" : ''
                 "#{dt}\n#{dds}#{nested unless nested.empty?}"

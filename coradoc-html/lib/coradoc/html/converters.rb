@@ -96,7 +96,7 @@ module Coradoc
         else
           raise Errors::InvalidConfigurationError,
                 "unknown value #{Html.input_config.unknown_tags.inspect} " \
-                  'for Coradoc::Html.input_config.unknown_tags'
+                'for Coradoc::Html.input_config.unknown_tags'
         end
       end
     end

@@ -17,8 +17,8 @@ module Coradoc
     # Markers may appear on their own line; they must be the first
     # non-whitespace token on that line (asciidoctor convention).
     module Tags
-      MARKER_OPEN  = /\A[[:space:]]*(?:\/\/+|#+)[[:space:]]*tag::([^\[\]]+)\[[[:space:]]*\]/
-      MARKER_CLOSE = /\A[[:space:]]*(?:\/\/+|#+)[[:space:]]*end::([^\[\]]+)\[[[:space:]]*\]/
+      MARKER_OPEN  = %r{\A[[:space:]]*(?://+|#+)[[:space:]]*tag::([^\[\]]+)\[[[:space:]]*\]}
+      MARKER_CLOSE = %r{\A[[:space:]]*(?://+|#+)[[:space:]]*end::([^\[\]]+)\[[[:space:]]*\]}
 
       # @param text [String] raw included file content
       # @param options [Coradoc::CoreModel::IncludeOptions]
@@ -134,5 +134,3 @@ module Coradoc
     end
   end
 end
-
-require 'set'

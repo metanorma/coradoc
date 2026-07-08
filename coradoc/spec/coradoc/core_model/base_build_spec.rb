@@ -70,10 +70,10 @@ RSpec.describe 'CoreModel builder API (Base.build + fluent constructors)' do
       end
 
       expect(item.children.map(&:class)).to eq([
-        Coradoc::CoreModel::TextContent,
-        Coradoc::CoreModel::LinkElement,
-        Coradoc::CoreModel::TextContent
-      ])
+                                                 Coradoc::CoreModel::TextContent,
+                                                 Coradoc::CoreModel::LinkElement,
+                                                 Coradoc::CoreModel::TextContent
+                                               ])
       expect(item.children[0].text).to eq('See ')
       expect(item.children[1].target).to eq('foo.adoc')
       expect(item.children[1].content).to eq('Foo')

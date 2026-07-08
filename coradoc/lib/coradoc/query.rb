@@ -234,8 +234,8 @@ module Coradoc
         @elements = Array(elements).compact
       end
 
-      def each(&block)
-        @elements.each(&block)
+      def each(&)
+        @elements.each(&)
       end
 
       def [](index)
@@ -272,16 +272,16 @@ module Coradoc
         ResultSet.new(results.uniq)
       end
 
-      def map(&block)
-        ResultSet.new(@elements.map(&block))
+      def map(&)
+        ResultSet.new(@elements.map(&))
       end
 
-      def select(&block)
-        ResultSet.new(@elements.select(&block))
+      def select(&)
+        ResultSet.new(@elements.select(&))
       end
 
-      def reject(&block)
-        ResultSet.new(@elements.reject(&block))
+      def reject(&)
+        ResultSet.new(@elements.reject(&))
       end
 
       def to_a

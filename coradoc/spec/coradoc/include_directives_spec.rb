@@ -36,7 +36,7 @@ RSpec.describe 'include:: directives', :asciidoc do
   def body_text(core_or_hash)
     hash = core_or_hash.is_a?(Hash) ? core_or_hash : mirror_json(core_or_hash)
     texts = []
-    walker = ->(n) {
+    walker = lambda { |n|
       texts << n['text'] if n['type'] == 'text'
       (n['content'] || []).each { |c| walker.call(c) }
     }
@@ -51,7 +51,7 @@ RSpec.describe 'include:: directives', :asciidoc do
   def all_types(core_or_hash)
     hash = core_or_hash.is_a?(Hash) ? core_or_hash : mirror_json(core_or_hash)
     types = []
-    walker = ->(n) {
+    walker = lambda { |n|
       types << n['type']
       (n['content'] || []).each { |c| walker.call(c) }
     }
@@ -70,9 +70,9 @@ RSpec.describe 'include:: directives', :asciidoc do
     end
 
     it 'does not perform file I/O for a missing target' do
-      expect {
+      expect do
         parse_adoc("include::does_not_exist.adoc[]\n")
-      }.not_to raise_error
+      end.not_to raise_error
     end
 
     it 'round-trips the include directive through adoc serialization' do
@@ -94,7 +94,7 @@ RSpec.describe 'include:: directives', :asciidoc do
     it 'does not mutate the parsed document' do
       with_fixtures('immutability') do |dir|
         write(dir, 'main.adoc' => "Before.\n\ninclude::snippet.adoc[]\n\nAfter.\n",
-                    'snippet.adoc' => "Included content.\n")
+                   'snippet.adoc' => "Included content.\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
         original_types = all_types(core)
@@ -108,7 +108,7 @@ RSpec.describe 'include:: directives', :asciidoc do
     it 'resolves a whole-file include' do
       with_fixtures('whole_file') do |dir|
         write(dir, 'main.adoc' => "Before.\n\ninclude::snippet.adoc[]\n\nAfter.\n",
-                    'snippet.adoc' => "Included content.\n")
+                   'snippet.adoc' => "Included content.\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -120,7 +120,7 @@ RSpec.describe 'include:: directives', :asciidoc do
     it 'resolves relative subdirectory paths' do
       with_fixtures('rel_path') do |dir|
         write(dir, 'main.adoc' => "include::sections/intro.adoc[]\n",
-                    'sections/intro.adoc' => "Intro body.\n")
+                   'sections/intro.adoc' => "Intro body.\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -132,7 +132,7 @@ RSpec.describe 'include:: directives', :asciidoc do
     it 'resolves paths that traverse parent directories (with allow_unsafe)' do
       with_fixtures('parent_path') do |dir|
         write(dir, 'sub/main.adoc' => "include::../shared.adoc[]\n",
-                    'shared.adoc' => "Shared body.\n")
+                   'shared.adoc' => "Shared body.\n")
 
         core = parse_adoc(dir.join('sub/main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.join('sub').to_s,
@@ -144,9 +144,9 @@ RSpec.describe 'include:: directives', :asciidoc do
     it 'resolves multiple consecutive includes in source order' do
       with_fixtures('multiple') do |dir|
         write(dir, 'main.adoc' => "include::a.adoc[]\ninclude::b.adoc[]\ninclude::c.adoc[]\n",
-                    'a.adoc' => "A-body.\n",
-                    'b.adoc' => "B-body.\n",
-                    'c.adoc' => "C-body.\n")
+                   'a.adoc' => "A-body.\n",
+                   'b.adoc' => "B-body.\n",
+                   'c.adoc' => "C-body.\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -158,7 +158,7 @@ RSpec.describe 'include:: directives', :asciidoc do
     it 'resolves an include at the start of the document' do
       with_fixtures('leading') do |dir|
         write(dir, 'main.adoc' => "include::snippet.adoc[]\n\nTrailing.\n",
-                    'snippet.adoc' => "Leading body.\n")
+                   'snippet.adoc' => "Leading body.\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -170,7 +170,7 @@ RSpec.describe 'include:: directives', :asciidoc do
     it 'resolves an include at the end of the document' do
       with_fixtures('trailing') do |dir|
         write(dir, 'main.adoc' => "Leading.\n\ninclude::snippet.adoc[]\n",
-                    'snippet.adoc' => "Trailing body.\n")
+                   'snippet.adoc' => "Trailing body.\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -186,7 +186,7 @@ RSpec.describe 'include:: directives', :asciidoc do
     it 'extracts a single named tag region' do
       with_fixtures('tag_single') do |dir|
         write(dir, 'main.adoc' => "include::snippet.adoc[tags=body]\n",
-                    'snippet.adoc' => "// tag::body[]\nIncluded body.\n// end::body[]\n")
+                   'snippet.adoc' => "// tag::body[]\nIncluded body.\n// end::body[]\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -198,7 +198,7 @@ RSpec.describe 'include:: directives', :asciidoc do
     it 'extracts multiple semicolon-separated tags' do
       with_fixtures('tag_multi') do |dir|
         write(dir, 'main.adoc' => "include::snippet.adoc[tags=intro;conclusion]\n",
-                    'snippet.adoc' => %(// tag::intro[]\nIntro body.\n// end::intro[]\n\nmiddle\n\n// tag::conclusion[]\nConclusion body.\n// end::conclusion[]\n))
+                   'snippet.adoc' => %(// tag::intro[]\nIntro body.\n// end::intro[]\n\nmiddle\n\n// tag::conclusion[]\nConclusion body.\n// end::conclusion[]\n))
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -213,7 +213,7 @@ RSpec.describe 'include:: directives', :asciidoc do
     it 'treats tags=* as wildcard selecting all tagged regions' do
       with_fixtures('tag_wildcard') do |dir|
         write(dir, 'main.adoc' => "include::snippet.adoc[tags=*]\n",
-                    'snippet.adoc' => %(outside\n\n// tag::a[]\nA body.\n// end::a[]\n\nbetween\n\n// tag::b[]\nB body.\n// end::b[]\n))
+                   'snippet.adoc' => %(outside\n\n// tag::a[]\nA body.\n// end::a[]\n\nbetween\n\n// tag::b[]\nB body.\n// end::b[]\n))
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -229,7 +229,7 @@ RSpec.describe 'include:: directives', :asciidoc do
     it 'treats tags=** as inverted wildcard excluding tagged regions' do
       with_fixtures('tag_inverted') do |dir|
         write(dir, 'main.adoc' => "include::snippet.adoc[tags=**]\n",
-                    'snippet.adoc' => %(
+                   'snippet.adoc' => %(
 outside-tagged
 
 // tag::a[]
@@ -248,7 +248,7 @@ A body.
     it 'yields empty content for an unknown tag name' do
       with_fixtures('tag_unknown') do |dir|
         write(dir, 'main.adoc' => "Before.\n\ninclude::snippet.adoc[tags=nonexistent]\n\nAfter.\n",
-                    'snippet.adoc' => "// tag::real[]\nbody\n// end::real[]\n")
+                   'snippet.adoc' => "// tag::real[]\nbody\n// end::real[]\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -260,7 +260,7 @@ A body.
     it 'does not emit the tag markers as text' do
       with_fixtures('tag_no_markers') do |dir|
         write(dir, 'main.adoc' => "include::snippet.adoc[tags=body]\n",
-                    'snippet.adoc' => "// tag::body[]\ninside\n// end::body[]\n")
+                   'snippet.adoc' => "// tag::body[]\ninside\n// end::body[]\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -279,7 +279,7 @@ A body.
       with_fixtures('lines_single') do |dir|
         snippet = "L1\nL2\nL3\nL4\nL5\n"
         write(dir, 'main.adoc' => "include::snippet.adoc[lines=2]\n",
-                    'snippet.adoc' => snippet)
+                   'snippet.adoc' => snippet)
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -292,7 +292,7 @@ A body.
       with_fixtures('lines_range') do |dir|
         snippet = "L1\nL2\nL3\nL4\nL5\n"
         write(dir, 'main.adoc' => "include::snippet.adoc[lines=2..4]\n",
-                    'snippet.adoc' => snippet)
+                   'snippet.adoc' => snippet)
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -307,7 +307,7 @@ A body.
       with_fixtures('lines_discontinuous') do |dir|
         snippet = "L1\nL2\nL3\nL4\nL5\n"
         write(dir, 'main.adoc' => "include::snippet.adoc[lines=1..2;5]\n",
-                    'snippet.adoc' => snippet)
+                   'snippet.adoc' => snippet)
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -322,7 +322,7 @@ A body.
       with_fixtures('lines_oob') do |dir|
         snippet = "L1\nL2\nL3\n"
         write(dir, 'main.adoc' => "include::snippet.adoc[lines=2..99]\n",
-                    'snippet.adoc' => snippet)
+                   'snippet.adoc' => snippet)
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -341,7 +341,7 @@ A body.
       with_fixtures('indent_zero') do |dir|
         snippet = "    indented line one\n    indented line two\n"
         write(dir, 'main.adoc' => "include::snippet.adoc[indent=0]\n",
-                    'snippet.adoc' => snippet)
+                   'snippet.adoc' => snippet)
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -359,8 +359,8 @@ A body.
     it 'resolves nested includes recursively' do
       with_fixtures('nested') do |dir|
         write(dir, 'main.adoc' => "Top.\n\ninclude::a.adoc[]\n",
-                    'a.adoc' => "A.\n\ninclude::b.adoc[]\n",
-                    'b.adoc' => "B body.\n")
+                   'a.adoc' => "A.\n\ninclude::b.adoc[]\n",
+                   'b.adoc' => "B body.\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -372,8 +372,8 @@ A body.
     it 'resolves recursive includes relative to the including file' do
       with_fixtures('nested_relative') do |dir|
         write(dir, 'main.adoc' => "include::sub/a.adoc[]\n",
-                    'sub/a.adoc' => "A.\n\ninclude::b.adoc[]\n",
-                    'sub/b.adoc' => "B body.\n")
+                   'sub/a.adoc' => "A.\n\ninclude::b.adoc[]\n",
+                   'sub/b.adoc' => "B body.\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.to_s)
@@ -385,13 +385,13 @@ A body.
     it 'detects circular includes' do
       with_fixtures('circular') do |dir|
         write(dir, 'main.adoc' => "include::a.adoc[]\n",
-                    'a.adoc' => "include::b.adoc[]\n",
-                    'b.adoc' => "include::a.adoc[]\n")
+                   'a.adoc' => "include::b.adoc[]\n",
+                   'b.adoc' => "include::a.adoc[]\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
-        expect {
+        expect do
           Coradoc.resolve_includes(core, base_dir: dir.to_s)
-        }.to raise_error(Coradoc::CircularIncludeError)
+        end.to raise_error(Coradoc::CircularIncludeError)
       end
     end
 
@@ -400,22 +400,22 @@ A body.
         write(dir, 'main.adoc' => "include::main.adoc[]\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
-        expect {
+        expect do
           Coradoc.resolve_includes(core, base_dir: dir.to_s)
-        }.to raise_error(Coradoc::CircularIncludeError)
+        end.to raise_error(Coradoc::CircularIncludeError)
       end
     end
 
     it 'respects the configured max depth' do
       with_fixtures('max_depth') do |dir|
         write(dir, 'main.adoc' => "include::a.adoc[]\n",
-                    'a.adoc' => "include::b.adoc[]\n",
-                    'b.adoc' => "B body.\n")
+                   'a.adoc' => "include::b.adoc[]\n",
+                   'b.adoc' => "B body.\n")
 
         core = parse_adoc(dir.join('main.adoc').read)
-        expect {
+        expect do
           Coradoc.resolve_includes(core, base_dir: dir.to_s, max_depth: 1)
-        }.to raise_error(Coradoc::IncludeDepthExceededError)
+        end.to raise_error(Coradoc::IncludeDepthExceededError)
       end
     end
   end
@@ -462,9 +462,9 @@ A body.
     end
 
     it 'raises by default' do
-      expect {
+      expect do
         Coradoc.resolve_includes(@core, base_dir: Dir.tmpdir)
-      }.to raise_error(Coradoc::IncludeNotFoundError)
+      end.to raise_error(Coradoc::IncludeNotFoundError)
     end
 
     it 'warns and skips when :warn' do
@@ -493,19 +493,19 @@ A body.
     it 'blocks .. that escapes the base_dir by default' do
       with_fixtures('traversal') do |dir|
         write(dir, 'sub/main.adoc' => "include::../secret.adoc[]\n",
-                    'secret.adoc' => "SECRET\n")
+                   'secret.adoc' => "SECRET\n")
 
         core = parse_adoc(dir.join('sub/main.adoc').read)
-        expect {
+        expect do
           Coradoc.resolve_includes(core, base_dir: dir.join('sub').to_s)
-        }.to raise_error(Coradoc::UnsafeIncludeError)
+        end.to raise_error(Coradoc::UnsafeIncludeError)
       end
     end
 
     it 'allows .. when explicitly enabled' do
       with_fixtures('traversal_allowed') do |dir|
         write(dir, 'sub/main.adoc' => "include::../secret.adoc[]\n",
-                    'secret.adoc' => "SECRET\n")
+                   'secret.adoc' => "SECRET\n")
 
         core = parse_adoc(dir.join('sub/main.adoc').read)
         flat = Coradoc.resolve_includes(core, base_dir: dir.join('sub').to_s,
@@ -568,8 +568,8 @@ A body.
 
       expect(Coradoc::Logger).to receive(:warn).with(/Include target not found/)
       flat = Coradoc.resolve_includes(core, base_dir: '/tmp',
-                                             missing_include: :warn,
-                                             resolver: resolver)
+                                            missing_include: :warn,
+                                            resolver: resolver)
       expect(body_text(flat)).to eq('')
     end
   end
