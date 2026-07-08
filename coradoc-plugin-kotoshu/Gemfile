@@ -1,0 +1,18 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+gemspec
+
+# Local dev: use in-tree source when present.
+kotoshu_path = File.expand_path('../../../kotoshu/kotoshu', __dir__)
+gem 'kotoshu', path: kotoshu_path if File.directory?(kotoshu_path)
+
+coradoc_path = File.expand_path('../../coradoc', __dir__)
+coradoc_adoc_path = File.expand_path('../../coradoc-adoc', __dir__)
+if File.directory?(coradoc_path)
+  gem 'coradoc', path: coradoc_path
+  gem 'coradoc-adoc', path: coradoc_adoc_path if File.directory?(coradoc_adoc_path)
+end
+
+gem 'pry', '~> 0.14', group: :development
