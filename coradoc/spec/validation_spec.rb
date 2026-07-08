@@ -14,7 +14,7 @@ RSpec.describe Coradoc::Validation do
       end
 
       it 'creates error with all attributes' do
-        element = double('element')
+        element = Struct.new(:placeholder).new('any element value')
         error = described_class.new(
           'Test error',
           path: 'section.title',
@@ -243,38 +243,38 @@ RSpec.describe Coradoc::Validation do
       end
 
       it 'validates required field presence' do
-        element = double('element', title: nil, level: nil, tags: nil)
+        element = Struct.new(:title, :level, :tags).new(nil, nil, nil)
         result = schema.validate(element)
         expect(result).not_to be_valid
         expect(result.errors.first.message).to include('title is required')
       end
 
       it 'validates field type' do
-        element = double('element', title: 'Test', level: 'invalid', tags: nil)
+        element = Struct.new(:title, :level, :tags).new('Test', 'invalid', nil)
         result = schema.validate(element)
         expect(result.errors.any? { |e| e.message.include?('level must be') }).to be true
       end
 
       it 'validates min_length' do
-        element = double('element', title: '', level: nil, tags: nil)
+        element = Struct.new(:title, :level, :tags).new('', nil, nil)
         result = schema.validate(element)
         expect(result.errors.any? { |e| e.code == :min_length }).to be true
       end
 
       it 'validates min_count' do
-        element = double('element', title: 'Test', level: nil, tags: [])
+        element = Struct.new(:title, :level, :tags).new('Test', nil, [])
         result = schema.validate(element)
         expect(result.errors.any? { |e| e.code == :min_count }).to be true
       end
 
       it 'runs custom rules' do
-        element = double('element', title: 'A' * 150, level: nil, tags: nil)
+        element = Struct.new(:title, :level, :tags).new('A' * 150, nil, nil)
         result = schema.validate(element)
         expect(result.errors.any? { |e| e.message == 'Title is too long' }).to be true
       end
 
       it 'passes valid document' do
-        element = double('element', title: 'Test Title', level: 1, tags: %w[a b])
+        element = Struct.new(:title, :level, :tags).new('Test Title', 1, %w[a b])
         result = schema.validate(element)
         expect(result).to be_valid
       end
@@ -416,14 +416,14 @@ RSpec.describe Coradoc::Validation do
 
   describe Coradoc::Validation::Rules::Required do
     it 'returns error when field is nil' do
-      element = double('element', name: nil)
+      element = Struct.new(:name).new(nil)
       rule = described_class.new(:required, field: :name)
       errors = rule.validate(element)
       expect(errors).to eq(['name is required'])
     end
 
     it 'returns no error when field is present' do
-      element = double('element', name: 'Test')
+      element = Struct.new(:name).new('Test')
       rule = described_class.new(:required, field: :name)
       errors = rule.validate(element)
       expect(errors).to eq([])
@@ -432,21 +432,21 @@ RSpec.describe Coradoc::Validation do
 
   describe Coradoc::Validation::Rules::Type do
     it 'returns error when type mismatch' do
-      element = double('element', count: 'five')
+      element = Struct.new(:count).new('five')
       rule = described_class.new(:type, field: :count, type: Integer)
       errors = rule.validate(element)
       expect(errors.first).to include('count must be Integer')
     end
 
     it 'returns no error when type matches' do
-      element = double('element', count: 5)
+      element = Struct.new(:count).new(5)
       rule = described_class.new(:type, field: :count, type: Integer)
       errors = rule.validate(element)
       expect(errors).to eq([])
     end
 
     it 'returns no error when field is nil and not required' do
-      element = double('element', count: nil)
+      element = Struct.new(:count).new(nil)
       rule = described_class.new(:type, field: :count, type: Integer, required: false)
       errors = rule.validate(element)
       expect(errors).to eq([])
@@ -455,21 +455,21 @@ RSpec.describe Coradoc::Validation do
 
   describe Coradoc::Validation::Rules::Length do
     it 'returns error when below min' do
-      element = double('element', title: 'AB')
+      element = Struct.new(:title).new('AB')
       rule = described_class.new(:length, field: :title, min: 5)
       errors = rule.validate(element)
       expect(errors.first).to include('at least 5 characters')
     end
 
     it 'returns error when above max' do
-      element = double('element', title: 'A' * 150)
+      element = Struct.new(:title).new('A' * 150)
       rule = described_class.new(:length, field: :title, max: 100)
       errors = rule.validate(element)
       expect(errors.first).to include('at most 100 characters')
     end
 
     it 'returns no error when within bounds' do
-      element = double('element', title: 'Valid Title')
+      element = Struct.new(:title).new('Valid Title')
       rule = described_class.new(:length, field: :title, min: 1, max: 100)
       errors = rule.validate(element)
       expect(errors).to eq([])
@@ -478,21 +478,21 @@ RSpec.describe Coradoc::Validation do
 
   describe Coradoc::Validation::Rules::Count do
     it 'returns error when below min count' do
-      element = double('element', items: [1, 2])
+      element = Struct.new(:items).new([1, 2])
       rule = described_class.new(:count, field: :items, min: 3)
       errors = rule.validate(element)
       expect(errors.first).to include('at least 3 items')
     end
 
     it 'returns error when above max count' do
-      element = double('element', items: (1..15).to_a)
+      element = Struct.new(:items).new((1..15).to_a)
       rule = described_class.new(:count, field: :items, max: 10)
       errors = rule.validate(element)
       expect(errors.first).to include('at most 10 items')
     end
 
     it 'returns no error when within bounds' do
-      element = double('element', items: [1, 2, 3, 4, 5])
+      element = Struct.new(:items).new([1, 2, 3, 4, 5])
       rule = described_class.new(:count, field: :items, min: 1, max: 10)
       errors = rule.validate(element)
       expect(errors).to eq([])
@@ -501,14 +501,14 @@ RSpec.describe Coradoc::Validation do
 
   describe Coradoc::Validation::Rules::Format do
     it 'returns error when format mismatch' do
-      element = double('element', email: 'invalid-email')
+      element = Struct.new(:email).new('invalid-email')
       rule = described_class.new(:format, field: :email, pattern: /\A[^@]+@[^@]+\z/)
       errors = rule.validate(element)
       expect(errors).to eq(['email has invalid format'])
     end
 
     it 'returns no error when format matches' do
-      element = double('element', email: 'test@example.com')
+      element = Struct.new(:email).new('test@example.com')
       rule = described_class.new(:format, field: :email, pattern: /\A[^@]+@[^@]+\z/)
       errors = rule.validate(element)
       expect(errors).to eq([])
@@ -517,14 +517,14 @@ RSpec.describe Coradoc::Validation do
 
   describe Coradoc::Validation::Rules::Custom do
     it 'executes custom block' do
-      element = double('element', value: 5)
+      element = Struct.new(:value).new(5)
       rule = described_class.new(:custom, block: lambda { |el, _ctx|
         el.value > 10 ? ['Value must be <= 10'] : []
       })
       errors = rule.validate(element)
       expect(errors).to eq([])
 
-      element2 = double('element', value: 15)
+      element2 = Struct.new(:value).new(15)
       errors2 = rule.validate(element2)
       expect(errors2).to eq(['Value must be <= 10'])
     end
@@ -543,7 +543,7 @@ RSpec.describe Coradoc::Validation do
 
   describe '.validate' do
     it 'validates with default schema' do
-      element = double('element', id: 'test', title: 'Test')
+      element = Struct.new(:id, :title).new('test', 'Test')
       result = described_class.validate(element)
       expect(result).to be_valid
     end

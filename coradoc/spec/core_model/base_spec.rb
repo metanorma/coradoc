@@ -49,7 +49,7 @@ RSpec.describe Coradoc::CoreModel::Base do
     end
 
     it 'returns false for different classes' do
-      other = double('other')
+      other = Struct.new(:placeholder).new('a non-Base object')
       expect(instance1.semantically_equivalent?(other)).to be false
     end
   end

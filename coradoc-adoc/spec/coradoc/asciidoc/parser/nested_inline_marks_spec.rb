@@ -118,4 +118,27 @@ RSpec.describe 'Nested inline marks', :asciidoc do
       expect(texts).to include('”')
     end
   end
+
+  describe 'pathological nesting' do
+    # The inline pipeline's nested-mark recognition recurses through
+    # parse_and_transform_inline → transform_inline →
+    # parse_nested_inline_children. Realistic input nests 2–3 levels.
+    # Pathological input (e.g. 30+ alternating markers) should not
+    # hang the parser — it terminates via the natural "no more marks
+    # in content" terminator, or raises SystemStackError, both of
+    # which are acceptable Ruby contracts.
+    it 'terminates on deeply-nested alternating marks without hanging' do
+      pathological = ('**`' * 10) + 'leaf' + ('`**' * 10)
+      expect do
+        Coradoc.parse(pathological, format: :asciidoc)
+      end.not_to raise_error
+    end
+
+    it 'handles a flat sequence of consecutive marks at the same level' do
+      adoc = '*a* *b* *c* *d* *e*'
+      para = first_paragraph(adoc)
+      bolds = para.children.select { |c| c.is_a?(Coradoc::CoreModel::BoldElement) }
+      expect(bolds.map(&:content)).to eq(%w[a b c d e])
+    end
+  end
 end

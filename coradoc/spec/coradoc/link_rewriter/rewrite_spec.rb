@@ -140,7 +140,7 @@ RSpec.describe Coradoc::LinkRewriter do
 
     it 'skips listing blocks' do
       # The adoc parser emits SourceBlock for `----`, not ListingBlock.
-      # Construct one directly to verify the visitor's VERBATIM_TYPES
+      # Construct one directly to verify the visitor's prose? predicate
       # coverage is closed: any ListingBlock, regardless of how it was
       # built, must be skipped.
       listing = Coradoc::CoreModel::ListingBlock.new(
