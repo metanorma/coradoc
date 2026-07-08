@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
+
+require 'coradoc/plugin/kotoshu'
+
+begin
+  Coradoc::Plugin::Kotoshu::Cli.start(ARGV)
+rescue Coradoc::Plugin::Kotoshu::Cli::Error => e
+  warn "coradoc-kotoshu: #{e.message}"
+  exit 1
+end

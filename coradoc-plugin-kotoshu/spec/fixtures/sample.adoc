@@ -1,0 +1,30 @@
+= Spell Check Sample
+Author Name <author@example.com>
+:toc:
+
+Preamble paragraf with a misspelled helo word.
+
+== Section One
+
+This paragraf has issues.
+
+.List of items
+* Item oneo
+* Item twoo
+* Item threee
+
+[source,ruby]
+----
+puts "codeblock should be skippedd"
+----
+
+[NOTE]
+====
+Note block containing the word recieve misspelled.
+====
+
+|===
+| Header A | Header Bee
+| celll one
+| celll twoo
+|===
