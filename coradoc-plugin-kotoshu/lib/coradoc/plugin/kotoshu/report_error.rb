@@ -22,13 +22,8 @@ module Coradoc
         attribute :column, :integer
         attribute :suggestions, :string, collection: true
 
-        def initialize(word:, context: nil, element: nil, section: nil,
-                       line: nil, column: nil, suggestions: [])
-          super
-        end
-
-        def has_suggestions?
-          suggestions && !suggestions.empty?
+        def suggestions?
+          !suggestions.nil? && !suggestions.empty?
         end
 
         def to_s

@@ -78,7 +78,7 @@ puts "Found #{report.error_count} misspelling(s) across " \
 
 report.errors.each do |err|
   puts "  #{err.word} (#{err.element}#{err.section ? " in '#{err.section}'" : ''}, line #{err.line || '?'})"
-  puts "    suggestions: #{err.suggestions.join(', ')}" if err.has_suggestions?
+  puts "    suggestions: #{err.suggestions.join(', ')}" if err.suggestions?
 end
 ```
 
