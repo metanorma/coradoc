@@ -88,6 +88,14 @@ module Coradoc
         def rule_dispatch(rule_name, *, **)
           RuleDispatcher.dispatch(self, rule_name, *, **)
         end
+
+        # Per-instance dispatch cache used by RuleDispatcher. Encapsulated
+        # accessor — the dispatcher reads this instead of poking
+        # instance_variable_get/set. Lazy-initialized; returns the same
+        # Hash across calls on the same instance.
+        def _rule_dispatch_cache
+          @_rule_dispatch_cache ||= {}
+        end
       end
 
       # Wrap every parser rule for Parslet memoization. Must run after all

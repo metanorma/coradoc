@@ -219,7 +219,7 @@ module Coradoc
           def transform_verse_block(block)
             Coradoc::Markdown::Verse.new(
               content: block.flat_text,
-              attribution: block.respond_to?(:attribution) ? block.attribution : nil
+              attribution: block.is_a?(Coradoc::CoreModel::VerseBlock) ? block.attribution : nil
             )
           end
 
@@ -272,10 +272,17 @@ module Coradoc
 
           def transform_admonition_block(block, default_type: 'note')
             children = transform_inline_array(block.renderable_content)
+            if block.is_a?(Coradoc::CoreModel::AnnotationBlock)
+              adm_type = block.annotation_type || default_type
+              adm_label = block.annotation_label
+            else
+              adm_type = default_type
+              adm_label = nil
+            end
             Coradoc::Markdown::Admonition.new(
-              admonition_type: block.respond_to?(:annotation_type) ? (block.annotation_type || default_type) : default_type,
+              admonition_type: adm_type,
               content: block.flat_text,
-              title: block.respond_to?(:annotation_label) ? block.annotation_label : nil,
+              title: adm_label,
               children: children
             )
           end
@@ -374,7 +381,7 @@ module Coradoc
             )
           end
 
-          CALLOUT_MARKER_IN_CELL = /\s*<\d+>(?=\s|\z)/.freeze
+          CALLOUT_MARKER_IN_CELL = /\s*<\d+>(?=\s|\z)/
 
           def strip_cell_callouts(text)
             text.to_s.gsub(CALLOUT_MARKER_IN_CELL, '')
@@ -428,19 +435,50 @@ module Coradoc
           end
 
           def transform_definition_list(dl)
-            items = Array(dl.items).map do |item|
-              definition = build_definition_item(item)
+            # flat_map because each CoreModel DefinitionItem may emit
+            # multiple Markdown DefinitionTerms (multi-term `<dt>`).
+            items = Array(dl.items).flat_map do |item|
+              definitions = [build_definition_item(item)]
+              # `+`-continuation blocks attached to the dd become
+              # additional definitions in Markdown (each renders as
+              # `: line` in the Flat serializer). One DefinitionItem
+              # per attached block, preserving their distinct content
+              # without jamming them into the primary definition's text.
+              definitions.concat(Array(item.attached_children).map { |b| build_attached_definition_item(b) })
               nested = item.nested ? transform_definition_list(item.nested) : nil
               term_children = Array(item.term_children).map { |c| transform_inline_content(c) }
-              Coradoc::Markdown::DefinitionTerm.new(
-                text: item.term.to_s,
-                text_children: term_children,
-                definitions: [definition],
-                nested: nested
-              )
+              # Multi-term `<dt>`: emit one Markdown DefinitionTerm per
+              # term string. Inline children map 1:1 to the FIRST term
+              # (matches the mirror handler's behaviour; multi-term
+              # with inline markup on later terms is rare and the
+              # parser doesn't capture per-term children today).
+              terms = terms_for(item)
+              if terms.empty?
+                # Defensive: term and terms both empty — emit nothing.
+                next
+              end
+
+              terms.each_with_index.map do |term_text, idx|
+                Coradoc::Markdown::DefinitionTerm.new(
+                  text: term_text.to_s,
+                  text_children: idx.zero? ? term_children : [],
+                  definitions: definitions,
+                  nested: nested
+                )
+              end
             end
 
             Coradoc::Markdown::DefinitionList.new(items: items)
+          end
+
+          # Source of truth for "the terms on this <dt>": the `terms`
+          # collection when populated, else `[term]` for legacy callers.
+          def terms_for(item)
+            collection = item.terms if item.is_a?(Coradoc::CoreModel::DefinitionItem)
+            return Array(collection) unless collection.nil? || collection.empty?
+
+            primary = item.term
+            primary.to_s.empty? ? [] : [primary.to_s]
           end
 
           def build_definition_item(item)
@@ -455,6 +493,19 @@ module Coradoc
               content: item.definitions&.first&.to_s,
               inline_content: inline
             )
+          end
+
+          # Build a DefinitionItem from a single attached block (e.g.
+          # paragraph from a `+`-continuation). Flat-text extraction
+          # via ChildrenContent is the single source of truth — every
+          # attached block in CoreModel includes ChildrenContent.
+          def build_attached_definition_item(block)
+            content = if block.is_a?(Coradoc::CoreModel::ChildrenContent)
+                        block.flat_text
+                      else
+                        block.to_s
+                      end
+            Coradoc::Markdown::DefinitionItem.new(content: content)
           end
 
           def transform_footnote(fn)

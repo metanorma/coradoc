@@ -51,7 +51,7 @@ module Coradoc
           content_rule = content || default_constrained_content(marker)
           close_guard = str(marker) >> str(marker).absent?
           sequence = open_guard >> content_rule >> close_guard
-          sequence = sequence >> str("\n\n").absent? if reject_paragraph_break
+          sequence >>= str("\n\n").absent? if reject_paragraph_break
           sequence
         end
 
@@ -254,7 +254,7 @@ module Coradoc
         ].freeze
 
         def inline
-          INLINE_RULE_ORDER.map { |name| send(name) }.reduce(:|)
+          INLINE_RULE_ORDER.map { |name| public_send(name) }.reduce(:|)
         end
 
         def text_unformatted

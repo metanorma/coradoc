@@ -99,7 +99,10 @@ module Coradoc
       def apply_options(options)
         options.each do |key, value|
           setter = "#{key}="
-          instance_variable_set("@#{key}", value) if public_methods.include?(setter.to_sym)
+          # Use public_send (not instance_variable_set) so we route
+          # through the public setter method — encapsulation is
+          # preserved and any setter-side validation runs.
+          public_send(setter, value) if public_methods.include?(setter.to_sym)
         end
       end
     end
@@ -521,7 +524,7 @@ module Coradoc
   #
   # @yield [Configuration]
   # @return [void]
-  def self.configure(&block)
-    Configurable.configure(&block) if block_given?
+  def self.configure(&)
+    Configurable.configure(&) if block_given?
   end
 end
