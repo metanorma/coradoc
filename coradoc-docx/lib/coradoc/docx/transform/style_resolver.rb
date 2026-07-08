@@ -94,7 +94,12 @@ module Coradoc
           return false unless paragraph.properties
 
           num_id = paragraph.properties.num_id
-          num_id.to_i.positive?
+          # Uniword (via lutaml-model) returns an UninitializedClass
+          # sentinel for attributes that weren't deserialized from source.
+          # Treat anything that isn't a real Integer as "no list id".
+          return false unless num_id.is_a?(Integer)
+
+          num_id.positive?
         end
 
         # Check if paragraph has a specific role based on style name

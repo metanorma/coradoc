@@ -41,7 +41,8 @@ coverage/
 
 # rubocop
 .rubocop-https-*
-.rubocop_todo.yml
+# NOTE: .rubocop_todo.yml is committed so CI's `inherit_from` resolves.
+# Regenerate via `rubocop -a --auto-gen-config` when offenses change.
 
 # Dev tool configs
 .irbrc
@@ -73,6 +74,17 @@ PROPOSAL-*
 **/TODO.*
 **/PROPOSAL*
 **/PROPOSAL-*
+
+# FEATURE / SPEC / IMPROVEMENT design docs are working artifacts.
+# Implementation is the source of truth; these docs capture rejected
+# alternatives and proposal-stage reasoning that doesn't belong in
+# the committed codebase.
+FEATURE-*.md
+SPEC-*.md
+IMPROVEMENT-*.md
+**/FEATURE-*.md
+**/SPEC-*.md
+**/IMPROVEMENT-*.md
 
 # BUG reports are personal issue tracking — NEVER commit
 BUG-*.md

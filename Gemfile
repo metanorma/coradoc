@@ -15,6 +15,11 @@ gem 'lutaml-xsd'
 gem 'nokogiri'
 gem 'rake'
 
+# Local dev: use in-tree uniword source when present (themes/office_theme.xml
+# and other data files only ship from a local checkout until next release).
+uniword_path = File.expand_path('../uniword', __dir__)
+gem 'uniword', path: uniword_path if File.directory?(uniword_path)
+
 group :doc do
   gem 'redcarpet'
 end
