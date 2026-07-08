@@ -212,14 +212,19 @@ module Coradoc
           stripped = text.strip
           return true if stripped.empty?
 
-          # Pure :attribute: value lines (joined into one string)
-          return true if stripped.match?(/\A(:[^:\s]+:[^\n]*)+\z/)
+          # Pure :attribute: value lines (joined into one string). Uses
+          # atomic group `(?>...)` to prevent ReDoS backtracking on
+          # pathological `:a::a::a:...` inputs (CodeQL flagged the
+          # naive nested-quantifier form).
+          attr_segment = /(?>:[^:\s]+:[^\n]*)/
+          attr_only = /\A(?:#{attr_segment})+\z/
+          return true if stripped.match?(attr_only)
 
           # Author Name <email> followed by zero or more :attr: lines
           author_block = /\A[\w\s.\-]+<[\w.\-]+@[\w.\-]+>\s*/
           remainder = stripped.sub(author_block, '')
           remainder = remainder.strip
-          remainder.empty? || remainder.match?(/\A(:[^:\s]+:[^\n]*)+\z/)
+          remainder.empty? || remainder.match?(attr_only)
         end
 
         # flat_text is declared on CoreModel::Base, so every visited node
