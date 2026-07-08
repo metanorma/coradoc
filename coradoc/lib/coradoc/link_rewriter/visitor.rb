@@ -12,23 +12,14 @@ module Coradoc
     # new link-bearing subclass means overriding +link_kind+ on it,
     # not editing a case/when here (OCP).
     #
-    # Verbatim block types are also closed: +SourceBlock+, +ListingBlock+,
-    # +LiteralBlock+, +PassBlock+, +StemBlock+. The visitor returns them
-    # unchanged so the rewriter never sees link-shaped text that is, in
-    # fact, raw code/math.
+    # Verbatim block recognition is delegated to +CoreModel::Base#prose?+
+    # — each block class answers "is my text live or literal?". Adding a
+    # new verbatim block type means overriding +prose?+ on it, not editing
+    # a list here. The visitor is closed for that change.
     #
     # Dispatch is class-based (no +respond_to?+ duck-typing). Unrecognized
     # classes are returned unchanged — the visitor is closed by design.
     class Visitor
-      # Verbatim block classes — content is raw, no link semantics.
-      VERBATIM_TYPES = [
-        Coradoc::CoreModel::SourceBlock,
-        Coradoc::CoreModel::ListingBlock,
-        Coradoc::CoreModel::LiteralBlock,
-        Coradoc::CoreModel::PassBlock,
-        Coradoc::CoreModel::StemBlock
-      ].freeze
-
       # Structural/container classes that own a child collection. Each
       # entry maps the class to the reader method that exposes its
       # children. MECE — every "recurse into the children" case lands
@@ -68,7 +59,7 @@ module Coradoc
       private
 
       def visit_subtree(node)
-        return node if VERBATIM_TYPES.any? { |type| node.is_a?(type) }
+        return node unless node.prose?
         return rewrite_inline(node) if node.is_a?(Coradoc::CoreModel::InlineElement)
 
         reader = reader_for(node)

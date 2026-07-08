@@ -50,16 +50,21 @@ module Coradoc
           end
         end
 
-        # Get text content as string
+        # Get text content as a string. Handles the polymorphic shape of
+        # `content` (String, Array of mixed String/Model elements, nested
+        # Serializable). When the content is an Array, each element is
+        # rendered via its canonical source representation — Model::Base
+        # elements go through `to_adoc`, Strings pass through unchanged —
+        # so a downstream re-parse (e.g. by `ToCoreModel.parse_inline_text`)
+        # sees the original inline-mark syntax rather than `#<…>` dumps.
         #
         # @return [String] The text content
-        #
         def to_s
           case content
           when String
             content
           when Array
-            content.map(&:to_s).join
+            content.map { |element| element_to_s(element) }.join
           when Coradoc::AsciiDoc::Model::Base
             content.to_adoc
           when Lutaml::Model::Serializable
@@ -81,6 +86,17 @@ module Coradoc
         #
         def text
           to_s
+        end
+
+        private
+
+        def element_to_s(element)
+          case element
+          when Coradoc::AsciiDoc::Model::Base then element.to_adoc
+          when String then element
+          when nil then ''
+          else element.to_s
+          end
         end
       end
     end

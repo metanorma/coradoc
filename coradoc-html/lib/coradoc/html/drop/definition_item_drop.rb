@@ -8,6 +8,17 @@ module Coradoc
           Escape.escape_html(stripped_term)
         end
 
+        # All terms on this `<dt>`, escaped and id-stripped. Multi-term
+        # `<dt>`'s (AsciiDoc `term1::\nterm2::`) carry multiple entries;
+        # templates iterate this collection to emit one `<dt>` per term.
+        # Falls back to `[term]` for legacy callers that only set the
+        # singular `term` accessor.
+        def terms
+          raw = @model.terms
+          collection = raw.nil? || raw.empty? ? [@model.term.to_s] : raw.map(&:to_s)
+          collection.map { |t| Escape.escape_html(strip_term_id(t)) }
+        end
+
         def term_id
           match = term_text.match(/\A\[\[([^\]]+)\]\]/)
           match&.[](1)
@@ -35,6 +46,12 @@ module Coradoc
 
         def stripped_term
           term_text.sub(/\A\[\[[^\]]+\]\]/, '')
+        end
+
+        # Strip a leading `[[id]]` anchor from a term string. Shared by
+        # `terms` (per-entry) and `stripped_term` (primary term).
+        def strip_term_id(text)
+          text.to_s.sub(/\A\[\[[^\]]+\]\]/, '')
         end
       end
 

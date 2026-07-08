@@ -16,6 +16,10 @@ module Coradoc
       def self.semantic_type
         :stem
       end
+
+      def prose?
+        false
+      end
     end
   end
 end

@@ -147,7 +147,7 @@ module Coradoc
       end
 
       def flat_text
-        ""
+        ''
       end
 
       # Flatten this element to a plain-text string.
@@ -160,7 +160,50 @@ module Coradoc
       #
       # @return [String]
       def flat_text
-        ""
+        ''
+      end
+
+      # True when this node counts as real body content for empty-body
+      # detection and similar structural queries. Default is true;
+      # ephemeral and metadata nodes override to false.
+      #
+      # Override sites: CommentBlock, CommentLine, FrontmatterBlock.
+      # Adding a new "skip me" type = overriding this method locally —
+      # no central walker to edit (OCP).
+      #
+      # @return [Boolean]
+      def body_content?
+        true
+      end
+
+      # True when this node's text content should be processed by text
+      # consumers (link rewriters, spell checkers, search indexers, etc.).
+      # Default delegates to +body_content?+ — ephemeral/metadata nodes
+      # (CommentBlock, FrontmatterBlock, …) are not prose because they
+      # are not body content. Verbatim block subclasses (SourceBlock,
+      # ListingBlock, LiteralBlock, PassBlock, StemBlock) override this
+      # to false because their text is literal, not subject to
+      # substitution or spell-checking.
+      #
+      # Override sites for verbatim: SourceBlock, ListingBlock,
+      # LiteralBlock, PassBlock, StemBlock, HorizontalRuleBlock.
+      #
+      # Distinct from +body_content?+: a SourceBlock IS body content
+      # (the doc has real substance) but its text is not prose (a link
+      # shaped string inside source is literal text, not a link).
+      #
+      # @return [Boolean]
+      def prose?
+        body_content?
+      end
+
+      # True when this node is structurally present but carries no
+      # visible characters (e.g., a paragraph whose text strips to
+      # empty). Default is false; inline content and paragraphs override.
+      #
+      # @return [Boolean]
+      def whitespace_only?
+        false
       end
 
       # Accept a visitor to traverse this element

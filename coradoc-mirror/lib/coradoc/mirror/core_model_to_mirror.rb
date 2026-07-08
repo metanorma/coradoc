@@ -139,6 +139,24 @@ module Coradoc
         Node::Footnotes.new(content: entries)
       end
 
+      # Public entrypoint for handlers that need to dispatch a nested
+      # CoreModel element through the same registry path as a top-level
+      # walk (e.g., `+`-continuation blocks attached to a dlist dd must
+      # be transformed by their own registered handler rather than
+      # inlined as text). Returns an Array of Mirror nodes (possibly
+      # empty). Single source of truth for "transform one element" so
+      # handlers don't bypass source-line propagation.
+      def transform_element(element)
+        result = @registry.handle(element, context: self)
+        return [] unless result
+
+        value, = result
+        return [] unless value
+
+        propagate_source_line(value, element)
+        Array(value)
+      end
+
       private
 
       def element_has_text_content?(element)

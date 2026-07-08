@@ -30,14 +30,20 @@ module Coradoc
           end
 
           def transform_definition_list(dl)
-            items = Array(dl.items).map do |item|
+            # flat_map because multi-term `<dt>`'s emit multiple
+            # DefinitionTerms per CoreModel DefinitionItem.
+            items = Array(dl.items).flat_map do |item|
               definitions = Array(item.definitions).map do |defn|
                 Coradoc::Markdown::DefinitionItem.new(content: defn.to_s)
               end
-              Coradoc::Markdown::DefinitionTerm.new(
-                text: item.term.to_s,
-                definitions: definitions
-              )
+              terms = item.terms
+              term_strings = terms.nil? || terms.empty? ? [item.term.to_s] : terms.map(&:to_s)
+              term_strings.map do |term_text|
+                Coradoc::Markdown::DefinitionTerm.new(
+                  text: term_text,
+                  definitions: definitions
+                )
+              end
             end
 
             Coradoc::Markdown::DefinitionList.new(items: items)

@@ -33,6 +33,19 @@ module Coradoc
           attribute :terms, Coradoc::AsciiDoc::Model::Term, collection: true
           attribute :contents, Coradoc::AsciiDoc::Model::TextElement, collection: true
           attribute :delimiter, :string, default: -> { '::' }
+          # `+`-continuation blocks attached to this dd (paragraphs,
+          # admonitions, delimited blocks). Same shape as Model::List::Item's
+          # attached collection — populated by the parser when an AsciiDoc
+          # `+` line follows the dd.
+          attribute :attached,
+                    Coradoc::AsciiDoc::Model::Attached,
+                    polymorphic: [
+                      Coradoc::AsciiDoc::Model::Admonition,
+                      Coradoc::AsciiDoc::Model::Paragraph,
+                      Coradoc::AsciiDoc::Model::Block::Core
+                    ],
+                    collection: true,
+                    initialize_empty: true
           attribute :nested,
                     Coradoc::AsciiDoc::Model::Base,
                     polymorphic: [Coradoc::AsciiDoc::Model::List::Definition],

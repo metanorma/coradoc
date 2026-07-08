@@ -128,22 +128,87 @@ module Coradoc
       # Used by the paragraph and reviewer_note rules to share the same
       # line-shape handling (DRY).
       def self.lines_to_text_elements(lines)
-        Array(lines).map do |line|
+        # Parslet may deliver `lines` as a single Hash (one line captured)
+        # or an Array of Hashes (multiple lines). `Array(hash)` converts
+        # to nested pairs, which we don't want — normalize explicitly.
+        normalized = case lines
+                     when nil then []
+                     when Array then lines
+                     when Hash then [lines]
+                     else Array(lines)
+                     end
+        normalized.map do |line|
           next line unless line.is_a?(Hash) && line.key?(:text)
 
           text_content = line[:text]
-          transformed = if text_content.is_a?(Array)
-                          text_content.map do |item|
-                            item.is_a?(Hash) ? new.apply(item) : item
-                          end
-                        else
-                          text_content
-                        end
+          # `text_content` may be a single Hash (one inline), an Array
+          # of Hashes (multiple inlines), or a String. Normalize to an
+          # Array of Hashes for uniform processing.
+          text_array = case text_content
+                       when Array then text_content
+                       when Hash then [text_content]
+                       when String then [{ text: text_content }]
+                       else [{ text: text_content.to_s }]
+                       end
+          transformed = text_array.map do |item|
+            item.is_a?(Hash) ? new.apply(item) : item
+          end
 
           Model::TextElement.new(
             content: transformed,
             line_break: line[:line_break]
           )
+        end
+      end
+
+      # Split `:lines` entries that span multiple source lines (via
+      # text_any greedy-matching across hard_line_break). Each call
+      # returns one entry per logical source line: when a line entry's
+      # `:text` array contains a `hard_line_break`, the entry is split
+      # at each hard_break, producing N+1 entries for N hard breaks.
+      # The hard_break is preserved as the `:line_break` of its segment.
+      #
+      # Without this, a dd source like:
+      #   `term::` First line. +
+      #   +
+      #   attached
+      # produces a single `:lines` entry whose text contains
+      # ["First line.", hard_line_break(" +\n"), "+", "attached..."],
+      # which the renderer joins into "First line. + attached" — the
+      # `+` continuation marker ends up inside the dd's text instead
+      # of triggering the attached-block path.
+      #
+      # Used by the dlist transformer before lines_to_text_elements.
+      def self.split_lines_on_hard_break(lines)
+        normalized = case lines
+                     when nil then []
+                     when Array then lines
+                     when Hash then [lines]
+                     else Array(lines)
+                     end
+        normalized.flat_map do |line|
+          next [line] unless line.is_a?(Hash) && line[:text].is_a?(Array)
+          next [line] unless line[:text].any? { |p| p.is_a?(Hash) && p.key?(:hard_line_break) }
+
+          segments = []
+          current_text = []
+          current_break = nil
+          line[:text].each do |part|
+            if part.is_a?(Hash) && part.key?(:hard_line_break)
+              segments << { text: current_text, line_break: part[:hard_line_break] }
+              current_text = []
+              current_break = :had_hard_break
+            else
+              current_text << part
+            end
+          end
+          # Final segment gets the original line's line_break (or empty
+          # if it ended with a hard break).
+          final_break = current_break == :had_hard_break ? "\n" : line[:line_break]
+          segments << { text: current_text, line_break: final_break }
+          # Drop leading empty segment if the line started with a hard break
+          # (shouldn't happen in practice but be defensive).
+          segments.reject { |s| s[:text].empty? && s != segments.last }
         end
       end
 

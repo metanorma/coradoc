@@ -16,10 +16,10 @@ module Coradoc
     # straight ASCII quotes wrapped around a spurious code span.
     module TypographicQuotes
       PATTERN_TO_CHAR = {
-        '"`' => "“",  # U+201C left double
-        '`"' => "”",  # U+201D right double
-        "'`" => "‘",  # U+2018 left single
-        "`'" => "’"   # U+2019 right single
+        '"`' => '“',  # U+201C left double
+        '`"' => '”',  # U+201D right double
+        "'`" => '‘',  # U+2018 left single
+        "`'" => '’'   # U+2019 right single
       }.freeze
 
       # All four 2-char patterns, suitable for building a Parslet alternation.

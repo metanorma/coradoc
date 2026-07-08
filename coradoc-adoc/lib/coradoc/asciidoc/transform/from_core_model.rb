@@ -31,15 +31,15 @@ module Coradoc
               without_title_heading, title_text = extract_title_heading(without_frontmatter, element.title)
 
               header = if title_text
-                          Coradoc::AsciiDoc::Model::Header.new(
-                            title: Coradoc::AsciiDoc::Model::Title.new(
-                              content: title_text,
-                              level_int: 0
-                            )
-                          )
-                        else
-                          Coradoc::AsciiDoc::Model::Header.new(title: '')
-                        end
+                         Coradoc::AsciiDoc::Model::Header.new(
+                           title: Coradoc::AsciiDoc::Model::Title.new(
+                             content: title_text,
+                             level_int: 0
+                           )
+                         )
+                       else
+                         Coradoc::AsciiDoc::Model::Header.new(title: '')
+                       end
 
               Coradoc::AsciiDoc::Model::Document.new(
                 id: element.id,
@@ -369,17 +369,33 @@ module Coradoc
 
           def transform_definition_item(item, depth = 1)
             delimiter = ':' * (depth + 1)
-            term = Coradoc::AsciiDoc::Model::Term.new(term: item.term.to_s)
+            # Multi-term `<dt>`: one Term per entry in `item.terms`.
+            # Falls back to `[item.term]` for items populated via
+            # legacy paths that only set the singular accessor.
+            term_strings = terms_for(item)
+            terms = term_strings.map do |text|
+              Coradoc::AsciiDoc::Model::Term.new(term: text.to_s)
+            end
             contents = Array(item.definitions).map do |defn|
               Coradoc::AsciiDoc::Model::TextElement.new(content: defn.to_s)
             end
             di = Coradoc::AsciiDoc::Model::List::DefinitionItem.new(
-              terms: [term],
+              terms: terms,
               contents: contents,
               delimiter: delimiter
             )
             di.nested << transform_definition_list(item.nested, depth + 1) if item.nested&.items&.any?
             di
+          end
+
+          # Source of truth for "the terms on this <dt>": the `terms`
+          # collection when populated, else `[term]` for legacy callers.
+          def terms_for(item)
+            collection = item.terms if item.is_a?(Coradoc::CoreModel::DefinitionItem)
+            return Array(collection) unless collection.nil? || collection.empty?
+
+            primary = item.term
+            primary.to_s.empty? ? [] : [primary.to_s]
           end
 
           def transform_toc(_toc)

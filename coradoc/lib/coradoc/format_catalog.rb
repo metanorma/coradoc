@@ -18,6 +18,25 @@ module Coradoc
       end
 
       def get_format(format_name)
+        registry.get(format_name) || lazy_load_format(format_name)
+      end
+
+      # If a format gem (e.g. coradoc-adoc) is in the bundle but has not
+      # been required yet, attempt to require it on first lookup. This
+      # removes the friction where `Coradoc.parse(text, format: :asciidoc)`
+      # blows up just because the user only wrote `require "coradoc"` and
+      # never explicitly required `coradoc/asciidoc`. The require is for
+      # an external gem, not internal library code, so it stays within
+      # the autoload-over-require_relative rule.
+      def lazy_load_format(format_name)
+        return nil if format_name.nil? || format_name.to_s.empty?
+
+        begin
+          require "coradoc/#{format_name}"
+        rescue LoadError
+          return nil
+        end
+
         registry.get(format_name)
       end
 

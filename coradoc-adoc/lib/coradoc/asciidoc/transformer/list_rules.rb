@@ -6,6 +6,19 @@ module Coradoc
       # Module containing list transformation rules
       module ListRules
         class << self
+          # Build a nested DefinitionList tree from a flat list of items.
+          #
+          # AsciiDoc's dlist syntax uses delimiter length to express
+          # nesting depth (`::` = 1, `:::` = 2, `::::` = 3). Consecutive
+          # term-only items at the SAME depth are merged into a single
+          # multi-term `<dt>` sharing the next item's `<dd>`:
+          #
+          #   term1::            →   <dt>term1</dt>
+          #   term2::                <dt>term2</dt>
+          #   def                    <dd>def</dd>
+          #
+          # Stack-based walk in source order. Each item carries its own
+          # `delimiter`; depth is derived via {#dlist_depth}.
           def build_dlist_tree(items)
             root = Model::List::Definition.new(items: [])
             stack = [[root, 0]]
@@ -14,14 +27,78 @@ module Coradoc
               depth = dlist_depth(item.delimiter)
               stack.pop while stack.last[1] >= depth
 
-              stack.last[0].items << item
-              nested_list = Model::List::Definition.new(items: [])
-              item.nested << nested_list
-              stack.push([nested_list, depth])
+              parent_list = stack.last[0]
+              last = parent_list.items.last
+
+              if merge_with_predecessor?(last, item)
+                merge_term_only_item(last, item)
+                # Stack stays — deeper items still nest under `last`.
+                # Replace the stack top so deeper items land in `last`'s
+                # current nested list (already on the stack from when
+                # `last` was first added).
+              else
+                parent_list.items << item
+                item.nested << Model::List::Definition.new(items: [])
+                stack.push([item.nested.last, depth])
+              end
             end
 
             prune_empty_nested(root)
             root
+          end
+
+          # Two consecutive items at the same depth become a multi-term
+          # `<dt>` sharing one `<dd>` when the PREVIOUS item is term-only
+          # (no def, no attached blocks). The previous item is the
+          # accumulating dt; the current item contributes either another
+          # term (if it's also term-only) or the terminal dt + the
+          # shared dd (if it has a def).
+          #
+          # Once an item has its own def/attached, it's the terminal dt
+          # of any in-progress multi-term group; the next same-depth
+          # item starts a fresh entry.
+          def merge_with_predecessor?(last, current)
+            return false unless last
+            return false unless last.delimiter == current.delimiter
+            return false unless term_only?(last)
+
+            true
+          end
+
+          # "Term-only" means the item carries no dd content of its own
+          # (no inline def, no `+`-attached blocks, no nested child
+          # items). Such items are eligible to merge with a following
+          # same-depth item to form a multi-term `<dt>` sharing one dd.
+          # Items with nested children have already "claimed" their dd
+          # slot for the nested content and can't merge.
+          def term_only?(item)
+            return false if contents_present?(item)
+            return false if attached_present?(item)
+            return false if nested_has_items?(item)
+
+            true
+          end
+
+          def contents_present?(item)
+            !item.contents.nil? && !item.contents.empty?
+          end
+
+          def attached_present?(item)
+            !item.attached.nil? && item.attached.any?
+          end
+
+          # `item.nested` is an Array<Definition>; each Definition has
+          # its own `items` Array. An item with populated nested items
+          # (deeper dlist children) is not term-only.
+          def nested_has_items?(item)
+            Array(item.nested).any? { |list| list.is_a?(Model::List::Definition) && list.items.any? }
+          end
+
+          def merge_term_only_item(last, current)
+            last.terms.concat(current.terms)
+            # contents and attached are arrays; concat is safe (no-op for empty)
+            last.contents.concat(current.contents.to_a)
+            last.attached.concat(current.attached.to_a)
           end
 
           def dlist_depth(delimiter)
@@ -134,38 +211,30 @@ module Coradoc
               end
             end
 
-            # Definition list item
-            rule(
-              definition_list_item: {
-                terms: sequence(:terms),
-                definition: simple(:contents)
-              }
-            ) do
-              term_strings = terms.map do |t|
-                t.is_a?(Hash) ? t[:text].to_s : t.to_s
-              end
-              item_id = nil
-              item_delim = '::'
-              terms.each do |t|
-                next unless t.is_a?(Hash)
-
-                item_id = t[:id].to_s if t[:id]
-                item_delim = t[:delimiter].to_s if t[:delimiter]
-              end
-              Model::List::DefinitionItem.new(terms: term_strings, contents: contents,
-                                              id: item_id, delimiter: item_delim)
-            end
-
-            # Definition list item with hash terms (single term case)
+            # Definition list item. The parser's dlist_definition rule
+            # always emits :lines (one entry per source line of the dd,
+            # including the single-line case as a one-element array).
+            # Join via the shared lines_to_text_elements helper used by
+            # ulist/olist — single source of truth for line joining.
+            # `attached:` carries any `+`-continuation blocks captured by
+            # the parser; pass through to the model so downstream stages
+            # can render them as additional dd children.
             rule(
               definition_list_item: subtree(:item_data)
             ) do
-              data = item_data.is_a?(Hash) ? item_data : { terms: Array(item_data), definition: '' }
+              data = item_data.is_a?(Hash) ? item_data : { terms: Array(item_data), lines: [] }
 
               item_id = nil
               item_delim = '::'
               terms_data = data[:terms]
-              definition = data[:definition].to_s
+              # Split lines on hard_line_break so each source line is one
+              # entry. Without this, text_any greedy-matches across
+              # newlines via hard_line_break, joining what should be
+              # separate source lines into one entry (and swallowing the
+              # `+` line-continuation marker).
+              split_lines = Transformer.split_lines_on_hard_break(data[:lines] || [])
+              definition = Transformer.lines_to_text_elements(split_lines)
+              attached = Array(data[:attached])
 
               terms = Array(terms_data).map do |t|
                 case t
@@ -179,7 +248,8 @@ module Coradoc
               end
 
               Model::List::DefinitionItem.new(terms: terms, contents: definition,
-                                              id: item_id, delimiter: item_delim)
+                                              id: item_id, delimiter: item_delim,
+                                              attached: attached)
             end
 
             rule(definition_list: sequence(:list_items)) do
