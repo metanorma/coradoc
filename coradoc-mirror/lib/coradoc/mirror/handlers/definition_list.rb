@@ -115,7 +115,11 @@ module Coradoc
           # the plain string keeps this handler robust for DefinitionItem
           # instances populated by paths that don't build inline children.
           def description_nodes(item, context)
-            return Array(item.definitions).map { |defn| context.text_node(defn.to_s) } unless item.is_a?(CoreModel::DefinitionItem)
+            unless item.is_a?(CoreModel::DefinitionItem)
+              return Array(item.definitions).map do |defn|
+                context.text_node(defn.to_s)
+              end
+            end
 
             children = item.definition_children
             return Array(item.definitions).map { |defn| context.text_node(defn.to_s) } if children.empty?

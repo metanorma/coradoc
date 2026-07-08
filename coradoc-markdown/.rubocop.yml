@@ -1,7 +1,0 @@
-AllCops:
-  TargetRubyVersion: 3.3
-
-plugins:
-  - rubocop-performance
-  - rubocop-rake
-  - rubocop-rspec

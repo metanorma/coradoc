@@ -100,10 +100,10 @@ RSpec.describe Coradoc::Plugin::Kotoshu::ReportError do
     expect(err.suggestions).to eq(%w[hello help])
   end
 
-  it 'has_suggestions? reflects the suggestions list' do
+  it 'suggestions? reflects the suggestions list' do
     no_sugg = described_class.new(word: 'xyz', suggestions: [])
     yes_sugg = described_class.new(word: 'helo', suggestions: ['hello'])
-    expect(no_sugg).not_to have_suggestions
-    expect(yes_sugg).to have_suggestions
+    expect(no_sugg).not_to be_suggestions
+    expect(yes_sugg).to be_suggestions
   end
 end
