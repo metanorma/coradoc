@@ -119,8 +119,10 @@ module Coradoc
           end
 
           def dispatch_cache(parser_instance)
-            parser_instance.instance_variable_get(:@_rule_dispatch_cache) ||
-              parser_instance.instance_variable_set(:@_rule_dispatch_cache, {})
+            # Per-instance memoization of dispatch rules. Exposed via
+            # the public `_rule_dispatch_cache` method on Parser::Base
+            # so we don't bypass encapsulation with instance_variable_*.
+            parser_instance._rule_dispatch_cache
           end
 
           def dispatch?

@@ -61,7 +61,7 @@ module Coradoc
       end
 
       def rebuild_children(node)
-        return node unless node.respond_to?(:children)
+        return node unless node.is_a?(CoreModel::HasChildren)
 
         original = node.children
         return node if original.nil?
@@ -79,23 +79,27 @@ module Coradoc
         original = node.public_send(attr_name)
         return node if original.nil?
 
-        updated = original.is_a?(Array) ?
-                    original.map { |c| visit(c) } :
+        updated = if original.is_a?(Array)
+                    original.map { |c| visit(c) }
+                  else
                     visit(original)
+                  end
         return node if updated == original
 
         node.dup.tap { |copy| copy.public_send("#{attr_name}=", updated) }
       end
 
       def rebuild_block(node)
-        return node unless node.respond_to?(:children)
+        return node unless node.is_a?(CoreModel::HasChildren)
 
         original_children = node.children
         return node if original_children.nil?
 
-        updated_children = original_children.is_a?(Array) ?
-                             original_children.map { |c| visit(c) } :
+        updated_children = if original_children.is_a?(Array)
+                             original_children.map { |c| visit(c) }
+                           else
                              visit(original_children)
+                           end
 
         if inline_resolvable?(node)
           original_content = node.content
@@ -113,7 +117,15 @@ module Coradoc
       end
 
       def inline_resolvable?(node)
-        node.respond_to?(:content) && node.content.is_a?(String)
+        # Capability check: nodes that include ChildrenContent expose a
+        # `content` attribute alongside `children`. We resolve attribute
+        # references only when content is a String (plain-text inline
+        # content). Using is_a?(ChildrenContent) instead of
+        # respond_to?(:content) catches type drift early: if a node
+        # acquires string content without including ChildrenContent,
+        # this method returns false (no resolution) rather than
+        # silently resolving on a mis-typed node.
+        node.is_a?(CoreModel::ChildrenContent) && node.content.is_a?(String)
       end
 
       # Resolve attribute references inside a flat content string.
