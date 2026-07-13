@@ -118,7 +118,10 @@ module Coradoc
           attrs = {}
           attrs[:class] = "language-#{language}" if language && !language.empty?
 
-          attrs[:class] = [attrs[:class], 'line-numbers'].compact.join(' ') if options[:linenums] || options[:line_numbers]
+          if options[:linenums] || options[:line_numbers]
+            attrs[:class] =
+              [attrs[:class], 'line-numbers'].compact.join(' ')
+          end
 
           attrs
         end

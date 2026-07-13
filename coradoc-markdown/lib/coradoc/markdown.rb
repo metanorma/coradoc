@@ -127,9 +127,9 @@ module Coradoc
       # @param filename [String] Path to the Markdown file
       # @param options [Hash] Parsing options (see #parse)
       # @return [Array] The parsed AST
-      def from_file(filename, **options)
+      def from_file(filename, **)
         content = File.read(filename)
-        parse(content, **options)
+        parse(content, **)
       end
 
       # Parse inline Markdown content

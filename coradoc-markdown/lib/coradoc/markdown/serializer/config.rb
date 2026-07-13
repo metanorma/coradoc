@@ -48,7 +48,7 @@ module Coradoc
         end
 
         def with(overrides)
-          self.class.new(**to_h.merge(symbolize(overrides)))
+          self.class.new(**to_h, **symbolize(overrides))
         end
 
         private
@@ -58,15 +58,9 @@ module Coradoc
         end
 
         def validate_options!(resolved)
-          unless %i[github container html gfm_alert].include?(resolved.fetch(:admonition_style))
-            raise ArgumentError, "Unknown admonition_style: #{resolved[:admonition_style].inspect}"
-          end
-          unless %i[html flatten].include?(resolved.fetch(:definition_list_nested))
-            raise ArgumentError, "Unknown definition_list_nested: #{resolved[:definition_list_nested].inspect}"
-          end
-          unless [true, false].include?(resolved.fetch(:suppress_comments))
-            raise ArgumentError, 'suppress_comments must be boolean'
-          end
+          raise ArgumentError, "Unknown admonition_style: #{resolved[:admonition_style].inspect}" unless %i[github container html gfm_alert].include?(resolved.fetch(:admonition_style))
+          raise ArgumentError, "Unknown definition_list_nested: #{resolved[:definition_list_nested].inspect}" unless %i[html flatten].include?(resolved.fetch(:definition_list_nested))
+          raise ArgumentError, 'suppress_comments must be boolean' unless [true, false].include?(resolved.fetch(:suppress_comments))
           return if [true, false].include?(resolved.fetch(:autolinks))
 
           raise ArgumentError, 'autolinks must be boolean'

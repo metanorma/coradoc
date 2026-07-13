@@ -40,7 +40,7 @@ module Coradoc
             else
               raise ArgumentError,
                     "Unknown element type for serialization: #{element.class}. " \
-                      'Expected a known Markdown model type.'
+                    'Expected a known Markdown model type.'
             end
           end
         end
