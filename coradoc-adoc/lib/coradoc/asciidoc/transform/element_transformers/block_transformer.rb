@@ -169,19 +169,22 @@ module Coradoc
 
             # Single admonition dispatch used by every block-form path
             # (example / sidebar / quote / pass / open). Builds an
-            # AnnotationBlock with annotation_type set from the style and
-            # the block's body lines joined into a single content string.
-            # Type is canonicalised via AdmonitionStyles so every code path
-            # (line admonition, block admonition, attribute-cast admonition)
-            # produces the same uppercase key.
+            # AnnotationBlock by delegating to +transform_typed_block+
+            # with +annotation_type+ injected via +extra_attrs+. This
+            # preserves inline formatting (links, monospace, bold), list
+            # structure, and paragraph breaks — the typed-block pipeline
+            # already groups lines into ParagraphBlock children and
+            # dispatches block-level lines (lists, tables) through
+            # ToCoreModel.transform. Type is canonicalised via
+            # AdmonitionStyles so every code path (line admonition, block
+            # admonition, attribute-cast admonition) produces the same
+            # uppercase key.
             def transform_admonition_block(block, type)
               canonical = AdmonitionStyles.canonicalize(type) || type.to_s
-              content_lines = Array(block.lines).map { |line| ToCoreModel.extract_text_content(line) }.join("\n")
-              Coradoc::CoreModel::AnnotationBlock.new(
-                annotation_type: canonical,
-                content: content_lines,
-                title: ToCoreModel.extract_title_text(block.title),
-                source_line: block.source_line
+              transform_typed_block(
+                block,
+                Coradoc::CoreModel::AnnotationBlock,
+                annotation_type: canonical
               )
             end
 
@@ -214,76 +217,85 @@ module Coradoc
             end
 
             def transform_typed_block(block, klass, extra_attrs = {})
-              raw_lines = Array(block.lines)
-              has_nested_blocks = raw_lines.any? { |line| block_level_child?(line) }
+              children, content = build_typed_block_children(block.lines)
 
-              if has_nested_blocks
-                children = raw_lines.reject do |line|
-                  line.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
-                    line.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
-                end.filter_map do |line|
-                  result = ToCoreModel.transform(line)
-                  next nil if result.nil?
-                  next result if result.is_a?(Coradoc::CoreModel::Base)
-
-                  text = ToCoreModel.extract_text_content(result)
-                  next nil if text.nil? || text.strip.empty?
-
-                  Coradoc::CoreModel::TextContent.new(text: text)
-                end
-                klass.new(
-                  id: block.id,
-                  title: ToCoreModel.extract_title_text(block.title),
-                  children: children,
-                  language: ToCoreModel.extract_block_language(block),
-                  source_line: block.source_line,
-                  **extra_attrs
-                )
-              else
-                paragraph_groups = group_block_lines_into_paragraphs(raw_lines)
-
-                content_lines = paragraph_groups.map do |group|
-                  ToCoreModel.extract_text_content(group)
-                end.join("\n\n")
-
-                children = paragraph_groups.map do |group|
-                  inline = ToCoreModel.transform_inline_content(group)
-                  inline = [Coradoc::CoreModel::TextContent.new(text: '')] if inline.empty?
-                  Coradoc::CoreModel::ParagraphBlock.new(
-                    content: ToCoreModel.extract_text_content(group),
-                    children: Array(inline),
-                    source_line: ToCoreModel.extract_source_line(group)
-                  )
-                end
-
-                klass.new(
-                  id: block.id,
-                  title: ToCoreModel.extract_title_text(block.title),
-                  content: content_lines,
-                  children: children,
-                  language: ToCoreModel.extract_block_language(block),
-                  source_line: block.source_line,
-                  **extra_attrs
-                )
-              end
+              klass.new(
+                id: block.id,
+                title: ToCoreModel.extract_title_text(block.title),
+                content: content,
+                children: children,
+                language: ToCoreModel.extract_block_language(block),
+                source_line: block.source_line,
+                **extra_attrs
+              )
             end
 
-            # AsciiDoc joins consecutive non-blank lines into one paragraph;
-            # blank lines (parsed as Model::LineBreak) separate paragraphs.
-            def group_block_lines_into_paragraphs(lines)
-              groups = []
-              current = []
-              lines.each do |line|
+            # Walks block.lines in document order and emits the typed
+            # block's children alongside the prose-string view of its
+            # paragraphs.
+            #
+            # Consecutive inline lines coalesce into one ParagraphBlock
+            # (preserving AsciiDoc paragraph semantics: soft-wrapped
+            # source lines are one paragraph, blank lines split them).
+            # Block-level lines (lists, tables, nested blocks — anything
+            # whose AsciiDoc model returns true from +block_level?+)
+            # dispatch through +ToCoreModel.transform+ and slot in at
+            # their original document-order position. LineBreak /
+            # PageBreak lines flush the pending inline paragraph.
+            #
+            # Returns [+children+, +content+] where +content+ is the
+            # paragraph text joined with blank-line separators (nil when
+            # the block has no paragraphs, e.g. contains only nested
+            # blocks).
+            #
+            # Single source of truth for typed-block body construction.
+            # Used by every typed-block transformer (example, sidebar,
+            # quote, open, typed-cast, admonition) so they all preserve
+            # inline formatting, list structure, and paragraph breaks
+            # identically.
+            def build_typed_block_children(lines)
+              children = []
+              paragraph_texts = []
+              pending_inline = []
+
+              Array(lines).each do |line|
                 if line.is_a?(Coradoc::AsciiDoc::Model::LineBreak) ||
                    line.is_a?(Coradoc::AsciiDoc::Model::Break::PageBreak)
-                  groups << current if current.any?
-                  current = []
+                  flush_inline_paragraph(pending_inline, children, paragraph_texts)
+                  pending_inline.clear
+                elsif block_level_child?(line)
+                  flush_inline_paragraph(pending_inline, children, paragraph_texts)
+                  pending_inline.clear
+                  dispatched = ToCoreModel.transform(line)
+                  children << dispatched if dispatched
                 else
-                  current << line
+                  pending_inline << line
                 end
               end
-              groups << current if current.any?
-              groups
+              flush_inline_paragraph(pending_inline, children, paragraph_texts)
+
+              content = paragraph_texts.any? ? paragraph_texts.join("\n\n") : nil
+              [children, content]
+            end
+
+            # Materialises +pending_inline+ into a ParagraphBlock and
+            # appends it to +children+, recording its flat text in
+            # +paragraph_texts+ for later content-string joining. No-op
+            # when +pending_inline+ is empty so callers can flush
+            # unconditionally at every boundary (blank line, block-level
+            # child, end-of-input) without producing empty paragraphs.
+            def flush_inline_paragraph(pending_inline, children, paragraph_texts)
+              return if pending_inline.empty?
+
+              inline = ToCoreModel.transform_inline_content(pending_inline)
+              inline = [Coradoc::CoreModel::TextContent.new(text: '')] if inline.empty?
+              text = ToCoreModel.extract_text_content(pending_inline)
+              paragraph_texts << text
+              children << Coradoc::CoreModel::ParagraphBlock.new(
+                content: text,
+                children: Array(inline),
+                source_line: ToCoreModel.extract_source_line(pending_inline)
+              )
             end
 
             # A line that should be emitted as a direct child of the

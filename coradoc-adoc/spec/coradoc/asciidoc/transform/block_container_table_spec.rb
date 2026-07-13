@@ -24,7 +24,7 @@ RSpec.describe 'Tables nested inside block containers', :asciidoc do
   end
 
   def has_child_of_class?(block, klass)
-    Array(block.children).any? { |child| child.is_a?(klass) }
+    Array(block.children).any?(klass)
   end
 
   context 'inside an open block (--)' do
@@ -50,7 +50,11 @@ RSpec.describe 'Tables nested inside block containers', :asciidoc do
       expect(open_block).to be_a(Coradoc::CoreModel::OpenBlock)
       child_classes = open_block.children.map(&:class)
       expect(child_classes).to include(Coradoc::CoreModel::Table)
-      expect(child_classes).to include(Coradoc::CoreModel::TextContent)
+      # Prose surrounding the table is preserved as ParagraphBlock
+      # children — wrapping inline lines in a paragraph keeps their
+      # structure (and any inline marks) intact instead of flattening
+      # to a bare TextContent.
+      expect(child_classes).to include(Coradoc::CoreModel::ParagraphBlock)
       expect(child_classes.count).to be(3)
     end
 
