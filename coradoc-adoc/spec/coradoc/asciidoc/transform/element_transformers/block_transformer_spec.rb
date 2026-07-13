@@ -227,5 +227,118 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::BlockTransform
       expect(result.children.size).to eq(1)
       expect(result.children.first).to be_a(Coradoc::CoreModel::Block)
     end
+
+    it 'preserves inline formatting when inline prose sits alongside a nested list' do
+      link = Coradoc::AsciiDoc::Model::Inline::Link.new(
+        path: 'foo.html', name: 'Simple Adoption'
+      )
+      text_line = Coradoc::AsciiDoc::Model::TextElement.new(
+        content: [
+          'The easiest way is via ',
+          link,
+          '.'
+        ]
+      )
+      list = Coradoc::AsciiDoc::Model::List::Unordered.new(
+        items: [Coradoc::AsciiDoc::Model::List::Item.new(
+          content: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'item')],
+          marker: '*'
+        )]
+      )
+      block = Coradoc::AsciiDoc::Model::Block::Example.new(lines: [text_line, list])
+
+      result = described_class.transform_typed_block(
+        block, Coradoc::CoreModel::ExampleBlock
+      )
+
+      expect(result.children.size).to eq(2)
+      expect(result.children[0]).to be_a(Coradoc::CoreModel::ParagraphBlock)
+      expect(result.children[1]).to be_a(Coradoc::CoreModel::ListBlock)
+
+      paragraph = result.children[0]
+      link_element = paragraph.children.find { |c| c.is_a?(Coradoc::CoreModel::LinkElement) }
+      expect(link_element).not_to be_nil
+      expect(link_element.target).to eq('foo.html')
+      expect(link_element.content).to eq('Simple Adoption')
+    end
+  end
+
+  describe '.build_typed_block_children' do
+    def build(lines)
+      described_class.build_typed_block_children(lines)
+    end
+
+    it 'returns [children, content] tuple with content nil when only nested blocks' do
+      nested = Coradoc::AsciiDoc::Model::Block::Core.new(
+        lines: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'Inner')]
+      )
+
+      children, content = build([nested])
+      expect(content).to be_nil
+      expect(children.size).to eq(1)
+      expect(children.first).to be_a(Coradoc::CoreModel::Block)
+    end
+
+    it 'joins multiple paragraph texts with blank-line separator in content' do
+      lines = [
+        Coradoc::AsciiDoc::Model::TextElement.new(content: 'First.'),
+        Coradoc::AsciiDoc::Model::LineBreak.new,
+        Coradoc::AsciiDoc::Model::TextElement.new(content: 'Second.')
+      ]
+
+      children, content = build(lines)
+      expect(children.size).to eq(2)
+      expect(content).to eq("First.\n\nSecond.")
+    end
+
+    it 'flushes the pending paragraph when a block-level child appears mid-stream' do
+      list = Coradoc::AsciiDoc::Model::List::Unordered.new(
+        items: [Coradoc::AsciiDoc::Model::List::Item.new(
+          content: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'item')],
+          marker: '*'
+        )]
+      )
+      lines = [
+        Coradoc::AsciiDoc::Model::TextElement.new(content: 'Before list.'),
+        list
+      ]
+
+      children, content = build(lines)
+      expect(children.map(&:class)).to eq([
+                                            Coradoc::CoreModel::ParagraphBlock,
+                                            Coradoc::CoreModel::ListBlock
+                                          ])
+      expect(content).to eq('Before list.')
+    end
+  end
+
+  describe '.transform_admonition_block' do
+    it 'builds an AnnotationBlock with annotation_type and ParagraphBlock children' do
+      link = Coradoc::AsciiDoc::Model::Inline::Link.new(
+        path: 'foo.html', name: 'bar'
+      )
+      text_line = Coradoc::AsciiDoc::Model::TextElement.new(
+        content: ['See ', link, '.']
+      )
+      block = Coradoc::AsciiDoc::Model::Block::Example.new(lines: [text_line])
+
+      result = described_class.transform_admonition_block(block, 'note')
+
+      expect(result).to be_a(Coradoc::CoreModel::AnnotationBlock)
+      expect(result.annotation_type).to eq('NOTE')
+      paragraph = result.children.first
+      expect(paragraph).to be_a(Coradoc::CoreModel::ParagraphBlock)
+      link_element = paragraph.children.find { |c| c.is_a?(Coradoc::CoreModel::LinkElement) }
+      expect(link_element&.target).to eq('foo.html')
+    end
+
+    it 'canoninalises the type via AdmonitionStyles' do
+      block = Coradoc::AsciiDoc::Model::Block::Example.new(
+        lines: [Coradoc::AsciiDoc::Model::TextElement.new(content: 'body')]
+      )
+
+      result = described_class.transform_admonition_block(block, 'tip')
+      expect(result.annotation_type).to eq('TIP')
+    end
   end
 end
