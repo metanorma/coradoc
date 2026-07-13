@@ -39,7 +39,7 @@ module Coradoc
         def lookup!(element)
           lookup(element) || raise(ArgumentError,
                                    "Unknown element type for serialization: #{element.class}. " \
-                                     'Expected a known Markdown model type.')
+                                   'Expected a known Markdown model type.')
         end
 
         private

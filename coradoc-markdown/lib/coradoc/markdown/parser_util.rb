@@ -71,11 +71,11 @@ module Coradoc
         def self.extract_quoted_value(scanner, handle_escapes: false)
           if scanner.scan(/"([^"\\]*(?:\\.[^"\\]*)*)"/)
             value = scanner[1]
-            value = value.gsub(/\\"/, '"') if handle_escapes
+            value = value.gsub('\"', '"') if handle_escapes
             value
           elsif scanner.scan(/'([^'\\]*(?:\\.[^'\\]*)*)'/)
             value = scanner[1]
-            value = value.gsub(/\\'/, "'") if handle_escapes
+            value = value.gsub('\\\'', "'") if handle_escapes
             value
           elsif scanner.scan(/(\S+)/)
             scanner[1]

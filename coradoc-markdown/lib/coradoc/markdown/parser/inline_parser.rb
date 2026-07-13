@@ -266,7 +266,7 @@ module Coradoc
         end
 
         def parse(io, options = {})
-          process_emphasis(super(io, options))
+          process_emphasis(super)
         end
       end
     end
