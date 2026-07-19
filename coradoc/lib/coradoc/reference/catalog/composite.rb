@@ -3,9 +3,11 @@
 module Coradoc
   module Reference
     module Catalog
-      # Composes multiple catalogs. Lookup tries each child in order;
-      # the first non-nil result wins. This is the catalog callers reach
-      # for in production:
+      # Composes multiple catalogs. Lookup asks EVERY child and merges
+      # the hits: exactly one hit returns the Content; several hits
+      # return an Array (which the Resolver surfaces per the
+      # +ambiguous:+ policy). Precedence between catalogs is a
+      # resolver/policy concern, not a lookup concern:
       #
       #   Composite.new(
       #     Local.from_doc(doc),
@@ -36,7 +38,8 @@ module Coradoc
         end
 
         def ambiguous?(address)
-          lookup(address).is_a?(Array) && lookup(address).size > 1
+          result = lookup(address)
+          result.is_a?(Array) && result.size > 1
         end
 
         def each_pair(&block)

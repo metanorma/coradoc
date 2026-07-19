@@ -105,6 +105,13 @@ RSpec.describe Coradoc::Reference::Edge do
       expect(edge.options).to be_a(custom_options_class)
       expect(edge.options.extra).to eq('value')
     end
+
+    it 'is not clobbered by lazy builtin registration when registered first' do
+      described_class::Kind.reset!
+      described_class.register_kind(:navigation, options_class: custom_options_class)
+      edge = described_class.build(kind: :navigation, address: address)
+      expect(edge.options).to be_a(custom_options_class)
+    end
   end
 
   describe '.kinds' do

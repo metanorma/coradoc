@@ -176,5 +176,42 @@ RSpec.describe Coradoc::Reference::Address do
       expect(addr.scheme).to eq('custom')
       expect(addr.target).to eq('thing')
     end
+
+    context 'with a bareword-shaped scheme (anchor overlap)' do
+      let(:orcid_scheme) do
+        Module.new do
+          module_function
+
+          def scheme_name
+            :orcid
+          end
+
+          def matches?(raw)
+            !raw.nil? && raw.to_s.match?(/\A\d{4}-\d{4}-\d{4}-\d{3}[\dX]\z/)
+          end
+
+          def parse(raw)
+            Coradoc::Reference::Address.new(scheme: 'orcid', target: raw.to_s)
+          end
+
+          def serialize(address)
+            address.target
+          end
+        end
+      end
+
+      it 'is not shadowed by the anchor catch-all when registered after first use' do
+        described_class.parse('warmup') # force lazy builtin registration
+        described_class.register_scheme(orcid_scheme)
+        addr = described_class.parse('0000-0002-1825-0097')
+        expect(addr.scheme).to eq('orcid')
+      end
+
+      it 'is not shadowed by the anchor catch-all when registered before first use' do
+        described_class.register_scheme(orcid_scheme)
+        addr = described_class.parse('0000-0002-1825-0097')
+        expect(addr.scheme).to eq('orcid')
+      end
+    end
   end
 end

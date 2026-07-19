@@ -29,7 +29,8 @@ module Coradoc
           return nil unless entries
           return entries.first if entries.size == 1
 
-          entries
+          # Copy: callers must not be able to corrupt the index.
+          entries.dup
         end
 
         def ambiguous?(address)

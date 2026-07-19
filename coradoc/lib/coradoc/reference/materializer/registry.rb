@@ -19,19 +19,24 @@ module Coradoc
 
         @global_registrations = []
 
+        GLOBAL_MUTEX = Mutex.new
+        private_constant :GLOBAL_MUTEX
+
         class << self
           def register_global(klass)
-            unless @global_registrations.include?(klass)
-              @global_registrations << klass
+            GLOBAL_MUTEX.synchronize do
+              unless @global_registrations.include?(klass)
+                @global_registrations << klass
+              end
             end
           end
 
           def global_registrations
-            @global_registrations.dup
+            GLOBAL_MUTEX.synchronize { @global_registrations.dup }
           end
 
           def reset_globals!
-            @global_registrations.clear
+            GLOBAL_MUTEX.synchronize { @global_registrations.clear }
           end
         end
 

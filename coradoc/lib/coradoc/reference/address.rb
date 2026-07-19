@@ -93,12 +93,26 @@ module Coradoc
       #   matches?(raw)    -> Boolean
       #   parse(raw)       -> Address
       #   serialize(addr)  -> String
+      #
+      # +register+ always forces builtin registration first, so an
+      # external scheme registered before first use is never clobbered
+      # by the lazy builtin pass. The catch-all anchor scheme is always
+      # tried LAST on match, so external schemes are never shadowed by
+      # it no matter when they register.
       module Scheme
         @registered = []
         @builtins_registered = false
+        @registering_builtins = false
+
+        CATCH_ALL_SCHEME = :anchor
+        private_constant :CATCH_ALL_SCHEME
+
+        MUTEX = Mutex.new
+        private_constant :MUTEX
 
         class << self
           def register(mod)
+            ensure_builtins_registered! unless @registering_builtins
             @registered.delete_if { |m| m.scheme_name == mod.scheme_name }
             @registered << mod
           end
@@ -112,17 +126,26 @@ module Coradoc
           end
 
           def match(raw)
-            @registered.find { |m| m.matches?(raw) }
+            catch_all, specific =
+              @registered.partition { |m| m.scheme_name == CATCH_ALL_SCHEME }
+            (specific + catch_all).find { |m| m.matches?(raw) }
           end
 
           def ensure_builtins_registered!
-            return if @builtins_registered
+            MUTEX.synchronize do
+              return if @builtins_registered
 
-            BUILTIN_SCHEME_ORDER.each do |name|
-              const_name = name.to_s.split('_').map(&:capitalize).join
-              register(Address.const_get(const_name))
+              @registering_builtins = true
+              begin
+                BUILTIN_SCHEME_ORDER.each do |name|
+                  const_name = name.to_s.split('_').map(&:capitalize).join
+                  register(Address.const_get(const_name))
+                end
+                @builtins_registered = true
+              ensure
+                @registering_builtins = false
+              end
             end
-            @builtins_registered = true
           end
 
           def reset!
