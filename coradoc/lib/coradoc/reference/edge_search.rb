@@ -49,9 +49,9 @@ module Coradoc
       def edge_from_cross_reference(node)
         Edge.build(
           kind: :navigation,
-          address: parse_address(node.target),
+          address: parse_address(node.target, hint: xref_hint(node.target)),
           source_id: node.id,
-          label: extract_text(node)
+          label: node.content
         )
       end
 
@@ -60,23 +60,23 @@ module Coradoc
           kind: :link,
           address: parse_address(node.target),
           source_id: node.id,
-          label: extract_text(node)
+          label: node.content
         )
       end
 
       def edge_from_include(node)
         Edge.build(
           kind: :include,
-          address: parse_address(node.target, hint: include_hint(node.target)),
+          address: parse_address(node.target, hint: path_or_url_hint(node.target)),
           source_id: node.id,
-          options: include_options_from(node)
+          options: { include_options: node.options }
         )
       end
 
       def edge_from_image(node)
         Edge.build(
           kind: :image_ref,
-          address: parse_address(node.src),
+          address: parse_address(node.src, hint: path_or_url_hint(node.src)),
           source_id: node.id,
           label: node.alt,
           options: { alt_text: node.alt }
@@ -92,31 +92,27 @@ module Coradoc
         )
       end
 
-      def include_hint(target)
-        target.to_s.start_with?('http') ? :url : :path
+      # Xrefs are document-internal by definition (AsciiDoc): bare
+      # targets are anchors, even uppercase document-ID-shaped ones
+      # ("SEC-2"). Only an explicit "document#fragment" shape or a URL
+      # points outside the current document.
+      def xref_hint(target)
+        raw = target.to_s
+        return :url if Coradoc::Reference::Address::Url.matches?(raw)
+        return :path if raw.include?('#') && !raw.start_with?('#')
+
+        :anchor
       end
 
-      def include_options_from(node)
-        return {} unless node.options
-
-        opts = node.options
-        {
-          tags: opts.tags,
-          lines_spec: opts.lines_spec,
-          leveloffset: opts.leveloffset&.to_s,
-          indent: opts.indent,
-          file_encoding: opts.file_encoding
-        }
+      # File-like targets (include, image): URLs stay urls, everything
+      # else is a path — including bare filenames ("foo.png") that the
+      # anchor bareword heuristic would otherwise claim.
+      def path_or_url_hint(target)
+        Coradoc::Reference::Address::Url.matches?(target.to_s) ? :url : :path
       end
 
       def parse_address(target, hint: nil)
         Coradoc::Reference::Address.parse(target.to_s, hint: hint)
-      rescue Coradoc::Reference::Address::ParseError
-        Coradoc::Reference::Address.new(scheme: 'anchor', target: target.to_s)
-      end
-
-      def extract_text(node)
-        node.content || node.id
       end
 
       EDGE_EXTRACTORS = {

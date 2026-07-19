@@ -214,4 +214,32 @@ RSpec.describe Coradoc::Reference::Address do
       end
     end
   end
+
+  describe 'relative paths' do
+    it 'parses slash-containing targets as paths' do
+      addr = described_class.parse('images/foo.png')
+      expect(addr.scheme).to eq('path')
+      expect(addr.target).to eq('images/foo.png')
+    end
+
+    it 'parses parent-relative targets as paths' do
+      addr = described_class.parse('../shared/common.adoc')
+      expect(addr.scheme).to eq('path')
+      expect(addr.target).to eq('../shared/common.adoc')
+    end
+
+    it 'round-trips relative paths' do
+      expect(described_class.parse('images/foo.png').to_s).to eq('images/foo.png')
+    end
+  end
+
+  describe 'degenerate inputs' do
+    it 'rejects a bare # anchor' do
+      expect { described_class.parse('#') }.to raise_error(described_class::ParseError)
+    end
+
+    it 'normalizes an empty fragment to nil' do
+      expect(described_class.parse('ELF-5005-1#').fragment).to be_nil
+    end
+  end
 end
