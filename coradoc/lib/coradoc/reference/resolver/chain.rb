@@ -4,9 +4,9 @@ module Coradoc
   module Reference
     module Resolver
       # Tries each child resolver in order. First non-Missing result
-      # wins (Resolved, Ambiguous, or Deferred short-circuit). Use to
-      # combine a local catalog with a remote one without composite
-      # catalog indirection.
+      # wins (Resolved or Ambiguous short-circuit). Use to combine a
+      # local catalog with a remote one without composite catalog
+      # indirection.
       class Chain < Resolver::Base
         attr_reader :resolvers
 

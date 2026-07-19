@@ -13,14 +13,14 @@ RSpec.describe Coradoc::Reference::Edge do
         address: address,
         source_id: 'para-1',
         label: 'Section 3',
-        options: { link_text: 'Section 3' }
+        options: { tooltip: 'Go to Section 3' }
       )
       expect(edge.kind).to eq('navigation')
       expect(edge.address).to eq(address)
       expect(edge.source_id).to eq('para-1')
       expect(edge.label).to eq('Section 3')
       expect(edge.options).to be_a(Coradoc::Reference::Edge::NavigationOptions)
-      expect(edge.options.link_text).to eq('Section 3')
+      expect(edge.options.tooltip).to eq('Go to Section 3')
     end
 
     it 'creates a citation edge with citation options' do
@@ -39,10 +39,9 @@ RSpec.describe Coradoc::Reference::Edge do
       edge = described_class.build(
         kind: :link,
         address: address,
-        options: { link_text: 'Click', role: 'external' }
+        options: { role: 'external' }
       )
       expect(edge.options).to be_a(Coradoc::Reference::Edge::LinkOptions)
-      expect(edge.options.link_text).to eq('Click')
       expect(edge.options.role).to eq('external')
     end
 
@@ -83,7 +82,7 @@ RSpec.describe Coradoc::Reference::Edge do
     it 'uses default options when none given' do
       edge = described_class.build(kind: :navigation, address: address)
       expect(edge.options).to be_a(Coradoc::Reference::Edge::NavigationOptions)
-      expect(edge.options.link_text).to be_nil
+      expect(edge.options.tooltip).to be_nil
     end
   end
 
@@ -141,6 +140,13 @@ RSpec.describe Coradoc::Reference::Edge do
       b = described_class.build(kind: :navigation, address: address, source_id: 'x')
       expect(a).to eq(b)
       expect(a.hash).to eq(b.hash)
+    end
+
+    it 'never equates a base Options with a subclass instance (either direction)' do
+      base = Coradoc::Reference::Edge::Options.new
+      sub = Coradoc::Reference::Edge::NavigationOptions.new
+      expect(base).not_to eq(sub)
+      expect(sub).not_to eq(base)
     end
 
     it 'distinguishes different kinds' do

@@ -27,7 +27,6 @@ module Coradoc
       attribute :scheme, :string
       attribute :target, :string
       attribute :fragment, :string
-      attribute :version, :string
       attribute :scope, :string
 
       autoload :Url, "#{__dir__}/address/url"
@@ -42,7 +41,7 @@ module Coradoc
       class << self
         def parse(raw, hint: nil)
           Scheme.ensure_builtins_registered!
-          mod = hint ? Scheme.for(hint) : Scheme.match(raw)
+          mod = hint ? scheme_for_hint!(hint) : Scheme.match(raw)
           unless mod
             raise ParseError,
                   "Cannot determine address scheme for #{raw.inspect}"
@@ -58,7 +57,19 @@ module Coradoc
           Scheme.ensure_builtins_registered!
           Scheme.names
         end
+
+        private
+
+        def scheme_for_hint!(hint)
+          Scheme.for(hint) ||
+            raise(UnknownSchemeError,
+                  "Unknown address scheme #{hint.inspect}. " \
+                  "Registered: #{Scheme.names.inspect}")
+        end
       end
+
+      # Value equality (==/eql?/hash) comes from Lutaml::Model — all
+      # attributes compared, class-aware, safe as Hash keys.
 
       def to_s
         Scheme.ensure_builtins_registered!
@@ -71,22 +82,7 @@ module Coradoc
         mod.serialize(self)
       end
 
-      def ==(other)
-        return false unless other.is_a?(Address)
-
-        comparable_attributes.all? { |a| public_send(a) == other.public_send(a) }
-      end
-      alias eql? ==
-
-      def hash
-        comparable_attributes.map { |a| public_send(a) }.hash
-      end
-
       private
-
-      def comparable_attributes
-        %i[scheme target fragment version scope]
-      end
 
       # Registry of scheme modules. Each module provides:
       #   scheme_name      -> Symbol
