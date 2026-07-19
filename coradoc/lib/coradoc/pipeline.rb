@@ -124,9 +124,7 @@ module Coradoc
         format_module = FormatCatalog.get_format(to)
         raise UnsupportedFormatError.new(to, available: FormatCatalog.registered_formats) unless format_module
 
-        unless allow_unresolved_includes
-          Coradoc::Validation.guard_unresolved_includes!(model, format_module)
-        end
+        Coradoc::Validation.guard_unresolved_includes!(model, format_module) unless allow_unresolved_includes
 
         model = Hooks.invoke(:before_serialize, model, format: to)
         result = format_module.serialize(model, **)

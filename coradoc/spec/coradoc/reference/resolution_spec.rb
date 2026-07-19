@@ -87,14 +87,14 @@ RSpec.describe 'Coradoc.resolve_references (end-to-end)' do
     end.to output(/sec-b/).to_stderr
   end
 
-  context 'global materializer registration (format gem extension point)' do
-    let(:html_like_materializer) do
+  context 'when materializers are registered globally (format gem extension point)' do
+    def html_like_materializer
       Class.new(Coradoc::Reference::Materializer::Base) do
         def self.kind = :navigation
         def self.presentation = :any
         def self.format = :html
 
-        def materialize(edge:, node:, **)
+        def materialize(edge:, **)
           Coradoc::CoreModel::LinkElement.new(
             target: "##{edge.address.target}",
             content: edge.label,
@@ -241,26 +241,26 @@ RSpec.describe 'Coradoc.resolve_references (end-to-end)' do
     expect(xref).to be_nil
   end
 
-  context 'materializer lookup axes' do
-    let(:asciidoc_materializer) do
+  context 'when selecting materializers by lookup axes' do
+    def asciidoc_materializer
       Class.new(Coradoc::Reference::Materializer::Base) do
         def self.kind = :navigation
         def self.presentation = :any
         def self.format = :asciidoc
 
-        def materialize(edge:, node:, **)
+        def materialize(edge:, **)
           Coradoc::CoreModel::TextElement.new(content: "ADOC:#{edge.address}")
         end
       end
     end
 
-    let(:split_materializer) do
+    def split_materializer
       Class.new(Coradoc::Reference::Materializer::Base) do
         def self.kind = :navigation
         def self.presentation = :split_pages
         def self.format = :any
 
-        def materialize(edge:, node:, **)
+        def materialize(**)
           Coradoc::CoreModel::TextElement.new(content: 'SPLIT')
         end
       end

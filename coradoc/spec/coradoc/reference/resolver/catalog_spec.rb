@@ -56,24 +56,22 @@ RSpec.describe Coradoc::Reference::Resolver::Catalog do
   end
 
   describe '#resolve (ambiguous case)' do
-    let(:dup_a) do
-      Coradoc::CoreModel::SectionElement.new(id: 'shared', title: 'A', level: 1, children: [])
+    # One setup hash keeps the candidate identities stable within an
+    # example (the catalog must return the very instance asserted on).
+    let(:ambiguous_setup) do
+      dup_a = Coradoc::CoreModel::SectionElement.new(id: 'shared', title: 'A', level: 1, children: [])
+      dup_b = Coradoc::CoreModel::SectionElement.new(id: 'shared', title: 'B', level: 1, children: [])
+      doc_a = Coradoc::CoreModel::DocumentElement.new(id: 'a', title: 'A', children: [dup_a])
+      doc_b = Coradoc::CoreModel::DocumentElement.new(id: 'b', title: 'B', children: [dup_b])
+      {
+        dup_a: dup_a,
+        composite: Coradoc::Reference::Catalog::Composite.new(
+          Coradoc::Reference::Catalog::Local.from_doc(doc_a),
+          Coradoc::Reference::Catalog::Local.from_doc(doc_b)
+        )
+      }
     end
-    let(:dup_b) do
-      Coradoc::CoreModel::SectionElement.new(id: 'shared', title: 'B', level: 1, children: [])
-    end
-    let(:composite_doc_a) do
-      Coradoc::CoreModel::DocumentElement.new(id: 'a', title: 'A', children: [dup_a])
-    end
-    let(:composite_doc_b) do
-      Coradoc::CoreModel::DocumentElement.new(id: 'b', title: 'B', children: [dup_b])
-    end
-    let(:composite) do
-      Coradoc::Reference::Catalog::Composite.new(
-        Coradoc::Reference::Catalog::Local.from_doc(composite_doc_a),
-        Coradoc::Reference::Catalog::Local.from_doc(composite_doc_b)
-      )
-    end
+    let(:composite) { ambiguous_setup[:composite] }
     let(:ambiguous_edge) do
       Coradoc::Reference::Edge.build(
         kind: :navigation,
@@ -86,14 +84,14 @@ RSpec.describe Coradoc::Reference::Resolver::Catalog do
       result = nil
       expect { result = resolver.resolve(ambiguous_edge) }.to output(/shared/).to_stderr
       expect(result).to be_a(Coradoc::Reference::Result::Resolved)
-      expect(result.target).to be(dup_a)
+      expect(result.target).to be(ambiguous_setup[:dup_a])
     end
 
     it 'returns Resolved with first when ambiguous: :first' do
       resolver = described_class.new(catalog: composite, ambiguous: :first)
       result = resolver.resolve(ambiguous_edge)
       expect(result).to be_a(Coradoc::Reference::Result::Resolved)
-      expect(result.target).to be(dup_a)
+      expect(result.target).to be(ambiguous_setup[:dup_a])
     end
 
     it 'raises when ambiguous: :error' do

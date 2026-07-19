@@ -308,8 +308,8 @@ module Coradoc
       super(
         "Document has #{targets.size} unresolved include directive(s): " \
         "#{targets.join(', ')}. Resolve them before serializing with " \
-        "Coradoc.resolve_includes(doc, base_dir: ...), or pass " \
-        "allow_unresolved_includes: true."
+        'Coradoc.resolve_includes(doc, base_dir: ...), or pass ' \
+        'allow_unresolved_includes: true.'
       )
     end
   end
