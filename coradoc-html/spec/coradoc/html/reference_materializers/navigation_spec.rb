@@ -6,14 +6,8 @@ RSpec.describe Coradoc::Html::ReferenceMaterializers::Navigation do
   let(:target) do
     Coradoc::CoreModel::SectionElement.new(id: 'sec-3', title: 'Sec 3', level: 1, children: [])
   end
-  let(:document) do
-    Coradoc::CoreModel::DocumentElement.new(
-      id: 'doc', title: 'Doc', children: [target]
-    )
-  end
 
   let(:presentation) { Coradoc::Reference::Presentation::SingleDocument.new }
-  let(:pages) { presentation.layout(document) }
   let(:address) { Coradoc::Reference::Address.parse('sec-3') }
   let(:edge) do
     Coradoc::Reference::Edge.build(
@@ -27,6 +21,16 @@ RSpec.describe Coradoc::Html::ReferenceMaterializers::Navigation do
   end
 
   let(:materializer) { described_class.new }
+
+  def document
+    Coradoc::CoreModel::DocumentElement.new(
+      id: 'doc', title: 'Doc', children: [target]
+    )
+  end
+
+  def pages
+    presentation.layout(document)
+  end
 
   it 'produces a LinkElement pointing at the located page' do
     inline = materializer.materialize(
@@ -64,45 +68,44 @@ RSpec.describe Coradoc::Html::ReferenceMaterializers::Navigation do
     expect(inline.target).to eq(address.to_s)
   end
 
-  context 'under SplitPages' do
-    let(:xref_node) do
-      Coradoc::CoreModel::CrossReferenceElement.new(
+  context 'with SplitPages' do
+    # One setup hash keeps node identities stable: the xref passed as
+    # +node:+ must be the same instance the pages were laid out from.
+    let(:split_setup) do
+      xref = Coradoc::CoreModel::CrossReferenceElement.new(
         target: 'sec-b', id: 'xref-1',
         children: [Coradoc::CoreModel::TextElement.new(content: 'B')]
       )
-    end
-    let(:section_a) do
-      Coradoc::CoreModel::SectionElement.new(
+      sec_a = Coradoc::CoreModel::SectionElement.new(
         id: 'sec-a', title: 'A', level: 1,
         children: [
-          Coradoc::CoreModel::ParagraphBlock.new(content: 'x', children: [xref_node])
+          Coradoc::CoreModel::ParagraphBlock.new(content: 'x', children: [xref])
         ]
       )
-    end
-    let(:section_b) do
-      Coradoc::CoreModel::SectionElement.new(id: 'sec-b', title: 'B', level: 1, children: [])
-    end
-    let(:split_document) do
-      Coradoc::CoreModel::DocumentElement.new(
-        id: 'doc', title: 'Doc', children: [section_a, section_b]
+      sec_b = Coradoc::CoreModel::SectionElement.new(id: 'sec-b', title: 'B', level: 1, children: [])
+      doc = Coradoc::CoreModel::DocumentElement.new(
+        id: 'doc', title: 'Doc', children: [sec_a, sec_b]
       )
+      split_presentation = Coradoc::Reference::Presentation::SplitPages.new
+      {
+        xref: xref, section_a: sec_a, section_b: sec_b,
+        presentation: split_presentation, pages: split_presentation.layout(doc)
+      }
     end
-    let(:split_presentation) { Coradoc::Reference::Presentation::SplitPages.new }
-    let(:split_pages) { split_presentation.layout(split_document) }
 
     it 'prefixes the target page for cross-page references' do
       split_edge = Coradoc::Reference::Edge.build(
         kind: :navigation, address: Coradoc::Reference::Address.parse('sec-b'), label: 'B'
       )
       result = Coradoc::Reference::Result::Resolved.build(
-        edge: split_edge, address: split_edge.address, target: section_b
+        edge: split_edge, address: split_edge.address, target: split_setup[:section_b]
       )
       inline = materializer.materialize(
         edge: split_edge,
         result: result,
-        node: xref_node,
-        presentation: split_presentation,
-        pages: split_pages
+        node: split_setup[:xref],
+        presentation: split_setup[:presentation],
+        pages: split_setup[:pages]
       )
       expect(inline.target).to eq('sec-b#sec-b')
     end
@@ -112,21 +115,21 @@ RSpec.describe Coradoc::Html::ReferenceMaterializers::Navigation do
         kind: :navigation, address: Coradoc::Reference::Address.parse('sec-a'), label: 'A'
       )
       result = Coradoc::Reference::Result::Resolved.build(
-        edge: split_edge, address: split_edge.address, target: section_a
+        edge: split_edge, address: split_edge.address, target: split_setup[:section_a]
       )
       inline = materializer.materialize(
         edge: split_edge,
         result: result,
-        node: xref_node,
-        presentation: split_presentation,
-        pages: split_pages
+        node: split_setup[:xref],
+        presentation: split_setup[:presentation],
+        pages: split_setup[:pages]
       )
       expect(inline.target).to eq('#sec-a')
     end
   end
 
   describe 'end-to-end via Coradoc.resolve_references (globally registered)' do
-    let(:document) do
+    def e2e_document
       Coradoc::CoreModel::DocumentElement.new(
         id: 'doc', title: 'Doc',
         children: [
@@ -150,9 +153,10 @@ RSpec.describe Coradoc::Html::ReferenceMaterializers::Navigation do
     end
 
     it 'materializes navigation edges into HTML LinkElements' do
+      doc = e2e_document
       resolved = Coradoc.resolve_references(
-        document,
-        catalog: Coradoc::Reference::Catalog::Local.from_doc(document),
+        doc,
+        catalog: Coradoc::Reference::Catalog::Local.from_doc(doc),
         presentation: Coradoc::Reference::Presentation::SingleDocument.new,
         format: :html,
         materialize: true

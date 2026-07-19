@@ -4,10 +4,26 @@ require 'spec_helper'
 require 'coradoc/reference'
 
 RSpec.describe Coradoc::Reference::Resolver::Chain do
-  # Lightweight fake catalog used only by this spec. Struct-based
-  # because we want to inject responses for specific addresses without
-  # standing up a full document — this is a non-model helper, allowed.
-  let(:fake_catalog_class) do
+  let(:target_a) do
+    Coradoc::CoreModel::SectionElement.new(id: 'a', title: 'A', level: 1, children: [])
+  end
+  let(:target_b) do
+    Coradoc::CoreModel::SectionElement.new(id: 'b', title: 'B', level: 1, children: [])
+  end
+
+  let(:address_a) { Coradoc::Reference::Address.parse('anchor-a') }
+  let(:address_b) { Coradoc::Reference::Address.parse('anchor-b') }
+
+  let(:resolver_a) do
+    Coradoc::Reference::Resolver::Catalog.new(catalog: catalog_a)
+  end
+  let(:resolver_b) do
+    Coradoc::Reference::Resolver::Catalog.new(catalog: catalog_b)
+  end
+
+  let(:chain) { described_class.new(resolver_a, resolver_b) }
+
+  def fake_catalog_class
     Struct.new(:index, :schemes) do
       include Coradoc::Reference::Catalog::Protocol
 
@@ -27,7 +43,7 @@ RSpec.describe Coradoc::Reference::Resolver::Chain do
 
   # Real resolver that records every edge it is asked about — proves
   # short-circuiting without message-expectation doubles.
-  let(:recording_resolver_class) do
+  def recording_resolver_class
     Class.new(Coradoc::Reference::Resolver::Base) do
       attr_reader :calls
 
@@ -44,27 +60,13 @@ RSpec.describe Coradoc::Reference::Resolver::Chain do
     end
   end
 
-  let(:target_a) do
-    Coradoc::CoreModel::SectionElement.new(id: 'a', title: 'A', level: 1, children: [])
-  end
-  let(:target_b) do
-    Coradoc::CoreModel::SectionElement.new(id: 'b', title: 'B', level: 1, children: [])
+  def catalog_a
+    fake_catalog_class.new({ address_a => target_a }, [:anchor])
   end
 
-  let(:address_a) { Coradoc::Reference::Address.parse('anchor-a') }
-  let(:address_b) { Coradoc::Reference::Address.parse('anchor-b') }
-
-  let(:catalog_a) { fake_catalog_class.new({ address_a => target_a }, [:anchor]) }
-  let(:catalog_b) { fake_catalog_class.new({ address_b => target_b }, [:anchor]) }
-
-  let(:resolver_a) do
-    Coradoc::Reference::Resolver::Catalog.new(catalog: catalog_a)
+  def catalog_b
+    fake_catalog_class.new({ address_b => target_b }, [:anchor])
   end
-  let(:resolver_b) do
-    Coradoc::Reference::Resolver::Catalog.new(catalog: catalog_b)
-  end
-
-  let(:chain) { described_class.new(resolver_a, resolver_b) }
 
   it 'returns Resolved from the first resolver when it has the target' do
     edge = Coradoc::Reference::Edge.build(kind: :navigation, address: address_a)

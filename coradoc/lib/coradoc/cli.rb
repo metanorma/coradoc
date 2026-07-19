@@ -33,7 +33,7 @@ module Coradoc
     option :allow_unsafe_includes, desc: 'Disable path-traversal protection (asciidoctor :unsafe mode)',
                                    type: :boolean, default: false
     option :allow_unresolved_includes, desc: 'Allow serialization with unresolved includes ' \
-                                            '(formats that cannot represent them drop them)',
+                                             '(formats that cannot represent them drop them)',
                                        type: :boolean, default: false
     def convert(file)
       source_format = resolve_format(file, :from)
