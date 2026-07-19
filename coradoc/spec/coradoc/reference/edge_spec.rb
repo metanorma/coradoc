@@ -46,11 +46,17 @@ RSpec.describe Coradoc::Reference::Edge do
       expect(edge.options.role).to eq('external')
     end
 
-    it 'creates an include edge with options collection default' do
-      edge = described_class.build(kind: :include, address: address)
+    it 'creates an include edge embedding the canonical IncludeOptions' do
+      options = Coradoc::CoreModel::IncludeOptions.from_hash({ 'tags' => 'a;b' })
+      edge = described_class.build(
+        kind: :include,
+        address: address,
+        options: { include_options: options }
+      )
       expect(edge.kind).to eq('include')
       expect(edge.options).to be_a(Coradoc::Reference::Edge::IncludeOptions)
-      expect(edge.options.tags).to eq([])
+      expect(edge.options.include_options).to be(options)
+      expect(edge.options.include_options.tags).to eq(%w[a b])
     end
 
     it 'creates an image_ref edge' do

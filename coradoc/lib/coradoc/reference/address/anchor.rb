@@ -21,12 +21,10 @@ module Coradoc
           return false if raw.nil? || raw.empty?
 
           stripped = raw.to_s
+          return false if stripped == '#'
           return true if stripped.start_with?('#')
 
-          stripped.match?(/\A[\w.\-]+\z/) &&
-            !looks_like_path?(stripped) &&
-            !looks_like_scoped_path?(stripped) &&
-            !looks_like_doi?(stripped)
+          stripped.match?(/\A[\w.\-]+\z/)
         end
 
         def parse(raw)
@@ -43,18 +41,6 @@ module Coradoc
 
         def new_address(target:)
           Address.new(scheme: 'anchor', target: target)
-        end
-
-        def looks_like_path?(value)
-          value.match?(/\A[A-Z][A-Z0-9_\-]*\d[\w\-]*\z/)
-        end
-
-        def looks_like_scoped_path?(value)
-          value.match?(/\A[A-Z][A-Z0-9_\-]*:\d/)
-        end
-
-        def looks_like_doi?(value)
-          value.match?(%r{\A10\.\d{4,}/})
         end
       end
     end
