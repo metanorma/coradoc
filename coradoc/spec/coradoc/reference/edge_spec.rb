@@ -93,10 +93,6 @@ RSpec.describe Coradoc::Reference::Edge do
       end
     end
 
-    let(:reset) do
-      -> { described_class::Kind.reset! }
-    end
-
     after { described_class::Kind.reset! }
 
     it 'registers a new kind with its options class' do

@@ -134,6 +134,32 @@ RSpec.describe 'Coradoc.resolve_references (end-to-end)' do
       expect(inline).not_to be_nil
       expect(inline.target).to eq('#sec-b')
     end
+
+    it 'materializes without mutating a deep-frozen input tree' do
+      deep_freeze(document)
+      resolved = Coradoc.resolve_references(
+        document,
+        catalog: catalog,
+        presentation: presentation,
+        format: :html,
+        materialize: true
+      )
+      inline = find_first(resolved) { |n| n.is_a?(Coradoc::CoreModel::LinkElement) }
+      expect(inline).not_to be_nil
+    end
+  end
+
+  it 'uses the caller-supplied resolver' do
+    caching = Coradoc::Reference::Resolver::Caching.new(
+      inner: Coradoc::Reference::Resolver::Catalog.new(catalog: catalog)
+    )
+    Coradoc.resolve_references(
+      document,
+      catalog: catalog,
+      presentation: presentation,
+      resolver: caching
+    )
+    expect(caching.size).to eq(1)
   end
 
   it 'warns about unresolvable references when materializing with missing: :warn' do
@@ -307,5 +333,13 @@ RSpec.describe 'Coradoc.resolve_references (end-to-end)' do
       end
     end
     nil
+  end
+
+  def deep_freeze(node)
+    if node.is_a?(Coradoc::CoreModel::HasChildren) && node.children.is_a?(Array)
+      node.children.each { |child| deep_freeze(child) }
+      node.children.freeze
+    end
+    node.freeze
   end
 end

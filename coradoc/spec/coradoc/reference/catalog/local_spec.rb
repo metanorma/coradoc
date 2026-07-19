@@ -51,11 +51,32 @@ RSpec.describe Coradoc::Reference::Catalog::Local do
         .to be(document)
     end
 
-    it 'does not index the document root as anchor for itself' do
+    it 'indexes the document root by its own id as an anchor' do
       catalog = described_class.from_doc(document, path: 'ELF-5005-1')
       # The doc's own id "doc" should be indexed (since the doc has an id).
       expect(catalog.lookup(Coradoc::Reference::Address.parse('doc')))
         .to be(document)
+    end
+
+    it 'returns all candidates for duplicate ids within one document' do
+      dup_a = Coradoc::CoreModel::SectionElement.new(id: 'shared', title: 'A', level: 1, children: [])
+      dup_b = Coradoc::CoreModel::SectionElement.new(id: 'shared', title: 'B', level: 2, children: [])
+      doc = Coradoc::CoreModel::DocumentElement.new(
+        id: 'doc', title: 'Doc', children: [dup_a, dup_b]
+      )
+      catalog = described_class.from_doc(doc)
+      result = catalog.lookup(Coradoc::Reference::Address.parse('shared'))
+      expect(result).to eq([dup_a, dup_b])
+      expect(catalog.ambiguous?(Coradoc::Reference::Address.parse('shared'))).to be(true)
+    end
+
+    it 'indexes deeply nested sections' do
+      leaf = Coradoc::CoreModel::SectionElement.new(id: 'deep', title: 'Deep', level: 3, children: [])
+      mid = Coradoc::CoreModel::SectionElement.new(id: 'mid', title: 'Mid', level: 2, children: [leaf])
+      top = Coradoc::CoreModel::SectionElement.new(id: 'top', title: 'Top', level: 1, children: [mid])
+      doc = Coradoc::CoreModel::DocumentElement.new(id: 'doc', title: 'Doc', children: [top])
+      catalog = described_class.from_doc(doc)
+      expect(catalog.lookup(Coradoc::Reference::Address.parse('deep'))).to be(leaf)
     end
 
     it 'returns nil for unknown anchor' do

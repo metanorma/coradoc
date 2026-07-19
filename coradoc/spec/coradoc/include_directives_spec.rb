@@ -468,16 +468,18 @@ A body.
     end
 
     it 'warns and skips when :warn' do
-      expect(Coradoc::Logger).to receive(:warn).with(/Include target not found/)
-
-      flat = Coradoc.resolve_includes(@core, base_dir: Dir.tmpdir, missing_include: :warn)
+      flat = nil
+      expect do
+        flat = Coradoc.resolve_includes(@core, base_dir: Dir.tmpdir, missing_include: :warn)
+      end.to output(/Include target not found/).to_stderr
       expect(body_text(flat)).to eq('Before.After.')
     end
 
     it 'is silent when :silent' do
-      expect(Coradoc::Logger).not_to receive(:warn)
-
-      flat = Coradoc.resolve_includes(@core, base_dir: Dir.tmpdir, missing_include: :silent)
+      flat = nil
+      expect do
+        flat = Coradoc.resolve_includes(@core, base_dir: Dir.tmpdir, missing_include: :silent)
+      end.not_to output.to_stderr
       expect(body_text(flat)).to eq('Before.After.')
     end
 
@@ -519,15 +521,7 @@ A body.
 
   describe 'custom resolver' do
     it 'invokes the resolver with parsed options' do
-      calls = []
-      resolver = Object.new
-      def resolver.call(target:, base_dir:, options:, context:)
-        self.calls << { target: target, options_tags: options.tags }
-        "from-resolver\n"
-      end
-
-      # Stub the calls capture via a wrapper
-      captured_calls = calls
+      captured_calls = []
       real_resolver = Object.new
       real_resolver.define_singleton_method(:call) do |target:, base_dir:, options:, context:|
         captured_calls << { target: target, tags: options.tags }
@@ -566,10 +560,12 @@ A body.
 
       core = parse_adoc("include::missing.adoc[]\n")
 
-      expect(Coradoc::Logger).to receive(:warn).with(/Include target not found/)
-      flat = Coradoc.resolve_includes(core, base_dir: '/tmp',
-                                            missing_include: :warn,
-                                            resolver: resolver)
+      flat = nil
+      expect do
+        flat = Coradoc.resolve_includes(core, base_dir: '/tmp',
+                                              missing_include: :warn,
+                                              resolver: resolver)
+      end.to output(/Include target not found/).to_stderr
       expect(body_text(flat)).to eq('')
     end
   end
