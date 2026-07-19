@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 module Coradoc
-  module Reference
-    module Materializer
+  module Html
+    module ReferenceMaterializers
       # Render a hyperlink edge as a LinkElement with the URL as target.
       # The catalog is not consulted — links are external by definition.
-      class LinkHtml < Base
+      class Link < Coradoc::Reference::Materializer::Base
         class << self
           def kind
             :link

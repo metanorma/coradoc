@@ -237,3 +237,7 @@ end
 Coradoc.register_format(:html, Coradoc::Html,
                         aliases: %w[html htm],
                         extensions: %w[.html .htm])
+
+# Reference materializers for format: :html. Required (not autoloaded)
+# because registration is a load-time side effect, like register_format.
+require 'coradoc/html/reference_materializers'
