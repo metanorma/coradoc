@@ -632,6 +632,8 @@ module Coradoc
         class Attrs < Lutaml::Model::Serializable
           attribute :target, :string
           attribute :tags, :string, collection: true
+          attribute :tags_wildcard, :boolean
+          attribute :tags_inverted, :boolean
           attribute :lines, :string
           attribute :leveloffset, :string
           attribute :indent, :integer
@@ -641,6 +643,8 @@ module Coradoc
           key_value do
             map 'target', to: :target
             map 'tags', to: :tags
+            map 'tags_wildcard', to: :tags_wildcard
+            map 'tags_inverted', to: :tags_inverted
             map 'lines', to: :lines
             map 'leveloffset', to: :leveloffset
             map 'indent', to: :indent

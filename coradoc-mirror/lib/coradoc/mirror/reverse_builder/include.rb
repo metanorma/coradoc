@@ -22,8 +22,8 @@ module Coradoc
 
           CoreModel::IncludeOptions.new(
             tags: Array(attrs.tags),
-            tags_wildcard: attrs.tags == ['*'],
-            tags_inverted: attrs.tags == ['**'],
+            tags_wildcard: attrs.tags_wildcard || false,
+            tags_inverted: attrs.tags_inverted || false,
             lines_spec: attrs.lines,
             leveloffset: parse_leveloffset(attrs.leveloffset),
             indent: attrs.indent,

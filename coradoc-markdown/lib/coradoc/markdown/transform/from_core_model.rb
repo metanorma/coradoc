@@ -55,6 +55,8 @@ module Coradoc
               Coradoc::Markdown::Text.new(content: model.title.to_s)
             when Coradoc::CoreModel::CommentLine
               Coradoc::Markdown::Comment.new(text: model.text.to_s)
+            when Coradoc::CoreModel::Include
+              transform_include(model)
             when Coradoc::CoreModel::TextContent
               model.text.to_s
             when Array
@@ -65,6 +67,17 @@ module Coradoc
           end
 
           private
+
+          # Markdown has no transclusion — an unresolved include edge is
+          # preserved as an HTML comment so no information is lost and
+          # serialization never crashes on graph-mode documents.
+          def transform_include(element)
+            Coradoc::Markdown::Comment.new(text: include_directive_text(element))
+          end
+
+          def include_directive_text(element)
+            "include::#{element.target}[#{element.raw_options}]"
+          end
 
           def transform_structural_element(element)
             case element

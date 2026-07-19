@@ -22,6 +22,8 @@ module Coradoc
             Node::Include::Attrs.new(
               target: element.target,
               tags: tags_value(options),
+              tags_wildcard: options&.tags_wildcard,
+              tags_inverted: options&.tags_inverted,
               lines: options&.lines_spec,
               leveloffset: leveloffset_value(options),
               indent: options&.indent,
