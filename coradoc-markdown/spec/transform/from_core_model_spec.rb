@@ -38,6 +38,7 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
 
       it 'transforms to Markdown::Heading' do
         heading = transform.is_a?(Array) ? transform.first : transform
+
         expect(heading).to be_a(Coradoc::Markdown::Heading)
         expect(heading.level).to eq(2)
         expect(heading.text).to eq('Section Title')
@@ -625,6 +626,30 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
         expect(link).not_to be_nil
         expect(link.text).to eq('example')
         expect(link.url).to eq('https://example.com')
+      end
+    end
+
+    context 'with CoreModel::Include' do
+      let(:core_model) do
+        Coradoc::CoreModel::Include.new(
+          target: 'shared/common.adoc',
+          raw_options: 'tags=body'
+        )
+      end
+
+      it 'transforms to a Markdown::Comment preserving the directive' do
+        comment = transform.is_a?(Array) ? transform.first : transform
+        expect(comment).to be_a(Coradoc::Markdown::Comment)
+        expect(comment.text).to eq('include::shared/common.adoc[tags=body]')
+      end
+
+      it 'serializes a document containing an include without raising' do
+        doc = Coradoc::CoreModel::DocumentElement.new(
+          id: 'd',
+          title: 'D',
+          children: [Coradoc::CoreModel::Include.new(target: 'x.adoc')]
+        )
+        expect { Coradoc.serialize(doc, to: :markdown) }.not_to raise_error
       end
     end
   end
