@@ -252,5 +252,10 @@ RSpec.describe Coradoc::Reference::Address do
       expect(addr.scheme).to eq('isbn')
       expect(addr.target).to eq('978-1-56619-909-4')
     end
+
+    it 'handles adversarial long digit runs without backtracking' do
+      expect(described_class::Path.matches?("A#{'0' * 100_000}")).to be(true)
+      expect(described_class::Path.matches?("A#{'0' * 100_000}!")).to be(false)
+    end
   end
 end
