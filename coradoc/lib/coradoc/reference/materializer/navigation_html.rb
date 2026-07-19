@@ -22,7 +22,7 @@ module Coradoc
           end
         end
 
-        def materialize(edge:, result:, presentation:, pages:)
+        def materialize(edge:, result:, node:, presentation:, pages:)
           href = href_for(edge, result, presentation, pages)
           text = display_text(edge, result)
           Coradoc::CoreModel::LinkElement.new(

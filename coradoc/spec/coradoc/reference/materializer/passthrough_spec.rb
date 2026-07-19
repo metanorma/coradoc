@@ -15,25 +15,35 @@ RSpec.describe Coradoc::Reference::Materializer::Passthrough do
   end
   let(:materializer) { described_class.new }
 
-  it 'produces a TextElement with the edge label' do
+  it 'returns the original node unchanged' do
+    node = Coradoc::CoreModel::CrossReferenceElement.new(
+      target: 'sec-3', id: 'xref-1',
+      children: [Coradoc::CoreModel::TextElement.new(content: 'Section 3')]
+    )
     inline = materializer.materialize(
       edge: edge,
       result: result,
+      node: node,
       presentation: nil,
       pages: []
     )
-    expect(inline).to be_a(Coradoc::CoreModel::TextElement)
-    expect(inline.content).to eq('Section 3')
+    expect(inline).to be(node)
   end
 
-  it 'falls back to the address when no label' do
-    edge_no_label = Coradoc::Reference::Edge.build(kind: :navigation, address: address)
+  it 'never degrades an image into text' do
+    node = Coradoc::CoreModel::Image.new(src: 'images/pic.png', alt: 'My Alt', id: 'img-1')
+    image_edge = Coradoc::Reference::Edge.build(
+      kind: :image_ref,
+      address: Coradoc::Reference::Address.parse('images/pic.png', hint: :path),
+      label: 'My Alt'
+    )
     inline = materializer.materialize(
-      edge: edge_no_label,
+      edge: image_edge,
       result: result,
+      node: node,
       presentation: nil,
       pages: []
     )
-    expect(inline.content).to eq(address.to_s)
+    expect(inline).to be(node)
   end
 end

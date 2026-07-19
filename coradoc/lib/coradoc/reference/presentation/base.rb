@@ -9,6 +9,17 @@ module Coradoc
       # A Presentation NEVER reads the original document — it consumes
       # the resolved graph produced by the Resolver. It never renders.
       class Base
+        # Registry key used in materializer lookup tuples
+        # [kind, presentation, format]. Subclasses override so
+        # materializers can target a specific layout.
+        def self.key
+          :any
+        end
+
+        def key
+          self.class.key
+        end
+
         # Lay out the resolved graph as a tree of Pages. Subclasses
         # decide slicing, ordering, hierarchy.
         #

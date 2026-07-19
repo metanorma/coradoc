@@ -115,6 +115,13 @@ RSpec.describe Coradoc::Reference::Edge do
     end
   end
 
+  describe '.build (unknown kind)' do
+    it 'raises UnknownKindError naming the kind' do
+      expect { described_class.build(kind: :bogus, address: address) }
+        .to raise_error(Coradoc::Reference::UnknownKindError, /bogus/)
+    end
+  end
+
   describe 'value equality' do
     it 'treats equal attributes as equal' do
       a = described_class.build(kind: :navigation, address: address, source_id: 'x')

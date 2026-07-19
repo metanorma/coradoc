@@ -48,13 +48,20 @@ module Coradoc
 
       # Resolve every reference (xref, citation, link, include, image,
       # footnote) in a parsed document using a unified content-graph
-      # model. Mirrors +resolve_includes+ in shape: two-step, immutable,
-      # returns a NEW document.
+      # model. Mirrors +resolve_includes+ in shape: two-step, immutable.
       #
-      # Catalogs compose (Local + Collection + Site + Remote); the
-      # Presentation defines slicing and page boundaries; the
-      # Materializer (looked up by kind, presentation, format) renders
-      # each resolved Edge into a CoreModel inline node.
+      # Step one always runs: every Edge is resolved through the
+      # Resolver and the +missing+/+ambiguous+ policies are enforced
+      # (raise or warn). Step two is opt-in: with +materialize: true+
+      # the tree is rebuilt with each Edge replaced by the output of
+      # the Materializer registered for its
+      # [kind, presentation, format] tuple.
+      #
+      # The input document is never mutated. With +materialize: false+
+      # the input document itself is returned; with +materialize: true+
+      # a new document is returned that structurally shares untouched
+      # subtrees with the input (treat both as immutable). Nodes whose
+      # kind has no registered materializer are preserved unchanged.
       #
       # @param document [CoreModel::Base] parsed document
       # @param catalog [Reference::Catalog::*] index of addressable Content
@@ -63,7 +70,10 @@ module Coradoc
       # @param missing [Symbol] :warn (default), :silent, :error, :passthrough
       # @param ambiguous [Symbol] :disambiguate (default), :first, :error
       # @param materialize [Boolean] when true, replace edges with rendered inlines
-      # @return [CoreModel::Base] a new document; input is never mutated
+      # @param format [Symbol, nil] target format for materializer lookup
+      #   (:html, :asciidoc, ...); nil matches format-agnostic materializers
+      # @return [CoreModel::Base] the input document (validation only) or
+      #   a new materialized document
       #
       # @example Resolve cross-references into HTML links
       #   doc = Coradoc.parse(text, format: :asciidoc)
@@ -73,22 +83,23 @@ module Coradoc
       #     doc,
       #     catalog: catalog,
       #     presentation: presentation,
-      #     materialize: true
+      #     materialize: true,
+      #     format: :html
       #   )
       def resolve_references(document, catalog:, presentation:,
                              resolver: nil,
                              missing: :warn,
                              ambiguous: :disambiguate,
-                             materialize: false)
+                             materialize: false,
+                             format: nil)
         Coradoc::Reference::Resolution.new(
           catalog: catalog,
           presentation: presentation,
-          resolver: resolver || Coradoc::Reference::Resolver::Catalog.new(
-            catalog: catalog, ambiguous: ambiguous, missing: missing
-          ),
+          resolver: resolver,
           missing: missing,
           ambiguous: ambiguous,
-          materialize: materialize
+          materialize: materialize,
+          format: format
         ).call(document)
       end
 

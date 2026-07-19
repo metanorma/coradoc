@@ -16,10 +16,12 @@ module Coradoc
         end
 
         def resolve(edge)
-          key = edge.address
-          return @cache[key] if @cache.key?(key)
-
-          @cache[key] = @inner.resolve(edge)
+          cached = if @cache.key?(edge.address)
+                     @cache[edge.address]
+                   else
+                     @cache[edge.address] = @inner.resolve(edge)
+                   end
+          cached.for_edge(edge)
         end
 
         def clear!

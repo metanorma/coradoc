@@ -81,11 +81,12 @@ RSpec.describe Coradoc::Reference::Resolver::Catalog do
       )
     end
 
-    it 'returns Ambiguous by default' do
+    it 'warns and resolves to the first candidate when ambiguous: :disambiguate' do
       resolver = described_class.new(catalog: composite, ambiguous: :disambiguate)
-      result = resolver.resolve(ambiguous_edge)
-      expect(result).to be_a(Coradoc::Reference::Result::Ambiguous)
-      expect(result.candidates.size).to eq(2)
+      result = nil
+      expect { result = resolver.resolve(ambiguous_edge) }.to output(/shared/).to_stderr
+      expect(result).to be_a(Coradoc::Reference::Result::Resolved)
+      expect(result.target).to be(dup_a)
     end
 
     it 'returns Resolved with first when ambiguous: :first' do

@@ -41,9 +41,12 @@ module Coradoc
           return ambiguous_error(address, candidates) if ambiguous_policy == :error
           return resolved_for(edge, address, candidates.first) if ambiguous_policy == :first
 
-          Coradoc::Reference::Result::Ambiguous.build(
-            edge: edge, address: address, candidates: candidates
+          # :disambiguate — warn, then deterministically take the first
+          Coradoc::Logger.warn(
+            "Reference #{address} is ambiguous " \
+            "(#{candidates.size} candidates); using first"
           )
+          resolved_for(edge, address, candidates.first)
         end
 
         def ambiguous_error(address, candidates)

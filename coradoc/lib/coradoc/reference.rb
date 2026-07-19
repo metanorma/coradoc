@@ -14,6 +14,42 @@ module Coradoc
   # Same Content graph → N Presentations → M Materializers. The public
   # entry point is +Coradoc.resolve_references+.
   module Reference
+    # Base class for reference-resolution errors. All subclasses inherit
+    # from here so callers can rescue the family with one +rescue+ clause.
+    class Error < Coradoc::Error; end
+
+    # Raised when no catalog knew the requested Address and the
+    # +missing:+ policy is :error.
+    class MissingReferenceError < Error
+      attr_reader :address
+
+      def initialize(message = nil, address: nil)
+        @address = address
+        super(message || "Reference not found: #{address}")
+      end
+    end
+
+    # Raised when multiple catalogs matched an Address and the
+    # +ambiguous:+ policy is :error.
+    class AmbiguousReferenceError < Error
+      attr_reader :address, :candidates
+
+      def initialize(message = nil, address: nil, candidates: nil)
+        @address = address
+        @candidates = candidates
+        super(message || "Reference is ambiguous: #{address}")
+      end
+    end
+
+    # Raised when the catalog index is malformed — a programmer
+    # error, not a runtime condition. Surfaces as a clear message
+    # rather than a vague NoMethodError.
+    class InvalidCatalogError < Error; end
+
+    # Raised when building an Edge whose kind was never registered.
+    # External kinds register via +Edge.register_kind+ (OCP).
+    class UnknownKindError < Error; end
+
     autoload :Address, "#{__dir__}/reference/address"
     autoload :Edge, "#{__dir__}/reference/edge"
     autoload :Catalog, "#{__dir__}/reference/catalog"

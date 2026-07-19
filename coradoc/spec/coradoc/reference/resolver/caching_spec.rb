@@ -34,4 +34,19 @@ RSpec.describe Coradoc::Reference::Resolver::Caching do
     caching.clear!
     expect(caching.size).to eq(0)
   end
+
+  it 'returns a Result embedding the asking edge when addresses collide' do
+    caching = described_class.new(inner: inner)
+    nav_edge = Coradoc::Reference::Edge.build(
+      kind: :navigation, address: address, label: 'first'
+    )
+    citation_edge = Coradoc::Reference::Edge.build(
+      kind: :citation, address: address, label: 'second'
+    )
+    caching.resolve(nav_edge)
+    second = caching.resolve(citation_edge)
+    expect(caching.size).to eq(1)
+    expect(second.edge.kind).to eq('citation')
+    expect(second.edge.label).to eq('second')
+  end
 end
