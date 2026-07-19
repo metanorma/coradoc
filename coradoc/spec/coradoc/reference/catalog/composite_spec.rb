@@ -70,6 +70,28 @@ RSpec.describe Coradoc::Reference::Catalog::Composite do
       expect(result).to be_an(Array)
       expect(result.size).to eq(2)
     end
+
+    it 'orders candidates first-catalog-first' do
+      doc_c = Coradoc::CoreModel::DocumentElement.new(
+        id: 'doc-c', title: 'C',
+        children: [
+          Coradoc::CoreModel::SectionElement.new(id: 'shared', title: 'C', level: 1, children: [])
+        ]
+      )
+      doc_d = Coradoc::CoreModel::DocumentElement.new(
+        id: 'doc-d', title: 'D',
+        children: [
+          Coradoc::CoreModel::SectionElement.new(id: 'shared', title: 'D', level: 1, children: [])
+        ]
+      )
+      catalog_c = Coradoc::Reference::Catalog::Local.from_doc(doc_c)
+      catalog_d = Coradoc::Reference::Catalog::Local.from_doc(doc_d)
+
+      composite = described_class.new(catalog_c, catalog_d)
+      result = composite.lookup(Coradoc::Reference::Address.parse('shared'))
+      expect(result.first).to be(doc_c.children.first)
+      expect(result.last).to be(doc_d.children.first)
+    end
   end
 
   describe '#recognizes_scheme?' do

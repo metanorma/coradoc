@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'coradoc/errors'
+
 module Coradoc
   # Unified content-graph reference resolution.
   #
