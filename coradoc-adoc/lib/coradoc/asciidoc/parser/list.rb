@@ -31,7 +31,7 @@ module Coradoc
 
         def definition_list(_delimiter = nil)
           (attribute_list >> newline).maybe >>
-            dlist_item.repeat(1).as(:definition_list) >>
+            (dlist_item >> (empty_line | dlist_comment_line).repeat(0)).repeat(1).as(:definition_list) >>
             dlist_item.absent?
         end
 
@@ -149,7 +149,20 @@ module Coradoc
           term_chars =
             (dlist_delimiter.absent? >> match("[^\n]")).repeat(1)
                                                        .as(:text)
-          (element_id_inline.maybe >> term_chars).as(:dlist_term) >> dlist_delimiter
+          # A `//` line is a comment, never a term — without this guard a
+          # comment containing `::` parses as a bogus term (the slashes
+          # land in the term text).
+          (str('//') >> str('/').absent?).absent? >>
+            (element_id_inline.maybe >> term_chars).as(:dlist_term) >> dlist_delimiter
+        end
+
+        # A comment line between list items, consumed WITHOUT capture so
+        # the list continues after it. Tag directives (`// tag::`) are
+        # excluded — they keep their existing handling.
+        def dlist_comment_line
+          tag.absent? >>
+            str('//') >> str('/').absent? >>
+            match("[^\n]").repeat(0) >> line_ending
         end
 
         def dlist_definition
@@ -275,9 +288,16 @@ module Coradoc
 
           attached = (list_continuation.present? >>
                        list_continuation >>
-                       (admonition_line | paragraph | block)
+                       (admonition_line | unordered_list(1) | ordered_list(1) | paragraph | block)
                      ).repeat(0).as(:attached)
           item >>= attached.maybe
+
+          # A `+` line directly before a continuing dlist run is a
+          # list-continuation marker (asciidoctor semantics): consume it
+          # so the following items stay in the current list and nest by
+          # delimiter depth. Without this, the `+` dangled and the run
+          # split off as a detached sibling list.
+          item >>= (list_continuation >> dlist_item.present?).repeat(0)
 
           item.as(:definition_list_item)
         end
