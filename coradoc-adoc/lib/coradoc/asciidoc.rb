@@ -152,3 +152,7 @@ Coradoc.register_format(:asciidoc, Coradoc::AsciiDoc,
 # Backward-compatibility: Coradoc::Model is now Coradoc::AsciiDoc::Model
 # This alias is provided for legacy code that hasn't been updated
 Coradoc::Model = Coradoc::AsciiDoc::Model unless defined?(Coradoc::Model)
+
+# Reference materializers for format: :asciidoc. Required (not autoloaded)
+# because registration is a load-time side effect, like register_format.
+require 'coradoc/asciidoc/reference_materializers'

@@ -9,10 +9,6 @@ module Coradoc
       autoload :Base, "#{__dir__}/materializer/base"
       autoload :Registry, "#{__dir__}/materializer/registry"
       autoload :Passthrough, "#{__dir__}/materializer/passthrough"
-      autoload :NavigationHtml, "#{__dir__}/materializer/navigation_html"
-      autoload :NavigationAdoc, "#{__dir__}/materializer/navigation_adoc"
-      autoload :LinkHtml, "#{__dir__}/materializer/link_html"
-      autoload :CitationHtml, "#{__dir__}/materializer/citation_html"
     end
   end
 end

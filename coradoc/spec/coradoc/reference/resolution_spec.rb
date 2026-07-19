@@ -87,28 +87,53 @@ RSpec.describe 'Coradoc.resolve_references (end-to-end)' do
     end.to output(/sec-b/).to_stderr
   end
 
-  it 'returns a new document when materializing with a matching materializer' do
-    resolved = Coradoc.resolve_references(
-      document,
-      catalog: catalog,
-      presentation: presentation,
-      format: :html,
-      materialize: true
-    )
-    expect(resolved).not_to be(document)
-  end
+  context 'global materializer registration (format gem extension point)' do
+    let(:html_like_materializer) do
+      Class.new(Coradoc::Reference::Materializer::Base) do
+        def self.kind = :navigation
+        def self.presentation = :any
+        def self.format = :html
 
-  it 'materializes the cross-reference into a LinkElement for format: :html' do
-    resolved = Coradoc.resolve_references(
-      document,
-      catalog: catalog,
-      presentation: presentation,
-      format: :html,
-      materialize: true
-    )
-    inline = find_first(resolved) { |n| n.is_a?(Coradoc::CoreModel::LinkElement) }
-    expect(inline).not_to be_nil
-    expect(inline.target).to eq('#sec-b')
+        def materialize(edge:, node:, **)
+          Coradoc::CoreModel::LinkElement.new(
+            target: "##{edge.address.target}",
+            content: edge.label,
+            children: [Coradoc::CoreModel::TextElement.new(content: edge.label)]
+          )
+        end
+      end
+    end
+
+    around do |example|
+      Coradoc::Reference::Materializer::Registry.register_global(html_like_materializer)
+      example.run
+    ensure
+      Coradoc::Reference::Materializer::Registry.reset_globals!
+    end
+
+    it 'returns a new document when materializing with a matching materializer' do
+      resolved = Coradoc.resolve_references(
+        document,
+        catalog: catalog,
+        presentation: presentation,
+        format: :html,
+        materialize: true
+      )
+      expect(resolved).not_to be(document)
+    end
+
+    it 'materializes the cross-reference through the globally registered materializer' do
+      resolved = Coradoc.resolve_references(
+        document,
+        catalog: catalog,
+        presentation: presentation,
+        format: :html,
+        materialize: true
+      )
+      inline = find_first(resolved) { |n| n.is_a?(Coradoc::CoreModel::LinkElement) }
+      expect(inline).not_to be_nil
+      expect(inline.target).to eq('#sec-b')
+    end
   end
 
   it 'warns about unresolvable references when materializing with missing: :warn' do

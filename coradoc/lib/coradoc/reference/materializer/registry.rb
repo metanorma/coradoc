@@ -7,7 +7,34 @@ module Coradoc
       # Lookup falls back on +:any+ — so a materializer registered for
       # +[:link, :any, :html]+ handles every presentation in HTML.
       # Most specific key wins (concrete > :any).
+      #
+      # Format gems register their materializers process-wide via
+      # +.register_global+ (OCP): every registry instance picks them up
+      # on first use, and dispatch code never changes.
       class Registry
+        # Core ships only the node-preserving fallback. Format-specific
+        # materializers live in the format gems (coradoc-html,
+        # coradoc-adoc, ...) and register globally at load time.
+        BUILTINS = [Materializer::Passthrough].freeze
+
+        @global_registrations = []
+
+        class << self
+          def register_global(klass)
+            unless @global_registrations.include?(klass)
+              @global_registrations << klass
+            end
+          end
+
+          def global_registrations
+            @global_registrations.dup
+          end
+
+          def reset_globals!
+            @global_registrations.clear
+          end
+        end
+
         def initialize
           @by_key = {}
           @builtins_registered = false
@@ -51,13 +78,9 @@ module Coradoc
         end
 
         def register_builtins!
-          [
-            Materializer::Passthrough,
-            Materializer::NavigationHtml,
-            Materializer::NavigationAdoc,
-            Materializer::LinkHtml,
-            Materializer::CitationHtml
-          ].each { |k| @by_key[EntryKey.new(k.kind, k.presentation, k.format)] = k }
+          (BUILTINS + self.class.global_registrations).each do |k|
+            @by_key[EntryKey.new(k.kind, k.presentation, k.format)] = k
+          end
         end
 
         # Internal composite key for the registry. Equality based on
