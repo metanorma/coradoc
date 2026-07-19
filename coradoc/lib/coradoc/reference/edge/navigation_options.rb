@@ -5,7 +5,6 @@ module Coradoc
     class Edge < Lutaml::Model::Serializable
       # Options specific to navigation edges (xref, anchor).
       class NavigationOptions < Edge::Options
-        attribute :link_text, :string
         attribute :tooltip, :string
       end
     end

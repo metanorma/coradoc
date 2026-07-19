@@ -41,14 +41,6 @@ RSpec.describe Coradoc::Reference::Result do
     end
   end
 
-  describe Coradoc::Reference::Result::Deferred do
-    it 'carries a reason' do
-      result = described_class.build(edge: edge, address: address, reason: 'network')
-      expect(result).to be_deferred
-      expect(result.reason).to eq('network')
-    end
-  end
-
   describe 'pattern matching' do
     it 'matches Resolved' do
       result = Coradoc::Reference::Result::Resolved.build(

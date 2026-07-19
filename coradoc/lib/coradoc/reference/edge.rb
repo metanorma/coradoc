@@ -75,19 +75,6 @@ module Coradoc
           klass.new(value)
         end
       end
-
-      def ==(other)
-        return false unless other.is_a?(Edge)
-
-        %i[kind address source_id label options].all? do |a|
-          public_send(a) == other.public_send(a)
-        end
-      end
-      alias eql? ==
-
-      def hash
-        [kind, address, source_id, label, options].hash
-      end
     end
   end
 end

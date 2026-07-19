@@ -3,12 +3,14 @@
 module Coradoc
   module Reference
     class Address < Lutaml::Model::Serializable
-      # ISBN — book identifier. Recognizes the "ISBN" prefix (case
-      # insensitive, optional) and either ISBN-10 or ISBN-13 digits.
+      # ISBN — book identifier. Recognizes an optional "ISBN" prefix
+      # (case insensitive) and either ISBN-10 or ISBN-13 digits. Bare
+      # numbers must be long enough to be ISBN-shaped so short numeric
+      # anchors are not claimed.
       module Isbn
         module_function
 
-        ISBN_PATTERN = /\AISBN\s+([\d\-Xx]+)\z/i
+        ISBN_PATTERN = /\A(?:ISBN\s+)?(\d[\d\-Xx]{8,16})\z/i
 
         def scheme_name
           :isbn

@@ -24,10 +24,6 @@ module Coradoc
           is_a?(Result::Missing)
         end
 
-        def deferred?
-          is_a?(Result::Deferred)
-        end
-
         # This Result as seen by +edge+. Returns self when the edge is
         # value-equal to the one embedded; otherwise rebuilds the same
         # outcome (target/candidates preserved) for the asking edge.

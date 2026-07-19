@@ -14,19 +14,6 @@ module Coradoc
         attribute :content, Coradoc::CoreModel::Base
         attribute :parent_id, :string
         attribute :order, :integer
-
-        def ==(other)
-          return false unless other.is_a?(Page)
-
-          %i[id title content parent_id order].all? do |attr|
-            public_send(attr) == other.public_send(attr)
-          end
-        end
-        alias eql? ==
-
-        def hash
-          [id, title, content, parent_id, order].hash
-        end
       end
     end
   end

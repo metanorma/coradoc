@@ -241,5 +241,16 @@ RSpec.describe Coradoc::Reference::Address do
     it 'normalizes an empty fragment to nil' do
       expect(described_class.parse('ELF-5005-1#').fragment).to be_nil
     end
+
+    it 'raises UnknownSchemeError for an unknown hint' do
+      expect { described_class.parse('foo', hint: :nope) }
+        .to raise_error(described_class::UnknownSchemeError, /nope/)
+    end
+
+    it 'parses a bare ISBN-shaped number as isbn' do
+      addr = described_class.parse('978-1-56619-909-4')
+      expect(addr.scheme).to eq('isbn')
+      expect(addr.target).to eq('978-1-56619-909-4')
+    end
   end
 end
