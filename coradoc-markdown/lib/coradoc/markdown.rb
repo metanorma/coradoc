@@ -150,6 +150,13 @@ module Coradoc
         Serializer.serialize(document, options)
       end
 
+      # Markdown preserves unresolved include edges as HTML comments
+      # (Transform::FromCoreModel#transform_include) — lossy formatting,
+      # but never silent content loss.
+      def preserves_unresolved_includes?
+        true
+      end
+
       # Check if this format can transform the given model to CoreModel
       #
       # @param model [Object] The model to check

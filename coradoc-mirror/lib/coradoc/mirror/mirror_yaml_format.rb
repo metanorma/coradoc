@@ -29,6 +29,12 @@ module Coradoc
           true
         end
 
+        # Mirror YAML carries include edges as typed nodes — graph-mode
+        # documents round-trip losslessly.
+        def preserves_unresolved_includes?
+          true
+        end
+
         def handles_model?(_model)
           false
         end

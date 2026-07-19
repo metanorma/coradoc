@@ -32,6 +32,9 @@ module Coradoc
                                default: 64
     option :allow_unsafe_includes, desc: 'Disable path-traversal protection (asciidoctor :unsafe mode)',
                                    type: :boolean, default: false
+    option :allow_unresolved_includes, desc: 'Allow serialization with unresolved includes ' \
+                                            '(formats that cannot represent them drop them)',
+                                       type: :boolean, default: false
     def convert(file)
       source_format = resolve_format(file, :from)
       target_format = options[:to] ? Coradoc.normalize_format(options[:to]) : Coradoc.resolve_output_format(options[:output])
@@ -213,7 +216,7 @@ module Coradoc
 
     CONVERT_OPTIONS = %i[
       toc toc_levels section_numbers section_number_levels
-      lang theme asset_delivery
+      lang theme asset_delivery allow_unresolved_includes
     ].freeze
     private_constant :CONVERT_OPTIONS
 

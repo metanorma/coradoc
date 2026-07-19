@@ -120,9 +120,13 @@ module Coradoc
         raise TransformationError, "No transformer found for #{model.class}"
       end
 
-      def serialize(model, to:, **)
+      def serialize(model, to:, allow_unresolved_includes: false, **)
         format_module = FormatCatalog.get_format(to)
         raise UnsupportedFormatError.new(to, available: FormatCatalog.registered_formats) unless format_module
+
+        unless allow_unresolved_includes
+          Coradoc::Validation.guard_unresolved_includes!(model, format_module)
+        end
 
         model = Hooks.invoke(:before_serialize, model, format: to)
         result = format_module.serialize(model, **)
