@@ -45,7 +45,7 @@ module Coradoc
           unless entry
             raise Coradoc::Reference::UnknownKindError,
                   "Unknown reference kind #{kind.inspect} — " \
-                  "register it via Edge.register_kind"
+                  'register it via Edge.register_kind'
           end
 
           new(

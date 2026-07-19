@@ -23,7 +23,7 @@ module Coradoc
           end
         end
 
-        def materialize(edge:, result:, node:, **)
+        def materialize(edge:, result:, **)
           text = display_text(edge, result)
           Coradoc::CoreModel::CrossReferenceElement.new(
             target: xref_target(edge.address),

@@ -20,8 +20,8 @@ module Coradoc
                   :ambiguous_policy, :materialize_policy, :format,
                   :materializer_registry
 
-      def initialize(catalog:, presentation:, resolver: nil,
-                     missing:, ambiguous:, materialize:, format: nil,
+      def initialize(catalog:, presentation:, missing:, ambiguous:,
+                     materialize:, resolver: nil, format: nil,
                      materializer_registry: default_registry)
         @catalog = catalog
         @presentation = presentation
@@ -93,7 +93,7 @@ module Coradoc
         attr_reader :pages, :results, :presentation, :registry,
                     :missing_policy, :format
 
-        def initialize(pages:, results:, presentation:, registry:, # rubocop:disable Metrics/ParameterLists
+        def initialize(pages:, results:, presentation:, registry:,
                        missing_policy:, format:)
           @pages = pages
           @results = results

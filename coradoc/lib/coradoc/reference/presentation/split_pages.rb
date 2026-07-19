@@ -35,7 +35,7 @@ module Coradoc
         end
 
         def locate_page(_edge, target_content, pages:)
-          indexed = @page_index&.[](target_content.object_id)
+          indexed = @page_index&.[](target_content)
           return indexed if indexed
 
           pages.find { |page| owns_target?(page, target_content) }
@@ -46,12 +46,12 @@ module Coradoc
         # O(1) target→page lookup, built once per layout instead of
         # rescanning every page subtree per edge.
         def index_pages!(pages)
-          @page_index = {}
+          @page_index = {}.compare_by_identity
           pages.each { |page| index_node!(page.content, page) }
         end
 
         def index_node!(node, page)
-          @page_index[node.object_id] = page
+          @page_index[node] = page
           return unless node.is_a?(Coradoc::CoreModel::HasChildren)
 
           children = node.children

@@ -22,7 +22,7 @@ module Coradoc
           end
         end
 
-        def materialize(edge:, result:, node:, **)
+        def materialize(node:, **)
           node
         end
       end
