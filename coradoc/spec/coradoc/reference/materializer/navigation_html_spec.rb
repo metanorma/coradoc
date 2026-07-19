@@ -33,6 +33,7 @@ RSpec.describe Coradoc::Reference::Materializer::NavigationHtml do
     inline = materializer.materialize(
       edge: edge,
       result: resolved_result,
+      node: nil,
       presentation: presentation,
       pages: pages
     )
@@ -44,6 +45,7 @@ RSpec.describe Coradoc::Reference::Materializer::NavigationHtml do
     inline = materializer.materialize(
       edge: edge,
       result: resolved_result,
+      node: nil,
       presentation: presentation,
       pages: pages
     )
@@ -55,6 +57,7 @@ RSpec.describe Coradoc::Reference::Materializer::NavigationHtml do
     inline = materializer.materialize(
       edge: edge,
       result: missing,
+      node: nil,
       presentation: presentation,
       pages: pages
     )

@@ -38,16 +38,22 @@ module Coradoc
       class << self
         # Build an Edge with the given kind. Options are coerced to the
         # kind's options class (if any) via the Kind registry — never
-        # hand-rolled.
+        # hand-rolled. Raises UnknownKindError for kinds that were never
+        # registered — external kinds register via +register_kind+ (OCP).
         def build(kind:, address:, source_id: nil, label: nil, options: nil)
-          options_class = Kind.options_class_for(kind)
-          coerced = coerce_options(options, options_class)
+          entry = Kind.entry_for(kind)
+          unless entry
+            raise Coradoc::Reference::UnknownKindError,
+                  "Unknown reference kind #{kind.inspect} — " \
+                  "register it via Edge.register_kind"
+          end
+
           new(
             kind: kind.to_s,
             address: address,
             source_id: source_id,
             label: label,
-            options: coerced
+            options: coerce_options(options, entry.options_class)
           )
         end
 
@@ -62,11 +68,11 @@ module Coradoc
         private
 
         def coerce_options(value, options_class)
-          return options_class.new if value.nil?
-          return value if value.is_a?(options_class)
-          return options_class.new if options_class.nil?
+          klass = options_class || Options
+          return klass.new if value.nil?
+          return value if value.is_a?(klass)
 
-          options_class.new(value)
+          klass.new(value)
         end
       end
 

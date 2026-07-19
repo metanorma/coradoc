@@ -29,11 +29,13 @@ module Coradoc
         #
         # @param edge [Edge]
         # @param result [Result::Base] the resolved outcome
+        # @param node [CoreModel::Base] the original edge-bearing node;
+        #   return it unchanged to keep the node as authored
         # @param presentation [Presentation::Base]
         # @param pages [Array<Presentation::Page>]
-        # @return [CoreModel::InlineElement, nil] replacement inline
-        #   node, or nil to drop the edge.
-        def materialize(edge:, result:, presentation:, pages:)
+        # @return [CoreModel::Base, nil] replacement node, the original
+        #   +node+ to keep it, or nil to drop it from the tree
+        def materialize(edge:, result:, node:, presentation:, pages:)
           raise NotImplementedError
         end
       end

@@ -10,6 +10,12 @@ module Coradoc
         def self.build(edge:, address:, target:)
           new(edge: edge, address: address, target: target)
         end
+
+        private
+
+        def result_data
+          { target: target }
+        end
       end
     end
   end

@@ -7,6 +7,10 @@ module Coradoc
       # (single HTML, single PDF, EPUB chapter). Cross-references
       # always resolve to the single page.
       class SingleDocument < Base
+        def self.key
+          :single_document
+        end
+
         def layout(resolved_graph)
           [Page.new(
             id: page_id_for(resolved_graph),

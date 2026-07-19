@@ -16,6 +16,10 @@ module Coradoc
       class CustomHierarchy < Base
         attr_reader :hierarchy
 
+        def self.key
+          :custom_hierarchy
+        end
+
         def initialize(hierarchy:)
           super()
           @hierarchy = normalize_hierarchy(hierarchy)
@@ -24,7 +28,6 @@ module Coradoc
         def layout(resolved_graph)
           pages = []
           walk_hierarchy(@hierarchy, parent_id: nil, pages: pages, root: resolved_graph)
-          pages.each_with_index { |p, i| p.order = i }
           pages
         end
 
@@ -47,7 +50,8 @@ module Coradoc
               id: entry[:id],
               title: entry[:title] || content.title,
               content: content,
-              parent_id: parent_id
+              parent_id: parent_id,
+              order: pages.size
             )
             walk_hierarchy(entry[:children], parent_id: entry[:id], pages: pages, root: root)
           end

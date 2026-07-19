@@ -21,8 +21,8 @@ module Coradoc
     # Addresses are value types: two addresses are equal iff every
     # attribute matches. Round-trip via +to_s+.
     class Address < Lutaml::Model::Serializable
-      class ParseError < Coradoc::Error; end
-      class UnknownSchemeError < Coradoc::Error; end
+      class ParseError < Coradoc::Reference::Error; end
+      class UnknownSchemeError < Coradoc::Reference::Error; end
 
       attribute :scheme, :string
       attribute :target, :string
