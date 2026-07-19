@@ -15,9 +15,10 @@ module Coradoc
       module Path
         module_function
 
-        # Strict pattern used by +matches?+ — distinguishes path-shaped
-        # barewords (uppercase + digit) from anchors.
-        STRICT_PATTERN = /\A([A-Z][A-Z0-9_\-]*\d[\w\-]*)(?:#(.*))?\z/
+        # Doc-ID pattern: uppercase-led bareword ("ELF-5005-1"). Used
+        # together with a separate digit scan — two linear passes, no
+        # ambiguous adjacent quantifiers (polynomial-ReDoS-safe).
+        DOC_ID_PATTERN = /\A[A-Z][A-Z0-9_\-]*\z/
         # Loose pattern used by +parse+ when the scheme is already chosen
         # (via hint). Accepts any non-empty target plus optional fragment.
         LOOSE_PATTERN = /\A([^#]+)(?:#(.*))?\z/
@@ -30,7 +31,12 @@ module Coradoc
           return false if raw.nil? || raw.empty?
 
           value = raw.to_s
-          STRICT_PATTERN.match?(value) || value.include?('/')
+          return true if value.include?('/')
+
+          # Document IDs are uppercase-led and contain at least one digit
+          # (what distinguishes them from anchors like "SECTION").
+          id_part = value.split('#', 2).first
+          DOC_ID_PATTERN.match?(id_part) && id_part.match?(/\d/)
         end
 
         def parse(raw)
