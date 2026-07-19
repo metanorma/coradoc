@@ -2,6 +2,6 @@
 
 module Coradoc
   module AsciiDoc
-    VERSION = '2.0.31'
+    VERSION = '2.0.32'
   end
 end
