@@ -94,6 +94,12 @@ module Coradoc
           document.to_adoc
         end
       end
+
+      # AsciiDoc round-trips include:: directives natively — graph-mode
+      # documents serialize losslessly, no hydration required.
+      def preserves_unresolved_includes?
+        true
+      end
     end
 
     # Backward-compatible aliases for model classes

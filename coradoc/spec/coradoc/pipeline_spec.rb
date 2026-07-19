@@ -26,6 +26,19 @@ RSpec.describe Coradoc::Pipeline do
     end
   end
 
+  describe '.serialize (unresolved includes guard)' do
+    let(:doc) do
+      Coradoc::CoreModel::DocumentElement.new(
+        id: 'doc', title: 'Doc',
+        children: [Coradoc::CoreModel::Include.new(target: 'shared/common.adoc')]
+      )
+    end
+
+    it 'serializes graph-mode documents to asciidoc (native include round-trip)' do
+      expect { described_class.serialize(doc, to: :asciidoc) }.not_to raise_error
+    end
+  end
+
   describe '.convert' do
     it 'composes parse + serialize' do
       adoc = "= Hello\n\nWorld"

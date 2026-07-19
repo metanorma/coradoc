@@ -28,6 +28,46 @@ module Coradoc
   #   end
   #
   module Validation
+    module_function
+
+    # Targets of every unresolved +include::+ edge in the tree
+    # (deduplicated, in document order). A document is "unresolved"
+    # when it was parsed in graph mode and never went through
+    # +Coradoc.resolve_includes+.
+    def unresolved_include_targets(model)
+      targets = []
+      walk_nodes(model) do |node|
+        targets << node.target if node.is_a?(Coradoc::CoreModel::Include)
+      end
+      targets.uniq
+    end
+
+    # Serialization boundary check: formats that cannot represent an
+    # unresolved include edge (FormatModule::Interface
+    # #preserves_unresolved_includes? == false) must not silently drop
+    # the content — raise UnresolvedIncludesError instead, pointing at
+    # the hydration step (resolve_includes).
+    def guard_unresolved_includes!(model, format_module)
+      return if format_module.preserves_unresolved_includes?
+
+      targets = unresolved_include_targets(model)
+      return if targets.empty?
+
+      raise Coradoc::UnresolvedIncludesError, targets
+    end
+
+    def walk_nodes(node, &block)
+      return unless node.is_a?(Coradoc::CoreModel::Base)
+
+      yield node
+      return unless node.is_a?(Coradoc::CoreModel::HasChildren)
+
+      children = node.children
+      return unless children
+
+      children.each { |child| walk_nodes(child, &block) }
+    end
+
     # A single validation error
     class Error
       attr_reader :path, :message, :code, :element

@@ -30,6 +30,16 @@ module Coradoc
         true
       end
 
+      # Whether the serializer can represent unresolved include edges
+      # (graph-mode CoreModel::Include nodes) without losing them.
+      # Formats that round-trip the directive natively (asciidoc,
+      # mirror) or preserve it explicitly (markdown comments) override
+      # this to true; formats that would silently drop the content keep
+      # the default false, and the pipeline raises instead of losing it.
+      def preserves_unresolved_includes?
+        false
+      end
+
       # Parse a file to CoreModel, handling file-specific concerns like include resolution.
       # Format modules that support include directives or file-relative references
       # should override this method.

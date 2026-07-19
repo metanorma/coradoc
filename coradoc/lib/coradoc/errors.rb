@@ -295,6 +295,25 @@ module Coradoc
     end
   end
 
+  # Raised when a document still contains unresolved +include::+ edges
+  # at serialization time and the target format cannot represent them
+  # (it would silently drop the content). Resolve the graph first with
+  # +Coradoc.resolve_includes+, or opt out with
+  # +allow_unresolved_includes: true+.
+  class UnresolvedIncludesError < Error
+    attr_reader :targets
+
+    def initialize(targets)
+      @targets = targets
+      super(
+        "Document has #{targets.size} unresolved include directive(s): " \
+        "#{targets.join(', ')}. Resolve them before serializing with " \
+        "Coradoc.resolve_includes(doc, base_dir: ...), or pass " \
+        "allow_unresolved_includes: true."
+      )
+    end
+  end
+
   # Error raised when an include chain exceeds the configured depth limit.
   class IncludeDepthExceededError < Error
     attr_reader :depth, :target

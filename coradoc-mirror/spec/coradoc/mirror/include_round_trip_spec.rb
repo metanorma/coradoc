@@ -56,4 +56,11 @@ RSpec.describe 'Mirror Include round-trip' do
     expect(rebuilt.options.tags).to eq(%w[body intro])
     expect(rebuilt.options.tags_wildcard).to be(false)
   end
+
+  it 'serializes graph-mode documents to mirror_json without raising' do
+    doc = Coradoc::CoreModel::DocumentElement.new(
+      id: 'd', title: 'D', children: [include_node]
+    )
+    expect { Coradoc.serialize(doc, to: :mirror_json) }.not_to raise_error
+  end
 end
