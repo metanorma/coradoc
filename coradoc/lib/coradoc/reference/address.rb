@@ -82,8 +82,6 @@ module Coradoc
         mod.serialize(self)
       end
 
-      private
-
       # Registry of scheme modules. Each module provides:
       #   scheme_name      -> Symbol
       #   matches?(raw)    -> Boolean

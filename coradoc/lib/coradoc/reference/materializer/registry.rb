@@ -25,9 +25,7 @@ module Coradoc
         class << self
           def register_global(klass)
             GLOBAL_MUTEX.synchronize do
-              unless @global_registrations.include?(klass)
-                @global_registrations << klass
-              end
+              @global_registrations << klass unless @global_registrations.include?(klass)
             end
           end
 
