@@ -50,7 +50,7 @@ RSpec.describe '`+`-continuation attachment inside list items', :asciidoc do
     end
   end
 
-  context 'inside an unordered list item' do
+  context 'with an unordered list item' do
     let(:adoc) do
       <<~ADOC
         * parent
@@ -59,7 +59,7 @@ RSpec.describe '`+`-continuation attachment inside list items', :asciidoc do
       ADOC
     end
 
-    include_examples 'attaches the block via `+`'
+    it_behaves_like 'attaches the block via `+`'
 
     it 'attaches a NOTE admonition via +' do
       adoc = <<~ADOC
@@ -85,7 +85,7 @@ RSpec.describe '`+`-continuation attachment inside list items', :asciidoc do
     end
   end
 
-  context 'inside an ordered list item' do
+  context 'with an ordered list item' do
     let(:adoc) do
       <<~ADOC
         . parent
@@ -94,7 +94,7 @@ RSpec.describe '`+`-continuation attachment inside list items', :asciidoc do
       ADOC
     end
 
-    include_examples 'attaches the block via `+`'
+    it_behaves_like 'attaches the block via `+`'
 
     it 'attaches an unordered list via +' do
       adoc = <<~ADOC
@@ -109,7 +109,7 @@ RSpec.describe '`+`-continuation attachment inside list items', :asciidoc do
     end
   end
 
-  context 'inside a definition list item' do
+  context 'with a definition list item' do
     let(:adoc) do
       <<~ADOC
         term:: definition
@@ -118,7 +118,7 @@ RSpec.describe '`+`-continuation attachment inside list items', :asciidoc do
       ADOC
     end
 
-    include_examples 'attaches the block via `+`'
+    it_behaves_like 'attaches the block via `+`'
 
     it 'attaches an unordered list via +' do
       adoc = <<~ADOC
