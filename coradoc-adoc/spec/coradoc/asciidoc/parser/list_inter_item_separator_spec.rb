@@ -19,11 +19,16 @@ RSpec.describe 'Inter-item separators inside lists', :asciidoc do
     Coradoc.parse(adoc, format: :asciidoc).children
   end
 
+  def class_list(children)
+    children.map { |c| c.class.name }.join(', ')
+  end
+
   def list_with_two_items(adoc, list_class)
     children = top_level_children(adoc)
-    expect(children.size).to eq(1), -> {
-      "expected one top-level list, got #{children.map(&:class).map(&:name).join(', ')}"
-    }
+    expect(children.size).to eq(1),
+                             lambda {
+                               "expected one top-level list, got #{class_list(children)}"
+                             }
     expect(children.first).to be_a(list_class)
     children.first
   end
@@ -46,10 +51,11 @@ RSpec.describe 'Inter-item separators inside lists', :asciidoc do
       # inter-item separator — the list splits so the tag retains its
       # own position in the parse tree.
       children = top_level_children(adoc_with_tag_directive)
-      expect(children.size).to eq(2), -> {
-        "expected the tag directive to split the list, got #{children.map(&:class).map(&:name).join(', ')}"
-      }
-      expect(children.all? { |c| c.is_a?(list_class) }).to be(true)
+      expect(children.size).to eq(2),
+                               lambda {
+                                 "expected the tag directive to split the list, got #{class_list(children)}"
+                               }
+      expect(children.all?(list_class)).to be(true)
     end
 
     it 'still ends the list at a paragraph' do
@@ -63,12 +69,7 @@ RSpec.describe 'Inter-item separators inside lists', :asciidoc do
     end
   end
 
-  def is_a_tag?(node)
-    defined?(Coradoc::AsciiDoc::Model::Tag) && node.is_a?(Coradoc::AsciiDoc::Model::Tag)
-  end
-
-
-  context 'inside an unordered list' do
+  context 'with an unordered list' do
     let(:list_class) { Coradoc::CoreModel::ListBlock }
 
     let(:adoc_with_comment) do
@@ -112,10 +113,10 @@ RSpec.describe 'Inter-item separators inside lists', :asciidoc do
       ADOC
     end
 
-    include_examples 'a list that survives inter-item comments'
+    it_behaves_like 'a list that survives inter-item comments'
   end
 
-  context 'inside an ordered list' do
+  context 'with an ordered list' do
     let(:list_class) { Coradoc::CoreModel::ListBlock }
 
     let(:adoc_with_comment) do
@@ -159,10 +160,10 @@ RSpec.describe 'Inter-item separators inside lists', :asciidoc do
       ADOC
     end
 
-    include_examples 'a list that survives inter-item comments'
+    it_behaves_like 'a list that survives inter-item comments'
   end
 
-  context 'inside a definition list' do
+  context 'with a definition list' do
     let(:list_class) { Coradoc::CoreModel::DefinitionList }
 
     let(:adoc_with_comment) do
@@ -206,7 +207,7 @@ RSpec.describe 'Inter-item separators inside lists', :asciidoc do
       ADOC
     end
 
-    include_examples 'a list that survives inter-item comments'
+    it_behaves_like 'a list that survives inter-item comments'
   end
 
   context 'with a // comment whose text contains a :: delimiter' do
