@@ -114,14 +114,17 @@ module Coradoc
 
             def transform_list_item(item)
               content_val = item.content
-              children = ToCoreModel.transform_inline_content(content_val)
+              inline_children = ToCoreModel.transform_inline_content(content_val)
+              attached_children = Array(item.attached).filter_map do |block|
+                ToCoreModel.transform(block)
+              end
 
               li = Coradoc::CoreModel::ListItem.new(
                 content: ToCoreModel.extract_text_content(content_val),
                 marker: item.marker,
                 source_line: item.source_line
               )
-              li.children = children
+              li.children = inline_children + attached_children
 
               nested_lists = extract_nested_lists(item)
               li.nested_list = nested_lists.first if nested_lists.size == 1

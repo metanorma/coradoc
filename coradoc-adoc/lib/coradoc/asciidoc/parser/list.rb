@@ -17,21 +17,56 @@ module Coradoc
           line_start? >> str("+\n")
         end
 
+        # Single source of truth for "what can appear between consecutive
+        # list items without ending the list". Asciidoctor treats blank
+        # lines and `//` comment lines as non-terminating inside every
+        # list type. Comments are consumed without capture — they are
+        # structurally invisible inside a list (no CommentLine node is
+        # emitted). Tag directives (`// tag::`) keep their separate
+        # handling via `comment_line_content`'s `tag.absent?` guard.
+        def list_item_separator
+          (comment_line_content | empty_line).repeat(0)
+        end
+
+        # Single source of truth for "what block can attach to a list
+        # item via a `+` continuation marker". The `+` line is consumed
+        # by {#list_item_attached}; this rule expresses only the block
+        # that follows. Definition lists are intentionally excluded —
+        # `+` before a continuing dlist run is handled inside
+        # `dlist_item` as a continuation marker so the run nests by
+        # delimiter depth (see there).
+        def list_attached_block
+          admonition_line | unordered_list(1) | ordered_list(1) | paragraph | block
+        end
+
+        # Shared `+`-continuation attachment for every list item type
+        # (ulist, olist, dlist). A `+` line directly followed by an
+        # attached block becomes a child of the current item. The
+        # `list_continuation.present?` lookahead prevents greedy
+        # over-match when the `+` actually belongs to surrounding
+        # context.
+        def list_item_attached
+          (list_continuation.present? >>
+             list_continuation >>
+             list_attached_block
+          ).repeat(0).as(:attached)
+        end
+
         def ordered_list(nesting_level = 1)
           attrs = (attribute_list >> newline).maybe
           r = olist_item(nesting_level)
-          attrs >> (empty_line.repeat(0) >> r).repeat(1).as(:ordered)
+          attrs >> (list_item_separator >> r).repeat(1).as(:ordered)
         end
 
         def unordered_list(nesting_level = 1)
           attrs = (attribute_list >> newline).maybe
           r = ulist_item(nesting_level)
-          attrs >> (empty_line.repeat(0) >> r).repeat(1).as(:unordered)
+          attrs >> (list_item_separator >> r).repeat(1).as(:unordered)
         end
 
         def definition_list(_delimiter = nil)
           (attribute_list >> newline).maybe >>
-            (dlist_item >> (empty_line | dlist_comment_line).repeat(0)).repeat(1).as(:definition_list) >>
+            (list_item_separator >> dlist_item).repeat(1).as(:definition_list) >>
             dlist_item.absent?
         end
 
@@ -56,11 +91,7 @@ module Coradoc
                  (list_body_text_line >>
                   list_item_continuation_lines).as(:lines)
 
-          att = (list_continuation.present? >>
-                  list_continuation >>
-                  (admonition_line | paragraph | block)
-                ).repeat(0).as(:attached)
-          item >>= att.maybe
+          item >>= list_item_attached.maybe
 
           if nesting_level <= 4
             item >>= (list_marker(nesting_level + 1).present? >>
@@ -108,11 +139,7 @@ module Coradoc
                  (list_body_text_line >>
                   list_item_continuation_lines).as(:lines)
 
-          att = (list_continuation.present? >>
-                  list_continuation >>
-                  (admonition_line | paragraph | block)
-                ).repeat(0).as(:attached)
-          item >>= att.maybe
+          item >>= list_item_attached.maybe
 
           if nesting_level <= 4
             item >>= (list_marker(nesting_level + 1).present? >>
@@ -149,20 +176,7 @@ module Coradoc
           term_chars =
             (dlist_delimiter.absent? >> match("[^\n]")).repeat(1)
                                                        .as(:text)
-          # A `//` line is a comment, never a term — without this guard a
-          # comment containing `::` parses as a bogus term (the slashes
-          # land in the term text).
-          (str('//') >> str('/').absent?).absent? >>
-            (element_id_inline.maybe >> term_chars).as(:dlist_term) >> dlist_delimiter
-        end
-
-        # A comment line between list items, consumed WITHOUT capture so
-        # the list continues after it. Tag directives (`// tag::`) are
-        # excluded — they keep their existing handling.
-        def dlist_comment_line
-          tag.absent? >>
-            str('//') >> str('/').absent? >>
-            match("[^\n]").repeat(0) >> line_ending
+          (element_id_inline.maybe >> term_chars).as(:dlist_term) >> dlist_delimiter
         end
 
         def dlist_definition
@@ -286,17 +300,13 @@ module Coradoc
 
           item = multi_line | inline
 
-          attached = (list_continuation.present? >>
-                       list_continuation >>
-                       (admonition_line | unordered_list(1) | ordered_list(1) | paragraph | block)
-                     ).repeat(0).as(:attached)
-          item >>= attached.maybe
+          item >>= list_item_attached.maybe
 
           # A `+` line directly before a continuing dlist run is a
           # list-continuation marker (asciidoctor semantics): consume it
           # so the following items stay in the current list and nest by
-          # delimiter depth. Without this, the `+` dangled and the run
-          # split off as a detached sibling list.
+          # delimiter depth. Without this, the `+` dangles and the run
+          # splits off as a detached sibling list.
           item >>= (list_continuation >> dlist_item.present?).repeat(0)
 
           item.as(:definition_list_item)

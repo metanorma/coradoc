@@ -121,6 +121,26 @@ module Coradoc
           ).as(:block_image)
         end
 
+        # Non-capturing form of {#comment_line}. Same shape (a `//`
+        # comment line, excluding tag directives like `// tag::`), but
+        # consumes without producing an AST node.
+        #
+        # Used by list rules to absorb inter-item comments so the list
+        # continues across them — asciidoctor treats `//` comments inside
+        # any list as structurally invisible. Uses raw character matchers
+        # instead of `text` so no inner captures leak into the consuming
+        # rule's AST.
+        #
+        # Single source of truth for the comment-line shape: any future
+        # adjustment to the `//`-line grammar happens here and both the
+        # capturing and non-capturing forms stay in sync.
+        def comment_line_content
+          tag.absent? >>
+            str('//') >> str('/').absent? >>
+            space? >>
+            match('[^\n]').repeat(0) >> line_ending
+        end
+
         def comment_line
           tag.absent? >>
             (str('//') >> str('/').absent? >>
