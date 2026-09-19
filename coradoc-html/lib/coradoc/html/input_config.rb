@@ -8,6 +8,7 @@ module Coradoc
       def initialize
         @unknown_tags     = :pass_through
         @input_format     = :html
+        @html_version     = :html4
         @mathml2asciimath = false
         @external_images  = false
 
@@ -57,6 +58,7 @@ module Coradoc
       declare_option :image_counter
       declare_option :image_counter_pattern
       declare_option :input_format
+      declare_option :html_version
       declare_option :split_sections
       declare_option :doc_width
       declare_option :plugins

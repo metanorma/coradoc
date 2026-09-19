@@ -7,7 +7,7 @@ module Coradoc
         INSTANCE = new
 
         def to_coradoc(node, _state = {})
-          node.to_s
+          node.is_a?(Leptris::XML::Node) ? node.to_xml(no_decl: true) : node.to_s
         end
       end
     end

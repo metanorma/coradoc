@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'nokogiri'
 require 'liquid'
 
 module Coradoc
@@ -90,7 +89,7 @@ module Coradoc
 
       def build_static_fallback(document, body_html, opts)
         frontmatter = extract_frontmatter(document)
-        Nokogiri::HTML::Builder.new do |doc|
+        Builder.new do |doc|
           doc.html(lang: resolve_lang(opts)) do
             doc.head do
               doc.meta(charset: 'UTF-8')
@@ -152,7 +151,7 @@ module Coradoc
 
       def build_spa_fallback(document, opts, assets, safe_json)
         frontmatter = extract_frontmatter(document)
-        Nokogiri::HTML::Builder.new do |doc|
+        Builder.new do |doc|
           doc.html(lang: resolve_lang(opts)) do
             doc.head do
               doc.meta(charset: 'UTF-8')
