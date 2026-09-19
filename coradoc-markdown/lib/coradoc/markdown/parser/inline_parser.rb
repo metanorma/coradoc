@@ -3,11 +3,12 @@
 module Coradoc
   module Markdown
     module Parser
-      autoload :ParsletExtras, "#{__dir__}/parslet_extras"
+      # Load-time DSL side effect (sanctioned require_relative exception)
+      require_relative 'parsanol_atoms'
+
       autoload :HtmlEntities, "#{__dir__}/html_entities"
 
-      class InlineParser < Parslet::Parser
-        using ParsletExtras
+      class InlineParser < Parsanol::Parser
 
         rule(:line_ending) { (str("\n") | str("\r\n") | str("\r")).ignore }
         rule(:line_ending_or_eof) { line_ending | any.absent? }

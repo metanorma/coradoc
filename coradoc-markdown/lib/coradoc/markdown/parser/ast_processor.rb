@@ -84,8 +84,8 @@ module Coradoc
               node.map { |child| process_node(child) }
             when Hash
               process_hash(node)
-            when Parslet::Slice
-              # Process escape sequences in Parslet::Slice values
+            when Parsanol::Slice
+              # Process escape sequences in Parsanol::Slice values
               process_escapes(node.to_s)
             else
               node
@@ -161,7 +161,7 @@ module Coradoc
             return value if value.nil?
 
             case value
-            when Parslet::Slice
+            when Parsanol::Slice
             end
             text = value.to_s
 
@@ -229,13 +229,13 @@ module Coradoc
             result
           end
 
-          # Process a text value (Parslet::Slice or String)
+          # Process a text value (Parsanol::Slice or String)
           # Only processes escape sequences without changing structure
           def process_text_value(value)
             return value if value.nil?
 
             case value
-            when Parslet::Slice
+            when Parsanol::Slice
             end
             process_escapes(value.to_s)
           end
@@ -374,7 +374,7 @@ module Coradoc
                 joined = extract_text_content(result)
                 { ln: joined }
               end
-            rescue Parslet::ParseFailed
+            rescue Parsanol::ParseFailed
               # If parsing fails, return original text in ln structure
               { ln: text }
             end
@@ -441,7 +441,7 @@ module Coradoc
 
               # Convert result back to string representation
               inline_result_to_string(result)
-            rescue Parslet::ParseFailed
+            rescue Parsanol::ParseFailed
               content
             end
           end

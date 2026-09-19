@@ -3,11 +3,10 @@
 module Coradoc
   module Markdown
     module Parser
-      autoload :ParsletExtras, "#{__dir__}/parslet_extras"
+      # Load-time DSL side effect (sanctioned require_relative exception)
+      require_relative 'parsanol_atoms'
 
-      class BlockParser < Parslet::Parser
-        using ParsletExtras
-
+      class BlockParser < Parsanol::Parser
         # NOTE: Debug method for parser development. Outputs current parse position
         # and capture context. Only called during parser debugging sessions.
         def debug(msg)
@@ -32,7 +31,7 @@ module Coradoc
 
         rule(:non_indent_space) { str(' ').repeat(0, 3) }
 
-        # Block nesting is the tricky part, but Parslet's `dynamic` and `scope`
+        # Block nesting is the tricky part, but Parsanol's `dynamic` and `scope`
         # make it possible to be aware of what blocks we're already in, and implement
         # a check for whether we're still inside of those blocks on the beginning of
         # every line. The rules that match the line run inside of the innermost
@@ -53,11 +52,17 @@ module Coradoc
 
         def open_block(kind, cont_rule)
           dynamic do |_src, ctx|
-            parent_scope = ctx.captures.current.parent
-            ctx.captures[:cont] = cont_rule
-            ctx.captures[:cont] = parent_scope[:cont] >> cont_rule if parent_scope.key?(:cont)
-            ctx.captures[:block] = kind
-            # puts "starting block #{kind} at #{src.line_and_column} (#{src.bytepos}): #{ctx.captures[:cont]}"
+            caps = ctx.captures
+            # Chain-read before the write: picks up the enclosing
+            # block's continuation rule when one is in scope (Parsanol's
+            # Scope#[] searches parent frames; #key? is chain-aware).
+            caps[:cont] =
+              if caps.key?(:cont)
+                caps[:cont] >> cont_rule
+              else
+                cont_rule
+              end
+            caps[:block] = kind
             any.present? | any.absent?
           end
         end
@@ -727,7 +732,7 @@ module Coradoc
         def self.parse(filename)
           content = File.read(filename)
           new.parse(content)
-        rescue Parslet::ParseFailed => e
+        rescue Parsanol::ParseFailed => e
           puts e.parse_failure_cause.ascii_tree
         end
 
@@ -735,7 +740,7 @@ module Coradoc
         def self.parse_with_processing(content)
           ast = new.parse(content)
           AstProcessor.process(ast)
-        rescue Parslet::ParseFailed => e
+        rescue Parsanol::ParseFailed => e
           puts e.parse_failure_cause.ascii_tree
           nil
         end
