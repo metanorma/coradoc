@@ -128,7 +128,7 @@ module Coradoc
             else
               [text]
             end
-          rescue Parslet::ParseFailed
+          rescue Parsanol::ParseFailed
             [text]
           end
 
@@ -151,7 +151,7 @@ module Coradoc
             else
               transformed
             end
-          rescue Parslet::ParseFailed
+          rescue Parsanol::ParseFailed
             text
           end
         end

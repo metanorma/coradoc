@@ -2,7 +2,7 @@
 
 module Coradoc
   module AsciiDoc
-    class Transformer < Parslet::Transform
+    class Transformer < Parsanol::Transform
       # Module containing table and structural element transformation rules
       module StructuralRules
         def self.apply(transformer_class)

@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = 'Markdown document model, parser, and serializer for Coradoc'
   spec.description = 'Provides Markdown parsing and serialization capabilities for Coradoc. ' \
-                     'Includes the Markdown Document Model, a CommonMark-compliant Parslet-based ' \
+                     'Includes the Markdown Document Model, a CommonMark-compliant Parsanol-based ' \
                      'parser, and round-trip capable serializer.'
   spec.homepage = 'https://github.com/metanorma/coradoc'
   spec.license = 'MIT'
@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
   # Core dependencies
   spec.add_dependency 'coradoc', '~> 2.0'
   spec.add_dependency 'lutaml-model', '~> 0.8.0'
-  spec.add_dependency 'parslet'
+  spec.add_dependency 'parsanol'
 
   # Development dependencies
   spec.add_development_dependency 'rspec'

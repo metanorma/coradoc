@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require 'parslet'
+require 'parsanol'
 
 module Coradoc
   module AsciiDoc
-    # Parslet::Transform subclass that converts AST to AsciiDoc model objects.
+    # Parsanol::Transform subclass that converts AST to AsciiDoc model objects.
     #
     # This transformer uses a modular rule system where each group of rules
     # is defined in a separate file for maintainability.
@@ -18,7 +18,7 @@ module Coradoc
     # - StructuralRules: Sections, tables, documents
     # - MiscRules: Comments, attributes, media elements
     #
-    class Transformer < Parslet::Transform
+    class Transformer < Parsanol::Transform
       # Autoload rule modules at the class level.
       # Each rule file reopens this class and defines a module inside it.
       # The file path matches the expected constant path.
@@ -128,7 +128,7 @@ module Coradoc
       # Used by the paragraph and reviewer_note rules to share the same
       # line-shape handling (DRY).
       def self.lines_to_text_elements(lines)
-        # Parslet may deliver `lines` as a single Hash (one line captured)
+        # Parsanol may deliver `lines` as a single Hash (one line captured)
         # or an Array of Hashes (multiple lines). `Array(hash)` converts
         # to nested pairs, which we don't want — normalize explicitly.
         normalized = case lines
@@ -218,7 +218,7 @@ module Coradoc
         new.apply(syntax_tree)
       end
 
-      # Single deepening seam for source_line propagation. Parslet's
+      # Single deepening seam for source_line propagation. Parsanol's
       # transform pipeline funnels every rule block through
       # +call_on_match(bindings, block)+; overriding it lets us post-
       # process the block's result and inject +source_line+ from the

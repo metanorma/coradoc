@@ -3,14 +3,14 @@
 require 'spec_helper'
 require 'coradoc/asciidoc'
 
-# Walks a parsed Parslet AST tree (Hash/Array/Slice) and returns the
-# first +Parslet::Slice+ encountered. Used by the SourceLineExtractor
+# Walks a parsed Parsanol AST tree (Hash/Array/Slice) and returns the
+# first +Parsanol::Slice+ encountered. Used by the SourceLineExtractor
 # spec to exercise the real Slice code path without hand-constructing
-# a Parslet::Slice (which requires a line_cache).
+# a Parsanol::Slice (which requires a line_cache).
 class SliceFinder
   class << self
     def first(node)
-      return node if node.is_a?(Parslet::Slice)
+      return node if node.is_a?(Parsanol::Slice)
 
       walk(node)
     end
@@ -46,7 +46,7 @@ end
 #
 # Every CoreModel block must carry a 1-indexed +source_line+ so consumers
 # (linters, formatters, editor integrations) can map AST nodes back to the
-# source text. Parslet tracks byte offsets on every +Parslet::Slice+; the
+# source text. Parsanol tracks byte offsets on every +Parsanol::Slice+; the
 # AsciiDoc transformer funnels those positions through
 # +Transformer::SourceLineExtractor+ into +Model::Base#source_line+, and
 # the ToCoreModel transformers propagate the line onto the corresponding
@@ -213,7 +213,7 @@ RSpec.describe 'Source-line propagation', :asciidoc do
       it { is_expected.to eq(11) }
     end
 
-    context 'with a real Parslet::Slice from the parser' do
+    context 'with a real Parsanol::Slice from the parser' do
       let(:node) do
         ast = Coradoc::AsciiDoc::Parser::Base.new.parse("line one\nline two\n")
         SliceFinder.first(ast)
@@ -223,8 +223,8 @@ RSpec.describe 'Source-line propagation', :asciidoc do
         expect(line).to eq(1)
       end
 
-      it 'is a Parslet::Slice' do
-        expect(node).to be_a(Parslet::Slice)
+      it 'is a Parsanol::Slice' do
+        expect(node).to be_a(Parsanol::Slice)
       end
     end
   end

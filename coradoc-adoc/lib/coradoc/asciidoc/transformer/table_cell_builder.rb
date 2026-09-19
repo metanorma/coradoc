@@ -2,7 +2,7 @@
 
 module Coradoc
   module AsciiDoc
-    class Transformer < Parslet::Transform
+    class Transformer < Parsanol::Transform
       # Pure functions for parsing the cell-format prefix (`2+^.^a`) and
       # building a Model::TableCell from raw parser values.
       #
@@ -27,7 +27,7 @@ module Coradoc
         end
 
         # Coerce the parser-supplied cell content into a plain String.
-        # The cell parser emits `text:` as either a single Parslet::Slice
+        # The cell parser emits `text:` as either a single Parsanol::Slice
         # or an Array of slices (from `.repeat(0)`). An empty Array must
         # map to "" — Ruby's `[].to_s` returns "[]", which previously
         # leaked into TableCell content as a phantom "[]" cell.
@@ -70,7 +70,7 @@ module Coradoc
             transformed = Transformer.new.apply(ast)
             content_array = transformed.is_a?(Array) ? transformed : [transformed]
             [Model::TextElement.new(content: content_array)]
-          rescue Parslet::ParseFailed
+          rescue Parsanol::ParseFailed
             [Model::TextElement.new(content: text.to_s)]
           end
         end
@@ -100,13 +100,13 @@ module Coradoc
                     before_transformed = Transformer.new.apply(before_ast)
                     before_array = before_transformed.is_a?(Array) ? before_transformed : [before_transformed]
                     before_elements = [Model::TextElement.new(content: before_array)]
-                  rescue Parslet::ParseFailed
+                  rescue Parsanol::ParseFailed
                     before_elements = [Model::TextElement.new(content: before_list)]
                   end
                 end
 
                 return before_elements + [transformed]
-              rescue Parslet::ParseFailed
+              rescue Parsanol::ParseFailed
                 # fall through to inline parsing
               end
             end
@@ -117,7 +117,7 @@ module Coradoc
             transformed = Transformer.new.apply(ast)
             content_array = transformed.is_a?(Array) ? transformed : [transformed]
             [Model::TextElement.new(content: content_array)]
-          rescue Parslet::ParseFailed
+          rescue Parsanol::ParseFailed
             [Model::TextElement.new(content: text_str)]
           end
         end

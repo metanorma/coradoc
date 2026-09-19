@@ -23,7 +23,7 @@ module Coradoc
           model
         end
 
-        def visit_parslet_slice(model)
+        def visit_parsanol_slice(model)
           model.to_s
         end
 
@@ -127,7 +127,7 @@ module Coradoc
           case model
           when nil then visit_nil(model)
           when String then visit_string(model)
-          when Parslet::Slice then visit_parslet_slice(model)
+          when Parsanol::Slice then visit_parsanol_slice(model)
           when CoreModel::TextContent then visit_core_model_text_content(model)
           when CoreModel::Image then visit_core_model_image(model)
           when CoreModel::InlineElement then visit_core_model_inline(model)
@@ -149,7 +149,7 @@ module Coradoc
           when Model::LineBreak, Model::CommentLine, Model::CommentBlock then ''
           when Model::Base then visit_base_model(model)
           else
-            model.class.name.start_with?('Parslet::') ? model.to_s : ''
+            model.class.name.start_with?('Parsanol::') ? model.to_s : ''
           end
         end
       end

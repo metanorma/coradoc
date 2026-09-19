@@ -2,7 +2,7 @@
 
 module Coradoc
   module AsciiDoc
-    class Transformer < Parslet::Transform
+    class Transformer < Parsanol::Transform
       # Module containing block element transformation rules
       module BlockRules
         def self.apply(transformer_class)

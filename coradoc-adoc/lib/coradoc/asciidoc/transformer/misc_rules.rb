@@ -2,7 +2,7 @@
 
 module Coradoc
   module AsciiDoc
-    class Transformer < Parslet::Transform
+    class Transformer < Parsanol::Transform
       # Module containing miscellaneous transformation rules
       module MiscRules
         def self.apply(transformer_class)
@@ -62,7 +62,7 @@ module Coradoc
 
               attributes.each do |a|
                 case a
-                when Parslet::Slice
+                when Parsanol::Slice
                   attr_list.add_positional(a.to_s)
                 when String
                   attr_list.add_positional(a)

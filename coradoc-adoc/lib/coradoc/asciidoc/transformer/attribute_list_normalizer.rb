@@ -2,12 +2,12 @@
 
 module Coradoc
   module AsciiDoc
-    class Transformer < Parslet::Transform
+    class Transformer < Parsanol::Transform
       # Pure-function module for normalizing raw parser `:attribute_list`
       # values into a single canonical Model::AttributeList.
       #
       # The parser's `block_header` rule captures every consecutive `[...]`
-      # block before a structural element as a Parslet sequence under
+      # block before a structural element as a Parsanol sequence under
       # `:attribute_list`. Real-world AsciiDoc often stacks multiple lists
       # before a single delimiter:
       #

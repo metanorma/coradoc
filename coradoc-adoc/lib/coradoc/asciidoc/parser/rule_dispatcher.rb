@@ -3,12 +3,12 @@
 module Coradoc
   module AsciiDoc
     module Parser
-      # Wraps every parser rule for Parslet memoization.
+      # Wraps every parser rule for Parsanol memoization.
       #
       # Parameterized rules (e.g., `block_style(n_deep, delimiter, repeater)`)
-      # cannot be memoized by Parslet directly because their result depends
+      # cannot be memoized by Parsanol directly because their result depends
       # on the args. This module aliases each rule to a per-args dispatch
-      # rule so Parslet sees a memoizable, parameterless rule for every
+      # rule so Parsanol sees a memoizable, parameterless rule for every
       # (rule_name, args) combination. Parameterless rules get a single
       # memoized alias.
       #
@@ -141,11 +141,11 @@ module Coradoc
             :"#{alias_name}_#{key}"
           end
 
-          # Build a Parslet memoizable rule that closes over the captured
-          # args and forwards to the original aliased rule. Using Parslet's
+          # Build a Parsanol memoizable rule that closes over the captured
+          # args and forwards to the original aliased rule. Using Parsanol's
           # class-level `rule()` (not define_method on singleton_class) is
-          # essential — Parslet's memoization, `as()`, and tree building
-          # depend on the rule going through the standard Parslet machinery.
+          # essential — Parsanol's memoization, `as()`, and tree building
+          # depend on the rule going through the standard Parsanol machinery.
           def build_dispatch_rule(parser_class, original_alias, rule_name, args, kwargs)
             parser_class.class_eval do
               rule(rule_name) do

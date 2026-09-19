@@ -18,17 +18,17 @@ module Coradoc
       # titles. The section's heading IS its title. Mixing the two shapes
       # into one rule caused `section_block` to admit `.Foo` lines that
       # collided with `section_title`'s `:title` capture, triggering
-      # Parslet's "Duplicate subtrees while merging result … (keys:
+      # Parsanol's "Duplicate subtrees while merging result … (keys:
       # [:title])" warning and silently dropping the block title.
       #
       # Before this module existed, every block-like rule inlined its own
       # header rule with subtly different slot orderings — and several
-      # captured the same Parslet key more than once in a single sequence,
-      # which triggered Parslet's "Duplicate subtrees" warning and silently
+      # captured the same Parsanol key more than once in a single sequence,
+      # which triggered Parsanol's "Duplicate subtrees" warning and silently
       # discarded one of the captured values.
       #
       # `attribute_blocks` accepts one or more consecutive `[...]` attribute
-      # lists, captured as a Parslet sequence under the :attribute_list key.
+      # lists, captured as a Parsanol sequence under the :attribute_list key.
       # Real-world AsciiDoc often stacks attribute lists before a block:
       #
       #   [role=quote]
@@ -46,7 +46,7 @@ module Coradoc
         # an optional `.Title` line before its body. Single canonical
         # order; each of title, id, and attribute_blocks is optional and
         # matched at most once.
-        # @return [Parslet::Atoms::Base]
+        # @return [Parsanol::Atoms::Base]
         def block_header
           block_title.maybe >>
             element_id.maybe >>
@@ -57,18 +57,18 @@ module Coradoc
         # sections — the section heading itself is the title. Sections
         # still accept the same element_id and attribute_blocks slots
         # that blocks do (`[[anchor]]`, `[appendix]`, `[role=x]`, etc.).
-        # @return [Parslet::Atoms::Base]
+        # @return [Parsanol::Atoms::Base]
         def section_header
           element_id.maybe >>
             attribute_blocks.maybe
         end
 
         # One or more consecutive attribute_list + newline sequences, captured
-        # as a Parslet sequence under :attribute_list. When multiple `[...]`
+        # as a Parsanol sequence under :attribute_list. When multiple `[...]`
         # blocks precede a delimiter, all of them reach the transformer; when
         # only one appears, the sequence has a single element and the existing
         # transformer rule handles it the same way as before.
-        # @return [Parslet::Atoms::Base]
+        # @return [Parsanol::Atoms::Base]
         def attribute_blocks
           (attribute_list >> newline).repeat(1).as(:attribute_list)
         end

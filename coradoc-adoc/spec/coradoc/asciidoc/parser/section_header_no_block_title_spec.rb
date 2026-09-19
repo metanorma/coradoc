@@ -10,7 +10,7 @@ require 'coradoc/asciidoc'
 # followed by a clean section. Before this fix, `section_block` reused
 # `block_header` (which includes `block_title.maybe`), so both `block_title`
 # and `section_title` fired inside the same rule, both capturing the
-# Parslet key `:title`. Parslet's hash merge silently dropped one and
+# Parsanol key `:title`. Parsanol's hash merge silently dropped one and
 # emitted its "Duplicate subtrees while merging result … (keys: [:title])"
 # warning — visible data loss with a stderr signal.
 #
@@ -23,7 +23,7 @@ require 'coradoc/asciidoc'
 RSpec.describe 'Block title no longer collides with section title', :asciidoc do
   let(:captured_stderr) { StringIO.new }
 
-  # Parslet writes the "Duplicate subtrees" warning to $stderr. Capture it
+  # Parsanol writes the "Duplicate subtrees" warning to $stderr. Capture it
   # so the spec can assert on the absence of the warning without polluting
   # the test run's real stderr.
   def parse_quietly(adoc)
