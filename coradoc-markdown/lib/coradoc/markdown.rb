@@ -5,7 +5,7 @@
 # This gem provides Markdown support for the Coradoc document processing library.
 # It includes:
 # - Markdown Document Model (Coradoc::Markdown::*)
-# - Markdown Parser (CommonMark-compliant, Parslet-based)
+# - Markdown Parser (CommonMark-compliant, Parsanol-based)
 # - Markdown Serializer (round-trip capable)
 # - Kramdown extensions support (IAL, ALD, math, TOC)
 #
@@ -18,7 +18,8 @@
 #   # Serialize back to Markdown
 #   output = Coradoc::Markdown.serialize(document)
 
-require 'parslet'
+require 'parsanol'
+require 'parsanol/convenience'
 require 'lutaml/model'
 
 # Coradoc document transformation library.
@@ -91,7 +92,7 @@ module Coradoc
     module Parser
       autoload :BlockParser, 'coradoc/markdown/parser/block_parser'
       autoload :InlineParser, 'coradoc/markdown/parser/inline_parser'
-      autoload :ParsletExtras, 'coradoc/markdown/parser/parslet_extras'
+      autoload :ParsanolAtoms, 'coradoc/markdown/parser/parsanol_atoms'
       autoload :HTML_ENTITIES, 'coradoc/markdown/parser/html_entities'
       autoload :AstProcessor, 'coradoc/markdown/parser/ast_processor'
       autoload :FrontmatterParser, 'coradoc/markdown/parser/frontmatter_parser'

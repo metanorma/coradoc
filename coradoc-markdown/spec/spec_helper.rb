@@ -31,14 +31,14 @@ end
 
 # Define the markdown_example helper for parser specs
 module MarkdownExampleHelper
-  # Helper to convert Parslet::Slice objects to plain strings
+  # Helper to convert Parsanol::Slice objects to plain strings
   # This is a module_function so it can be called from within it blocks
 
   module_function
 
   def convert_slices_to_strings(obj)
     case obj
-    when Parslet::Slice
+    when Parsanol::Slice
       obj.to_s
     when Hash
       obj.transform_values { |v| convert_slices_to_strings(v) }
@@ -56,7 +56,7 @@ module MarkdownExampleHelper
       # Apply post-processing (escape sequences, etc.)
       processor = Coradoc::Markdown::Parser::AstProcessor
       processed = processor.process(result)
-      # Convert any remaining Parslet::Slice to strings for comparison
+      # Convert any remaining Parsanol::Slice to strings for comparison
       # Use the module_function directly since we're inside an it block
       result = MarkdownExampleHelper.convert_slices_to_strings(processed)
       expect(result).to eq(expected_ast)

@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
-require 'parslet'
+require 'parsanol'
 
 module Coradoc
   module Markdown
     autoload :ParserUtil, "#{__dir__}/parser_util"
 
-    # Transformer converts Parslet AST into Markdown Document Model objects.
+    # Transformer converts Parsanol AST into Markdown Document Model objects.
     #
     # This transformer takes the raw output from the BlockParser/InlineParser
     # and converts it into semantic model objects (Heading, Paragraph, etc.)
     #
-    class Transformer < Parslet::Transform
+    class Transformer < Parsanol::Transform
       # ATX Heading: # Heading
       rule(heading: simple(:heading), text: simple(:text)) do
         Heading.new(level: heading.to_s.length, text: text.to_s.strip)
@@ -198,7 +198,7 @@ module Coradoc
           when Array
             # Transform each item
             element.map { |e| transform_element(e) }.compact
-          when Parslet::Slice
+          when Parsanol::Slice
             Text.new(content: element.to_s)
           else
             Text.new(content: element.to_s)
@@ -536,7 +536,7 @@ module Coradoc
             else
               content.values.map { |v| extract_text(v) }.join
             end
-          when Parslet::Slice
+          when Parsanol::Slice
             content.to_s
           else
             content.to_s
