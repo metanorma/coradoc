@@ -85,6 +85,14 @@ module Coradoc
           warn e.parse_failure_cause.ascii_tree
         end
 
+        # The Ruby engine is the reference-correct surface for this
+        # grammar; the native backend mis-splits sequence boundaries
+        # (parsanol-ruby#67 follow-up, native path). Drop the override
+        # once the native engine matches it.
+        def parse(string, **options)
+          super(string, **options, mode: options.fetch(:mode, :ruby))
+        end
+
         def rule_dispatch(rule_name, *, **)
           RuleDispatcher.dispatch(self, rule_name, *, **)
         end
