@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'nokogiri'
+require 'leptris'
 
 RSpec.describe Coradoc::Html::Transform::ToCoreModel do
   describe '.transform' do
-    it 'transforms a Nokogiri document to CoreModel elements' do
-      doc = Nokogiri::HTML('<p>Hello world</p>')
+    it 'transforms a Leptris document to CoreModel elements' do
+      doc = Leptris::HTML.parse('<p>Hello world</p>')
       result = described_class.transform(doc)
 
       aggregate_failures do
@@ -16,9 +16,9 @@ RSpec.describe Coradoc::Html::Transform::ToCoreModel do
       end
     end
 
-    it 'transforms a Nokogiri node to CoreModel' do
-      doc = Nokogiri::HTML('<h1>Title</h1>')
-      node = doc.at('h1')
+    it 'transforms a Leptris node to CoreModel' do
+      doc = Leptris::HTML.parse('<h1>Title</h1>')
+      node = doc.at_css('h1')
       result = described_class.transform(node)
 
       expect(result).to be_a(Coradoc::CoreModel::Base)
@@ -32,8 +32,8 @@ RSpec.describe Coradoc::Html::Transform::ToCoreModel do
     end
 
     it 'transforms arrays element-wise' do
-      doc1 = Nokogiri::HTML('<p>First</p>')
-      doc2 = Nokogiri::HTML('<p>Second</p>')
+      doc1 = Leptris::HTML.parse('<p>First</p>')
+      doc2 = Leptris::HTML.parse('<p>Second</p>')
       result = described_class.transform([doc1, doc2])
 
       expect(result).to be_an(Array)
@@ -67,13 +67,13 @@ RSpec.describe Coradoc::Html::Transform::FromCoreModel do
 end
 
 RSpec.describe Coradoc::Html, '#handles_model?' do
-  it 'handles Nokogiri::XML::Document' do
-    doc = Nokogiri::HTML('<p>test</p>')
+  it 'handles Leptris::XML::Document' do
+    doc = Leptris::HTML.parse('<p>test</p>')
     expect(described_class.handles_model?(doc)).to be true
   end
 
-  it 'handles Nokogiri::XML::Node' do
-    doc = Nokogiri::HTML('<p>test</p>')
+  it 'handles Leptris::XML::Node' do
+    doc = Leptris::HTML.parse('<p>test</p>')
     expect(described_class.handles_model?(doc.at('p'))).to be true
   end
 

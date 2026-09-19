@@ -1,28 +1,28 @@
 # frozen_string_literal: true
 
-require 'nokogiri'
+require 'leptris'
 require 'coradoc'
 
 module Coradoc
   module Html
     module Transform
-      # Transforms Nokogiri HTML nodes to CoreModel
+      # Transforms Leptris HTML nodes to CoreModel
       #
-      # Nokogiri serves as the HTML model layer. This transformer converts
-      # Nokogiri::XML::Document or Nokogiri::XML::Node objects into CoreModel
+      # Leptris serves as the HTML model layer. This transformer converts
+      # Leptris::XML::Document or Leptris::XML::Node objects into CoreModel
       # by delegating to the existing input converter pipeline.
       class ToCoreModel
         class << self
-          # Transform an HTML model (Nokogiri node) to CoreModel
+          # Transform an HTML model (Leptris node) to CoreModel
           #
-          # @param model [Nokogiri::XML::Document, Nokogiri::XML::Node, Coradoc::CoreModel::Base]
+          # @param model [Leptris::XML::Document, Leptris::XML::Node, Coradoc::CoreModel::Base]
           #   HTML input model to transform
           # @return [Coradoc::CoreModel::Base] CoreModel equivalent
           def transform(model)
             case model
             when Coradoc::CoreModel::Base
               model
-            when Nokogiri::XML::Document, Nokogiri::XML::Node
+            when Leptris::XML::Document, Leptris::XML::Node
               ::Coradoc::Html::HtmlConverter.to_core_model(model)
             when Array
               model.map { |item| transform(item) }

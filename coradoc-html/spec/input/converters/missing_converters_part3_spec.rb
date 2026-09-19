@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'nokogiri'
+require 'leptris'
 
 RSpec.describe Coradoc::Html::Converters do
   describe 'Converter::Td' do
@@ -10,7 +10,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'creates a TableCell from a td element with text content' do
         html = '<td>Cell content</td>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('td')
 
         result = converter.to_coradoc(node, {})
@@ -22,7 +22,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'creates a header TableCell from a th element' do
         html = '<th>Header cell</th>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('th')
 
         result = converter.to_coradoc(node, {})
@@ -34,7 +34,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'extracts colspan attribute when greater than 1' do
         html = '<td colspan="3">Spanning cell</td>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('td')
 
         result = converter.to_coradoc(node, {})
@@ -45,7 +45,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'ignores colspan of 1' do
         html = '<td colspan="1">Normal cell</td>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('td')
 
         result = converter.to_coradoc(node, {})
@@ -55,7 +55,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'extracts rowspan attribute when greater than 1' do
         html = '<td rowspan="2">Tall cell</td>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('td')
 
         result = converter.to_coradoc(node, {})
@@ -66,7 +66,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'extracts alignment from align attribute' do
         html = '<td align="center">Centered</td>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('td')
 
         result = converter.to_coradoc(node, {})
@@ -76,7 +76,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'handles an empty td element' do
         html = '<td></td>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('td')
 
         result = converter.to_coradoc(node, {})
@@ -87,7 +87,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'sets tdsinglepara state when td contains a single p child' do
         html = '<td><p>Paragraph only</p></td>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('td')
         state = {}
 
@@ -98,7 +98,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'does not set tdsinglepara state when td has mixed children' do
         html = '<td>Text <strong>bold</strong></td>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('td')
         state = {}
 
@@ -109,7 +109,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'handles th with colspan and alignment simultaneously' do
         html = '<th colspan="2" align="right">Wide header</th>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('th')
 
         result = converter.to_coradoc(node, {})
@@ -126,7 +126,7 @@ RSpec.describe Coradoc::Html::Converters do
 
     describe '#to_coradoc' do
       it 'creates a TextElement from a text node with content' do
-        doc = Nokogiri::HTML.fragment('<span>Hello world</span>')
+        doc = html_fragment('<span>Hello world</span>')
         node = doc.at('span').children.first
 
         result = converter.to_coradoc(node, {})
@@ -136,7 +136,7 @@ RSpec.describe Coradoc::Html::Converters do
       end
 
       it 'returns nil for a whitespace-only text node' do
-        doc = Nokogiri::HTML.fragment('<span>   </span>')
+        doc = html_fragment('<span>   </span>')
         node = doc.at('span').children.first
 
         result = converter.to_coradoc(node, {})
@@ -145,10 +145,10 @@ RSpec.describe Coradoc::Html::Converters do
       end
 
       it 'returns nil for a blank text node' do
-        doc = Nokogiri::HTML.fragment('<span></span>')
+        doc = html_fragment('<span></span>')
         node = doc.at('span').children.first
 
-        # An empty span has no text children at all; use Nokogiri to
+        # An empty span has no text children at all; use the parser to
         # create an explicit empty text node
         skip('Empty elements produce no text nodes') if node.nil?
 
@@ -158,7 +158,7 @@ RSpec.describe Coradoc::Html::Converters do
       end
 
       it 'preserves non-breaking spaces as &nbsp; entities' do
-        doc = Nokogiri::HTML.fragment('<span>before after</span>')
+        doc = html_fragment('<span>before after</span>')
         node = doc.at('span').children.first
 
         result = converter.to_coradoc(node, {})
@@ -169,7 +169,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'returns a single space string for a single-space text node inside a div' do
         # A text node that is exactly " " (space) is preserved as a space
-        doc = Nokogiri::HTML.fragment('<div> </div>')
+        doc = html_fragment('<div> </div>')
         node = doc.at('div').children.first
 
         result = converter.to_coradoc(node, {})
@@ -178,7 +178,7 @@ RSpec.describe Coradoc::Html::Converters do
       end
 
       it 'returns nil for whitespace text node whose parent is ul' do
-        doc = Nokogiri::HTML.fragment('<ul> </ul>')
+        doc = html_fragment('<ul> </ul>')
         node = doc.at('ul').children.first
 
         result = converter.to_coradoc(node, {})
@@ -187,7 +187,7 @@ RSpec.describe Coradoc::Html::Converters do
       end
 
       it 'returns nil for whitespace text node whose parent is ol' do
-        doc = Nokogiri::HTML.fragment('<ol> </ol>')
+        doc = html_fragment('<ol> </ol>')
         node = doc.at('ol').children.first
 
         result = converter.to_coradoc(node, {})
@@ -196,7 +196,7 @@ RSpec.describe Coradoc::Html::Converters do
       end
 
       it 'returns nil when state[:tdsinglepara] is true and text is whitespace' do
-        doc = Nokogiri::HTML.fragment('<div> </div>')
+        doc = html_fragment('<div> </div>')
         node = doc.at('div').children.first
 
         result = converter.to_coradoc(node, { tdsinglepara: true })
@@ -205,7 +205,7 @@ RSpec.describe Coradoc::Html::Converters do
       end
 
       it 'removes leading and trailing newlines from text content' do
-        doc = Nokogiri::HTML.fragment("<span>\n\nHello\n\n</span>")
+        doc = html_fragment("<span>\n\nHello\n\n</span>")
         node = doc.at('span').children.first
 
         result = converter.to_coradoc(node, {})
@@ -215,7 +215,7 @@ RSpec.describe Coradoc::Html::Converters do
       end
 
       it 'converts inner newlines and tabs to spaces and squeezes' do
-        doc = Nokogiri::HTML.fragment("<span>line1\n\tline2  line3</span>")
+        doc = html_fragment("<span>line1\n\tline2  line3</span>")
         node = doc.at('span').children.first
 
         result = converter.to_coradoc(node, {})
@@ -232,7 +232,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'creates a TableRow from a tr element with td children' do
         html = '<table><tr><td>One</td><td>Two</td></tr></table>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('tr')
 
         result = converter.to_coradoc(node, {})
@@ -243,7 +243,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'marks the row as header when tr is the first row in a table' do
         html = '<table><tr><th>Header</th></tr></table>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('tr')
 
         result = converter.to_coradoc(node, {})
@@ -254,7 +254,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'marks the row as non-header when tr has a preceding sibling tr' do
         html = '<table><tr><td>First</td></tr><tr><td>Second</td></tr></table>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         rows = doc.css('tr')
         second_row = rows.last
 
@@ -266,7 +266,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'produces TableCell entries as cell contents' do
         html = '<table><tr><td>A</td><td>B</td></tr></table>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('tr')
 
         result = converter.to_coradoc(node, {})
@@ -276,7 +276,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'handles a tr with th and td children mixed' do
         html = '<table><tr><th>Label</th><td>Value</td></tr></table>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('tr')
 
         result = converter.to_coradoc(node, {})

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'nokogiri'
+require 'leptris'
 require 'coradoc/html'
 
 RSpec.describe Coradoc::Html::Converters do
@@ -50,7 +50,7 @@ RSpec.describe Coradoc::Html::Converters do
   describe '.process_coradoc paragraph' do
     it 'processes a simple paragraph' do
       html = '<p>Hello World</p>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('p')
 
       result = converter_module.process_coradoc(node, {})
@@ -60,7 +60,7 @@ RSpec.describe Coradoc::Html::Converters do
 
     it 'processes a heading' do
       html = '<h1>Title</h1>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('h1')
 
       result = converter_module.process_coradoc(node, {})
@@ -72,7 +72,7 @@ RSpec.describe Coradoc::Html::Converters do
   describe '.process_coradoc' do
     it 'converts paragraph to CoreModel' do
       html = '<p>Test content</p>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('p')
 
       result = converter_module.process_coradoc(node, {})
@@ -82,7 +82,7 @@ RSpec.describe Coradoc::Html::Converters do
 
     it 'converts heading to CoreModel' do
       html = '<h1>Section Title</h1>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('h1')
 
       result = converter_module.process_coradoc(node, {})
@@ -92,7 +92,7 @@ RSpec.describe Coradoc::Html::Converters do
 
     it 'converts h2 with correct level' do
       html = '<h2>Subsection</h2>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('h2')
 
       result = converter_module.process_coradoc(node, {})
@@ -115,7 +115,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'creates a Block from p element' do
         html = '<p>Simple paragraph text</p>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('p')
 
         result = converter.to_coradoc(node, {})
@@ -126,7 +126,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'preserves id attribute' do
         html = '<p id="my-para">Text with ID</p>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('p')
 
         result = converter.to_coradoc(node, {})
@@ -142,7 +142,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'creates a StructuralElement from heading element' do
         html = '<h1>Main Title</h1>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('h1')
 
         result = converter.to_coradoc(node, {})
@@ -158,7 +158,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts strong to bold InlineElement' do
         html = '<strong>bold text</strong>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('strong')
 
         result = converter.to_coradoc(node, {})
@@ -176,7 +176,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts em to italic InlineElement' do
         html = '<em>italic text</em>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('em')
 
         result = converter.to_coradoc(node, {})
@@ -193,7 +193,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts code to monospace InlineElement' do
         html = '<code>code text</code>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('code')
 
         result = converter.to_coradoc(node, {})
@@ -210,7 +210,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts anchor with href to link' do
         html = '<a href="http://example.com">Link</a>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('a')
 
         result = converter.to_coradoc(node, {})
@@ -223,7 +223,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'handles anchor with id only' do
         html = '<a id="section1">Section</a>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('a')
 
         result = converter.to_coradoc(node, {})
@@ -242,7 +242,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts ul to unordered list' do
         html = '<ul><li>Item</li></ul>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('ul')
 
         result = converter.to_coradoc(node, {})
@@ -259,7 +259,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts ol to ordered list' do
         html = '<ol><li>Item</li></ol>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('ol')
 
         result = converter.to_coradoc(node, {})
@@ -275,7 +275,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts table to Table model' do
         html = '<table><tr><td>Cell</td></tr></table>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('table')
 
         result = converter.to_coradoc(node, {})
@@ -285,7 +285,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'extracts title from caption' do
         html = '<table><caption>My Table</caption><tr><td>Cell</td></tr></table>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('table')
 
         result = converter.to_coradoc(node, {})
@@ -295,7 +295,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'extracts id attribute' do
         html = '<table id="t1"><tr><td>Cell</td></tr></table>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('table')
 
         result = converter.to_coradoc(node, {})
@@ -308,7 +308,7 @@ RSpec.describe Coradoc::Html::Converters do
       let(:table_node) do
         lambda { |attr|
           html = "<table frame=\"#{attr}\"><tr><td>X</td></tr></table>"
-          Nokogiri::HTML.fragment(html).at('table')
+          html_fragment(html).at('table')
         }
       end
 
@@ -341,7 +341,7 @@ RSpec.describe Coradoc::Html::Converters do
       let(:table_node) do
         lambda { |attr|
           html = "<table rules=\"#{attr}\"><tr><td>X</td></tr></table>"
-          Nokogiri::HTML.fragment(html).at('table')
+          html_fragment(html).at('table')
         }
       end
 
@@ -373,7 +373,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts blockquote to Quote block' do
         html = '<blockquote>Quote</blockquote>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('blockquote')
 
         result = converter.to_coradoc(node, {})
@@ -389,7 +389,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts pre to listing block' do
         html = '<pre>code</pre>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('pre')
 
         result = converter.to_coradoc(node, {})
@@ -405,7 +405,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts hr to break' do
         html = '<hr/>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('hr')
 
         result = converter.to_coradoc(node, {})
@@ -421,7 +421,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts br to line break' do
         html = '<br/>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('br')
 
         result = converter.to_coradoc(node, {})
@@ -437,7 +437,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts q to quote inline' do
         html = '<q>quoted</q>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('q')
 
         result = converter.to_coradoc(node, {})
@@ -453,7 +453,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts img to Image' do
         html = '<img src="test.png" alt="test"/>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('img')
 
         result = converter.to_coradoc(node, {})
@@ -465,7 +465,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'converts img with width and height' do
         html = '<img src="test.png" alt="test" width="100" height="200"/>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('img')
 
         result = converter.to_coradoc(node, {})
@@ -477,7 +477,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'converts img with id' do
         html = '<img id="my-image" src="test.png" alt="test"/>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('img')
 
         result = converter.to_coradoc(node, {})
@@ -494,7 +494,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts div to Block' do
         html = '<div>Content</div>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('div')
 
         result = converter.to_coradoc(node, {})
@@ -510,7 +510,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts math to StemElement' do
         html = '<math><mi>x</mi></math>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('math')
 
         result = converter.to_coradoc(node, {})
@@ -527,7 +527,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts audio to Block with audio semantic type' do
         html = '<audio src="song.mp3" controls></audio>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('audio')
 
         result = converter.to_coradoc(node, {})
@@ -545,7 +545,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'converts video to Block with video semantic type' do
         html = '<video src="movie.mp4" controls poster="thumb.jpg" width="640" height="480"></video>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('video')
 
         result = converter.to_coradoc(node, {})
@@ -569,7 +569,7 @@ RSpec.describe Coradoc::Html::Converters do
 
     it 'both extract title from track/source elements' do
       html = '<audio><track label="English" kind="captions" srclang="en"/></audio>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('audio')
 
       audio_converter = Coradoc::Html::Converters::Audio.new
@@ -583,7 +583,7 @@ RSpec.describe Coradoc::Html::Converters do
 
     it 'extracts text from inline content for cross-references' do
       html = '<a href="#section1">Go to section</a>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('a')
 
       result = converter.to_coradoc(node, {})
@@ -594,7 +594,7 @@ RSpec.describe Coradoc::Html::Converters do
 
     it 'extracts text from inline content for links' do
       html = '<a href="http://example.com">Example</a>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('a')
 
       result = converter.to_coradoc(node, {})
@@ -608,7 +608,7 @@ RSpec.describe Coradoc::Html::Converters do
   describe 'complex HTML processing' do
     it 'handles mixed inline formatting' do
       html = '<p><strong>Bold</strong> and <em>italic</em></p>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('p')
 
       result = converter_module.process_coradoc(node, {})
@@ -620,7 +620,7 @@ RSpec.describe Coradoc::Html::Converters do
   describe 'text extraction' do
     it 'extracts text from simple HTML' do
       html = '<p>Simple text</p>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('p')
 
       result = converter_module.process_coradoc(node, {})
@@ -633,7 +633,7 @@ RSpec.describe Coradoc::Html::Converters do
 
     it 'preserves text in nested elements' do
       html = '<p>Before <strong>Bold</strong> After</p>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('p')
 
       result = converter_module.process_coradoc(node, {})
@@ -677,7 +677,7 @@ RSpec.describe Coradoc::Html::Converters do
 
     it 'finds a string ancestor name' do
       html = '<div><p><strong>Bold</strong></p></div>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('strong')
 
       expect(base.node_has_ancestor?(node, 'div')).to be true
@@ -686,7 +686,7 @@ RSpec.describe Coradoc::Html::Converters do
 
     it 'finds an array of ancestor names' do
       html = '<div><p><strong>Bold</strong></p></div>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('strong')
 
       expect(base.node_has_ancestor?(node, %w[table div])).to be true
@@ -695,7 +695,7 @@ RSpec.describe Coradoc::Html::Converters do
 
     it 'returns false when no ancestors match' do
       html = '<p>Plain</p>'
-      doc = Nokogiri::HTML.fragment(html)
+      doc = html_fragment(html)
       node = doc.at('p')
 
       expect(base.node_has_ancestor?(node, 'div')).to be false

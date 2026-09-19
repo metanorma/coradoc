@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'nokogiri'
-
 module Coradoc
   module Html
     module AssetResolver
@@ -55,11 +53,7 @@ module Coradoc
 
         def css_link_tag(options = {})
           href = stylesheet_path(options)
-          doc = Nokogiri::HTML::Document.new
-          node = Nokogiri::XML::Node.new('link', doc)
-          node['rel'] = 'stylesheet'
-          node['href'] = href
-          node.to_html
+          Builder.new { |doc| doc.link(rel: 'stylesheet', href: href) }.to_html
         end
 
         def css_style_tag(options = {})
@@ -122,11 +116,7 @@ module Coradoc
 
         def js_link_tag(options = {})
           src = javascript_path(options)
-          doc = Nokogiri::HTML::Document.new
-          node = Nokogiri::XML::Node.new('script', doc)
-          node['src'] = src
-          node['defer'] = ''
-          node.to_html
+          Builder.new { |doc| doc.script(src: src, defer: '') }.to_html
         end
 
         def js_script_tag(options = {})
@@ -164,28 +154,19 @@ module Coradoc
 
         def highlightjs_tags(options = {})
           theme = options[:highlightjs_theme] || Config::DEFAULT_OPTIONS[:highlightjs_theme]
-          doc = Nokogiri::HTML::Document.new
 
-          link_node = Nokogiri::XML::Node.new('link', doc)
-          link_node['rel'] = 'stylesheet'
-          link_node['href'] = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/#{theme}.min.css"
-
-          script_node = Nokogiri::XML::Node.new('script', doc)
-          script_node['src'] = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js'
-
-          init_node = Nokogiri::XML::Node.new('script', doc)
-          init_node.content = 'hljs.highlightAll();'
-
-          [link_node.to_html, script_node.to_html, init_node.to_html].join("\n")
+          Builder.new do |doc|
+            doc.link(rel: 'stylesheet',
+                     href: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/#{theme}.min.css")
+            doc.script(src: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js')
+            doc.script('hljs.highlightAll();')
+          end.to_html
         end
 
         private
 
         def build_text_element(tag_name, content)
-          doc = Nokogiri::HTML::Document.new
-          node = Nokogiri::XML::Node.new(tag_name, doc)
-          node.content = content
-          node.to_html
+          Builder.new { |doc| doc.send(tag_name, content) }.to_html
         end
       end
     end

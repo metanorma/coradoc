@@ -73,6 +73,7 @@ module Coradoc
     require_relative 'html/template_helpers'
     autoload :Renderer, 'coradoc/html/renderer'
     autoload :LayoutRenderer, 'coradoc/html/layout_renderer'
+    autoload :Builder, 'coradoc/html/builder'
     autoload :RenderOptions, 'coradoc/html/render_options'
     autoload :TocSerializer, 'coradoc/html/toc_serializer'
 
@@ -208,14 +209,14 @@ module Coradoc
 
     # Check if this format can transform the given model to CoreModel
     #
-    # HTML uses Nokogiri as its model layer. Accepts Nokogiri nodes
+    # HTML uses Leptris::XML as its model layer. Accepts Leptris nodes
     # and CoreModel objects (pass-through).
     #
     # @param model [Object] The model to check
-    # @return [Boolean] true if the model is a Nokogiri node or CoreModel
+    # @return [Boolean] true if the model is a Leptris node or CoreModel
     def self.handles_model?(model)
-      model.is_a?(Nokogiri::XML::Node) ||
-        model.is_a?(Nokogiri::XML::Document) ||
+      model.is_a?(Leptris::XML::Node) ||
+        model.is_a?(Leptris::XML::Document) ||
         model.is_a?(Coradoc::CoreModel::Base)
     end
 

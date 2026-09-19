@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'nokogiri'
+require 'leptris'
 
 RSpec.describe Coradoc::Html::Transform::ToCoreModel do
   describe '.transform' do
     subject(:transform) { described_class.transform(model) }
 
-    context 'with Nokogiri::XML::Document' do
-      let(:model) { Nokogiri::HTML('<p>Hello</p>') }
+    context 'with Leptris::XML::Document' do
+      let(:model) { Leptris::HTML.parse('<p>Hello</p>') }
 
       it 'converts to CoreModel elements' do
         result = transform
@@ -17,8 +17,8 @@ RSpec.describe Coradoc::Html::Transform::ToCoreModel do
       end
     end
 
-    context 'with Nokogiri::XML::Node' do
-      let(:model) { Nokogiri::HTML('<h1>Title</h1>').at('h1') }
+    context 'with Leptris::XML::Node' do
+      let(:model) { Leptris::HTML.parse('<h1>Title</h1>').at_css('h1') }
 
       it 'converts to CoreModel' do
         expect(transform).to be_a(Coradoc::CoreModel::Base)

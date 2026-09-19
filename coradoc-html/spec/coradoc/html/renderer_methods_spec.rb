@@ -37,7 +37,7 @@ RSpec.describe Coradoc::Html::Renderer do
 
       allow(renderer).to receive(:find_and_load_template).and_return(nil)
 
-      # render_fallback_drop has a Nokogiri compatibility bug (see below),
+      # render_fallback_drop historically had a builder compatibility bug (see below),
       # so we stub it here to verify the delegation path works correctly.
       allow(renderer).to receive(:render_fallback_drop).with(drop).and_return('<div>stubbed</div>')
 
@@ -129,11 +129,11 @@ RSpec.describe Coradoc::Html::Renderer do
     end
   end
 
-  # render_fallback_drop uses Nokogiri::HTML::Builder.with(doc) on an
+  # render_fallback_drop historically used a builder on an
   # HTML::Document, which already has root nodes (html/head/body).  In
-  # Nokogiri >= 1.18 this raises "A document may not have multiple root
+  # some builder versions this raised "A document may not have multiple root
   # nodes."  The specs below capture the intended behavior so that once
-  # the Nokogiri usage is fixed these tests will validate correctness.
+  # the builder usage is fixed these tests will validate correctness.
   describe '#render_fallback_drop' do
     it 'wraps the resolved text in a div with element class' do
       inline_element = CoreModel::InlineElement.new(content: 'fallback content')

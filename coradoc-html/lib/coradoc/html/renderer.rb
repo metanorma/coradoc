@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'liquid'
-require 'nokogiri'
+require 'leptris'
 
 module Coradoc
   module Html
@@ -118,12 +118,9 @@ module Coradoc
         resolved = TitleText.resolve(drop.model)
         text = resolved ? Escape.escape_html(resolved) : ''
 
-        fragment = Nokogiri::HTML.fragment
-        div = Nokogiri::XML::Node.new('div', fragment.document)
-        div['class'] = "element element-#{type}"
-        div.content = text
-        fragment.add_child(div)
-        fragment.to_html
+        Builder.new do |doc|
+          doc.div(class: "element element-#{type}") { doc.text text }
+        end.to_html
       end
 
       def normalize_dirs(dirs)

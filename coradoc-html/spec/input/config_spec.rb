@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'nokogiri'
+require 'leptris'
 
 RSpec.describe Coradoc::Html::InputConfig do
   let(:config) { described_class.new }
