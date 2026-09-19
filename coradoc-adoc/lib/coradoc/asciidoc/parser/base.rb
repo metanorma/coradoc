@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'parslet'
-require 'parslet/convenience'
+require 'parsanol'
+require 'parsanol/convenience'
 
 module Coradoc
   module AsciiDoc
@@ -26,7 +26,7 @@ module Coradoc
       autoload :Text, 'coradoc/asciidoc/parser/text'
       autoload :Stem, 'coradoc/asciidoc/parser/stem'
 
-      class Base < Parslet::Parser
+      class Base < Parsanol::Parser
         include Admonition
         include AttributeList
         include Bibliography
@@ -81,7 +81,7 @@ module Coradoc
         # @return [Hash] The parsed AST object
         def self.parse(string)
           new.parse(string)
-        rescue Parslet::ParseFailed => e
+        rescue Parsanol::ParseFailed => e
           warn e.parse_failure_cause.ascii_tree
         end
 
@@ -98,7 +98,7 @@ module Coradoc
         end
       end
 
-      # Wrap every parser rule for Parslet memoization. Must run after all
+      # Wrap every parser rule for Parsanol memoization. Must run after all
       # parser modules are included in Base so that instance_method(rule_name)
       # finds the methods defined by every module.
       RuleDispatcher.apply(Base)

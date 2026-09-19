@@ -81,12 +81,12 @@ module Coradoc
         parts.join("\n")
       end
 
-      # Create a ParseError from a Parslet exception
+      # Create a ParseError from a Parsanol exception
       #
-      # @param exception [Parslet::ParseFailed] The Parslet exception
+      # @param exception [Parsanol::ParseFailed] The Parsanol exception
       # @param source [String] The original source text
       # @return [ParseError] A new ParseError with extracted context
-      def self.from_parslet(exception, source = nil)
+      def self.from_parse_failure(exception, source = nil)
         return exception if exception.is_a?(ParseError)
 
         line, column = extract_location(exception)
@@ -107,12 +107,12 @@ module Coradoc
         new(exception.message, cause: exception)
       end
 
-      # Extract line and column from Parslet error
+      # Extract line and column from Parsanol error
       #
-      # @param exception [Parslet::ParseFailed] The Parslet exception
+      # @param exception [Parsanol::ParseFailed] The Parsanol exception
       # @return [Array<Integer, Integer>] Line and column numbers
       def self.extract_location(exception)
-        return [nil, nil] unless exception.is_a?(Parslet::ParseFailed)
+        return [nil, nil] unless exception.is_a?(Parsanol::ParseFailed)
 
         cause = exception.cause
         return [nil, nil] unless cause

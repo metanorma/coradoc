@@ -34,8 +34,8 @@ RSpec.describe Coradoc::AsciiDoc::Parser::RuleDispatcher do
       parser = parser_class.new
       first = parser.section(2)
       second = parser.section(2)
-      expect(first).to be_a(Parslet::Atoms::Base)
-      expect(second).to be_a(Parslet::Atoms::Base)
+      expect(first).to be_a(Parsanol::Atoms::Base)
+      expect(second).to be_a(Parsanol::Atoms::Base)
     end
 
     it 'handles different args to the same rule' do

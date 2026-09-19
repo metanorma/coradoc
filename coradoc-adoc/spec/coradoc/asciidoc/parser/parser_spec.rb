@@ -118,8 +118,8 @@ RSpec.describe Coradoc::AsciiDoc::Parser::Base do
   end
 
   describe 'inheritance' do
-    it 'includes Parslet parser' do
-      expect(described_class.ancestors).to include(Parslet::Parser)
+    it 'includes Parsanol parser' do
+      expect(described_class.ancestors).to include(Parsanol::Parser)
     end
   end
 end

@@ -5,8 +5,8 @@ require 'coradoc/asciidoc/parser/base'
 require 'coradoc/asciidoc/transformer'
 
 # Captures stderr/stdout "Duplicate subtrees while merging result" warnings
-# from Parslet so each example can assert they no longer fire.
-def capturing_parslet_warnings
+# from Parsanol so each example can assert they no longer fire.
+def capturing_parser_warnings
   captured = []
   allow(Kernel).to receive(:warn) { |msg| captured << msg }
   yield
@@ -23,12 +23,12 @@ RSpec.describe Coradoc::AsciiDoc::Parser::BlockHeader do
   end
 
   # All header-bearing elements below should produce zero warnings on parse.
-  # The regression motivating this spec was Parslet's "Duplicate subtrees
+  # The regression motivating this spec was Parsanol's "Duplicate subtrees
   # while merging result" warning, which silently discarded all but the
   # last `[...]` block when multiple were stacked before a delimiter.
   shared_examples 'no duplicate-subtree warning' do
     it 'does not emit a Duplicate subtrees warning' do
-      warnings = capturing_parslet_warnings { parse_to_core(input) }
+      warnings = capturing_parser_warnings { parse_to_core(input) }
       expect(warnings.grep(/Duplicate subtrees/)).to be_empty
     end
   end

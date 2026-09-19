@@ -12,7 +12,10 @@ gem 'coradoc-mirror', path: './coradoc-mirror'
 
 gem 'lutaml-model', github: 'lutaml/lutaml-model', branch: 'main'
 gem 'lutaml-xsd'
-gem 'nokogiri'
+
+# In-house parsing engines (roadmap: TODO.inhouseparsing/)
+gem 'parsanol', path: File.expand_path('~/src/parsanol/parsanol-ruby')
+gem 'leptris', path: File.expand_path('~/src/leptris/leptris-ruby')
 gem 'rake'
 
 # Local dev: use in-tree uniword source when present (themes/office_theme.xml

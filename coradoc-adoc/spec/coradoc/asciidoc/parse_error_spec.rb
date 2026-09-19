@@ -70,22 +70,22 @@ RSpec.describe Coradoc::AsciiDoc::ParseError do
     end
   end
 
-  describe '.from_parslet' do
-    it 'creates ParseError from Parslet exception' do
-      parslet_error = Parslet::ParseFailed.new('Expected something')
+  describe '.from_parse_failure' do
+    it 'creates ParseError from Parsanol exception' do
+      parse_failure = Parsanol::ParseFailed.new('Expected something')
 
-      error = described_class.from_parslet(parslet_error)
+      error = described_class.from_parse_failure(parse_failure)
 
       expect(error).to be_a(described_class)
       expect(error.message).to include('Expected something')
     end
 
     it 'preserves cause exception' do
-      parslet_error = Parslet::ParseFailed.new('Parse failed')
+      parse_failure = Parsanol::ParseFailed.new('Parse failed')
 
-      error = described_class.from_parslet(parslet_error)
+      error = described_class.from_parse_failure(parse_failure)
 
-      expect(error.cause).to eq(parslet_error)
+      expect(error.cause).to eq(parse_failure)
     end
   end
 

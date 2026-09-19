@@ -22,12 +22,12 @@ module Coradoc
         "`'" => '’'   # U+2019 right single
       }.freeze
 
-      # All four 2-char patterns, suitable for building a Parslet alternation.
+      # All four 2-char patterns, suitable for building a Parsanol alternation.
       # @return [Array<String>]
       PATTERNS = PATTERN_TO_CHAR.keys.freeze
 
       # Look up the Unicode char for a matched pattern.
-      # @param pattern [String, Parslet::Slice] the matched 2-char pattern
+      # @param pattern [String, Parsanol::Slice] the matched 2-char pattern
       # @return [String] the Unicode curly quote char
       def self.char_for(pattern)
         PATTERN_TO_CHAR.fetch(pattern.to_s, pattern.to_s)

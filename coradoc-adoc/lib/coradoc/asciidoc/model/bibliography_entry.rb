@@ -35,7 +35,7 @@ module Coradoc
 
         # Coerce a raw parser AST value into the canonical ref_text string.
         # Accepts the shapes produced by Parser::Bibliography for `:ref_text`:
-        # nil, Parslet::Slice, plain String, single Model::Base, or an Array
+        # nil, Parsanol::Slice, plain String, single Model::Base, or an Array
         # of any of these. Model objects (TextElement, Inline::Italic, etc.)
         # are flattened via TextExtractVisitor so their text content is
         # preserved instead of leaking `#<Class:0x...>` inspect strings.

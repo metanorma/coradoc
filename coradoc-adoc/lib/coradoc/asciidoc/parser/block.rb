@@ -193,7 +193,7 @@ module Coradoc
             str(c.captures[capture_key].to_s.strip)
           end
 
-          # Closure so the call bypasses Parslet's method_missing inside the
+          # Closure so the call bypasses Parsanol's method_missing inside the
           # dynamic block. capture() stashes the parsed AST (a nested Hash for
           # a `[source,ruby]` header). Inspect the structure directly so we
           # don't depend on Ruby's Hash#to_s format (it changed in 3.4).

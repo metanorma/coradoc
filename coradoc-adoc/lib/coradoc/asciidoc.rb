@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'parslet'
+require 'parsanol'
 require 'lutaml/model'
 require 'coradoc'
 

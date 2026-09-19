@@ -2,7 +2,7 @@
 
 module Coradoc
   module AsciiDoc
-    class Transformer < Parslet::Transform
+    class Transformer < Parsanol::Transform
       # Module containing list transformation rules
       module ListRules
         class << self
@@ -199,10 +199,10 @@ module Coradoc
               case term_data
               when Hash
                 text = term_data[:text]
-                text = text.to_s if text.is_a?(Parslet::Slice) || text.is_a?(String)
+                text = text.to_s if text.is_a?(Parsanol::Slice) || text.is_a?(String)
                 text = text.content.to_s if text.is_a?(Model::TextElement)
                 id = term_data[:id]
-                id = id.to_s if id.is_a?(Parslet::Slice)
+                id = id.to_s if id.is_a?(Parsanol::Slice)
                 { text: text.to_s, id: id, delimiter: delim.to_s }
               when Model::TextElement
                 { text: term_data.content.to_s, id: term_data.id, delimiter: delim.to_s }

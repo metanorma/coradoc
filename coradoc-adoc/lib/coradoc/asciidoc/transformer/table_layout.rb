@@ -2,7 +2,7 @@
 
 module Coradoc
   module AsciiDoc
-    class Transformer < Parslet::Transform
+    class Transformer < Parsanol::Transform
       # Pure functions for table row/column layout.
       #
       # Extracted from the Transformer god class so that:

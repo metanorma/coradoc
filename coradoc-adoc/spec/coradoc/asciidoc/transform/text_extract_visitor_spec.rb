@@ -22,9 +22,9 @@ RSpec.describe Coradoc::AsciiDoc::Transform::TextExtractVisitor do
       end
     end
 
-    context 'with Parslet::Slice' do
+    context 'with Parsanol::Slice' do
       it 'converts to string' do
-        slice = Parslet::Slice.new(0, 'sliced text')
+        slice = Parsanol::Slice.new(0, 'sliced text')
         expect(visitor.extract(slice)).to eq('sliced text')
       end
     end
@@ -173,7 +173,7 @@ RSpec.describe Coradoc::AsciiDoc::Transform::TextExtractVisitor do
     end
 
     context 'with unknown type' do
-      it 'returns empty string for non-Parslet unknowns' do
+      it 'returns empty string for non-Parsanol unknowns' do
         expect(visitor.extract(42)).to eq('')
       end
     end

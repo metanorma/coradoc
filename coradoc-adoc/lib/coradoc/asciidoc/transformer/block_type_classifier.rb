@@ -2,7 +2,7 @@
 
 module Coradoc
   module AsciiDoc
-    class Transformer < Parslet::Transform
+    class Transformer < Parsanol::Transform
       # Single source of truth for "which delimiter maps to which block model".
       #
       # The block rule in BlockRules delegates here to convert a parser

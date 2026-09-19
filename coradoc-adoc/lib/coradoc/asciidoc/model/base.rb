@@ -36,7 +36,7 @@ module Coradoc
         attribute :id, :string
 
         # 1-indexed source line where this element begins, when known.
-        # Populated by the Parslet transformer from the matched Slice's
+        # Populated by the Parsanol transformer from the matched Slice's
         # line_and_column. nil for programmatically constructed models.
         # Single source of truth for source-position propagation through
         # AsciiDoc::Model → CoreModel (Issue 1, STATUS-2026-06-28).

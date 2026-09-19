@@ -2,7 +2,7 @@
 
 module Coradoc
   module AsciiDoc
-    class Transformer < Parslet::Transform
+    class Transformer < Parsanol::Transform
       # Module containing text and paragraph transformation rules
       module TextRules
         def self.apply(transformer_class)

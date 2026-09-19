@@ -2,7 +2,7 @@
 
 module Coradoc
   module AsciiDoc
-    class Transformer < Parslet::Transform
+    class Transformer < Parsanol::Transform
       # Module containing inline element transformation rules
       module InlineRules
         # Inline formatting variants that share the same rule shape:
