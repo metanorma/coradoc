@@ -220,9 +220,8 @@ module Coradoc
 
       # Single deepening seam for source_line propagation. Parsanol's
       # transform pipeline funnels every rule block through
-      # +execute_block(block, bindings)+ (attempt_transformation is the
-      # active caller; the older call_on_match hook is no longer invoked
-      # — see parsanol-ruby#74). Overriding it lets us post-process the
+      # +call_on_match(bindings, block)+ (restored as the stable seam in
+      # parsanol 1.3.39, GH-74). Overriding it lets us post-process the
       # block's result and inject +source_line+ from the matched
       # bindings, so individual rules no longer need to call
       # SourceLineExtractor.extract themselves (DRY — was 47 call
@@ -235,7 +234,7 @@ module Coradoc
       #     injection is fill-in-the-blank, never overwrite.
       #   * No Slice in the bindings → SourceLineExtractor returns nil,
       #     no injection (synthetic transformations stay clean).
-      def execute_block(block, bindings)
+      def call_on_match(bindings, block)
         result = super
         return result unless result.is_a?(Model::Base)
         return result if result.source_line
