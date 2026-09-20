@@ -85,10 +85,12 @@ module Coradoc
           warn e.parse_failure_cause.ascii_tree
         end
 
-        # The Ruby engine is the reference-correct surface for this
-        # grammar; the native backend mis-splits sequence boundaries
-        # (parsanol-ruby#67 follow-up, native path). Drop the override
-        # once the native engine matches it.
+        # The Ruby engine is the required surface for this grammar: the
+        # native Dynamic bridge hands out read-only capture snapshots
+        # that never reflect `.capture()` atoms, so capture-dependent
+        # dispatch recurses forever (parsanol-ruby#76 — silent hang, no
+        # diagnostics). Drop the override only when #76 resolves capture
+        # visibility across the bridge.
         def parse(string, **options)
           super(string, **options, mode: options.fetch(:mode, :ruby))
         end
