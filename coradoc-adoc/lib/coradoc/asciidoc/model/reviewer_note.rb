@@ -39,8 +39,6 @@ module Coradoc
         # Content can be any AsciiDoc elements (paragraphs, lists, etc.)
         attribute :content,
                   Coradoc::AsciiDoc::Model::Base,
-                  collection: true,
-                  initialize_empty: true,
                   polymorphic: [
                     Coradoc::AsciiDoc::Model::TextElement,
                     Coradoc::AsciiDoc::Model::Paragraph,

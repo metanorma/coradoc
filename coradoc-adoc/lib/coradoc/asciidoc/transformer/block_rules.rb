@@ -48,8 +48,9 @@ module Coradoc
               content: sequence(:content)
             ) do
               canonical = Coradoc::AsciiDoc::Transform::ElementTransformers::AdmonitionStyles.canonicalize(admonition_type.to_s)
+              content_value = content.is_a?(Array) && content.length == 1 ? content.first : content
               Model::Admonition.new(
-                content: content,
+                content: content_value,
                 type: canonical
               )
             end

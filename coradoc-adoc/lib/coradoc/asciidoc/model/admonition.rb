@@ -30,7 +30,6 @@ module Coradoc
       class Admonition < Attached
         attribute :content,
                   Lutaml::Model::Serializable,
-                  collection: true,
                   polymorphic: [
                     Lutaml::Model::Type::String,
                     Coradoc::AsciiDoc::Model::TextElement

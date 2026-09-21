@@ -37,7 +37,7 @@ module Coradoc
         include Coradoc::AsciiDoc::Model::Anchorable
 
         attribute :id, :string
-        attribute :content, Coradoc::AsciiDoc::Model::TextElement, collection: true
+        attribute :content, Coradoc::AsciiDoc::Model::TextElement
         # attribute :level, :string
         attribute :level_int, :integer
         attribute :line_break, :string, default: -> { "\n" }
