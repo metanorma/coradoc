@@ -139,28 +139,16 @@ jobs:
           (cd "$gem" && gem build *.gemspec)
         done
 
-    - name: Setup RubyGems credentials
-      if: ${{ !inputs.dry_run }}
-      run: |
-        mkdir -p ~/.gem
-        cat > ~/.gem/credentials << EOF
-        ---
-        :rubygems_api_key: ${{ secrets.METANORMA_CI_RUBYGEMS_API_KEY }}
-        EOF
-        chmod 0600 ~/.gem/credentials
-
-    - name: Release gems to RubyGems
-      if: ${{ !inputs.dry_run }}
+    - name: Collect built gems
       run: |
         for gem in ${{ steps.gems.outputs.targets }}; do
-          gem_file=$(ls "$gem"/*.gem 2>/dev/null | head -1)
-          if [ -n "$gem_file" ]; then
-            echo "Pushing $gem_file..."
-            gem push "$gem_file"
-          else
-            echo "::warning::No gem file found for $gem"
-          fi
+          mv "$gem"/*.gem . 2>/dev/null || true
         done
+        ls -la *.gem
+
+    - name: Release gems to RubyGems (trusted publishing)
+      if: ${{ !inputs.dry_run }}
+      uses: rubygems/release-gem@v1
 
     - name: Dry run summary
       if: ${{ inputs.dry_run }}
