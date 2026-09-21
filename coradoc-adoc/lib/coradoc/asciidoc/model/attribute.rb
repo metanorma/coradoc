@@ -5,7 +5,7 @@ module Coradoc
     module Model
       class Attribute < Base
         attribute :key, :string
-        attribute :value, :string, collection: true
+        attribute :value, :string
         attribute :line_break, :string, default: -> { "\n" }
 
         private

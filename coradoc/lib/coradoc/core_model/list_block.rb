@@ -2,57 +2,6 @@
 
 module Coradoc
   module CoreModel
-    # Represents a single item within a list
-    #
-    # A list item can contain:
-    # - Simple text content
-    # - A nested list
-    # - Child elements (paragraphs, blocks, etc.)
-    #
-    # Note: The nested_list attribute type is set after ListBlock is defined
-    # to avoid circular dependency issues.
-    #
-    # @example Simple list item
-    #   item = ListItem.new(
-    #     marker: "*",
-    #     content: "Item text"
-    #   )
-    #
-    # @example List item with nested list
-    #   item = ListItem.new(
-    #     marker: "*",
-    #     content: "Parent item",
-    #     nested_list: nested_list_block
-    #   )
-    class ListItem < Base
-      # @!attribute marker
-      #   @return [String, nil] the marker character(s) for this item
-      #     (e.g., '*', '**', '.', '..', '-')
-      attribute :marker, :string
-
-      # @!attribute content
-      #   @return [String, nil] text content of the list item
-      attribute :content, :string
-
-      # @!attribute nested_list
-      #   @return [ListBlock, nil] nested list within this item
-      #   Note: Typed as string initially, retyped after ListBlock defined
-      attribute :nested_list, :string
-
-      private
-
-      # Attributes to compare for semantic equivalence
-      #
-      # List items are semantically equivalent if they have the same
-      # content, nested list, and children, regardless of the specific
-      # marker used.
-      #
-      # @return [Array<Symbol>] list of comparable attributes
-      def comparable_attributes
-        %i[content nested_list children]
-      end
-    end
-
     # Represents a list block with proper nesting support
     #
     # Handles all list types:
@@ -106,7 +55,7 @@ module Coradoc
 
       # @!attribute items
       #   @return [Array<ListItem>] collection of list items
-      attribute :items, ListItem, collection: true
+      attribute :items, 'Coradoc::CoreModel::ListItem', collection: true
 
       # -- Fluent construction helpers (paired with Base.build) --
 
@@ -138,15 +87,51 @@ module Coradoc
       end
     end
 
-    # Re-open ListItem to properly type nested_list now that ListBlock
-    # is defined
-    class ListItem
-      # Remove the temporary string-typed attribute
-      remove_method :nested_list if method_defined?(:nested_list)
-      remove_method :nested_list= if method_defined?(:nested_list=)
+    # Represents a single item within a list
+    #
+    # A list item can contain:
+    # - Simple text content
+    # - A nested list
+    # - Child elements (paragraphs, blocks, etc.)
+    #
+    # @example Simple list item
+    #   item = ListItem.new(
+    #     marker: "*",
+    #     content: "Item text"
+    #   )
+    #
+    # @example List item with nested list
+    #   item = ListItem.new(
+    #     marker: "*",
+    #     content: "Parent item",
+    #     nested_list: nested_list_block
+    #   )
+    class ListItem < Base
+      # @!attribute marker
+      #   @return [String, nil] the marker character(s) for this item
+      #     (e.g., '*', '**', '.', '..', '-')
+      attribute :marker, :string
 
-      # Re-define with proper ListBlock type
-      attribute :nested_list, ListBlock
+      # @!attribute content
+      #   @return [String, nil] text content of the list item
+      attribute :content, :string
+
+      # @!attribute nested_list
+      #   @return [ListBlock, nil] nested list within this item
+      attribute :nested_list, Coradoc::CoreModel::ListBlock
+
+      private
+
+      # Attributes to compare for semantic equivalence
+      #
+      # List items are semantically equivalent if they have the same
+      # content, nested list, and children, regardless of the specific
+      # marker used.
+      #
+      # @return [Array<Symbol>] list of comparable attributes
+      def comparable_attributes
+        %i[content nested_list children]
+      end
     end
   end
 end
