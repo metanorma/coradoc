@@ -31,7 +31,13 @@ module Coradoc
     class Toc < Base
       # @!attribute entries
       #   @return [Array<TocEntry>] the TOC entries
-      attribute :entries, :string, collection: true
+      #   Declared as Base (not :string): TocEntry is defined below and
+      #   lutaml-model never re-registers a re-declared attribute — the
+      #   old remove_method reopen did not fix the :string cast, so every
+      #   entry was stringified at construction (issue #255). Base-typed
+      #   collections preserve TocEntry instances (the pattern used by
+      #   Block/Table children).
+      attribute :entries, Base, collection: true
 
       # @!attribute min_level
       #   @return [Integer] minimum heading level to include (default: 1)
@@ -79,7 +85,9 @@ module Coradoc
 
       # @!attribute children
       #   @return [Array<TocEntry>] nested child entries
-      attribute :children, :string, collection: true
+      #   Base-typed for the same reason as Toc#entries (self-referential;
+      #   see issue #255).
+      attribute :children, Base, collection: true
 
       private
 
@@ -88,18 +96,5 @@ module Coradoc
       end
     end
 
-    # Re-open Toc to properly type entries now that TocEntry is defined
-    class Toc
-      remove_method :entries if method_defined?(:entries)
-      remove_method :entries= if method_defined?(:entries=)
-      attribute :entries, TocEntry, collection: true
-    end
-
-    # Re-open TocEntry to properly type children now that TocEntry is defined
-    class TocEntry
-      remove_method :children if method_defined?(:children)
-      remove_method :children= if method_defined?(:children=)
-      attribute :children, TocEntry, collection: true
-    end
   end
 end
