@@ -95,6 +95,5 @@ module Coradoc
         super + %i[id title level number children]
       end
     end
-
   end
 end
