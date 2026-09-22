@@ -2,7 +2,7 @@
 
 module Coradoc
   module Html
-    # Builds HTML trees over the Leptris::XML DOM using a
+    # Builds HTML trees over the Leptris DOM using a
     # Nokogiri::HTML::Builder-style DSL. Single source of truth for
     # programmatic HTML construction in this gem (layout fallbacks,
     # asset tag emitters) — no raw HTML string concatenation anywhere.
@@ -13,16 +13,12 @@ module Coradoc
     #       doc.body { doc << body_html }
     #     end
     #   end.to_html
+    #
+    # Serialization uses leptris-ruby's HTML mode (#309): script/style
+    # text is emitted unescaped and void elements are unclosed.
     class Builder
       # Methods that are builder API, not tag names.
       RESERVED = %i[text to_html to_s document parent].freeze
-
-      # HTML void elements — serialization as <tag/> is what HTML parsers
-      # expect. Every other childless element gets an empty text node so it
-      # serializes with an explicit closing tag (<script/> would swallow
-      # the rest of the page in HTML).
-      VOID_ELEMENTS = %w[area base br col embed hr img input link meta
-                         param source track wbr].freeze
 
       attr_reader :document
 
@@ -55,13 +51,11 @@ module Coradoc
           end
         end
 
-        content_added = args.any? || !block.nil?
         if current
           current.add_child(element)
         else
           @roots << element
         end
-        element.add_child(@document.create_text_node('')) unless content_added || VOID_ELEMENTS.include?(name.to_s)
         element
       end
 
@@ -82,10 +76,11 @@ module Coradoc
         self
       end
 
-      # Serializes the built tree without an XML declaration. Multiple
-      # top-level elements are joined with newlines.
+      # Serializes with HTML semantics: script/style text unescaped,
+      # void elements unclosed. Multiple top-level elements are joined
+      # with newlines.
       def to_html
-        @roots.map { |root| root.to_xml(no_decl: true) }.join("\n")
+        @roots.map(&:to_html).join("\n")
       end
       alias to_s to_html
 

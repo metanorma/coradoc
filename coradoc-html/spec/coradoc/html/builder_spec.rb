@@ -27,7 +27,7 @@ RSpec.describe Coradoc::Html::Builder do
           end
         end
       end
-      expect(html).to eq('<html lang="en"><head><meta charset="UTF-8"/><title>X</title></head></html>')
+      expect(html).to eq('<html lang="en"><head><meta charset="UTF-8"><title>X</title></head></html>')
     end
 
     it 'supports sibling top-level elements joined by newline' do
@@ -35,7 +35,7 @@ RSpec.describe Coradoc::Html::Builder do
         doc.link(rel: 'stylesheet', href: 'a.css')
         doc.script(src: 'b.js')
       end
-      expect(html).to eq('<link rel="stylesheet" href="a.css"/>' \
+      expect(html).to eq('<link rel="stylesheet" href="a.css">' \
                          "\n" \
                          '<script src="b.js"></script>')
     end
@@ -57,9 +57,9 @@ RSpec.describe Coradoc::Html::Builder do
   end
 
   describe 'HTML serialization rules' do
-    it 'serializes void elements self-closing' do
+    it 'serializes void elements unclosed' do
       html = build { |doc| doc.meta(name: 'x', content: 'y') }
-      expect(html).to eq('<meta name="x" content="y"/>')
+      expect(html).to eq('<meta name="x" content="y">')
     end
 
     it 'emits an explicit closing tag for childless script elements' do
@@ -67,9 +67,14 @@ RSpec.describe Coradoc::Html::Builder do
       expect(html).to eq('<script src="a.js" defer=""></script>')
     end
 
-    it 'does not escape script text placed via markup-safe content' do
-      html = build { |doc| doc.script { doc.text('window.X = 1;') } }
-      expect(html).to eq('<script>window.X = 1;</script>')
+    it 'does not escape script text content' do
+      html = build { |doc| doc.script { d = 'x = 1 && 2 < 3'; doc.text(d) } }
+      expect(html).to eq('<script>x = 1 && 2 < 3</script>')
+    end
+
+    it 'does not escape style text content' do
+      html = build { |doc| doc.style { doc.text('a > b { color: red }') } }
+      expect(html).to eq('<style>a > b { color: red }</style>')
     end
   end
 
