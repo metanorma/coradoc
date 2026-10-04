@@ -138,7 +138,7 @@ module Coradoc
         end
 
         def link
-          ((str('http').present? | str('https').present? | str('ftp').present?) >>
+          ((str('http') | str('https') | str('ftp')).present? >>
             match('[A-Za-z0-9_.\\-:/&?=+,%#~;]+').repeat(1).as(:path) >>
             (str('[') >> match('[^\\]]').repeat(1).as(:text) >> str(']')).maybe
           ).as(:link) |
@@ -201,19 +201,22 @@ module Coradoc
         end
 
         def inline_chars?
-          match('[\[*#_{<^~`]').present? |
-            typographic_quote.present? |
-            str('http').present? |
-            str('https').present? |
-            str('link:').present? |
-            str('image:').present? |
-            str('+++').present? |
-            str('pass:').present? |
-            term_type.present? |
-            str('footnote').present? |
-            stem_type.present? |
-            str('\\<<').present? |
-            hard_line_break_marker?
+          # Single lookahead over the whole dispatch alternation; the former
+          # per-branch .present? chain put zero-width branches in every
+          # non-last slot (shadowed-alternative lint, parsanol 1.3.55+).
+          (match('[\[*#_{<^~`]') |
+             typographic_quote |
+             str('http') |
+             str('https') |
+             str('link:') |
+             str('image:') |
+             str('+++') |
+             str('pass:') |
+             term_type |
+             str('footnote') |
+             stem_type |
+             str('\\<<') |
+             hard_line_break_marker?).present?
         end
 
         # AsciiDoc hard line break: a space followed by `+` at end of line,
@@ -221,8 +224,8 @@ module Coradoc
         # the enclosing paragraph/verse. Recognised ahead of `text_unformatted`
         # so the marker isn't swallowed as plain text.
         def hard_line_break_marker?
-          (str(' +') >> str("\n")).present? |
-            (str('\\') >> str("\n")).present?
+          ((str(' +') >> str("\n")) |
+             (str('\\') >> str("\n"))).present?
         end
 
         def hard_line_break

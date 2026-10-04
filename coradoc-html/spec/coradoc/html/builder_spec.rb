@@ -68,7 +68,12 @@ RSpec.describe Coradoc::Html::Builder do
     end
 
     it 'does not escape script text content' do
-      html = build { |doc| doc.script { d = 'x = 1 && 2 < 3'; doc.text(d) } }
+      html = build do |doc|
+        doc.script do
+          d = 'x = 1 && 2 < 3'
+          doc.text(d)
+        end
+      end
       expect(html).to eq('<script>x = 1 && 2 < 3</script>')
     end
 

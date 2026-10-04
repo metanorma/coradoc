@@ -7,10 +7,10 @@ module Coradoc
       module List
         def list(nesting_level = 1)
           (
-          unordered_list(nesting_level) |
-             ordered_list(nesting_level) |
-             definition_list
-        ).as(:list)
+            unordered_list(nesting_level) |
+               ordered_list(nesting_level) |
+               definition_list
+          ).as(:list)
         end
 
         def list_continuation
@@ -175,7 +175,7 @@ module Coradoc
         def dlist_term(_delimiter = nil)
           term_chars =
             (dlist_delimiter.absent? >> match("[^\n]")).repeat(1)
-                                                       .as(:text)
+            .as(:text)
           (element_id_inline.maybe >> term_chars).as(:dlist_term) >> dlist_delimiter
         end
 
@@ -259,8 +259,8 @@ module Coradoc
         end
 
         def list_body_hard_break_marker?
-          (str(' +') >> str("\n")).present? |
-            (str('\\') >> str("\n")).present?
+          ((str(' +') >> str("\n")) |
+            (str('\\') >> str("\n"))).present?
         end
 
         # Recognizes line endings for a list body source line, including

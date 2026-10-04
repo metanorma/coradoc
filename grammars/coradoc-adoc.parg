@@ -1,0 +1,280 @@
+# Coradoc AsciiDoc grammar — PARG port (parsanol-ruby#129 acceptance).
+#
+# Translation of coradoc-adoc/lib/coradoc/asciidoc/parser (Ruby Parsanol
+# DSL) to .parg. Ported incrementally; each rule family cites its Ruby
+# source. The motivating runtime-state patterns (fence capture + dynamic
+# close, from Parser::Block#block_style / #markdown_code_block) map onto
+# set/state exactly as designed in parsanol-ruby#129.
+#
+# Increment 1 scope: terminals, attribute lists (faithful capture
+# shapes), element ids, block titles, block headers, all delimited
+# block styles (verbatim content), comments/tags/includes, document
+# dispatch subset with the unparsed catch-all.
+
+grammar CoradocAdoc version "0.2.0" {
+
+  # ---- text.rb terminals ----
+  any_char = %x01-10FFFF
+  space = 1*" "
+  sp = [1*" "]
+  text = 1*(!"\n" any_char)
+  line_ending = ("\n" / "\r\n")
+  newline = 1*("\n" / "\r\n")
+  empty_line = "\n"
+  keyword = 1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-" / "." / ",")
+  file_path = 1*(!"[" any_char)
+
+  # ---- attribute_list.rb (faithful capture shapes) ----
+  named_key = (1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-")) as named_key
+
+  named_value_sq = %x27 (1*(!(%x27) any_char)) %x27
+  named_value_dq = %x22 (1*(!(%x22) any_char)) %x22
+  named_value_noquote = 1*(!(%x5D / %x2C) any_char)
+  named_value = ((named_value_sq / named_value_dq / named_value_noquote)) as named_value
+
+  named_attribute = ((named_key [space] "=" [space] named_value [space])) as named
+
+  positional_value_sq = %x27 (1*(!(%x27) any_char)) %x27
+  positional_value_dq = %x22 (1*(!(%x22) any_char)) %x22
+  positional_value_unquoted = 1*(!(%x5D / %x2C / %x3D) any_char)
+  positional_attribute = (((positional_value_sq / positional_value_dq / positional_value_unquoted) !(%x3D))) as positional
+
+  named_many = ((1*1(named_attribute)) [*(%x2C [space] named_attribute)])
+  positional_one_named_many = ((1*1(positional_attribute)) 1*(%x2C [space] named_attribute))
+  positional_many_named_many = ((1*1(positional_attribute)) 1*(%x2C [space] positional_attribute) 1*(%x2C [space] named_attribute))
+  positional_many = ((1*1(positional_attribute)) [*(%x2C [space] positional_attribute)])
+  positional_zero_or_one = 0*1(positional_attribute)
+
+  attribute_list = (&(%x5B) %x5B !(%x5B) (((((named_many / positional_one_named_many / positional_many_named_many / positional_many / positional_zero_or_one))) as attribute_array)) as attribute_list %x5D)
+
+  # ---- content.rb: element_id / block_header.rb ----
+  element_id = ((("[[" (keyword) as id "]]") / ("[#" (keyword) as id "]")) newline)
+
+  attribute_blocks = (1*((attribute_list newline))) as attribute_list
+
+  # ---- block.rb: delimiters + title ----
+  block_delim_run = 4*((%x2A / %x3D / %x5F / %x2B / %x2E / %x2D))
+  block_delimiter = ((block_delim_run / (2%x2D) / (3*%x60)) newline)
+  block_title = (!(block_delimiter) %x2E !(space) (text) as title newline)
+
+  block_header = [(block_title)] [(element_id)] [(attribute_blocks)]
+
+  # ---- text.rb: comment_line / tag / comment_block / include ----
+  tag_shape = ("//" !( "/") [1*" "] ("tag" / "end") "::" !( ":") 1*(!"[" any_char))
+
+  comment_line_content = (!(tag_shape) "//" !("/") [1*" "] *(!"\n" any_char) line_ending)
+
+  comment_line = (!(tag_shape) ("//" !("/") [1*" "] [(text) as comment_text line_ending as line_break])) as comment_line
+
+  tag = (("//" !("/") [1*" "] ("tag" / "end") as prefix "::" !(":") ((1*(!"[" any_char))) as name attribute_list [newline] as line_break)) as tag
+
+  comment_block = (("////" line_ending (*(!((line_ending "////")) any_char)) as comment_text line_ending "////")) as comment_block
+
+  include_directive = (("include::" file_path as path attribute_list [newline] as line_break)) as include
+
+  # ---- content.rb text_line(verbatim:) : text + own line ending ----
+  # tl >> (line_ending.as(:line_break) | eof?) — the newline rides INSIDE
+  # the same iteration hash (parslet sequence merge), matching the DSL.
+  verbatim_line = (((1*(!"\n" any_char)) as text) ((line_ending) as line_break / (!(any_char))))
+
+  # ---- block.rb: delimited blocks (the #129 state patterns) ----
+  # markdown_code_block: 3+ backticks, optional language, closes with the
+  # SAME fence run (Parser::Block#markdown_code_block).
+  state md_fence: string
+  md_lang = [*" " (1*(%x41-5A / %x61-7A / %x30-39 / "_" / "+" / "-" / ".")) as language]
+  md_close = (state md_fence [space] newline)
+  md_content = (!(md_close) verbatim_line)
+  md_break = (empty_line as line_break)
+  markdown_code_block = (block_header ((set md_fence = (3*%x60)) as delimiter md_lang newline (1*(md_content / md_break)) as lines [space] (state md_fence) [space] newline))
+
+  # block_style: 4+ identical fence chars, closes with the exact same run.
+  state eq_fence: string
+  state dash_fence: string
+  state us_fence: string
+  state ast_fence: string
+  state plus_fence: string
+  state dot_fence: string
+
+  eq_content = (!(((state eq_fence) newline)) verbatim_line)
+  dash_content = (!(((state dash_fence) newline)) verbatim_line)
+  us_content = (!(((state us_fence) newline)) verbatim_line)
+  ast_content = (!(((state ast_fence) newline)) verbatim_line)
+  plus_content = (!(((state plus_fence) newline)) verbatim_line)
+  dot_content = (!(((state dot_fence) newline)) verbatim_line)
+  vbreak = (empty_line as line_break)
+
+  example_block = (block_header ((set eq_fence = (4*%x3D)) as delimiter newline (1*(eq_content / vbreak)) as lines (state eq_fence) newline))
+  source_block = (block_header ((set dash_fence = (4*%x2D)) as delimiter newline (1*(dash_content / vbreak)) as lines (state dash_fence) newline))
+  quote_block = (block_header ((set us_fence = (4*%x5F)) as delimiter newline (1*(us_content / vbreak)) as lines (state us_fence) newline))
+  sidebar_block = (block_header ((set ast_fence = (4*%x2A)) as delimiter newline (1*(ast_content / vbreak)) as lines (state ast_fence) newline))
+  pass_block = (block_header ((set plus_fence = (4*%x2B)) as delimiter newline (1*(plus_content / vbreak)) as lines (state plus_fence) newline))
+  literal_block = (block_header ((set dot_fence = (4*%x2E)) as delimiter newline (1*(dot_content / vbreak)) as lines (state dot_fence) newline))
+
+  # block_style_exact: open block — EXACTLY 2 dashes
+  state open_fence: string
+  open_content = (!(((state open_fence) newline)) verbatim_line)
+  open_block = (block_header ((set open_fence = (2%x2D)) as delimiter newline (1*(open_content / vbreak)) as lines (state open_fence) newline))
+
+  block = ((markdown_code_block / example_block / sidebar_block / source_block / quote_block / pass_block / literal_block / open_block)) as block
+
+  # ---- inline.rb (INLINE_RULE_ORDER is load-bearing) ----
+  typographic_quote = ((%x22 %x60) / (%x60 %x22) / (%x27 %x60) / (%x60 %x27)) as typographic_quote
+
+  attribute_reference = (&(%x7B) %x7B ((1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-"))) as attribute_reference %x7D)
+
+  uri_char = (%x41-5A / %x61-7A / %x30-39 / "_" / "." / "-" / ":" / "/" / "&" / "?" / "=" / "+" / "," / "%" / "#" / "~" / ";")
+
+  link_tail = (((1*uri_char)) as path [(%x5B ((1*(!(%x5D) any_char))) as text %x5D)])
+  link = ((&(("http" / "https" / "ftp")) link_tail) as link / (&("link:") "link:" link_tail) as link)
+
+  inline_image = (&("image:") "image:" !(":") ((1*uri_char)) as path [attribute_list]) as inline_image
+
+  inline_passthrough = ((("+++" ((1*(!("+++") !(%x0A) any_char))) as raw "+++")) as inline_passthrough / (&("pass:") "pass:" *(%x41-5A / %x61-7A / %x2B / %x2C) %x5B ((1*(!("]]") !(%x5D / %x0A) any_char))) as raw %x5D) as inline_passthrough)
+
+  underline = (attribute_list %x5B ".underline" %x5D as role %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23) as underline
+  small = (attribute_list %x5B ".small" %x5D as role %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23) as small
+
+  hard_line_break = (((" +" %x0A) / (%x5C %x0A))) as hard_line_break
+
+  term_type = ("term" / "alt" / "deprecated" / "domain") as term_type
+  stem_type = ("stem" / "latexmath" / "asciimath") as stem_type
+
+  escaped_xref = (%x5C (%x3C %x3C) as text)
+  cross_reference = (((%x3C %x3C) ((1*(!((%x2C / %x3E)) any_char)) as href) [((%x2C) ((*(!((%x3E)) any_char)) as text))] (%x3E %x3E)) as cross_reference)
+
+  term_inline = (term_type ":[" ((1*(!(%x5D) any_char))) as term %x5D)
+  term_inline2 = (%x5B term_type %x5D %x23 ((1*(!(%x23) any_char))) as term2 %x23)
+
+  macro_kw = ("term" / "alt" / "deprecated" / "domain" / "stem" / "latexmath" / "asciimath")
+  macro_content = 1*((!(macro_kw) !(%x5D) any_char) / (macro_kw %x3A %x5B macro_content %x5D))
+  footnote = ("footnote:" [(keyword) as id] %x5B ((macro_content)) as footnote %x5D)
+
+  stem = (stem_type ":[" ((1*(!(%x5D) any_char))) as content %x5D) as stem
+
+  # constrained/unstrained marks — content keeps Ruby's .as(:text).repeat(1,1)
+  # array wrap (1*1) except where Ruby uses a bare .as
+  bold_constrained = ((%x2A !(%x2A) (1*1(((1*(!(%x2A / %x0A) any_char))) as text)) %x2A !(%x2A)) !(%x0A %x0A)) as bold_constrained
+  bold_unconstrained = ((%x2A %x2A (1*1(((1*(!(%x2A) any_char))) as text)) %x2A %x2A)) as bold_unconstrained
+  span_constrained = (attribute_list %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23 !(%x23)) as span_constrained
+  span_unconstrained = (attribute_list %x23 %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23 %x23) as span_unconstrained
+  italic_constrained = ((%x5F !(%x5F) (1*1(((1*(!(%x5F / %x0A) any_char))) as text)) %x5F !(%x5F))) as italic_constrained
+  italic_unconstrained = ((%x5F %x5F (1*1(((1*(!(%x5F) any_char))) as text)) %x5F %x5F)) as italic_unconstrained
+  highlight_constrained = ((%x23 !(%x23) (1*1(((1*(!(%x23 / %x0A) any_char))) as text)) %x23 !(%x23))) as highlight_constrained
+  highlight_unconstrained = ((%x23 %x23 (1*1(((1*(!(%x23) any_char))) as text)) %x23 %x23)) as highlight_unconstrained
+  monospace_constrained = ((%x60 !(%x60) (1*1((1*((!(%x60 / %x0A) any_char) / (%x60 %x60))) as text)) %x60 !(%x60))) as monospace_constrained
+  monospace_unconstrained = ((%x60 %x60 (1*1(((1*(!(%x60) any_char))) as text)) %x60 %x60)) as monospace_unconstrained
+  superscript = (%x5E (1*1(((1*(!(%x5E / %x0A) any_char))) as text)) %x5E) as superscript
+  subscript = (%x7E (1*1(((1*(!(%x7E / %x0A) any_char))) as text)) %x7E) as subscript
+
+  inline = (typographic_quote / bold_unconstrained / bold_constrained / span_unconstrained / span_constrained / italic_unconstrained / italic_constrained / highlight_unconstrained / highlight_constrained / monospace_unconstrained / monospace_constrained / superscript / subscript / attribute_reference / escaped_xref / cross_reference / term_inline / term_inline2 / footnote / stem / link / inline_image / inline_passthrough / underline / small / hard_line_break)
+
+  # text.rb/inline.rb text layers
+  inline_chars = ((%x5B / %x2A / %x5F / %x7B / %x3C / %x5E / %x7E / %x60) / typographic_quote / "https" / "http" / "link:" / "image:" / "+++" / "pass:" / term_type / "footnote" / stem_type / (%x5C %x3C %x3C) / hard_line_break)
+  text_formatted = (&(inline_chars) inline)
+  text_unformatted = 1*(!("\\" %x3C %x3C) !(inline) !(%x0A) any_char)
+  text_any = ((2*((text_formatted / (text_unformatted) as text))) / (1*1(text_formatted)) / text_unformatted)
+
+  # ---- paragraph.rb ----
+  # NOTE: list.absent? from line_not_text? is pending the list.rb port;
+  # guard truth diverges only on real list lines (none in this corpus).
+  literal_space = 1*(%x20 / %x09)
+  section_prefix = (%x3D *(%x3D) any_char)
+  list_prefix = (((%x2A 1*5(%x2A)) / (%x2E 1*5(%x2E))) " ")
+  line_not_text = (!(list_1) !(list_prefix) !(list_continuation) !((attribute_list newline)) !(block_delimiter) !((%x7C %x3D %x3D %x3D newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
+  asciidoc_char = (%x2A / %x5F / %x3A / %x2B / %x3D / %x2D)
+  asciidoc_char_with_id = (asciidoc_char / (%x5B %x23) / (%x5B %x5B))
+  element_id_inline = ((%x5B %x5B (keyword) as id %x5D %x5D) / (%x5B %x23 (keyword) as id %x5D))
+  # paragraph_text_line(0|false|true): guard, text_any, then the
+  # three-state newline tail (0 = eof only; false = single; true = many)
+  # Ruby's (a.absent? | element_id_inline | line_not_text?) reduces under
+  # the outer line_not_text guard: arms 1/3 always hold there, and
+  # element_id_inline implies asciidoc_char_with_id — so it's just an
+  # optional inline id (keeps zero-width branches out of the alternation)
+  ptl_guard = (line_not_text [(element_id_inline) [*literal_space]])
+  paragraph_text_line_0 = (ptl_guard ((text_any)) as text (!(any_char)))
+  paragraph_text_line_s = (ptl_guard ((text_any)) as text ((line_ending) as line_break / (!(any_char))))
+  paragraph_text_line_m = (ptl_guard ((text_any)) as text ((newline) as line_break / (!(any_char))))
+  paragraph = (block_header ((((1*1(paragraph_text_line_0)) ((newline) as line_break / (!(any_char)))) / ((1*(paragraph_text_line_s)) [(1*1(paragraph_text_line_m) ((newline) as line_break / (!(any_char))))]))) as lines *(newline)) as paragraph
+
+  # ---- admonition.rb ----
+  admonition_type = (%i"note" / %i"tip" / %i"warning" / %i"caution" / %i"important" / %i"editor" / %i"todo" / %i"admonition")
+  admonition_line = ((admonition_type as admonition_type) ": " ((1*((text_any as text) (line_ending as line_break))) as content))
+
+  # ---- list.rb (nesting levels unrolled 1..5) ----
+  list_continuation = ("+" %x0A)
+  list_item_separator = (*(comment_line_content / empty_line))
+  ulist_marker_1 = ( ((1%x2A !(%x2A) !("===")) / (%x2D !(%x2D) !(%x30-39))))
+  olist_marker_1 = ( 1%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  list_marker_1 = (olist_marker_1 / ulist_marker_1)
+  ulist_marker_2 = ([*literal_space] (2%x2A !(%x2A) !("===")))
+  olist_marker_2 = ([*literal_space] 2%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  list_marker_2 = (olist_marker_2 / ulist_marker_2)
+  ulist_marker_3 = ([*literal_space] (3%x2A !(%x2A) !("===")))
+  olist_marker_3 = ([*literal_space] 3%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  list_marker_3 = (olist_marker_3 / ulist_marker_3)
+  ulist_marker_4 = ([*literal_space] (4%x2A !(%x2A) !("===")))
+  olist_marker_4 = ([*literal_space] 4%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  list_marker_4 = (olist_marker_4 / ulist_marker_4)
+  ulist_marker_5 = ([*literal_space] (5%x2A !(%x2A) !("===")))
+  olist_marker_5 = ([*literal_space] 5%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  list_marker_5 = (olist_marker_5 / ulist_marker_5)
+  inline_lb = (typographic_quote / bold_unconstrained / bold_constrained / span_unconstrained / span_constrained / italic_unconstrained / italic_constrained / highlight_unconstrained / highlight_constrained / monospace_unconstrained / monospace_constrained / superscript / subscript / attribute_reference / escaped_xref / cross_reference / term_inline / term_inline2 / footnote / stem / link / inline_image / inline_passthrough / underline / small)
+  list_body_hard_break = ((" +" %x0A) / (%x5C %x0A))
+  list_body_text_unformatted = (1*(!("\\<<") !(inline_lb) !(list_body_hard_break) !(%x0A) any_char))
+  list_body_text_any = (1*(inline_lb / (list_body_text_unformatted as text)))
+  list_body_line_ending = (((" +" as hard_line_break) (line_ending as line_break)) / (line_ending as line_break) / !(any_char))
+  list_body_text_line = ([*literal_space] (list_body_text_any as text) list_body_line_ending)
+  list_item_continuation_lines = (*(line_not_text list_body_text_line))
+  list_attached_block = (admonition_line / unordered_list_1 / ordered_list_1 / paragraph / block)
+  list_item_attached = ((*(&(list_continuation) list_continuation list_attached_block)) as attached)
+  ulist_item_1 = (&(ulist_marker_1) (((ulist_marker_1 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
+  olist_item_1 = (&(olist_marker_1) (((olist_marker_1 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
+  ulist_item_2 = (&(ulist_marker_2) (((ulist_marker_2 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_3) list_3)) as nested)) as list_item))
+  olist_item_2 = (&(olist_marker_2) (((olist_marker_2 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_3) list_3)) as nested)) as list_item))
+  ulist_item_3 = (&(ulist_marker_3) (((ulist_marker_3 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_4) list_4)) as nested)) as list_item))
+  olist_item_3 = (&(olist_marker_3) (((olist_marker_3 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_4) list_4)) as nested)) as list_item))
+  ulist_item_4 = (&(ulist_marker_4) (((ulist_marker_4 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_5) list_5)) as nested)) as list_item))
+  olist_item_4 = (&(olist_marker_4) (((olist_marker_4 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_5) list_5)) as nested)) as list_item))
+  ulist_item_5 = (&(ulist_marker_5) (((ulist_marker_5 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ) as list_item))
+  olist_item_5 = (&(olist_marker_5) (((olist_marker_5 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ) as list_item))
+  unordered_list_1 = ([(attribute_list line_ending)] ((1*(list_item_separator ulist_item_1)) as unordered))
+  ordered_list_1 = ([(attribute_list line_ending)] ((1*(list_item_separator olist_item_1)) as ordered))
+  list_1 = ((unordered_list_1 / ordered_list_1 / definition_list)) as list
+  unordered_list_2 = ([(attribute_list line_ending)] ((1*(list_item_separator ulist_item_2)) as unordered))
+  ordered_list_2 = ([(attribute_list line_ending)] ((1*(list_item_separator olist_item_2)) as ordered))
+  list_2 = ((unordered_list_2 / ordered_list_2 / definition_list)) as list
+  unordered_list_3 = ([(attribute_list line_ending)] ((1*(list_item_separator ulist_item_3)) as unordered))
+  ordered_list_3 = ([(attribute_list line_ending)] ((1*(list_item_separator olist_item_3)) as ordered))
+  list_3 = ((unordered_list_3 / ordered_list_3 / definition_list)) as list
+  unordered_list_4 = ([(attribute_list line_ending)] ((1*(list_item_separator ulist_item_4)) as unordered))
+  ordered_list_4 = ([(attribute_list line_ending)] ((1*(list_item_separator olist_item_4)) as ordered))
+  list_4 = ((unordered_list_4 / ordered_list_4 / definition_list)) as list
+  unordered_list_5 = ([(attribute_list line_ending)] ((1*(list_item_separator ulist_item_5)) as unordered))
+  ordered_list_5 = ([(attribute_list line_ending)] ((1*(list_item_separator olist_item_5)) as ordered))
+  list_5 = ((unordered_list_5 / ordered_list_5 / definition_list)) as list
+  dlist_delimiter = (((":::::" !(%x3A)) / ("::::" !(%x3A)) / (":::" !(%x3A)) / ("::" !(%x3A)) / ";;") as delimiter)
+  dlist_term = ((([element_id_inline] ((1*(!(dlist_delimiter) !(%x0A) any_char)) as text)) as dlist_term) dlist_delimiter)
+  dlist_definition = ((line_not_text *((%x20 / %x09)) ((list_body_text_line list_item_continuation_lines) as lines)) (*empty_line))
+  dlist_item = ((((((1*dlist_term) as terms) line_ending (*empty_line) [dlist_definition]) / (((1*dlist_term) as terms) space dlist_definition)) [list_item_attached] (*(list_continuation &(dlist_item)))) as definition_list_item)
+  definition_list = ([(attribute_list line_ending)] ((1*(list_item_separator dlist_item)) as definition_list) !(dlist_item))
+
+  # ---- base.rb rule(:document) — ported members in Ruby order ----
+  # the repetition itself is the capture: parenthesize so `as` binds to
+  # the star, not the body (per-iteration capture would fragment the tree)
+  document = (*(block / comment_block / comment_line / include_directive / admonition_line / list_1 / paragraph / tag / (empty_line as line_break) / (any_char as unparsed))) as document
+
+  entry document: document
+
+  test {
+    accept "----\ncode\n----"
+    accept "----\ncode\n----\n----\nmore\n----"
+    accept "------\ncode\n------"
+    accept "```ruby\nputs 1\n```"
+    accept "````\n```\n````"
+    accept ".Title\n----\ncode\n----"
+    accept "[source, ruby]\n----\nx = 1\n----"
+    accept "////\nblock comment\n////"
+    accept "// tag::section-name[]"
+    accept "include::file.adoc[leveloffset=1]"
+  }
+}

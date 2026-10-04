@@ -9,7 +9,6 @@ module Coradoc
       autoload :HtmlEntities, "#{__dir__}/html_entities"
 
       class InlineParser < Parsanol::Parser
-
         rule(:line_ending) { (str("\n") | str("\r\n") | str("\r")).ignore }
         rule(:line_ending_or_eof) { line_ending | any.absent? }
         rule(:whitespace) { match[" \t"] }
@@ -79,16 +78,16 @@ module Coradoc
         rule(:both_flanking_delimiter_run) do
           any.precedes? >>
             unicode_whitespace.does_not_precede? >> (
-            (
-              unicode_punctuation.precedes? >>
-              delimiter_run.as(:bfdr) >>
-              unicode_punctuation.present?
-            ) | (
-              unicode_punctuation.does_not_precede? >>
-              delimiter_run.as(:bfdr) >>
-              unicode_punctuation.absent?
-            )
-          ) >> unicode_whitespace.absent?
+              (
+                unicode_punctuation.precedes? >>
+                delimiter_run.as(:bfdr) >>
+                unicode_punctuation.present?
+              ) | (
+                unicode_punctuation.does_not_precede? >>
+                delimiter_run.as(:bfdr) >>
+                unicode_punctuation.absent?
+              )
+            ) >> unicode_whitespace.absent?
         end
 
         rule(:left_flanking_delimiter_run) do
@@ -106,15 +105,15 @@ module Coradoc
         rule(:right_flanking_delimiter_run) do
           any.precedes? >>
             unicode_whitespace.does_not_precede? >> (
-            (
-              unicode_punctuation.precedes? >>
-              delimiter_run.as(:rfdr) >>
-              (unicode_whitespace | unicode_punctuation).present?
-            ) | (
-              unicode_punctuation.does_not_precede? >>
-              delimiter_run.as(:rfdr)
+              (
+                unicode_punctuation.precedes? >>
+                delimiter_run.as(:rfdr) >>
+                (unicode_whitespace | unicode_punctuation).present?
+              ) | (
+                unicode_punctuation.does_not_precede? >>
+                delimiter_run.as(:rfdr)
+              )
             )
-          )
         end
 
         rule(:non_flanking_delimiter_run) do
