@@ -19,7 +19,12 @@ module Coradoc
 
         def document_attribute
           str(':') >> attribute_name.as(:key) >> str(':') >>
-            space? >> (attribute_value | str('')).as(:value) >> (line_ending | eof?)
+            # attribute_value itself already matches empty (its
+            # zero-width branch), so the former `| str('')` fallback was
+            # dead — ordered choice commits to attribute_value's empty
+            # match first — and the VM's shadowed-alternative lint
+            # (parsanol 1.3.55+) correctly rejects it.
+            space? >> attribute_value.as(:value) >> (line_ending | eof?)
         end
       end
     end

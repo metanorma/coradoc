@@ -49,7 +49,9 @@ module Coradoc
               (paragraph_text_line(true).repeat(1, 1) >>
                    (newline.repeat(1).as(:line_break) | eof?)).repeat(0, 1))
             ).as(:lines) >>
-            (newline.repeat(0) | eof?)
+            # the former "| eof?" was dead: newline.repeat(0) already
+            # matches empty (shadowed-alternative lint, parsanol 1.3.55+)
+            newline.repeat(0)
           ).as(:paragraph)
         end
 

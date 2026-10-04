@@ -259,8 +259,8 @@ module Coradoc
         end
 
         def list_body_hard_break_marker?
-          (str(' +') >> str("\n")).present? |
-            (str('\\') >> str("\n")).present?
+          ((str(' +') >> str("\n")) |
+            (str('\\') >> str("\n"))).present?
         end
 
         # Recognizes line endings for a list body source line, including

@@ -63,7 +63,10 @@ module Coradoc
                 cont_rule
               end
             caps[:block] = kind
-            any.present? | any.absent?
+            # zero-width always-succeed tail (the former
+            # any.present? | any.absent? tautology was a shadowed
+            # alternative — lint, parsanol 1.3.55+)
+            str('')
           end
         end
 
@@ -71,7 +74,10 @@ module Coradoc
           whitespace.repeat(1) >>
             str('#').repeat >>
             whitespace.repeat >>
-            (line_ending.present? | any.absent?)
+            # zero-width "at line end or EOF": a negative lookahead over
+            # any non-line-ending char (the former two-branch lookahead
+            # chain shadowed its EOF branch — lint, parsanol 1.3.55+)
+            match('[^\n\r]').absent?
         end
 
         # Escaped hash - not a heading
@@ -174,8 +180,13 @@ module Coradoc
               consume_fenced_indent >>
               (line_verbatim | blank_line_verbatim.output(ln: ''))
             ).repeat.as(:code_block) >>
+            # tail: close the fence inside a continuation, or assert
+            # "not in a continuation with more input" — the former
+            # continuation.absent? | any.absent? chain put zero-width
+            # branches in non-last slots (shadowed-alternative lint,
+            # parsanol 1.3.55+); (A >> any).absent? == A.absent? | any.absent?
             (
-              (continuation >> code_fence_close) | continuation.absent? | any.absent?
+              (continuation >> code_fence_close) | (continuation >> any).absent?
             )
         end
 
