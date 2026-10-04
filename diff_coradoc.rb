@@ -56,6 +56,21 @@ CORPUS = [
   "\n\n\ntext line\n\n",
   "----\ncode\n----\nafter text\n",
   "// c\n----\ncode\n----\n\n",
+  # inline markup
+  "some *bold* and _italic_ text\n",
+  "**un**constrained and `mono` marks\n",
+  "a \"`\" typographic pair\n",
+  "xref <<target,Title>> inline\n",
+  "link https://example.com/x[] here\n",
+  "footnote:[a note] inline\n",
+  "stem:[x + y] and term:[t]\n",
+  "image:pic.png[] and pass:[raw <b>]\n",
+  "hard break +\nnext line\n",
+  "[.underline]#under# and [.small]#sm#\n",
+  "^sup^ and ~sub~ marks\n",
+  "plain text with no markup at all\n",
+  "{attr-ref} in text\n",
+  "escaped \\\\<< not an xref\n",
 ].freeze
 
 def normalize(obj)

@@ -117,10 +117,88 @@ grammar CoradocAdoc version "0.2.0" {
 
   block = ((markdown_code_block / example_block / sidebar_block / source_block / quote_block / pass_block / literal_block / open_block)) as block
 
+  # ---- inline.rb (INLINE_RULE_ORDER is load-bearing) ----
+  typographic_quote = ((%x22 %x60) / (%x60 %x22) / (%x27 %x60) / (%x60 %x27)) as typographic_quote
+
+  attribute_reference = (&(%x7B) %x7B ((1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-"))) as attribute_reference %x7D)
+
+  uri_char = (%x41-5A / %x61-7A / %x30-39 / "_" / "." / "-" / ":" / "/" / "&" / "?" / "=" / "+" / "," / "%" / "#" / "~" / ";")
+
+  link_tail = (((1*uri_char)) as path [(%x5B ((1*(!(%x5D) any_char))) as text %x5D)])
+  link = ((&(("http" / "https" / "ftp")) link_tail) as link / (&("link:") "link:" link_tail) as link)
+
+  inline_image = (&("image:") "image:" !(":") ((1*uri_char)) as path [attribute_list]) as inline_image
+
+  inline_passthrough = ((("+++" ((1*(!("+++") !(%x0A) any_char))) as raw "+++")) as inline_passthrough / (&("pass:") "pass:" *(%x41-5A / %x61-7A / %x2B / %x2C) %x5B ((1*(!("]]") !(%x5D / %x0A) any_char))) as raw %x5D) as inline_passthrough)
+
+  underline = (attribute_list %x5B ".underline" %x5D as role %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23) as underline
+  small = (attribute_list %x5B ".small" %x5D as role %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23) as small
+
+  hard_line_break = (((" +" %x0A) / (%x5C %x0A))) as hard_line_break
+
+  term_type = ("term" / "alt" / "deprecated" / "domain") as term_type
+  stem_type = ("stem" / "latexmath" / "asciimath") as stem_type
+
+  escaped_xref = (%x5C (%x3C %x3C) as text)
+  cross_reference = (((%x3C %x3C) ((1*(!((%x2C / %x3E)) any_char)) as href) [((%x2C) ((*(!((%x3E)) any_char)) as text))] (%x3E %x3E)) as cross_reference)
+
+  term_inline = (term_type ":[" ((1*(!(%x5D) any_char))) as term %x5D)
+  term_inline2 = (%x5B term_type %x5D %x23 ((1*(!(%x23) any_char))) as term2 %x23)
+
+  macro_kw = ("term" / "alt" / "deprecated" / "domain" / "stem" / "latexmath" / "asciimath")
+  macro_content = 1*((!(macro_kw) !(%x5D) any_char) / (macro_kw %x3A %x5B macro_content %x5D))
+  footnote = ("footnote:" [(keyword) as id] %x5B ((macro_content)) as footnote %x5D)
+
+  stem = (stem_type ":[" ((1*(!(%x5D) any_char))) as content %x5D) as stem
+
+  # constrained/unstrained marks — content keeps Ruby's .as(:text).repeat(1,1)
+  # array wrap (1*1) except where Ruby uses a bare .as
+  bold_constrained = ((%x2A !(%x2A) (1*1(((1*(!(%x2A / %x0A) any_char))) as text)) %x2A !(%x2A)) !(%x0A %x0A)) as bold_constrained
+  bold_unconstrained = ((%x2A %x2A (1*1(((1*(!(%x2A) any_char))) as text)) %x2A %x2A)) as bold_unconstrained
+  span_constrained = (attribute_list %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23 !(%x23)) as span_constrained
+  span_unconstrained = (attribute_list %x23 %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23 %x23) as span_unconstrained
+  italic_constrained = ((%x5F !(%x5F) (1*1(((1*(!(%x5F / %x0A) any_char))) as text)) %x5F !(%x5F))) as italic_constrained
+  italic_unconstrained = ((%x5F %x5F (1*1(((1*(!(%x5F) any_char))) as text)) %x5F %x5F)) as italic_unconstrained
+  highlight_constrained = ((%x23 !(%x23) (1*1(((1*(!(%x23 / %x0A) any_char))) as text)) %x23 !(%x23))) as highlight_constrained
+  highlight_unconstrained = ((%x23 %x23 (1*1(((1*(!(%x23) any_char))) as text)) %x23 %x23)) as highlight_unconstrained
+  monospace_constrained = ((%x60 !(%x60) (1*1((1*((!(%x60 / %x0A) any_char) / (%x60 %x60))) as text)) %x60 !(%x60))) as monospace_constrained
+  monospace_unconstrained = ((%x60 %x60 (1*1(((1*(!(%x60) any_char))) as text)) %x60 %x60)) as monospace_unconstrained
+  superscript = (%x5E (1*1(((1*(!(%x5E / %x0A) any_char))) as text)) %x5E) as superscript
+  subscript = (%x7E (1*1(((1*(!(%x7E / %x0A) any_char))) as text)) %x7E) as subscript
+
+  inline = (typographic_quote / bold_unconstrained / bold_constrained / span_unconstrained / span_constrained / italic_unconstrained / italic_constrained / highlight_unconstrained / highlight_constrained / monospace_unconstrained / monospace_constrained / superscript / subscript / attribute_reference / escaped_xref / cross_reference / term_inline / term_inline2 / footnote / stem / link / inline_image / inline_passthrough / underline / small / hard_line_break)
+
+  # text.rb/inline.rb text layers
+  inline_chars = ((%x5B / %x2A / %x5F / %x7B / %x3C / %x5E / %x7E / %x60) / typographic_quote / "https" / "http" / "link:" / "image:" / "+++" / "pass:" / term_type / "footnote" / stem_type / (%x5C %x3C %x3C) / hard_line_break)
+  text_formatted = (&(inline_chars) inline)
+  text_unformatted = 1*(!("\\" %x3C %x3C) !(inline) !(%x0A) any_char)
+  text_any = ((2*((text_formatted / (text_unformatted) as text))) / (1*1(text_formatted)) / text_unformatted)
+
+  # ---- paragraph.rb ----
+  # NOTE: list.absent? from line_not_text? is pending the list.rb port;
+  # guard truth diverges only on real list lines (none in this corpus).
+  literal_space = 1*(%x20 / %x09)
+  section_prefix = (%x3D *(%x3D) any_char)
+  line_not_text = (!((attribute_list newline)) !(block_delimiter) !((%x7C %x3D %x3D %x3D newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
+  asciidoc_char = (%x2A / %x5F / %x3A / %x2B / %x3D / %x2D)
+  asciidoc_char_with_id = (asciidoc_char / (%x5B %x23) / (%x5B %x5B))
+  element_id_inline = ((%x5B %x5B (keyword) as id %x5D %x5D) / (%x5B %x23 (keyword) as id %x5D))
+  # paragraph_text_line(0|false|true): guard, text_any, then the
+  # three-state newline tail (0 = eof only; false = single; true = many)
+  # Ruby's (a.absent? | element_id_inline | line_not_text?) reduces under
+  # the outer line_not_text guard: arms 1/3 always hold there, and
+  # element_id_inline implies asciidoc_char_with_id — so it's just an
+  # optional inline id (keeps zero-width branches out of the alternation)
+  ptl_guard = (line_not_text [(element_id_inline) [*literal_space]])
+  paragraph_text_line_0 = (ptl_guard ((text_any)) as text (!(any_char)))
+  paragraph_text_line_s = (ptl_guard ((text_any)) as text ((line_ending) as line_break / (!(any_char))))
+  paragraph_text_line_m = (ptl_guard ((text_any)) as text ((newline) as line_break / (!(any_char))))
+  paragraph = (block_header ((((1*1(paragraph_text_line_0)) ((newline) as line_break / (!(any_char)))) / ((1*(paragraph_text_line_s)) [(1*1(paragraph_text_line_m) ((newline) as line_break / (!(any_char))))]))) as lines *(newline)) as paragraph
+
   # ---- base.rb rule(:document) — ported members in Ruby order ----
   # the repetition itself is the capture: parenthesize so `as` binds to
   # the star, not the body (per-iteration capture would fragment the tree)
-  document = (*(block / comment_block / comment_line / include_directive / tag / (empty_line as line_break) / (any_char as unparsed))) as document
+  document = (*(block / comment_block / comment_line / include_directive / paragraph / tag / (empty_line as line_break) / (any_char as unparsed))) as document
 
   entry document: document
 
