@@ -20,6 +20,7 @@ grammar CoradocAdoc version "0.2.0" {
   text = 1*(!"\n" any_char)
   line_ending = ("\n" / "\r\n")
   newline = 1*("\n" / "\r\n")
+  newline_single = ("\n" / "\r\n")
   empty_line = "\n"
   keyword = 1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-" / "." / ",")
   file_path = 1*(!"[" any_char)
@@ -69,6 +70,8 @@ grammar CoradocAdoc version "0.2.0" {
   tag = (("//" !("/") [1*" "] ("tag" / "end") as prefix "::" !(":") ((1*(!"[" any_char))) as name attribute_list [newline] as line_break)) as tag
 
   comment_block = (("////" line_ending (*(!((line_ending "////")) any_char)) as comment_text line_ending "////")) as comment_block
+
+  page_break = ("<<<" line_ending)
 
   include_directive = (("include::" file_path as path attribute_list [newline] as line_break)) as include
 
@@ -258,10 +261,81 @@ grammar CoradocAdoc version "0.2.0" {
   dlist_item = ((((((1*dlist_term) as terms) line_ending (*empty_line) [dlist_definition]) / (((1*dlist_term) as terms) space dlist_definition)) [list_item_attached] (*(list_continuation &(dlist_item)))) as definition_list_item)
   definition_list = ([(attribute_list line_ending)] ((1*(list_item_separator dlist_item)) as definition_list) !(dlist_item))
 
+  # ---- header.rb ----
+  word = (1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-"))
+  words = (word (*([*" "] word)))
+  email_r = (word %x40 word %x2E word)
+  date_r = (2*4(%x30-39) %x2D 1*2(%x30-39) %x2D 1*2(%x30-39))
+  header_title = (%x3D !(%x3D) [*" "] (text as title) newline)
+  author_r = ((words as first_name) %x2C [*" "] (words as last_name) [*" "] %x3C (email_r as email) %x3E newline)
+  revision_r = (((word [(%x2E word)]) as number) %x2C [*" "] (date_r as date) %x3A [*" "] (words as remark) newline)
+  header = (header_title ([author_r] as author) ([revision_r] as revision) *(newline))
+
+  # ---- document_attributes.rb ----
+  doc_attr_name = (1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-"))
+  doc_attr_value = (text / !(newline_single))
+  document_attribute = (%x3A (doc_attr_name as key) %x3A [*" "] (doc_attr_value as value) (newline_single / !(any_char)))
+  document_attributes = ((1*document_attribute) as document_attributes)
+
+  # ---- bibliography.rb ----
+  text_line_g = ([element_id_inline] [*literal_space] (text_any as text) ((newline_single as line_break) / !(any_char)))
+  bib_entry = (((!(%x2A) any_char) " [[[" ((1*(! (%x2C / %x5B / %x5D / %x0A) any_char)) as anchor_name) [(%x2C ((1*(! (%x5D / %x0A) any_char)) as document_id))] "]]]" [(((0*1text_line_g) (*text_line_g)) as ref_text)] [((1*newline_single) as line_break)]) as bibliography_entry)
+
+  # ---- text.rb block_image ----
+  attribute_list_macro = (&(%x5B) %x5B !(%x5B) (((named_many / positional_one_named_many / positional_many_named_many / positional_many / positional_zero_or_one) as attribute_array) as attribute_list_macro) %x5D)
+  block_image = ((block_header "image::" (file_path as path) attribute_list_macro (newline as line_break)) as block_image)
+
+  # ---- table.rb (state-driven delimiter) ----
+  state tdc: string
+  state tdf: string
+  dchar = (%x7C / %x21 / %x2C / %x3A / %x3B)
+  fspec_char = (%x30-39 / %x2E / %x3C / %x3E / "d" / "s" / "e" / "m" / "a" / "l" / "h" / "v" / %x2B / %x5E)
+  cell_format_spec = (1*fspec_char)
+  table_start = ((set tdc = (dchar as delim_char)) (set tdf = (2*%x3D)))
+  table_close = ((state tdc) (state tdf))
+  new_row_signal = (newline_single ((state tdc) / (fspec_char (*fspec_char) (state tdc))))
+  # \ + a delim char: state-matched chars drop out of the enclosing
+  # capture span (#129 nuance), so match the delim class instead —
+  # for the active delim it consumes the same pair, and a \ + other-delim
+  # pair consumes the same bytes as two single-char iterations
+  escaped_delim = (%x5C dchar)
+  cell_content = (*(!table_close !new_row_signal (escaped_delim / (!((state tdc)) any_char))))
+  table_cell = ([*literal_space] ([cell_format_spec] as cell_format) (state tdc) (cell_content as text))
+  table_row = (((1*(!table_close !new_row_signal (table_cell as cell))) as cells) newline_single)
+  table_rows = (1*(!table_close (table_row as row)))
+  table = (block_header table_start newline_single (table_rows as rows) table_close (newline_single / !(any_char)))
+
+  # ---- section.rb (levels 2..8) ----
+  endline_r = ((newline as line_break) / !(any_char))
+  section_header = ([(element_id)] [(attribute_blocks)])
+
+  section_title_2 = ((((2*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
+  section_title_3 = ((((3*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
+  section_title_4 = ((((4*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
+  section_title_5 = ((((5*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
+  section_title_6 = ((((6*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
+  section_title_7 = ((((7*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
+  section_title_8 = ((((8*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
+  contents_r = ((1*(bib_entry / block_image / tag / comment_block / comment_line / include_directive / admonition_line / block / (table as table) / (page_break as page_break) / paragraph / list_1 / (empty_line as line_break))) as contents)
+  section_block_2 = (section_header (section_title_2 as title) [(contents_r)])
+  section_block_3 = (section_header (section_title_3 as title) [(contents_r)])
+  section_block_4 = (section_header (section_title_4 as title) [(contents_r)])
+  section_block_5 = (section_header (section_title_5 as title) [(contents_r)])
+  section_block_6 = (section_header (section_title_6 as title) [(contents_r)])
+  section_block_7 = (section_header (section_title_7 as title) [(contents_r)])
+  section_block_8 = (section_header (section_title_8 as title) [(contents_r)])
+  section_8 = section_block_8
+  section_7 = (section_block_7 ((*(section_8 as section)) as sections))
+  section_6 = (section_block_6 ((*(section_7 as section)) as sections))
+  section_5 = (section_block_5 ((*(section_6 as section)) as sections))
+  section_4 = (section_block_4 ((*(section_5 as section)) as sections))
+  section_3 = (section_block_3 ((*(section_4 as section)) as sections))
+  section_2 = ((section_block_2 ((*(section_3 as section)) as sections)) as section)
+
   # ---- base.rb rule(:document) — ported members in Ruby order ----
   # the repetition itself is the capture: parenthesize so `as` binds to
   # the star, not the body (per-iteration capture would fragment the tree)
-  document = (*(block / comment_block / comment_line / include_directive / admonition_line / list_1 / paragraph / tag / (empty_line as line_break) / (any_char as unparsed))) as document
+  document = (*(((header) as header) / document_attributes / section_2 / admonition_line / bib_entry / block / block_image / comment_block / comment_line / include_directive / list_1 / (table) as table / (page_break) as page_break / paragraph / tag / (empty_line as line_break) / (any_char as unparsed))) as document
 
   entry document: document
 

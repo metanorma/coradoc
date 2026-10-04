@@ -84,6 +84,25 @@ CORPUS = [
   "TIP: this helps\n",
   # list continuation + attached
   "* item\n+\nattached para\n",
+  # headers / doc attributes / sections
+  "= Document Title\n",
+  "= Document Title\nAuthor Name, <a@b.co>\n",
+  "= T\nAuthor, Last <e@x.io>\n1.2, 2024-01-01: remark\n",
+  ":toc: left\n:sectnums:\n",
+  "=== Level 3\n\ntext\n\n== Level 2\n",
+  "== A\n\n=== B\n\ndeep\n\n",
+  # page break + block image
+  "para\n\n<<<\n\n",
+  "image::pic.png[]\n",
+  ".Caption\nimage::dir/img.png[alt=Hi]\n",
+  # bibliography
+  "* [[[ref1]]] Some reference text\n",
+  "* [[[iso123,ISO 123]]] Reference with doc id\n",
+  # tables
+  "|===\n| a | b\n| c | d\n|===\n",
+  "|===\n| cell with | pipe escaped \\\\| inside\n|===\n",
+  ",===\n, comma table\n,===\n",
+  "|===\n2+^| spans\n|===\n",
 ].freeze
 
 def normalize(obj)
