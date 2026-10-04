@@ -179,7 +179,8 @@ grammar CoradocAdoc version "0.2.0" {
   # guard truth diverges only on real list lines (none in this corpus).
   literal_space = 1*(%x20 / %x09)
   section_prefix = (%x3D *(%x3D) any_char)
-  line_not_text = (!((attribute_list newline)) !(block_delimiter) !((%x7C %x3D %x3D %x3D newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
+  list_prefix = (((%x2A 1*5(%x2A)) / (%x2E 1*5(%x2E))) " ")
+  line_not_text = (!(list_1) !(list_prefix) !(list_continuation) !((attribute_list newline)) !(block_delimiter) !((%x7C %x3D %x3D %x3D newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
   asciidoc_char = (%x2A / %x5F / %x3A / %x2B / %x3D / %x2D)
   asciidoc_char_with_id = (asciidoc_char / (%x5B %x23) / (%x5B %x5B))
   element_id_inline = ((%x5B %x5B (keyword) as id %x5D %x5D) / (%x5B %x23 (keyword) as id %x5D))
@@ -195,10 +196,72 @@ grammar CoradocAdoc version "0.2.0" {
   paragraph_text_line_m = (ptl_guard ((text_any)) as text ((newline) as line_break / (!(any_char))))
   paragraph = (block_header ((((1*1(paragraph_text_line_0)) ((newline) as line_break / (!(any_char)))) / ((1*(paragraph_text_line_s)) [(1*1(paragraph_text_line_m) ((newline) as line_break / (!(any_char))))]))) as lines *(newline)) as paragraph
 
+  # ---- admonition.rb ----
+  admonition_type = (%i"note" / %i"tip" / %i"warning" / %i"caution" / %i"important" / %i"editor" / %i"todo" / %i"admonition")
+  admonition_line = ((admonition_type as admonition_type) ": " ((1*((text_any as text) (line_ending as line_break))) as content))
+
+  # ---- list.rb (nesting levels unrolled 1..5) ----
+  list_continuation = ("+" %x0A)
+  list_item_separator = (*(comment_line_content / empty_line))
+  ulist_marker_1 = ( ((1%x2A !(%x2A) !("===")) / (%x2D !(%x2D) !(%x30-39))))
+  olist_marker_1 = ( 1%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  list_marker_1 = (olist_marker_1 / ulist_marker_1)
+  ulist_marker_2 = ([*literal_space] (2%x2A !(%x2A) !("===")))
+  olist_marker_2 = ([*literal_space] 2%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  list_marker_2 = (olist_marker_2 / ulist_marker_2)
+  ulist_marker_3 = ([*literal_space] (3%x2A !(%x2A) !("===")))
+  olist_marker_3 = ([*literal_space] 3%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  list_marker_3 = (olist_marker_3 / ulist_marker_3)
+  ulist_marker_4 = ([*literal_space] (4%x2A !(%x2A) !("===")))
+  olist_marker_4 = ([*literal_space] 4%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  list_marker_4 = (olist_marker_4 / ulist_marker_4)
+  ulist_marker_5 = ([*literal_space] (5%x2A !(%x2A) !("===")))
+  olist_marker_5 = ([*literal_space] 5%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  list_marker_5 = (olist_marker_5 / ulist_marker_5)
+  inline_lb = (typographic_quote / bold_unconstrained / bold_constrained / span_unconstrained / span_constrained / italic_unconstrained / italic_constrained / highlight_unconstrained / highlight_constrained / monospace_unconstrained / monospace_constrained / superscript / subscript / attribute_reference / escaped_xref / cross_reference / term_inline / term_inline2 / footnote / stem / link / inline_image / inline_passthrough / underline / small)
+  list_body_hard_break = ((" +" %x0A) / (%x5C %x0A))
+  list_body_text_unformatted = (1*(!("\\<<") !(inline_lb) !(list_body_hard_break) !(%x0A) any_char))
+  list_body_text_any = (1*(inline_lb / (list_body_text_unformatted as text)))
+  list_body_line_ending = (((" +" as hard_line_break) (line_ending as line_break)) / (line_ending as line_break) / !(any_char))
+  list_body_text_line = ([*literal_space] (list_body_text_any as text) list_body_line_ending)
+  list_item_continuation_lines = (*(line_not_text list_body_text_line))
+  list_attached_block = (admonition_line / unordered_list_1 / ordered_list_1 / paragraph / block)
+  list_item_attached = ((*(&(list_continuation) list_continuation list_attached_block)) as attached)
+  ulist_item_1 = (&(ulist_marker_1) (((ulist_marker_1 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
+  olist_item_1 = (&(olist_marker_1) (((olist_marker_1 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
+  ulist_item_2 = (&(ulist_marker_2) (((ulist_marker_2 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_3) list_3)) as nested)) as list_item))
+  olist_item_2 = (&(olist_marker_2) (((olist_marker_2 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_3) list_3)) as nested)) as list_item))
+  ulist_item_3 = (&(ulist_marker_3) (((ulist_marker_3 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_4) list_4)) as nested)) as list_item))
+  olist_item_3 = (&(olist_marker_3) (((olist_marker_3 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_4) list_4)) as nested)) as list_item))
+  ulist_item_4 = (&(ulist_marker_4) (((ulist_marker_4 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_5) list_5)) as nested)) as list_item))
+  olist_item_4 = (&(olist_marker_4) (((olist_marker_4 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_5) list_5)) as nested)) as list_item))
+  ulist_item_5 = (&(ulist_marker_5) (((ulist_marker_5 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ) as list_item))
+  olist_item_5 = (&(olist_marker_5) (((olist_marker_5 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ) as list_item))
+  unordered_list_1 = ([(attribute_list line_ending)] ((1*(list_item_separator ulist_item_1)) as unordered))
+  ordered_list_1 = ([(attribute_list line_ending)] ((1*(list_item_separator olist_item_1)) as ordered))
+  list_1 = ((unordered_list_1 / ordered_list_1 / definition_list)) as list
+  unordered_list_2 = ([(attribute_list line_ending)] ((1*(list_item_separator ulist_item_2)) as unordered))
+  ordered_list_2 = ([(attribute_list line_ending)] ((1*(list_item_separator olist_item_2)) as ordered))
+  list_2 = ((unordered_list_2 / ordered_list_2 / definition_list)) as list
+  unordered_list_3 = ([(attribute_list line_ending)] ((1*(list_item_separator ulist_item_3)) as unordered))
+  ordered_list_3 = ([(attribute_list line_ending)] ((1*(list_item_separator olist_item_3)) as ordered))
+  list_3 = ((unordered_list_3 / ordered_list_3 / definition_list)) as list
+  unordered_list_4 = ([(attribute_list line_ending)] ((1*(list_item_separator ulist_item_4)) as unordered))
+  ordered_list_4 = ([(attribute_list line_ending)] ((1*(list_item_separator olist_item_4)) as ordered))
+  list_4 = ((unordered_list_4 / ordered_list_4 / definition_list)) as list
+  unordered_list_5 = ([(attribute_list line_ending)] ((1*(list_item_separator ulist_item_5)) as unordered))
+  ordered_list_5 = ([(attribute_list line_ending)] ((1*(list_item_separator olist_item_5)) as ordered))
+  list_5 = ((unordered_list_5 / ordered_list_5 / definition_list)) as list
+  dlist_delimiter = (((":::::" !(%x3A)) / ("::::" !(%x3A)) / (":::" !(%x3A)) / ("::" !(%x3A)) / ";;") as delimiter)
+  dlist_term = ((([element_id_inline] ((1*(!(dlist_delimiter) !(%x0A) any_char)) as text)) as dlist_term) dlist_delimiter)
+  dlist_definition = ((line_not_text *((%x20 / %x09)) ((list_body_text_line list_item_continuation_lines) as lines)) (*empty_line))
+  dlist_item = ((((((1*dlist_term) as terms) line_ending (*empty_line) [dlist_definition]) / (((1*dlist_term) as terms) space dlist_definition)) [list_item_attached] (*(list_continuation &(dlist_item)))) as definition_list_item)
+  definition_list = ([(attribute_list line_ending)] ((1*(list_item_separator dlist_item)) as definition_list) !(dlist_item))
+
   # ---- base.rb rule(:document) — ported members in Ruby order ----
   # the repetition itself is the capture: parenthesize so `as` binds to
   # the star, not the body (per-iteration capture would fragment the tree)
-  document = (*(block / comment_block / comment_line / include_directive / paragraph / tag / (empty_line as line_break) / (any_char as unparsed))) as document
+  document = (*(block / comment_block / comment_line / include_directive / admonition_line / list_1 / paragraph / tag / (empty_line as line_break) / (any_char as unparsed))) as document
 
   entry document: document
 

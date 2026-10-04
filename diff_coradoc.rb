@@ -70,7 +70,20 @@ CORPUS = [
   "^sup^ and ~sub~ marks\n",
   "plain text with no markup at all\n",
   "{attr-ref} in text\n",
-  "escaped \\\\<< not an xref\n"
+  "escaped \\\\<< not an xref\n",
+  # lists
+  "* a\n* b\n",
+  "* a\n** nested\n* b\n",
+  ". one\n. two\n",
+  "- dash item\n",
+  "term::\n  definition\n",
+  "term:: inline definition\n",
+  "a:::: deep\n",
+  # admonition
+  "NOTE: watch out\n",
+  "TIP: this helps\n",
+  # list continuation + attached
+  "* item\n+\nattached para\n",
 ].freeze
 
 def normalize(obj)
