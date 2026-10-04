@@ -23,12 +23,14 @@ module Coradoc
         end
 
         def node_has_ancestor?(node, name)
-          case name
-          when String
-            node.ancestors(name).any?
-          when Array
-            name.any? { |n| node.ancestors(n).any? }
+          names = Array(name)
+          parent = node.parent
+          while parent
+            return true if parent.element? && names.include?(parent.name)
+
+            parent = parent.parent
           end
+          false
         end
 
         def textnode_before_end_with?(node, str)
@@ -39,7 +41,7 @@ module Coradoc
           str = /(?:#{str})\z/
 
           node2 = node.at_xpath('preceding-sibling::node()[1]')
-          node2.is_a?(Nokogiri::XML::Text) && node2.text.match?(str)
+          node2.is_a?(Leptris::XML::Text) && node2.content.match?(str)
         end
 
         def textnode_after_start_with?(node, str)
@@ -50,7 +52,7 @@ module Coradoc
           str = /\A(?:#{str})/
 
           node2 = node.at_xpath('following-sibling::node()[1]')
-          node2.is_a?(Nokogiri::XML::Text) && node2.text.match?(str)
+          node2.is_a?(Leptris::XML::Text) && node2.content.match?(str)
         end
 
         def extract_leading_trailing_whitespace(node)
@@ -58,14 +60,14 @@ module Coradoc
           leading_whitespace = ::Regexp.last_match(1)
           unless leading_whitespace.nil?
             first_text = node.at_xpath('./text()[1]')
-            first_text&.replace(first_text.text.lstrip)
+            first_text&.content = first_text.content.lstrip
             leading_whitespace = ' '
           end
           node.text =~ /(\s+)$/
           trailing_whitespace = ::Regexp.last_match(1)
           unless trailing_whitespace.nil?
             last_text = node.at_xpath('./text()[last()]')
-            last_text&.replace(last_text.text.rstrip)
+            last_text&.content = last_text.content.rstrip
             trailing_whitespace = ' '
           end
           [leading_whitespace, trailing_whitespace]

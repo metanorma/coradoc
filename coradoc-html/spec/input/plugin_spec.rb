@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'nokogiri'
+require 'leptris'
 
 RSpec.describe Coradoc::Html::Plugin do
   let(:plugin_class) { described_class.new }
@@ -62,7 +62,7 @@ RSpec.describe Coradoc::Html::Plugin do
 
   describe 'HTML tree manipulation' do
     let(:html) { '<div><p class="remove">gone</p><p class="keep">stay</p></div>' }
-    let(:doc) { Nokogiri::HTML.fragment(html) }
+    let(:doc) { html_fragment(html) }
 
     before { plugin.html_tree = doc }
 
@@ -94,7 +94,7 @@ RSpec.describe Coradoc::Html::Plugin do
     describe '#html_tree_replace_with_children_by_css' do
       it 'replaces elements with their children' do
         outer = '<div><wrap><p>inner</p></wrap></div>'
-        nested_doc = Nokogiri::HTML.fragment(outer)
+        nested_doc = html_fragment(outer)
         plugin.html_tree = nested_doc
         plugin.html_tree_replace_with_children_by_css('wrap')
         expect(nested_doc.at_css('wrap')).to be_nil
@@ -105,14 +105,14 @@ RSpec.describe Coradoc::Html::Plugin do
 
   describe '#html_tree_process_to_coremodel' do
     it 'processes an HTML tree to CoreModel' do
-      doc = Nokogiri::HTML('<p>Hello</p>')
+      doc = Leptris::HTML.parse('<p>Hello</p>')
       result = plugin.html_tree_process_to_coremodel(doc.root)
       expect(result).not_to be_nil
     end
   end
 
   describe 'hooks' do
-    let(:doc) { Nokogiri::HTML.fragment('<p>test</p>') }
+    let(:doc) { html_fragment('<p>test</p>') }
     let(:node) { doc.at_css('p') }
 
     before { plugin.html_tree = doc }
@@ -139,7 +139,7 @@ RSpec.describe Coradoc::Html::Plugin do
 
     describe '#html_tree_add_hook_pre_by_css' do
       it 'adds pre-hooks to elements matching CSS' do
-        doc = Nokogiri::HTML.fragment('<p>one</p><p>two</p>')
+        doc = html_fragment('<p>one</p><p>two</p>')
         plugin.html_tree = doc
         nodes = doc.css('p')
 
@@ -156,7 +156,7 @@ RSpec.describe Coradoc::Html::Plugin do
 
   describe 'accessors' do
     it 'allows setting and getting html_tree' do
-      doc = Nokogiri::HTML.fragment('<div/>')
+      doc = html_fragment('<div/>')
       plugin.html_tree = doc
       expect(plugin.html_tree).to eq(doc)
     end

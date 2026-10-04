@@ -73,8 +73,8 @@ RSpec.describe Coradoc::Html do
   end
 
   describe '.handles_model?' do
-    it 'accepts Nokogiri nodes' do
-      doc = Nokogiri::HTML('<p>test</p>')
+    it 'accepts Leptris nodes' do
+      doc = Leptris::HTML.parse('<p>test</p>')
       expect(described_class.handles_model?(doc)).to be true
     end
 

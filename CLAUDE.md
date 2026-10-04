@@ -10,7 +10,7 @@ Coradoc is a Ruby hub-and-spoke document transformation library. A canonical `Co
 
 - **`coradoc/`** — Core gem: `CoreModel`, `Registry`, `Transform::Base`, hooks, validation, streaming, query API
 - **`coradoc-adoc/`** — AsciiDoc gem: Parslet-based parser, document model, serializer, transformer (ToCoreModel/FromCoreModel)
-- **`coradoc-html/`** — HTML gem: Nokogiri-based converter, classic renderer, Vue.js SPA theme
+- **`coradoc-html/`** — HTML gem: Leptris-based converter, classic renderer, Vue.js SPA theme
 - **`coradoc-markdown/`** — Markdown gem: Parslet-based CommonMark parser, document model, serializer
 - **`coradoc-docx/`** — DOCX gem: Uniword-based OOXML transformer
 
@@ -71,8 +71,8 @@ Format gems register via `Coradoc.register_format(:name, Module)` and must imple
 ### Key Dependencies
 
 - `lutaml-model` — serialization framework for model classes (used by CoreModel and AsciiDoc model)
-- `parslet` — PEG parser (used by AsciiDoc and Markdown parsers)
-- `nokogiri` — HTML parsing (used by HTML gem)
+- `parslet` — PEG parser (used by AsciiDoc and Markdown parsers; Parsanol migration in flight — see the `wip/parsanol-migration` branch and parsanol-ruby#67)
+- `leptris` — Leptris::XML FFI binding: HTML parsing + DOM + serialization (used by the HTML gem). Parse via the `Leptris::HTML` facade (`Leptris::HTML.parse` = html4/Nokogiri-parity lane, `Leptris::HTML5.parse` = WHATWG; selected with the `html_version:` input option). Set `LEPTRIS_NO_NATIVE=1` for dev/CI until the native-bundle codesign issue is resolved
 - `thor` — CLI framework
 
 ## Conventions
@@ -80,7 +80,7 @@ Format gems register via `Coradoc.register_format(:name, Module)` and must imple
 - **Release only on user request**: Never trigger gem releases or version bumps autonomously. Only release when the user explicitly asks for it.
 - **NO HASHES IN MODELS**: CoreModel classes must NEVER use `:hash` as an attribute type. Every attribute must be a typed model, string, integer, or array of typed models. No hash bags, no generic key-value stores. This enforces the model-driven architecture.
 - **NO SERIALIZATION IN MODELS**: CoreModel classes must NEVER contain `to_hash`, `to_json`, `serialize`, or any custom serialization methods. Models are pure data structures. Serialization is handled by dedicated serializer classes (lutaml-model handles this automatically).
-- **NO RAW HTML STRINGS**: The HTML gem must use Nokogiri as both the model layer AND the HTML builder. Never concatenate raw HTML strings. Never manually construct HTML in text. Use `Nokogiri::HTML::Builder` or `Nokogiri::XML::Node` methods to construct HTML output. ALL non-model-driven HTML construction code must be converted to Nokogiri builder.
+- **NO RAW HTML STRINGS**: The HTML gem must use Leptris::XML as both the model layer AND the HTML builder. Never concatenate raw HTML strings. Never manually construct HTML in text. Use `Coradoc::Html::Builder` or `Leptris::XML` node methods to construct HTML output. ALL non-model-driven HTML construction code must be converted to the Builder.
 - **Model classes own only their native format**: No `to_adoc` in Markdown models, no `to_md` in AsciiDoc models. Cross-format conversion always routes through CoreModel transformers (ToCoreModel / FromCoreModel). This enforces SRP, OCP, and DIP.
 - **Autoload over require_relative**: Use `autoload` with `#{__dir__}` paths (see `core_model.rb` for pattern). Exception: files with load-time side effects (registrations, `apply` calls) use `require_relative`.
 - **Error-raising in serializers**: Unknown types in `serialize_content` should raise `ArgumentError`, never fall back to `to_s`. This catches missing serializers immediately rather than producing Ruby object dumps.

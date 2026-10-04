@@ -71,7 +71,7 @@ module Coradoc
       end
 
       def self.process_coradoc(node, state)
-        node = node.to_a if node.is_a? Nokogiri::XML::NodeSet
+        node = node.to_a if node.is_a? Leptris::XML::NodeSet
         return node.map { |i| process_coradoc(i, state) } if node.is_a? Array
 
         plugins = state[:plugin_instances] || {}

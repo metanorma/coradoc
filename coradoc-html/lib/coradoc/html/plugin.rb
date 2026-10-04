@@ -41,12 +41,15 @@ module Coradoc
       end
 
       def html_tree_remove_by_css(css)
-        html_tree.css(css).each(&:remove)
+        html_tree.css(css).each do |e|
+          e.parent&.remove_child(e)
+        end
       end
 
       def html_tree_replace_with_children_by_css(css)
         html_tree.css(css).each do |e|
-          e.replace(e.children)
+          e.children.each { |child| e.add_previous_sibling(child) }
+          e.parent&.remove_child(e)
         end
       end
 

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'nokogiri'
+require 'leptris'
 
 RSpec.describe Coradoc::Html::Converters do
   describe 'Converter::Aside' do
@@ -10,7 +10,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'creates a SidebarBlock from an aside element' do
         html = '<aside>Some sidebar content</aside>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('aside')
 
         result = converter.to_coradoc(node, {})
@@ -20,7 +20,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'passes child content through to the SidebarBlock' do
         html = '<aside><p>Paragraph in sidebar</p></aside>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('aside')
 
         result = converter.to_coradoc(node, {})
@@ -31,7 +31,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'handles an empty aside element' do
         html = '<aside></aside>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('aside')
 
         result = converter.to_coradoc(node, {})
@@ -42,7 +42,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'preserves multiple child elements' do
         html = '<aside><p>First</p><p>Second</p><p>Third</p></aside>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('aside')
 
         result = converter.to_coradoc(node, {})
@@ -59,7 +59,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'creates a ListBlock with definition marker_type from a dl element' do
         html = '<dl><dt>Term</dt><dd>Definition</dd></dl>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('dl')
 
         result = converter.to_coradoc(node, {})
@@ -70,7 +70,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'creates ListItem entries for each term-definition pair' do
         html = '<dl><dt>Apple</dt><dd>A fruit</dd><dt>Banana</dt><dd>Another fruit</dd></dl>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('dl')
 
         result = converter.to_coradoc(node, {})
@@ -82,7 +82,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'extracts term text into ListItem content' do
         html = '<dl><dt>HTML</dt><dd>HyperText Markup Language</dd></dl>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('dl')
 
         result = converter.to_coradoc(node, {})
@@ -92,7 +92,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'places definition content in ListItem children' do
         html = '<dl><dt>Term</dt><dd>Definition text</dd></dl>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('dl')
 
         result = converter.to_coradoc(node, {})
@@ -102,7 +102,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'handles multiple dd elements for a single dt' do
         html = '<dl><dt>Term</dt><dd>First definition</dd><dd>Second definition</dd></dl>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('dl')
 
         result = converter.to_coradoc(node, {})
@@ -116,7 +116,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'handles an empty dl element' do
         html = '<dl></dl>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('dl')
 
         result = converter.to_coradoc(node, {})
@@ -128,7 +128,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'handles dt/dd elements wrapped in div containers' do
         html = '<dl><div><dt>Term</dt><dd>Definition</dd></div></dl>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('dl')
 
         result = converter.to_coradoc(node, {})
@@ -146,7 +146,7 @@ RSpec.describe Coradoc::Html::Converters do
     describe '#to_coradoc' do
       it 'creates an ExampleBlock from a figure element' do
         html = '<figure><img src="photo.png" alt="A photo"/></figure>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('figure')
 
         result = converter.to_coradoc(node, {})
@@ -156,7 +156,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'extracts title from figcaption' do
         html = '<figure><figcaption>My Figure</figcaption><img src="photo.png" alt="photo"/></figure>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('figure')
 
         result = converter.to_coradoc(node, {})
@@ -166,7 +166,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'sets id attribute from the figure element' do
         html = '<figure id="fig-1"><img src="photo.png" alt="photo"/></figure>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('figure')
 
         result = converter.to_coradoc(node, {})
@@ -176,7 +176,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'handles a figure without figcaption' do
         html = '<figure><img src="photo.png" alt="photo"/></figure>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('figure')
 
         result = converter.to_coradoc(node, {})
@@ -187,7 +187,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'handles a figure without id' do
         html = '<figure><img src="photo.png" alt="photo"/></figure>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('figure')
 
         result = converter.to_coradoc(node, {})
@@ -197,7 +197,7 @@ RSpec.describe Coradoc::Html::Converters do
 
       it 'passes child content through to the ExampleBlock' do
         html = '<figure><img src="photo.png" alt="photo"/><figcaption>Caption</figcaption></figure>'
-        doc = Nokogiri::HTML.fragment(html)
+        doc = html_fragment(html)
         node = doc.at('figure')
 
         result = converter.to_coradoc(node, {})
@@ -211,10 +211,10 @@ RSpec.describe Coradoc::Html::Converters do
   describe 'Converter::Head' do
     let(:converter) { Coradoc::Html::Converters::Head.new }
 
-    # Helper: Nokogiri::HTML.fragment drops <head> since it's a structural
+    # html_fragment drops <head> since it's a structural
     # element, so we parse a full document and extract the <head> node.
     def head_node_from(html)
-      doc = Nokogiri::HTML.parse(html)
+      doc = Leptris::HTML.parse(html)
       doc.at('head')
     end
 

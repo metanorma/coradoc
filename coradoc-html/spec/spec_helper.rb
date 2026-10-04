@@ -3,6 +3,11 @@
 require 'rspec/its'
 require 'simplecov'
 
+# The suite exercises the portable Leptris FFI surface (same choice the
+# leptris gem's own suite makes); platform native acceleration is
+# orthogonal to these specs.
+ENV['LEPTRIS_NO_NATIVE'] ||= '1'
+
 # Require the main coradoc gem first
 require 'coradoc'
 
@@ -59,7 +64,12 @@ Dir[File.join(__dir__, 'support', '**', '*.rb')]
 Dir[File.join(__dir__, 'coradoc', 'html', 'drop', 'shared_*.rb')]
   .each { |f| require File.expand_path(f) }
 
-# Helper method to get Nokogiri node from HTML
+# Helper method to get an element node from HTML
 def node_for(html)
-  Nokogiri::HTML.parse(html).root&.child&.child
+  Leptris::HTML.parse(html).root&.child&.child
+end
+
+# Helper to parse an HTML fragment; returns the <body> element wrapping it.
+def html_fragment(html)
+  Leptris::HTML.parse(html).at_css('body')
 end

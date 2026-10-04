@@ -10,10 +10,12 @@ module Coradoc
           root = track_time 'Loading input HTML document' do
             case input
             when String
-              Nokogiri::HTML(input).root
-            when Nokogiri::XML::Document
+              next nil if input.strip.empty?
+
+              html_parse(input).root
+            when Leptris::XML::Document
               input.root
-            when Nokogiri::XML::Node
+            when Leptris::XML::Node
               input
             end
           end
@@ -55,6 +57,23 @@ module Coradoc
 
       def self.prepare_plugin_instances(options)
         options[:plugin_instances] || Html.input_config.plugins.map(&:new)
+      end
+
+      # Single dispatch point for the HTML parsing lane: :html4 keeps
+      # Nokogiri::HTML byte-parity; :html5 selects the WHATWG-conformant
+      # engine (implied tbody/tr, foster parenting, full implied head).
+      # A synthesized empty <head/> is stripped before conversion — an
+      # authored empty head (html4 lane, explicit markup) still produces
+      # a DocumentElement with the placeholder title.
+      def self.html_parse(input)
+        if Html.input_config.html_version == :html5
+          doc = Leptris::HTML5.parse(input)
+          head = doc.at_css('head')
+          head.parent&.remove_child(head) if head && head.children.empty?
+          doc
+        else
+          Leptris::HTML.parse(input)
+        end
       end
 
       @track_time_indentation = 0

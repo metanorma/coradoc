@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'nokogiri'
-
 module Coradoc
   module Html
     # Single source of truth for FrontmatterBlock -> HTML `<meta>` and
@@ -9,7 +7,7 @@ module Coradoc
     # HTML gem; CoreModel has no knowledge of HTML.)
     #
     # The module produces a small data structure that layout templates
-    # and Nokogiri::HTML::Builder fallbacks both consume, so we never
+    # and Builder fallbacks both consume, so we never
     # duplicate the mapping rule across output paths (DRY).
     #
     # Mapping table (single source of truth — extend here only):
@@ -50,7 +48,7 @@ module Coradoc
           }
         end
 
-        # Emit meta + link tags into a Nokogiri head builder context.
+        # Emit meta + link tags into a Builder head context.
         def emit_into_builder(builder_doc, block)
           data = extract(block)
           Array(data[:metas]).each do |meta|
