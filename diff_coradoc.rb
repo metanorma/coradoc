@@ -5,14 +5,14 @@
 # artifact and the Ruby DSL parser. Slices normalize to their strings;
 # offsets/positions are not part of the contract.
 
-$LOAD_PATH.unshift "/Users/mulgogi/src/parsanol/parsanol-ruby/lib"
-$LOAD_PATH.unshift File.expand_path("coradoc/lib", __dir__)
-$LOAD_PATH.unshift File.expand_path("coradoc-adoc/lib", __dir__)
-require "parsanol"
-require "parsanol/parg"
-require "coradoc"
-require "coradoc/asciidoc"
-require "coradoc/asciidoc/parser"
+$LOAD_PATH.unshift '/Users/mulgogi/src/parsanol/parsanol-ruby/lib'
+$LOAD_PATH.unshift File.expand_path('coradoc/lib', __dir__)
+$LOAD_PATH.unshift File.expand_path('coradoc-adoc/lib', __dir__)
+require 'parsanol'
+require 'parsanol/parg'
+require 'coradoc'
+require 'coradoc/asciidoc'
+require 'coradoc/asciidoc/parser'
 
 CORPUS = [
   # delimited blocks, every style
@@ -70,7 +70,7 @@ CORPUS = [
   "^sup^ and ~sub~ marks\n",
   "plain text with no markup at all\n",
   "{attr-ref} in text\n",
-  "escaped \\\\<< not an xref\n",
+  "escaped \\\\<< not an xref\n"
 ].freeze
 
 def normalize(obj)
@@ -83,7 +83,7 @@ def normalize(obj)
 end
 
 artifact = Parsanol::PARG::Artifact.load(
-  File.expand_path("grammars/coradoc-adoc.artifact.json", __dir__)
+  File.expand_path('grammars/coradoc-adoc.artifact.json', __dir__)
 )
 
 dsl = Coradoc::AsciiDoc::Parser::Base.new
@@ -92,7 +92,7 @@ pass = 0
 failures = []
 CORPUS.each_with_index do |input, i|
   a_tree = begin
-    t = artifact.parse("document", input, mode: :ruby)
+    t = artifact.parse('document', input, mode: :ruby)
     [:ok, normalize(t)]
   rescue StandardError => e
     [:err, "#{e.class}: #{e.message[0, 120]}"]

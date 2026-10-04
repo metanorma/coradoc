@@ -63,9 +63,6 @@ module Coradoc
                 cont_rule
               end
             caps[:block] = kind
-            # zero-width always-succeed tail (the former
-            # any.present? | any.absent? tautology was a shadowed
-            # alternative — lint, parsanol 1.3.55+)
             str('')
           end
         end
@@ -74,9 +71,7 @@ module Coradoc
           whitespace.repeat(1) >>
             str('#').repeat >>
             whitespace.repeat >>
-            # zero-width "at line end or EOF": a negative lookahead over
-            # any non-line-ending char (the former two-branch lookahead
-            # chain shadowed its EOF branch — lint, parsanol 1.3.55+)
+            # zero-width "at line end or EOF" — negative lookahead
             match('[^\n\r]').absent?
         end
 
