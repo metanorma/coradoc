@@ -1,0 +1,139 @@
+# Coradoc AsciiDoc grammar — PARG port (parsanol-ruby#129 acceptance).
+#
+# Translation of coradoc-adoc/lib/coradoc/asciidoc/parser (Ruby Parsanol
+# DSL) to .parg. Ported incrementally; each rule family cites its Ruby
+# source. The motivating runtime-state patterns (fence capture + dynamic
+# close, from Parser::Block#block_style / #markdown_code_block) map onto
+# set/state exactly as designed in parsanol-ruby#129.
+#
+# Increment 1 scope: terminals, attribute lists (faithful capture
+# shapes), element ids, block titles, block headers, all delimited
+# block styles (verbatim content), comments/tags/includes, document
+# dispatch subset with the unparsed catch-all.
+
+grammar CoradocAdoc version "0.2.0" {
+
+  # ---- text.rb terminals ----
+  any_char = %x01-10FFFF
+  space = 1*" "
+  sp = [1*" "]
+  text = 1*(!"\n" any_char)
+  line_ending = ("\n" / "\r\n")
+  newline = 1*("\n" / "\r\n")
+  empty_line = "\n"
+  keyword = 1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-" / "." / ",")
+  file_path = 1*(!"[" any_char)
+
+  # ---- attribute_list.rb (faithful capture shapes) ----
+  named_key = (1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-")) as named_key
+
+  named_value_sq = %x27 (1*(!(%x27) any_char)) %x27
+  named_value_dq = %x22 (1*(!(%x22) any_char)) %x22
+  named_value_noquote = 1*(!(%x5D / %x2C) any_char)
+  named_value = ((named_value_sq / named_value_dq / named_value_noquote)) as named_value
+
+  named_attribute = ((named_key [space] "=" [space] named_value [space])) as named
+
+  positional_value_sq = %x27 (1*(!(%x27) any_char)) %x27
+  positional_value_dq = %x22 (1*(!(%x22) any_char)) %x22
+  positional_value_unquoted = 1*(!(%x5D / %x2C / %x3D) any_char)
+  positional_attribute = (((positional_value_sq / positional_value_dq / positional_value_unquoted) !(%x3D))) as positional
+
+  named_many = ((1*1(named_attribute)) [*(%x2C [space] named_attribute)])
+  positional_one_named_many = ((1*1(positional_attribute)) 1*(%x2C [space] named_attribute))
+  positional_many_named_many = ((1*1(positional_attribute)) 1*(%x2C [space] positional_attribute) 1*(%x2C [space] named_attribute))
+  positional_many = ((1*1(positional_attribute)) [*(%x2C [space] positional_attribute)])
+  positional_zero_or_one = 0*1(positional_attribute)
+
+  attribute_list = (&(%x5B) %x5B !(%x5B) (((((named_many / positional_one_named_many / positional_many_named_many / positional_many / positional_zero_or_one))) as attribute_array)) as attribute_list %x5D)
+
+  # ---- content.rb: element_id / block_header.rb ----
+  element_id = ((("[[" (keyword) as id "]]") / ("[#" (keyword) as id "]")) newline)
+
+  attribute_blocks = (1*((attribute_list newline))) as attribute_list
+
+  # ---- block.rb: delimiters + title ----
+  block_delim_run = 4*((%x2A / %x3D / %x5F / %x2B / %x2E / %x2D))
+  block_delimiter = ((block_delim_run / (2%x2D) / (3*%x60)) newline)
+  block_title = (!(block_delimiter) %x2E !(space) (text) as title newline)
+
+  block_header = [(block_title)] [(element_id)] [(attribute_blocks)]
+
+  # ---- text.rb: comment_line / tag / comment_block / include ----
+  tag_shape = ("//" !( "/") [1*" "] ("tag" / "end") "::" !( ":") 1*(!"[" any_char))
+
+  comment_line_content = (!(tag_shape) "//" !("/") [1*" "] *(!"\n" any_char) line_ending)
+
+  comment_line = (!(tag_shape) ("//" !("/") [1*" "] [(text) as comment_text line_ending as line_break])) as comment_line
+
+  tag = (("//" !("/") [1*" "] ("tag" / "end") as prefix "::" !(":") ((1*(!"[" any_char))) as name attribute_list [newline] as line_break)) as tag
+
+  comment_block = (("////" line_ending (*(!((line_ending "////")) any_char)) as comment_text line_ending "////")) as comment_block
+
+  include_directive = (("include::" file_path as path attribute_list [newline] as line_break)) as include
+
+  # ---- content.rb text_line(verbatim:) : text + own line ending ----
+  # tl >> (line_ending.as(:line_break) | eof?) — the newline rides INSIDE
+  # the same iteration hash (parslet sequence merge), matching the DSL.
+  verbatim_line = (((1*(!"\n" any_char)) as text) ((line_ending) as line_break / (!(any_char))))
+
+  # ---- block.rb: delimited blocks (the #129 state patterns) ----
+  # markdown_code_block: 3+ backticks, optional language, closes with the
+  # SAME fence run (Parser::Block#markdown_code_block).
+  state md_fence: string
+  md_lang = [*" " (1*(%x41-5A / %x61-7A / %x30-39 / "_" / "+" / "-" / ".")) as language]
+  md_close = (state md_fence [space] newline)
+  md_content = (!(md_close) verbatim_line)
+  md_break = (empty_line as line_break)
+  markdown_code_block = (block_header ((set md_fence = (3*%x60)) as delimiter md_lang newline (1*(md_content / md_break)) as lines [space] (state md_fence) [space] newline))
+
+  # block_style: 4+ identical fence chars, closes with the exact same run.
+  state eq_fence: string
+  state dash_fence: string
+  state us_fence: string
+  state ast_fence: string
+  state plus_fence: string
+  state dot_fence: string
+
+  eq_content = (!(((state eq_fence) newline)) verbatim_line)
+  dash_content = (!(((state dash_fence) newline)) verbatim_line)
+  us_content = (!(((state us_fence) newline)) verbatim_line)
+  ast_content = (!(((state ast_fence) newline)) verbatim_line)
+  plus_content = (!(((state plus_fence) newline)) verbatim_line)
+  dot_content = (!(((state dot_fence) newline)) verbatim_line)
+  vbreak = (empty_line as line_break)
+
+  example_block = (block_header ((set eq_fence = (4*%x3D)) as delimiter newline (1*(eq_content / vbreak)) as lines (state eq_fence) newline))
+  source_block = (block_header ((set dash_fence = (4*%x2D)) as delimiter newline (1*(dash_content / vbreak)) as lines (state dash_fence) newline))
+  quote_block = (block_header ((set us_fence = (4*%x5F)) as delimiter newline (1*(us_content / vbreak)) as lines (state us_fence) newline))
+  sidebar_block = (block_header ((set ast_fence = (4*%x2A)) as delimiter newline (1*(ast_content / vbreak)) as lines (state ast_fence) newline))
+  pass_block = (block_header ((set plus_fence = (4*%x2B)) as delimiter newline (1*(plus_content / vbreak)) as lines (state plus_fence) newline))
+  literal_block = (block_header ((set dot_fence = (4*%x2E)) as delimiter newline (1*(dot_content / vbreak)) as lines (state dot_fence) newline))
+
+  # block_style_exact: open block — EXACTLY 2 dashes
+  state open_fence: string
+  open_content = (!(((state open_fence) newline)) verbatim_line)
+  open_block = (block_header ((set open_fence = (2%x2D)) as delimiter newline (1*(open_content / vbreak)) as lines (state open_fence) newline))
+
+  block = ((markdown_code_block / example_block / sidebar_block / source_block / quote_block / pass_block / literal_block / open_block)) as block
+
+  # ---- base.rb rule(:document) — ported members in Ruby order ----
+  # the repetition itself is the capture: parenthesize so `as` binds to
+  # the star, not the body (per-iteration capture would fragment the tree)
+  document = (*(block / comment_block / comment_line / include_directive / tag / (empty_line as line_break) / (any_char as unparsed))) as document
+
+  entry document: document
+
+  test {
+    accept "----\ncode\n----"
+    accept "----\ncode\n----\n----\nmore\n----"
+    accept "------\ncode\n------"
+    accept "```ruby\nputs 1\n```"
+    accept "````\n```\n````"
+    accept ".Title\n----\ncode\n----"
+    accept "[source, ruby]\n----\nx = 1\n----"
+    accept "////\nblock comment\n////"
+    accept "// tag::section-name[]"
+    accept "include::file.adoc[leveloffset=1]"
+  }
+}
