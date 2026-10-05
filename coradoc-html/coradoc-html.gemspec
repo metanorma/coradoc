@@ -31,9 +31,9 @@ Gem::Specification.new do |spec|
 
   # Dependencies
   spec.add_dependency 'coradoc', '~> 2.0'
-  spec.add_dependency 'coradoc-adoc'
+  spec.add_dependency 'coradoc-adoc', '~> 2.0'
   spec.add_dependency 'marcel', '~> 1.0'
-  spec.add_dependency 'leptris'
+  spec.add_dependency 'leptris', '~> 1.9.222'
 
   # Development dependencies
   spec.add_development_dependency 'rspec'
