@@ -23,7 +23,7 @@ module Coradoc
         # - true: Multiple lines with flexible newline handling
         # - false: Single line with strict newline handling
         # This ternary logic handles different paragraph parsing scenarios in AsciiDoc.
-        # rubocop:disable-next Style/OptionalBooleanParameter, Style/NumericPredicate
+        # rubocop:disable Style/OptionalBooleanParameter, Style/NumericPredicate
         def paragraph_text_line(many_breaks = false)
           tl = line_not_text? >>
                (asciidoc_char_with_id.absent? |
@@ -39,6 +39,7 @@ module Coradoc
             tl >> (newline_single.as(:line_break) | eof?)
           end
         end
+        # rubocop:enable Style/OptionalBooleanParameter, Style/NumericPredicate
 
         def paragraph
           (block_header >>

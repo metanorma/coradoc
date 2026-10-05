@@ -175,7 +175,7 @@ module Coradoc
         def dlist_term(_delimiter = nil)
           term_chars =
             (dlist_delimiter.absent? >> match("[^\n]")).repeat(1)
-            .as(:text)
+                                                       .as(:text)
           (element_id_inline.maybe >> term_chars).as(:dlist_term) >> dlist_delimiter
         end
 
