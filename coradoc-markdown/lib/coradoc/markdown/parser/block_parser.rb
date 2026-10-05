@@ -11,8 +11,9 @@ module Coradoc
         # The native VM's shadowed-alternative lint rejects our
         # continuation patterns (zero-width lookaheads on dynamic blocks
         # used as guards inside alternations). File: parsanol-ruby#93.
-        def parse(string, **options)
-          super(string, **options, mode: options.fetch(:mode, :ruby))
+        def parse(input, mode_or_opts = {}, **kwargs)
+          opts = mode_or_opts.is_a?(Hash) ? mode_or_opts.merge(kwargs) : {}
+          super(input, **opts, mode: opts.fetch(:mode, :ruby))
         end
 
         # NOTE: Debug method for parser development. Outputs current parse position
