@@ -33,6 +33,6 @@ Gem::Specification.new do |spec|
 
   # Dependencies
   spec.add_dependency 'lutaml-model', '~> 0.8.0'
-  spec.add_dependency 'thor', '>= 1.0'
+  spec.add_dependency 'thor', '~> 1.0'
   spec.metadata['rubygems_mfa_required'] = 'true'
 end

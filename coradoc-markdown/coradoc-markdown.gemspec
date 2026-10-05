@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
   # Core dependencies
   spec.add_dependency 'coradoc', '~> 2.0'
   spec.add_dependency 'lutaml-model', '~> 0.8.0'
-  spec.add_dependency 'parsanol'
+  spec.add_dependency 'parsanol', '~> 1.3.67'
 
   # Development dependencies
   spec.add_development_dependency 'rspec'
