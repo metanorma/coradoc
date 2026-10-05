@@ -102,7 +102,7 @@ CORPUS = [
   "|===\n| a | b\n| c | d\n|===\n",
   "|===\n| cell with | pipe escaped \\\\| inside\n|===\n",
   ",===\n, comma table\n,===\n",
-  "|===\n2+^| spans\n|===\n",
+  "|===\n2+^| spans\n|===\n"
 ].freeze
 
 def normalize(obj)
