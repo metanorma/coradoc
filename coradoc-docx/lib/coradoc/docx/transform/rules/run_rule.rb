@@ -25,9 +25,11 @@ module Coradoc
           def apply(run, context)
             # Delegate non-text children (breaks, drawings, footnotes, etc.)
             non_text = extract_non_text_children(run, context)
-            return non_text.first if non_text.any? && run.text.nil?
+            return non_text.first if non_text.any? && Array(run.text).empty?
 
-            text = run.text&.content.to_s
+            # w:r may carry several w:t children (uniword models text as
+            # a collection) — join them in document order
+            text = Array(run.text).map { |node| node&.content.to_s }.join
             return '' if text.empty? && non_text.empty?
 
             props = effective_props(run)
