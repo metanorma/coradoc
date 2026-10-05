@@ -395,8 +395,7 @@ module Coradoc
         def build_page_break
           para = Uniword::Wordprocessingml::Paragraph.new
           run = Uniword::Wordprocessingml::Run.new
-          run.break = Uniword::Wordprocessingml::Break.new
-          run.break.type = 'page'
+          run.break = Uniword::Wordprocessingml::Break.new(type: 'page')
           para.runs << run
           para
         end

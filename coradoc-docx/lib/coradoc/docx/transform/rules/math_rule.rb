@@ -6,23 +6,20 @@ module Coradoc
       module Rules
         # Transforms OMML math elements to CoreModel.
         #
-        # Display math (m:oMathPara) → CoreModel::Block (stem)
-        # Inline math (m:oMath) → CoreModel::InlineElement (stem)
+        # Display math (MathEquation#block?) → CoreModel::Block (stem)
+        # Inline math (MathEquation#inline?) → CoreModel::InlineElement (stem)
         #
-        # Uses Plurimath for OMML → LaTeX conversion when available.
-        # Falls back to raw XML string when Plurimath is not loaded.
+        # LaTeX conversion is provided natively by Uniword::MathEquation.
         class MathRule < Rule
           def matches?(element)
-            return false unless defined?(Uniword::Math)
-
-            element.is_a?(Uniword::Math::OMathPara) ||
-              element.is_a?(Uniword::Math::OMath)
+            defined?(Uniword::MathEquation) &&
+              element.is_a?(Uniword::MathEquation)
           end
 
           def apply(element, _context)
-            latex = omml_to_latex(element)
+            latex = element.to_latex.to_s
 
-            if display_math?(element)
+            if element.block?
               CoreModel::PassBlock.new(
                 delimiter_type: '++++',
                 language: 'latexmath',
@@ -34,45 +31,6 @@ module Coradoc
                 content: latex
               )
             end
-          end
-
-          private
-
-          def display_math?(element)
-            defined?(Uniword::Math::OMathPara) &&
-              element.is_a?(Uniword::Math::OMathPara)
-          end
-
-          def omml_to_latex(element)
-            if defined?(Plurimath)
-              plurimath_to_latex(element)
-            else
-              # Fallback: serialize to XML string
-              element_respond_to_xml(element) || ''
-            end
-          end
-
-          def plurimath_to_latex(element)
-            xml = element_to_xml(element)
-            return '' if xml.nil? || xml.empty?
-
-            begin
-              formula = Plurimath::OMML.parse(xml)
-              formula.to_latex
-            rescue StandardError
-              ''
-            end
-          end
-
-          def element_to_xml(element)
-            return '' unless element.is_a?(Uniword::Wordprocessingml::AlternateContent) ||
-                             element.is_a?(Uniword::Wordprocessingml::OMath)
-
-            element.to_xml
-          end
-
-          def element_respond_to_xml(element)
-            element_to_xml(element)
           end
         end
       end

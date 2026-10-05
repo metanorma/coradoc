@@ -53,14 +53,14 @@ module Coradoc
 
           ol = paragraph.properties.outline_level
           if ol
-            ol_level = ol.is_a?(Uniword::Wordprocessingml::OutlineLevel) ? ol.value.to_i : ol.to_i
+            ol_level = ol.is_a?(Uniword::Properties::OutlineLevel) ? ol.value.to_i : ol.to_i
             return true if ol_level.positive?
           end
 
           style = find_style_for_paragraph(paragraph)
           if style&.outline_level
             ol_val = style.outline_level
-            ol_val = ol_val.is_a?(Uniword::Wordprocessingml::OutlineLevel) ? ol_val.value.to_i : ol_val.to_i
+            ol_val = ol_val.is_a?(Uniword::Properties::OutlineLevel) ? ol_val.value.to_i : ol_val.to_i
             return true if ol_val.positive?
           end
 
@@ -80,7 +80,7 @@ module Coradoc
           # Check outline_level on paragraph properties
           ol = paragraph.properties&.outline_level
           if ol
-            level = ol.is_a?(Uniword::Wordprocessingml::OutlineLevel) ? ol.value.to_i : ol.to_i
+            level = ol.is_a?(Uniword::Properties::OutlineLevel) ? ol.value.to_i : ol.to_i
             return level if level.positive?
           end
 
@@ -138,10 +138,7 @@ module Coradoc
         private
 
         def resolve_style_name(paragraph)
-          style_ref = paragraph.properties&.style
-          return nil unless style_ref
-
-          value = style_ref.is_a?(Uniword::Wordprocessingml::PStyle) ? style_ref.val : style_ref.to_s
+          value = paragraph_style_value(paragraph)
           return nil unless value
 
           mapped = @style_map[value]
@@ -154,7 +151,7 @@ module Coradoc
           style_ref = run.properties.style
           return nil unless style_ref
 
-          value = style_ref.is_a?(Uniword::Wordprocessingml::PStyle) ? style_ref.val : style_ref.to_s
+          value = style_ref.value.to_s
           return nil unless value
 
           mapped = @style_map[value]
@@ -173,10 +170,12 @@ module Coradoc
         end
 
         def style_id_from_paragraph(paragraph)
-          style_ref = paragraph.properties&.style
-          return nil unless style_ref
+          paragraph_style_value(paragraph)
+        end
 
-          style_ref.is_a?(Uniword::Wordprocessingml::PStyle) ? style_ref.val : style_ref.to_s
+        # uniword models w:pStyle as a collection of StyleReference
+        def paragraph_style_value(paragraph)
+          Array(paragraph.properties&.style).filter_map(&:value).first.to_s
         end
 
         def build_style_map(config)

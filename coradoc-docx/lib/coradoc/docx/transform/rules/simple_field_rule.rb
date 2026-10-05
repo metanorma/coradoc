@@ -64,7 +64,7 @@ module Coradoc
           def field_text(field)
             if field.runs && !field.runs.empty?
               return field.runs.map do |r|
-                r.text&.content.to_s
+                Array(r.text).map(&:to_s).join
               end.join
             end
 

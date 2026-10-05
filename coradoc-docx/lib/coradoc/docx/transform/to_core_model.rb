@@ -139,7 +139,7 @@ module Coradoc
 
         def section_break_element(paragraph, context)
           # First, transform the paragraph content if it has text
-          content = paragraph.runs&.map { |r| r.text&.content.to_s }&.join
+          content = paragraph.runs&.map { |r| Array(r.text).map(&:to_s).join }&.join
           if content && !content.strip.empty?
             # Has content — transform normally (content comes before the break)
             context.transform(paragraph)
@@ -242,7 +242,7 @@ module Coradoc
             next unless context.style_resolver.heading_level(para) == 1
 
             runs = para.runs || []
-            return runs.map { |r| r.text&.content.to_s }.join
+            return runs.map { |r| Array(r.text).map(&:to_s).join }.join
           end
 
           nil
@@ -312,7 +312,7 @@ module Coradoc
           runs = para.runs || []
           return nil unless runs
 
-          runs.map { |r| r.text&.content.to_s }.join
+          runs.map { |r| Array(r.text).map(&:to_s).join }.join
         end
 
         # Check if header/footer text is purely layout content

@@ -23,7 +23,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
       it 'produces a Paragraph with footnote content' do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
-        expect(result.runs.first.text.content).to eq('Footnote text')
+        expect(result.runs.first.text.map { |t| t&.content.to_s }.join).to eq('Footnote text')
       end
     end
 
@@ -43,8 +43,8 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
         expect(result).to be_a(Uniword::Wordprocessingml::Table)
         expect(result.rows.length).to eq(1)
         expect(result.rows[0].cells.length).to eq(2)
-        term_text = result.rows[0].cells[0].paragraphs.first.runs.first.text.content
-        def_text = result.rows[0].cells[1].paragraphs.first.runs.first.text.content
+        term_text = run_text(result.rows[0].cells[0].paragraphs.first.runs.first)
+        def_text = run_text(result.rows[0].cells[1].paragraphs.first.runs.first)
         expect(term_text).to eq('Term 1')
         expect(def_text).to eq('Definition of term 1')
       end
@@ -61,7 +61,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
       it 'produces a Paragraph placeholder' do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
-        expect(result.runs.first.text.content).to eq('[Table of Contents]')
+        expect(result.runs.first.text.map { |t| t&.content.to_s }.join).to eq('[Table of Contents]')
       end
     end
 
@@ -70,7 +70,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
       it 'produces a bold Paragraph' do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
-        expect(result.runs.first.text.content).to eq('Ruby')
+        expect(result.runs.first.text.map { |t| t&.content.to_s }.join).to eq('Ruby')
         expect(result.runs.first.properties).not_to be_nil
         expect(result.runs.first.properties.bold).not_to be_nil
       end
@@ -125,7 +125,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
       it 'produces a Paragraph with term and definition' do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
-        expect(result.runs.first.text.content).to eq('API (Application Programming Interface)')
+        expect(result.runs.first.text.map { |t| t&.content.to_s }.join).to eq('API (Application Programming Interface)')
       end
     end
 
@@ -145,11 +145,11 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
         # First element is the heading paragraph
         heading = result[0]
         expect(heading).to be_a(Uniword::Wordprocessingml::Paragraph)
-        expect(heading.properties.style.value).to eq('Heading2')
+        expect(heading.properties.style.first.value).to eq('Heading2')
         # Second element is the entry paragraph
         entry_para = result[1]
         expect(entry_para).to be_a(Uniword::Wordprocessingml::Paragraph)
-        expect(entry_para.runs.first.text.content).to eq('ISO 712: Cereals.')
+        expect(entry_para.runs.first.text.map { |t| t&.content.to_s }.join).to eq('ISO 712: Cereals.')
       end
     end
 
@@ -160,7 +160,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
       it 'produces a Paragraph with formatted entry text' do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
-        expect(result.runs.first.text.content).to eq('ISO 712: Cereals.')
+        expect(result.runs.first.text.map { |t| t&.content.to_s }.join).to eq('ISO 712: Cereals.')
       end
     end
 
@@ -169,7 +169,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
       it 'produces a Paragraph with title' do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
-        expect(result.runs.first.text.content).to eq('Section 1')
+        expect(result.runs.first.text.map { |t| t&.content.to_s }.join).to eq('Section 1')
       end
     end
 
@@ -178,7 +178,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
       it 'produces a Paragraph with text content' do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
-        expect(result.runs.first.text.content).to eq('Hello world')
+        expect(result.runs.first.text.map { |t| t&.content.to_s }.join).to eq('Hello world')
       end
     end
 
@@ -188,7 +188,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
       it 'produces a Paragraph with page break' do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
         expect(result.runs.first.break).not_to be_nil
-        expect(result.runs.first.break.type).to eq('page')
+        expect(result.runs.first.break.first.type).to eq('page')
       end
     end
 
@@ -235,7 +235,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
       it 'produces a Paragraph with text placeholder' do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
-        text = result.runs.first.text.content
+        text = run_text(result.runs.first)
         expect(text).to eq('[Image: Test]')
       end
     end
@@ -269,10 +269,10 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
         expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
         runs = result.runs
         # First run: bold "NOTE: " prefix
-        expect(runs[0].text.content).to eq('NOTE: ')
+        expect(runs[0].text.map { |t| t&.content.to_s }.join).to eq('NOTE: ')
         expect(runs[0].properties.bold).not_to be_nil
         # Second run: content text
-        expect(runs[1].text.content).to eq('Be careful')
+        expect(runs[1].text.map { |t| t&.content.to_s }.join).to eq('Be careful')
       end
     end
 
@@ -338,7 +338,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
       it 'produces a Run with content' do
         expect(result).to be_a(Uniword::Wordprocessingml::Run)
-        expect(result.text.content).to eq('code')
+        expect(result.text.map { |t| t&.content.to_s }.join).to eq('code')
       end
     end
 
@@ -349,7 +349,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
       it 'produces a Run with content' do
         expect(result).to be_a(Uniword::Wordprocessingml::Run)
-        expect(result.text.content).to eq('click')
+        expect(result.text.map { |t| t&.content.to_s }.join).to eq('click')
       end
     end
 
@@ -358,7 +358,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
       it 'produces a Run with content' do
         expect(result).to be_a(Uniword::Wordprocessingml::Run)
-        expect(result.text.content).to eq('x^2')
+        expect(result.text.map { |t| t&.content.to_s }.join).to eq('x^2')
       end
     end
 
@@ -367,7 +367,7 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
 
       it 'produces a Run with content and no special properties' do
         expect(result).to be_a(Uniword::Wordprocessingml::Run)
-        expect(result.text.content).to eq('text')
+        expect(result.text.map { |t| t&.content.to_s }.join).to eq('text')
         expect(result.properties).to be_nil
       end
     end
