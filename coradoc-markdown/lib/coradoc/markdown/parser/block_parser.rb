@@ -6,37 +6,15 @@ module Coradoc
       # Load-time DSL side effect (sanctioned require_relative exception)
       require_relative 'parsanol_atoms'
 
-      # Fence/line helpers (extracted to keep the class under
-      # the class-length budget)
-      module FenceHelpers
-        def thematic_break_char(c)
-          (str(c) >> whitespace.repeat).repeat(3)
-        end
-
-        def code_fence_info
-          # NOTE: Uses dynamic block for context-dependent fence character detection
-          # This handles both backtick (`) and tilde (~) fenced code blocks
-          dynamic do |_src, ctx|
-            char = line_char
-            char = str('`').absent? >> char if ctx.captures[:fence].to_s.chr == '`'
-            char.repeat(1).as(:info).maybe
-          end
-        end
-
-        def consume_fenced_indent
-          dynamic do |_src, ctx|
-            indent = ctx.captures[:fence_indent].to_s.length
-            if indent.positive?
-              str(' ').repeat(0, indent)
-            else
-              any.present?
-            end
-          end
-        end
-      end
-
       class BlockParser < Parsanol::Parser
-        include FenceHelpers
+        # The Ruby engine is the required surface for this grammar.
+        # The native VM's shadowed-alternative lint rejects our
+        # continuation patterns (zero-width lookaheads on dynamic blocks
+        # used as guards inside alternations). File: parsanol-ruby#93.
+        def parse(string, **options)
+          super(string, **options, mode: options.fetch(:mode, :ruby))
+        end
+
         # NOTE: Debug method for parser development. Outputs current parse position
         # and capture context. Only called during parser debugging sessions.
         def debug(msg)
@@ -128,6 +106,10 @@ module Coradoc
             line_ending_or_eof
         end
 
+        def thematic_break_char(c)
+          (str(c) >> whitespace.repeat).repeat(3)
+        end
+
         rule(:thematic_break) do
           non_indent_space >>
             (
@@ -158,6 +140,16 @@ module Coradoc
           ).as(:code_block)
         end
 
+        def code_fence_info
+          # NOTE: Uses dynamic block for context-dependent fence character detection
+          # This handles both backtick (`) and tilde (~) fenced code blocks
+          dynamic do |_src, ctx|
+            char = line_char
+            char = str('`').absent? >> char if ctx.captures[:fence].to_s.chr == '`'
+            char.repeat(1).as(:info).maybe
+          end
+        end
+
         rule(:code_fence_open) do
           non_indent_space.capture(:fence_indent) >>
             (str('`').repeat(3) | str('~').repeat(3)).capture(:fence).ignore >>
@@ -170,6 +162,17 @@ module Coradoc
             str(ctx.captures[:fence]) >>
               str(ctx.captures[:fence].to_s.chr).repeat
           end.ignore >> line_ending_or_eof
+        end
+
+        def consume_fenced_indent
+          dynamic do |_src, ctx|
+            indent = ctx.captures[:fence_indent].to_s.length
+            if indent.positive?
+              str(' ').repeat(0, indent)
+            else
+              any.present?
+            end
+          end
         end
 
         rule(:fenced_code_block) do
