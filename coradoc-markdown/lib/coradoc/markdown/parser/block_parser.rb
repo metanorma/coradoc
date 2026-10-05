@@ -7,6 +7,7 @@ module Coradoc
       require_relative 'parsanol_atoms'
 
       class BlockParser < Parsanol::Parser
+        include AttributeLists
         # The Ruby engine is the required surface for this grammar.
         # The native VM's shadowed-alternative lint rejects our
         # continuation patterns (zero-width lookaheads on dynamic blocks
@@ -292,46 +293,7 @@ module Coradoc
         end
 
         # ===== KRAMDOWN EXTENSIONS =====
-
-        # Inline Attribute List (IAL): {:.class #id key="value"}
-        # Can appear after any block element to add attributes
-        rule(:ial_class) do
-          str('.') >> match['\\w\\-'].repeat(1)
-        end
-
-        rule(:ial_id) do
-          str('#') >> match['\\w\\-'].repeat(1)
-        end
-
-        rule(:ial_key_value) do
-          match['\\w\\-'].repeat(1) >> str('=') >>
-            (
-              (str('"') >> match['^"'].repeat(0) >> str('"')) |
-              (str("'") >> match["^'"].repeat(0) >> str("'")) |
-              match['^\\s\\}'].repeat(1)
-            )
-        end
-
-        rule(:ial_content) do
-          (
-            whitespace.repeat >>
-            (ial_class | ial_id | ial_key_value)
-          ).repeat(1)
-        end
-
-        rule(:ial) do
-          str('{:') >> ial_content.as(:ial) >> str('}')
-        end
-
-        # Attribute List Definition (ALD): {:name: #id .class key="value"}
-        # Defines a named attribute list that can be referenced
-        rule(:ald_name) do
-          match['\\w'].repeat(1) >> str(':')
-        end
-
-        rule(:ald) do
-          str('{:') >> ald_name.as(:ald_name) >> whitespace.repeat(1) >> ial_content.as(:ial) >> str('}')
-        end
+        # Attribute-list rules (ial/ald) live in AttributeLists.
 
         # Block-level extension: {::extension_name options /}
         # Common extensions: {::toc}, {::options ... /}

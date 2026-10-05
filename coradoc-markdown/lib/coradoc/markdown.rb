@@ -90,6 +90,7 @@ module Coradoc
 
     # Parser module namespace
     module Parser
+      autoload :AttributeLists, 'coradoc/markdown/parser/attribute_lists'
       autoload :BlockParser, 'coradoc/markdown/parser/block_parser'
       autoload :InlineParser, 'coradoc/markdown/parser/inline_parser'
       autoload :ParsanolAtoms, 'coradoc/markdown/parser/parsanol_atoms'
