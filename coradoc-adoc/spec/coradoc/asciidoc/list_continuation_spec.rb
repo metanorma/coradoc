@@ -27,7 +27,12 @@ RSpec.describe 'AsciiDoc List Continuation' do
 
       item = list.items.first
       expect(item).to be_a(Coradoc::AsciiDoc::Model::List::Item)
-      expect(item.content.to_s).to include('Item one')
+      # structural assertion: Array#to_s/inspect is not a contract —
+      # lutaml-model's bounded inspect redacts nested model content
+      texts = Array(item.content).map do |element|
+        element.respond_to?(:content) ? element.content.to_s : element.to_s
+      end.join
+      expect(texts).to include('Item one')
     end
 
     it 'attaches single paragraph to ordered list item' do
