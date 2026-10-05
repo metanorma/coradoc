@@ -19,7 +19,7 @@ RSpec.describe 'DOCX round-trip', type: :integration do
       # Body paragraph is preserved
       paragraphs = result.body.paragraphs
       expect(paragraphs.size).to be >= 1
-      expect(paragraphs[0].runs.first.text.content).to eq('Hello world')
+      expect(run_text(paragraphs[0].runs.first)).to eq('Hello world')
     end
 
     it 'preserves table cell content' do
@@ -35,8 +35,8 @@ RSpec.describe 'DOCX round-trip', type: :integration do
       expect(tables.size).to be >= 1
       rows = tables.first.rows
       expect(rows.size).to eq(2)
-      expect(rows[0].cells.map { |c| c.paragraphs.first.runs.first.text.content }).to eq(%w[A B])
-      expect(rows[1].cells.map { |c| c.paragraphs.first.runs.first.text.content }).to eq(%w[C D])
+      expect(rows[0].cells.map { |c| run_text(c.paragraphs.first.runs.first) }).to eq(%w[A B])
+      expect(rows[1].cells.map { |c| run_text(c.paragraphs.first.runs.first) }).to eq(%w[C D])
     end
 
     it 'preserves bold and italic runs' do
@@ -54,10 +54,10 @@ RSpec.describe 'DOCX round-trip', type: :integration do
       expect(result).to be_a(Uniword::Wordprocessingml::DocumentRoot)
       para = result.body.paragraphs.first
       runs = para.runs
-      expect(runs.map { |r| r.text.content }).to include('bold', 'italic')
+      expect(runs.map { |r| run_text(r) }).to include('bold', 'italic')
 
-      bold_run = runs.find { |r| r.text.content == 'bold' }
-      italic_run = runs.find { |r| r.text.content == 'italic' }
+      bold_run = runs.find { |r| run_text(r) == 'bold' }
+      italic_run = runs.find { |r| run_text(r) == 'italic' }
       expect(bold_run.properties).not_to be_nil
       expect(bold_run.properties.bold).not_to be_nil
       expect(italic_run.properties).not_to be_nil
@@ -74,7 +74,7 @@ RSpec.describe 'DOCX round-trip', type: :integration do
 
       expect(result).to be_a(Uniword::Wordprocessingml::DocumentRoot)
       paragraphs = result.body.paragraphs
-      item_texts = paragraphs.select { |p| p.properties&.num_id }.map { |p| p.runs.first.text.content }
+      item_texts = paragraphs.select { |p| p.properties&.num_id }.map { |p| run_text(p.runs.first) }
       expect(item_texts).to contain_exactly('Item 1', 'Item 2')
     end
 
@@ -87,7 +87,7 @@ RSpec.describe 'DOCX round-trip', type: :integration do
       result = Coradoc::Docx::Transform::FromCoreModel.transform(annotation)
 
       expect(result).to be_a(Uniword::Wordprocessingml::Paragraph)
-      texts = result.runs.map { |r| r.text.content }
+      texts = result.runs.map { |r| run_text(r) }
       expect(texts.join).to include('NOTE')
       expect(texts.join).to include('Important detail')
     end

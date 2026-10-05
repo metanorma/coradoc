@@ -56,7 +56,7 @@ module Coradoc
           def extract_non_text_children(run, context)
             result = []
 
-            result << context.transform(run.break) if run.break
+            result.concat(Array(run.break).map { |brk| context.transform(brk) })
 
             result << context.transform(run.footnote_reference) if run.footnote_reference
 

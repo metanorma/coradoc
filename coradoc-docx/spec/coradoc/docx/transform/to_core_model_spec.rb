@@ -298,8 +298,7 @@ RSpec.describe Coradoc::Docx::Transform::ToCoreModel do
 
         break_para = Uniword::Wordprocessingml::Paragraph.new
         break_run = Uniword::Wordprocessingml::Run.new
-        break_run.break = Uniword::Wordprocessingml::Break.new
-        break_run.break.type = 'page'
+        break_run.break = Uniword::Wordprocessingml::Break.new(type: 'page')
         break_para.runs << break_run
         doc.body.paragraphs << break_para
 

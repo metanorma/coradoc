@@ -97,6 +97,10 @@ module OoxmlHelper
     para
   end
 
+  def run_text(run)
+    Array(run.text).map(&:to_s).join
+  end
+
   def transform_to_core(doc)
     Coradoc::Docx.parse_to_core(doc)
   end
