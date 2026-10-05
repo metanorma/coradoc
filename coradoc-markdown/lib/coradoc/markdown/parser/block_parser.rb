@@ -7,6 +7,14 @@ module Coradoc
       require_relative 'parsanol_atoms'
 
       class BlockParser < Parsanol::Parser
+        # The Ruby engine is the required surface for this grammar.
+        # The native VM's shadowed-alternative lint rejects our
+        # continuation patterns (zero-width lookaheads on dynamic blocks
+        # used as guards inside alternations). File: parsanol-ruby#93.
+        def parse(string, **options)
+          super(string, **options, mode: options.fetch(:mode, :ruby))
+        end
+
         # NOTE: Debug method for parser development. Outputs current parse position
         # and capture context. Only called during parser debugging sessions.
         def debug(msg)

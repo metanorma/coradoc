@@ -27,7 +27,7 @@ RSpec.describe 'AsciiDoc List Continuation' do
 
       item = list.items.first
       expect(item).to be_a(Coradoc::AsciiDoc::Model::List::Item)
-      expect(item.content.to_s).to include('Item one')
+      expect(item.content.map(&:content).join).to include('Item one')
     end
 
     it 'attaches single paragraph to ordered list item' do
