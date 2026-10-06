@@ -6,7 +6,7 @@ require 'coradoc/core_model'
 
 RSpec.describe Coradoc::CoreModel::OutputArtifact do
   let(:frontmatter) do
-    Coradoc::CoreModel::FrontmatterBlock.new(data: { 'title' => 'Foo' })
+    Coradoc::CoreModel::FrontmatterBlock::Codec.from_hash({ 'title' => 'Foo' })
   end
   let(:core_document) do
     Coradoc::CoreModel::DocumentElement.new(title: 'Foo')

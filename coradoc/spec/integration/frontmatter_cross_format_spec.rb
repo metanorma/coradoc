@@ -29,12 +29,12 @@ RSpec.describe 'Frontmatter cross-format integration', type: :integration do
       fm = core.children.first
       expect(fm).to be_a(Coradoc::CoreModel::FrontmatterBlock)
       expect(fm.schema).to eq('https://example.com/s.json')
-      expect(fm.data['title']).to eq('Release Notes')
-      expect(fm.data['date']).to eq(Date.new(2024, 7, 22))
-      expect(fm.data['count']).to eq(42)
-      expect(fm.data['flag']).to be true
-      expect(fm.data['tags']).to eq(%w[foo bar])
-      expect(fm.data['author']).to eq(
+      expect(fm.entry('title')).to eq('Release Notes')
+      expect(fm.entry('date')).to eq(Date.new(2024, 7, 22))
+      expect(fm.entry('count')).to eq(42)
+      expect(fm.entry('flag')).to be true
+      expect(fm.entry('tags')).to eq(%w[foo bar])
+      expect(fm.entry('author')).to eq(
         'name' => 'Alice', 'email' => 'alice@example.com'
       )
 
@@ -47,10 +47,11 @@ RSpec.describe 'Frontmatter cross-format integration', type: :integration do
       md_core = Coradoc::Markdown.to_core_model(md_doc)
       fm2 = md_core.children.first
       expect(fm2.schema).to eq(fm.schema)
-      expect(fm2.data.keys).to eq(fm.data.keys)
-      expect(fm2.data['date']).to eq(Date.new(2024, 7, 22))
-      expect(fm2.data['count']).to eq(42)
-      expect(fm2.data['tags']).to eq(%w[foo bar])
+      expect(Coradoc::CoreModel::FrontmatterBlock::Codec.to_hash(fm2).keys)
+        .to eq(Coradoc::CoreModel::FrontmatterBlock::Codec.to_hash(fm).keys)
+      expect(fm2.entry('date')).to eq(Date.new(2024, 7, 22))
+      expect(fm2.entry('count')).to eq(42)
+      expect(fm2.entry('tags')).to eq(%w[foo bar])
     end
   end
 
@@ -61,9 +62,9 @@ RSpec.describe 'Frontmatter cross-format integration', type: :integration do
 
       fm = core.children.first
       expect(fm).to be_a(Coradoc::CoreModel::FrontmatterBlock)
-      expect(fm.data['title']).to eq('Release Notes')
-      expect(fm.data['date']).to eq(Date.new(2024, 7, 22))
-      expect(fm.data['count']).to eq(42)
+      expect(fm.entry('title')).to eq('Release Notes')
+      expect(fm.entry('date')).to eq(Date.new(2024, 7, 22))
+      expect(fm.entry('count')).to eq(42)
 
       adoc_doc = Coradoc::AsciiDoc::Transform::FromCoreModel.transform(core)
       adoc_out = Coradoc::AsciiDoc::Serializer.serialize(adoc_doc)
@@ -82,8 +83,8 @@ RSpec.describe 'Frontmatter cross-format integration', type: :integration do
       md_core = Coradoc::Markdown.to_core_model(Coradoc::Markdown.parse(md))
       fm = md_core.children.first
       expect(fm).to be_a(Coradoc::CoreModel::FrontmatterBlock)
-      expect(fm.data['count']).to eq(42)
-      expect(fm.data['tags']).to eq(%w[foo bar])
+      expect(fm.entry('count')).to eq(42)
+      expect(fm.entry('tags')).to eq(%w[foo bar])
     end
   end
 
@@ -114,10 +115,10 @@ RSpec.describe 'Frontmatter cross-format integration', type: :integration do
       rebuilt = Coradoc::Mirror::MirrorToCoreModel.new.call(rebuilt_node)
       rebuilt_fm = rebuilt.children.find { |c| c.is_a?(Coradoc::CoreModel::FrontmatterBlock) }
       expect(rebuilt_fm.schema).to eq(original_fm.schema)
-      expect(rebuilt_fm.data['title']).to eq('Release Notes')
-      expect(rebuilt_fm.data['date']).to eq(Date.new(2024, 7, 22))
-      expect(rebuilt_fm.data['count']).to eq(42)
-      expect(rebuilt_fm.data['tags']).to eq(%w[foo bar])
+      expect(rebuilt_fm.entry('title')).to eq('Release Notes')
+      expect(rebuilt_fm.entry('date')).to eq(Date.new(2024, 7, 22))
+      expect(rebuilt_fm.entry('count')).to eq(42)
+      expect(rebuilt_fm.entry('tags')).to eq(%w[foo bar])
     end
   end
 end

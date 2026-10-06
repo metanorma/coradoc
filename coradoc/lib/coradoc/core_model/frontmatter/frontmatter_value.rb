@@ -20,7 +20,7 @@ module Coradoc
       # slot and extend the case in Codec::ValueBridge (OCP).
       class FrontmatterValue < Base
         SCALAR_TYPES = %w[
-          string integer float boolean date datetime symbol nil
+          string integer float boolean date datetime time symbol nil
         ].freeze
         CONTAINER_TYPES = %w[array map].freeze
         ALL_TYPES = (SCALAR_TYPES + CONTAINER_TYPES).freeze
@@ -34,6 +34,7 @@ module Coradoc
         attribute :boolean_value, :boolean
         attribute :date_value, :date
         attribute :datetime_value, :date_time
+        attribute :time_value, :time
         attribute :symbol_value, :symbol
 
         # Container slots — populated when value_type is array/map.
@@ -51,8 +52,24 @@ module Coradoc
           when 'boolean'  then boolean_value
           when 'date'     then date_value
           when 'datetime' then datetime_value
+          when 'time'     then time_value
           when 'symbol'   then symbol_value
           when 'nil'      then nil
+          end
+        end
+
+        # Recursive projection back to the native Ruby value this node
+        # was built from (the inverse of Codec::ValueBridge's native →
+        # typed conversion). Scalars return themselves; arrays and maps
+        # rebuild their native shapes.
+        def to_native
+          case value_type
+          when 'array'
+            items.to_a.map(&:to_native)
+          when 'map'
+            entries.to_a.each_with_object({}) { |e, h| h[e.key] = e.to_native }
+          else
+            ruby_value
           end
         end
       end

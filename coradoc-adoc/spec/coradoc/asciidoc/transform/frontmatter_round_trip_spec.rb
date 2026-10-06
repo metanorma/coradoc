@@ -26,9 +26,9 @@ RSpec.describe 'AsciiDoc frontmatter round-trip' do
     expect(core.children.first).to be_a(Coradoc::CoreModel::FrontmatterBlock)
 
     block = core.children.first
-    expect(block.data['author']).to eq('Jane Doe')
-    expect(block.data['date']).to eq(Date.new(2026, 6, 14))
-    expect(block.data['tags']).to eq(%w[foo bar])
+    expect(block.entry('author')).to eq('Jane Doe')
+    expect(block.entry('date')).to eq(Date.new(2026, 6, 14))
+    expect(block.entry('tags')).to eq(%w[foo bar])
   end
 
   it 'CoreModel -> AsciiDoc extracts FrontmatterBlock back to frontmatter text' do

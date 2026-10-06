@@ -10,12 +10,13 @@ module Coradoc
     # parsers produce it, transformers dispatch on its class, serializers
     # emit it. No special-casing anywhere.
     #
-    # The +data+ hash stores the entire parsed YAML frontmatter (minus
-    # +$schema+, which is promoted to the +schema+ attribute). Using a
-    # hash — rather than a typed value tree — lets coradoc accept any
-    # frontmatter shape without code changes. Type handling is delegated
-    # to Ruby's native YAML/JSON, which already preserve Date, Integer,
-    # Float, Boolean, nil, Array, and Hash correctly for YAML round-trips.
+    # Entries are stored as a typed tree (FrontmatterEntry /
+    # FrontmatterValue) covering every YAML.safe_load shape — scalars
+    # (string, integer, float, boolean, date, datetime, symbol, nil) and
+    # containers (array, map). Native-hash (de)serialization is
+    # exclusively Codec's job (DRY/MECE); nothing else may build or
+    # read a frontmatter hash. Order is preserved for round-trip
+    # fidelity.
     #
     # The +$schema+ key, if present in source YAML, is promoted to the
     # +schema+ attribute (single source of truth — DRY); SchemaResolver
@@ -32,30 +33,36 @@ module Coradoc
       # `$schema` URL, nil-safe. Consumed by SchemaResolver registry.
       attribute :schema, :string
 
-      # Entire parsed YAML frontmatter (minus `$schema`). Values are
-      # native Ruby types from YAML.safe_load (String, Integer, Date,
-      # Array, Hash, etc.). Order is preserved for round-trip fidelity.
-      attribute :data, :hash, default: {}
+      # Typed entry tree autoloads — declared before the attribute so
+      # the constant resolves; Entry and Value reference each other and
+      # the lazy load breaks the cycle.
+      autoload :FrontmatterValue, "#{__dir__}/frontmatter/frontmatter_value"
+      autoload :FrontmatterEntry, "#{__dir__}/frontmatter/frontmatter_entry"
 
-      # Convenience accessor — read a single entry by key.
+      # Parsed YAML frontmatter (minus `$schema`) as a typed entry
+      # tree. Build via Codec.from_yaml / Codec.from_hash.
+      attribute :entries, FrontmatterEntry, collection: true, default: []
+
+      # Convenience accessor — native Ruby value for a single key.
       def entry(key)
-        data[key.to_s]
+        found = entries&.find { |e| e.key == key.to_s }
+        found&.value&.to_native
       end
 
       def has_entry?(key)
-        data.key?(key.to_s)
+        !entries.nil? && entries.any? { |e| e.key == key.to_s }
       end
 
       def empty?
-        schema.nil? && (data.nil? || data.empty?)
+        schema.nil? && (entries.nil? || entries.empty?)
       end
 
       def body_content?
         false
       end
 
-      # Sub-namespaces (Codec, SchemaResolver, FieldTransform, TextSplitter)
-      # live under FrontmatterBlock and autoload lazily.
+      # Sub-namespaces (Codec, SchemaResolver, FieldTransform,
+      # TextSplitter) live under FrontmatterBlock and autoload lazily.
       autoload :Codec, "#{__dir__}/frontmatter/codec"
       autoload :SchemaResolver, "#{__dir__}/frontmatter/schema_resolver"
       autoload :FieldTransform, "#{__dir__}/frontmatter/field_transform"

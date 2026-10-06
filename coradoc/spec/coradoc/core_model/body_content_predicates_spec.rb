@@ -25,7 +25,7 @@ RSpec.describe 'per-node body-content predicates' do
     end
 
     it 'returns false for FrontmatterBlock' do
-      fm = Coradoc::CoreModel::FrontmatterBlock.new(data: { 'title' => 'X' })
+      fm = Coradoc::CoreModel::FrontmatterBlock::Codec.from_hash({ 'title' => 'X' })
       expect(fm).not_to be_body_content
     end
 
@@ -73,7 +73,7 @@ RSpec.describe 'per-node body-content predicates' do
 
   describe 'StructuralElement#visible_children' do
     it 'selects body_content nodes and rejects whitespace-only ones' do
-      fm = Coradoc::CoreModel::FrontmatterBlock.new(data: { 'title' => 'X' })
+      fm = Coradoc::CoreModel::FrontmatterBlock::Codec.from_hash({ 'title' => 'X' })
       comment = Coradoc::CoreModel::CommentBlock.new(lines: ['c'])
       empty_para = Coradoc::CoreModel::ParagraphBlock.new(content: '   ')
       real_para = Coradoc::CoreModel::ParagraphBlock.new(content: 'real body')
@@ -104,7 +104,7 @@ RSpec.describe 'per-node body-content predicates' do
 
     it 'returns true for a frontmatter-only document' do
       doc = Coradoc::CoreModel::DocumentElement.new(
-        children: [Coradoc::CoreModel::FrontmatterBlock.new(data: { 'title' => 'X' })]
+        children: [Coradoc::CoreModel::FrontmatterBlock::Codec.from_hash({ 'title' => 'X' })]
       )
       expect(doc).to be_empty_body
     end
@@ -119,7 +119,7 @@ RSpec.describe 'per-node body-content predicates' do
     it 'returns false when a real paragraph is present' do
       doc = Coradoc::CoreModel::DocumentElement.new(
         children: [
-          Coradoc::CoreModel::FrontmatterBlock.new(data: { 'title' => 'X' }),
+          Coradoc::CoreModel::FrontmatterBlock::Codec.from_hash({ 'title' => 'X' }),
           Coradoc::CoreModel::CommentBlock.new(lines: ['c']),
           Coradoc::CoreModel::ParagraphBlock.new(content: 'real body')
         ]

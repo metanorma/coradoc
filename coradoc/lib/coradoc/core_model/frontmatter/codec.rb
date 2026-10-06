@@ -18,12 +18,51 @@ module Coradoc
       # preserved by Psych's permitted-classes mechanism, not by a
       # custom discriminator scheme.
       #
-      # For the typed-tree representation used by the coradoc-mirror JSON
-      # pipeline, see +Coradoc::Mirror::Node::FrontmatterValue+ and
-      # +Coradoc::Mirror::Handlers::Frontmatter+. The typed-tree concern
-      # lives in the mirror gem; this Codec stays focused on YAML.
+      # Values inside the block are stored as the typed
+      # FrontmatterEntry / FrontmatterValue tree; ValueBridge below is
+      # the only native ↔ typed translator. For the typed-tree
+      # representation used by the coradoc-mirror JSON pipeline, see
+      # +Coradoc::Mirror::Node::FrontmatterValue+ and
+      # +Coradoc::Mirror::Handlers::Frontmatter+.
       module Codec
         PERMITTED_CLASSES = [Date, Time, DateTime, Symbol].freeze
+
+        # Native Ruby values (what YAML.safe_load returns) ↔ the typed
+        # FrontmatterValue tree. Adding a new scalar type is purely
+        # additive: declare a typed slot on FrontmatterValue and extend
+        # the case below (OCP).
+        module ValueBridge
+          module_function
+
+          def native_to_value(native)
+            attrs =
+              case native
+              when nil            then { value_type: 'nil' }
+              when String         then { value_type: 'string', string_value: native }
+              when Integer        then { value_type: 'integer', integer_value: native }
+              when Float          then { value_type: 'float', float_value: native }
+              when TrueClass, FalseClass
+                { value_type: 'boolean', boolean_value: native }
+              when DateTime       then { value_type: 'datetime', datetime_value: native }
+              when Time           then { value_type: 'time', time_value: native }
+              when Date           then { value_type: 'date', date_value: native }
+              when Symbol         then { value_type: 'symbol', symbol_value: native }
+              when Array
+                { value_type: 'array', items: native.map { |v| native_to_value(v) } }
+              when Hash
+                {
+                  value_type: 'map',
+                  entries: native.map do |k, v|
+                    FrontmatterEntry.new(key: k.to_s, value: native_to_value(v))
+                  end
+                }
+              else
+                { value_type: 'string', string_value: native.to_s }
+              end
+            FrontmatterValue.new(attrs)
+          end
+        end
+        private_constant :ValueBridge
 
         class << self
           # Parse YAML text into a FrontmatterBlock. Returns an empty
@@ -48,6 +87,17 @@ module Coradoc
             build_from_loaded(hash)
           end
 
+          # Typed entries for a native hash — the bridge used by
+          # from_hash/from_yaml and by callers constructing blocks
+          # entry-by-entry (e.g., the mirror reverse builder).
+          def entries_from_hash(hash)
+            return [] unless hash.is_a?(Hash)
+
+            hash.map do |key, value|
+              FrontmatterEntry.new(key: key.to_s, value: ValueBridge.native_to_value(value))
+            end
+          end
+
           # Serialize a FrontmatterBlock to canonical YAML text.
           # Does NOT include leading/trailing +---+ delimiters; the
           # caller wraps the output. Returns +''+ for empty blocks.
@@ -60,12 +110,13 @@ module Coradoc
             YAML.dump(payload).delete_prefix("---\n").delete_suffix("\n...")
           end
 
-          # Return the frontmatter as a native-typed Ruby hash.
-          # +$schema+ is included when present.
+          # Return the frontmatter entries as a native-typed Ruby hash
+          # (the block's data, WITHOUT +$schema+ — the schema attribute
+          # is read separately).
           def to_hash(block)
             return {} unless block.is_a?(FrontmatterBlock)
 
-            flat_tree(block)
+            block.entries.to_a.each_with_object({}) { |e, h| h[e.key] = e.to_native }
           end
 
           private
@@ -81,17 +132,16 @@ module Coradoc
           def build_from_loaded(loaded)
             return FrontmatterBlock.new unless loaded.is_a?(Hash)
 
-            schema = loaded['$schema']
             FrontmatterBlock.new(
-              schema: schema&.to_s,
-              data: loaded.except('$schema')
+              schema: loaded['$schema']&.to_s,
+              entries: entries_from_hash(loaded.except('$schema'))
             )
           end
 
           def flat_tree(block)
             tree = {}
             tree['$schema'] = block.schema if block.schema
-            tree.merge!(block.data || {})
+            block.entries.to_a.each { |e| tree[e.key] = e.to_native }
             tree
           end
         end

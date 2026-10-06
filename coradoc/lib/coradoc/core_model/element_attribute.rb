@@ -10,12 +10,6 @@ module Coradoc
       attribute :name, :string
       attribute :value, :string
 
-      # Convert to hash representation
-      # @return [Hash] Single key-value pair
-      def to_h
-        { name => value }
-      end
-
       # Convert to string representation (e.g., for serialization)
       # @return [String] Attribute in name="value" format
       def to_s

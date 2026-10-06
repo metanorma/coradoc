@@ -75,16 +75,9 @@ RSpec.describe Coradoc::CoreModel::Metadata do
     end
   end
 
-  describe '#to_h' do
-    it 'converts entries to hash' do
-      metadata = described_class.new(entries: [
-                                       Coradoc::CoreModel::MetadataEntry.new(key: 'type', value: 'document'),
-                                       Coradoc::CoreModel::MetadataEntry.new(key: 'level', value: 'section')
-                                     ])
-
-      hash = metadata.to_h
-
-      expect(hash).to eq({ 'type' => 'document', 'level' => 'section' })
+  describe 'hash projection' do
+    it 'is not defined — callers build hashes from entries' do
+      expect(described_class.instance_methods).not_to include(:to_h)
     end
   end
 end

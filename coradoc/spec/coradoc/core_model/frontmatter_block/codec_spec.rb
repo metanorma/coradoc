@@ -82,7 +82,7 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
       yaml = "$schema: https://example.com/schema.json\ntitle: Bar\n"
       block = described_class.from_yaml(yaml)
       expect(block.schema).to eq('https://example.com/schema.json')
-      expect(block.data).not_to have_key('$schema')
+      expect(block.has_entry?('$schema')).to be false
     end
 
     it 'serializes $schema back to the top of the YAML' do

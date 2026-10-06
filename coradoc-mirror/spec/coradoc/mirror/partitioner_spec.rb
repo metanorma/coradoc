@@ -72,7 +72,7 @@ RSpec.describe Coradoc::Mirror::Partitioner do
     it 'emits frontmatter before preface in the wrapped doc' do
       core = Coradoc::CoreModel::DocumentElement.new(
         children: [
-          Coradoc::CoreModel::FrontmatterBlock.new(data: { 'title' => 'T' }),
+          Coradoc::CoreModel::FrontmatterBlock::Codec.from_hash({ 'title' => 'T' }),
           Coradoc::CoreModel::ParagraphBlock.new(content: 'intro'),
           Coradoc::CoreModel::SectionElement.new(title: 'S', level: 1)
         ]
@@ -85,7 +85,7 @@ RSpec.describe Coradoc::Mirror::Partitioner do
     it 'does not include frontmatter inside the preface bucket' do
       core = Coradoc::CoreModel::DocumentElement.new(
         children: [
-          Coradoc::CoreModel::FrontmatterBlock.new(data: { 'title' => 'T' }),
+          Coradoc::CoreModel::FrontmatterBlock::Codec.from_hash({ 'title' => 'T' }),
           Coradoc::CoreModel::ParagraphBlock.new(content: 'intro')
         ]
       )

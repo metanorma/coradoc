@@ -55,40 +55,6 @@ module Coradoc
         self.nested_list = value
       end
 
-      # Convert to hash representation
-      #
-      # @return [Hash] hash representation of the list item
-      def to_h
-        {
-          marker: marker,
-          content: content,
-          nested_list: nested&.to_h,
-          children: children&.map { |child| child.is_a?(CoreModel::TextContent) ? { text: child.text } : child.to_h }
-        }.compact
-      end
-
-      # Create from hash
-      #
-      # @param hash [Hash] hash representation
-      # @return [ListItem] new list item instance
-      def self.from_h(hash)
-        raw_children = hash[:children] || []
-        children = raw_children.map do |child|
-          if child.is_a?(Hash) && child.key?(:text)
-            CoreModel::TextContent.new(text: child[:text])
-          elsif child.is_a?(CoreModel::Base)
-            child
-          end
-        end.compact
-
-        new(
-          marker: hash[:marker],
-          content: hash[:content],
-          nested: hash[:nested_list],
-          children: children
-        )
-      end
-
       # Override semantic equivalence to handle nested structures properly
       def semantically_equivalent?(other)
         return false unless other.is_a?(self.class)

@@ -59,10 +59,11 @@ module Coradoc
           # @return [Hash{String=>String}]
           def attributes_from_block(block)
             result = {}
-            return result unless block&.data
+            data = CoreModel::FrontmatterBlock::Codec.to_hash(block)
+            return result if data.empty?
 
             MAPPINGS.each do |(_, front_key, _)|
-              value = block.data[front_key]
+              value = data[front_key]
               next if value.nil?
 
               attr_name = front_key_to_attribute(front_key)

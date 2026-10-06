@@ -28,34 +28,35 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock do
     end
   end
 
-  describe '#data' do
-    it 'defaults to an empty hash' do
-      expect(described_class.new.data).to eq({})
+  describe '#entries' do
+    it 'defaults to an empty tree' do
+      expect(described_class.new.entries).to be_empty
     end
 
-    it 'holds arbitrary YAML-derived values keyed by string' do
-      block = described_class.new(
-        data: {
-          'title' => 'Hello',
-          'count' => 42,
-          'tags' => %w[a b]
-        }
+    it 'holds arbitrary YAML-derived values as a typed tree' do
+      block = described_class::Codec.from_hash(
+        'title' => 'Hello',
+        'count' => 42,
+        'tags' => %w[a b]
       )
 
-      expect(block.data['title']).to eq('Hello')
-      expect(block.data['count']).to eq(42)
-      expect(block.data['tags']).to eq(%w[a b])
+      expect(block.entries.map(&:key)).to eq(%w[title count tags])
+      expect(block.entry('title')).to eq('Hello')
+      expect(block.entry('count')).to eq(42)
+      expect(block.entry('tags')).to eq(%w[a b])
+      expect(described_class::Codec.to_hash(block))
+        .to eq('title' => 'Hello', 'count' => 42, 'tags' => %w[a b])
     end
   end
 
   describe '#entry' do
     it 'returns the value for a matching string key' do
-      block = described_class.new(data: { 'title' => 'Hello' })
+      block = described_class::Codec.from_hash({ 'title' => 'Hello' })
       expect(block.entry('title')).to eq('Hello')
     end
 
     it 'accepts symbol keys' do
-      block = described_class.new(data: { 'title' => 'Hello' })
+      block = described_class::Codec.from_hash({ 'title' => 'Hello' })
       expect(block.entry(:title)).to eq('Hello')
     end
 
@@ -66,7 +67,7 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock do
 
   describe '#has_entry?' do
     it 'returns true when the key exists' do
-      block = described_class.new(data: { 'x' => 'y' })
+      block = described_class::Codec.from_hash({ 'x' => 'y' })
       expect(block.has_entry?('x')).to be true
       expect(block.has_entry?(:x)).to be true
     end
@@ -86,7 +87,7 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock do
     end
 
     it 'returns false when data is present' do
-      block = described_class.new(data: { 'x' => 'y' })
+      block = described_class::Codec.from_hash({ 'x' => 'y' })
       expect(block).not_to be_empty
     end
   end

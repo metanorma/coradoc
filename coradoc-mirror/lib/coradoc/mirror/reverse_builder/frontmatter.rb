@@ -8,7 +8,9 @@ module Coradoc
           attrs = node.attrs
           CoreModel::FrontmatterBlock.new(
             schema: attrs&.schema,
-            data: FrontmatterTreeToHash.to_hash(attrs&.entries || [])
+            entries: CoreModel::FrontmatterBlock::Codec.entries_from_hash(
+              FrontmatterTreeToHash.to_hash(attrs&.entries || [])
+            )
           )
         end
       end

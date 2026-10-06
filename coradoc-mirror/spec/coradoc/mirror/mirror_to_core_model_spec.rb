@@ -147,7 +147,7 @@ RSpec.describe Coradoc::Mirror::MirrorToCoreModel do
         children: [
           Coradoc::CoreModel::FrontmatterBlock.new(
             schema: 'https://example.com/s.json',
-            data: { 'title' => 'Hello', 'count' => 42, 'tags' => %w[a b] }
+            entries: Coradoc::CoreModel::FrontmatterBlock::Codec.entries_from_hash({ 'title' => 'Hello', 'count' => 42, 'tags' => %w[a b] })
           ),
           Coradoc::CoreModel::ParagraphBlock.new(content: 'body')
         ]
@@ -159,7 +159,9 @@ RSpec.describe Coradoc::Mirror::MirrorToCoreModel do
       fm = rebuilt.children.find { |c| c.is_a?(Coradoc::CoreModel::FrontmatterBlock) }
       expect(fm).not_to be_nil
       expect(fm.schema).to eq('https://example.com/s.json')
-      expect(fm.data).to eq('title' => 'Hello', 'count' => 42, 'tags' => %w[a b])
+      expect(Coradoc::CoreModel::FrontmatterBlock::Codec.to_hash(fm)).to eq(
+        'title' => 'Hello', 'count' => 42, 'tags' => %w[a b]
+      )
     end
   end
 

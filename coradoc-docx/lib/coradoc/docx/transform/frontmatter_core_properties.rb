@@ -39,7 +39,7 @@ module Coradoc
           def apply(builder, block)
             return unless block.is_a?(Coradoc::CoreModel::FrontmatterBlock)
 
-            data = block.data || {}
+            data = Coradoc::CoreModel::FrontmatterBlock::Codec.to_hash(block)
 
             if (v = find_first_scalar(data, KEYWORDS_KEYS))
               builder.keywords(v)
