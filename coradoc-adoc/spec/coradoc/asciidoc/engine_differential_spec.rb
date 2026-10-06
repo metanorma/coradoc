@@ -31,14 +31,7 @@ RSpec.describe 'AsciiDoc ruby-vs-native engine differential' do
     'document attributes' => ":toc:\n:icons: font\n\ncontent\n",
     'open block' => "--\ninside open\n--\n",
     'list continuation' => "* item\n+\ncontinuation para\n",
-    'styled paragraph' => "[.role-name]\nstyled text\n"
-  }
-
-  # Excluded from the always-on corpus: the table grammar drives the
-  # native engine into catastrophic backtracking (95 s / >2.9 GB RSS
-  # for a 4-cell table; Ruby engine: 120 ms). Filed upstream —
-  # parsanol-rs#174. Run with CORADOC_ENGINE_DIFF_SLOW=1 to include.
-  slow_corpus = {
+    'styled paragraph' => "[.role-name]\nstyled text\n",
     'table' => "|===\n|A |B\n|1 |2\n|===\n"
   }
 
@@ -48,16 +41,6 @@ RSpec.describe 'AsciiDoc ruby-vs-native engine differential' do
 
   corpus.each do |name, input|
     it "parses '#{name}' to identical trees on both engines" do
-      ruby_tree = Coradoc::AsciiDoc::Parser::Base.new.parse(input, mode: :ruby)
-      native_tree = Coradoc::AsciiDoc::Parser::Base.new.parse(input, mode: :native)
-      expect(native_tree).to eq(ruby_tree)
-    end
-  end
-
-  slow_corpus.each do |name, input|
-    it "parses '#{name}' to identical trees on both engines (slow, native blowup)" do
-      skip 'catastrophic native backtracking; set CORADOC_ENGINE_DIFF_SLOW=1' unless ENV['CORADOC_ENGINE_DIFF_SLOW'] == '1'
-
       ruby_tree = Coradoc::AsciiDoc::Parser::Base.new.parse(input, mode: :ruby)
       native_tree = Coradoc::AsciiDoc::Parser::Base.new.parse(input, mode: :native)
       expect(native_tree).to eq(ruby_tree)

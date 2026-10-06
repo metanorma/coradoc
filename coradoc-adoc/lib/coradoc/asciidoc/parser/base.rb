@@ -85,17 +85,17 @@ module Coradoc
           warn e.parse_failure_cause.ascii_tree
         end
 
-        # The Ruby engine is the required surface for this grammar.
-        # parsanol 1.3.44 fixes capture WRITES across the bridge
-        # (parsanol-ruby#80 — verified with a continuation-style repro),
-        # but the native tree still diverges from the Ruby-engine tree
-        # on attribute-list constructs: 69 suite failures natively from
-        # transform rules receiving raw Hashes where models are
-        # expected (e.g. Image::AttributeExtractor.promote_positional).
-        # Drop the override when native/Ruby tree parity holds for this
-        # grammar.
+        # Native engine is the default surface for this grammar.
+        # Tree parity with the Ruby engine is complete (differential
+        # spec: full corpus incl. tables, 22/22) and the historical
+        # blockers are fixed upstream: capture WRITES across the bridge
+        # (parsanol-ruby#80, 1.3.44) and catastrophic backtracking on
+        # the table grammar (parsanol-rs#174, fixed by the
+        # fragment-boundary undo-log repair, parsanol >= 1.3.73 /
+        # crate 0.13.2 — the gemspec floor). Pass mode: :ruby to
+        # force the reference engine.
         def parse(string, **options)
-          super(string, **options, mode: options.fetch(:mode, :ruby))
+          super(string, **options, mode: options.fetch(:mode, :native))
         end
 
         def rule_dispatch(rule_name, *, **)

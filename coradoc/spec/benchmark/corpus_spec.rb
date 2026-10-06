@@ -14,8 +14,8 @@ RSpec.describe 'Corpus benchmarks', type: :benchmark do
   # Stages: parse-only, parse+transform (→ CoreModel), end-to-end
   # (convert both directions). The native-engine lane is opt-in via
   # CORADOC_BENCH_NATIVE=1 — run it under the RSS watchdog
-  # (memwatch_kill.sh); table-bearing documents are excluded there
-  # until parsanol-rs#174 (catastrophic native backtracking) is fixed.
+  # (memwatch_kill.sh) until native memory behavior is characterized
+  # across the corpus (parsanol-rs#174 fixed in >= 1.3.73).
 
   def ad_iterations
     3
