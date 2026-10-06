@@ -20,7 +20,7 @@ end
 
 captures = JSON.parse(File.read(ENV.fetch('CAPTURES', '/tmp/diff_captures.json')))
 artifact = Parsanol::PARG::Artifact.load(
-  File.expand_path('grammars/coradoc-adoc.artifact.json', __dir__)
+  File.expand_path('coradoc-adoc/grammar/coradoc-adoc.artifact.json', __dir__)
 )
 
 same = same_err = 0
