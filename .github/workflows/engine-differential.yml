@@ -43,6 +43,10 @@ jobs:
             puts "parsanol native extension OK"
           '
 
+      - name: Run grammar self-tests (PARG test section)
+        run: bundle exec parsanol parg test grammar/coradoc-adoc.parg
+        working-directory: coradoc-adoc
+
       - name: Run engine identity + differential specs (adoc)
         run: bundle exec rspec
           spec/coradoc/asciidoc/engine_identity_spec.rb
