@@ -14,8 +14,8 @@ gem 'lutaml-model', github: 'lutaml/lutaml-model', branch: 'main'
 gem 'lutaml-xsd'
 
 # In-house parsing engines (roadmap: TODO.inhouseparsing/)
-gem 'parsanol'
 gem 'leptris'
+gem 'parsanol'
 gem 'rake'
 
 # Local dev: use in-tree uniword source when present (themes/office_theme.xml
