@@ -1,0 +1,58 @@
+# Engine differential: assert the parsanol native extension is
+# installed and run the ruby-vs-native parity specs against it. The
+# adoc differential corpus catches native tree drift; REQUIRE_NATIVE=1
+# turns the availability skip into a hard failure so a silent
+# pure-Ruby fallback cannot slip onto CI runners.
+name: engine-differential
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    paths:
+      - 'coradoc-adoc/lib/**'
+      - 'coradoc-adoc/grammar/**'
+      - 'coradoc-adoc/spec/**'
+      - 'coradoc-markdown/spec/**'
+      - 'Gemfile'
+      - '.github/workflows/engine-differential.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+
+      - name: Assert parsanol native extension is available
+        run: |
+          bundle exec ruby -e '
+            require "parsanol"
+            unless Parsanol::Native.available?
+              warn "parsanol native extension missing — engine-differential job requires it"
+              exit 1
+            end
+            puts "parsanol native extension OK"
+          '
+
+      - name: Run engine identity + differential specs (adoc)
+        run: bundle exec rspec
+          spec/coradoc/asciidoc/engine_identity_spec.rb
+          spec/coradoc/asciidoc/engine_differential_spec.rb
+        working-directory: coradoc-adoc
+        env:
+          REQUIRE_NATIVE: '1'
+
+      - name: Run engine identity specs (markdown)
+        run: bundle exec rspec spec/coradoc/markdown/engine_identity_spec.rb
+        working-directory: coradoc-markdown
+        env:
+          REQUIRE_NATIVE: '1'
