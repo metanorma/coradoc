@@ -59,14 +59,6 @@ module Coradoc
         entries.map(&:key)
       end
 
-      # Convert to hash representation
-      # @return [Hash] Hash of all metadata entries
-      def to_h
-        return {} if entries.nil?
-
-        entries.each_with_object({}) { |entry, hash| hash[entry.key] = entry.value }
-      end
-
       private
 
       def find_entry(key)

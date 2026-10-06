@@ -50,12 +50,12 @@ RSpec.describe 'Markdown frontmatter round-trip', :aggregate_failures do
     frontmatter = core.children.first
     expect(frontmatter).to be_a(Coradoc::CoreModel::FrontmatterBlock)
     expect(frontmatter.schema).to eq('https://example.com/s.json')
-    expect(frontmatter.data['title']).to eq('Release Notes')
-    expect(frontmatter.data['date']).to eq(Date.new(2024, 7, 22))
-    expect(frontmatter.data['count']).to eq(42)
-    expect(frontmatter.data['flag']).to be true
-    expect(frontmatter.data['tags']).to eq(%w[foo bar])
-    expect(frontmatter.data['author']).to eq(
+    expect(frontmatter.entry('title')).to eq('Release Notes')
+    expect(frontmatter.entry('date')).to eq(Date.new(2024, 7, 22))
+    expect(frontmatter.entry('count')).to eq(42)
+    expect(frontmatter.entry('flag')).to be true
+    expect(frontmatter.entry('tags')).to eq(%w[foo bar])
+    expect(frontmatter.entry('author')).to eq(
       'name' => 'Alice', 'email' => 'alice@example.com'
     )
   end
@@ -69,10 +69,10 @@ RSpec.describe 'Markdown frontmatter round-trip', :aggregate_failures do
     fm1 = core1.children.first
     fm2 = core2.children.first
     expect(fm2.schema).to eq(fm1.schema)
-    expect(fm2.data['title']).to eq(fm1.data['title'])
-    expect(fm2.data['date']).to eq(fm1.data['date'])
-    expect(fm2.data['count']).to eq(fm1.data['count'])
-    expect(fm2.data['tags']).to eq(fm1.data['tags'])
+    expect(fm2.entry('title')).to eq(fm1.entry('title'))
+    expect(fm2.entry('date')).to eq(fm1.entry('date'))
+    expect(fm2.entry('count')).to eq(fm1.entry('count'))
+    expect(fm2.entry('tags')).to eq(fm1.entry('tags'))
   end
 
   it 'omits the frontmatter block when source has none' do

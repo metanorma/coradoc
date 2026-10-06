@@ -27,48 +27,48 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
 
     it 'parses a string entry' do
       block = described_class.from_yaml("title: Hello\n")
-      expect(block.data['title']).to eq('Hello')
+      expect(block.entry('title')).to eq('Hello')
     end
 
     it 'parses an integer entry' do
       block = described_class.from_yaml("count: 42\n")
-      expect(block.data['count']).to eq(42)
+      expect(block.entry('count')).to eq(42)
     end
 
     it 'parses a float entry' do
       block = described_class.from_yaml("ratio: 3.14\n")
-      expect(block.data['ratio']).to eq(3.14)
+      expect(block.entry('ratio')).to eq(3.14)
     end
 
     it 'parses a boolean entry' do
       block = described_class.from_yaml("flag: true\n")
-      expect(block.data['flag']).to be true
+      expect(block.entry('flag')).to be true
     end
 
     it 'parses a null entry' do
       block = described_class.from_yaml("empty: null\n")
-      expect(block.data['empty']).to be_nil
+      expect(block.entry('empty')).to be_nil
     end
 
     it 'parses a date entry' do
       block = described_class.from_yaml("date: 2024-07-22\n")
-      expect(block.data['date']).to eq(Date.new(2024, 7, 22))
+      expect(block.entry('date')).to eq(Date.new(2024, 7, 22))
     end
 
     it 'parses an array entry' do
       block = described_class.from_yaml("tags:\n  - foo\n  - bar\n")
-      expect(block.data['tags']).to eq(%w[foo bar])
+      expect(block.entry('tags')).to eq(%w[foo bar])
     end
 
     it 'parses a nested map entry' do
       block = described_class.from_yaml("author:\n  name: Alice\n  email: a@x.com\n")
-      expect(block.data['author']).to eq('name' => 'Alice', 'email' => 'a@x.com')
+      expect(block.entry('author')).to eq('name' => 'Alice', 'email' => 'a@x.com')
     end
 
     it 'parses an array of maps' do
       yaml = "authors:\n  - name: Alice\n  - name: Bob\n"
       block = described_class.from_yaml(yaml)
-      expect(block.data['authors']).to eq([{ 'name' => 'Alice' }, { 'name' => 'Bob' }])
+      expect(block.entry('authors')).to eq([{ 'name' => 'Alice' }, { 'name' => 'Bob' }])
     end
 
     it 'promotes $schema to the schema attribute' do
@@ -80,7 +80,7 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
 
     it 'preserves entry order' do
       block = described_class.from_yaml("zebra: 1\napple: 2\nmango: 3\n")
-      expect(block.data.keys).to eq(%w[zebra apple mango])
+      expect(described_class.to_hash(block).keys).to eq(%w[zebra apple mango])
     end
   end
 
@@ -91,7 +91,7 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
 
     it 'serializes a scalar entry' do
       block = Coradoc::CoreModel::FrontmatterBlock.new(
-        data: { 'title' => 'Hello' }
+        entries: described_class.entries_from_hash({ 'title' => 'Hello' })
       )
       output = described_class.to_yaml(block)
       expect(output).to include('title: Hello')
@@ -99,7 +99,7 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
 
     it 'serializes an integer preserving type' do
       block = Coradoc::CoreModel::FrontmatterBlock.new(
-        data: { 'count' => 42 }
+        entries: described_class.entries_from_hash({ 'count' => 42 })
       )
       output = described_class.to_yaml(block)
       expect(output).to include('count: 42')
@@ -110,7 +110,7 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
     it 'serializes schema first when present' do
       block = Coradoc::CoreModel::FrontmatterBlock.new(
         schema: 'https://example.com/s.json',
-        data: { 'title' => 'x' }
+        entries: described_class.entries_from_hash({ 'title' => 'x' })
       )
       output = described_class.to_yaml(block)
       first_key = output.lines.first.to_s
@@ -139,13 +139,13 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::Codec do
       block2 = described_class.from_yaml(yaml_out)
 
       expect(block2.schema).to eq(block1.schema)
-      expect(block2.data.keys).to eq(block1.data.keys)
-      expect(block2.data['title']).to eq('Release Notes')
-      expect(block2.data['date']).to eq(Date.new(2024, 7, 22))
-      expect(block2.data['count']).to eq(42)
-      expect(block2.data['flag']).to be true
-      expect(block2.data['tags']).to eq(%w[foo bar])
-      expect(block2.data['author']).to eq(
+      expect(described_class.to_hash(block2).keys).to eq(described_class.to_hash(block1).keys)
+      expect(block2.entry('title')).to eq('Release Notes')
+      expect(block2.entry('date')).to eq(Date.new(2024, 7, 22))
+      expect(block2.entry('count')).to eq(42)
+      expect(block2.entry('flag')).to be true
+      expect(block2.entry('tags')).to eq(%w[foo bar])
+      expect(block2.entry('author')).to eq(
         'name' => 'Alice', 'email' => 'alice@example.com'
       )
     end

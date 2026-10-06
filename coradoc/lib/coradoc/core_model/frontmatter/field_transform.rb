@@ -28,9 +28,14 @@ module Coradoc
 
           protected
 
-          # Helper: produce a new FrontmatterBlock with transformed data.
+          # Helper: produce a new FrontmatterBlock with transformed
+          # data. +data+ is a native Ruby hash (transforms author
+          # native shapes); Codec bridges it into the typed tree.
           def rebuild(block, data:)
-            FrontmatterBlock.new(schema: block.schema, data: data)
+            FrontmatterBlock.new(
+              schema: block.schema,
+              entries: Codec.entries_from_hash(data)
+            )
           end
         end
 

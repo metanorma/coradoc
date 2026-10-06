@@ -310,6 +310,7 @@ RSpec/BeforeAfterAll:
     - '**/spec/rails_helper.rb'
     - '**/spec/support/**/*.rb'
     - 'coradoc/spec/benchmark/performance_spec.rb'
+    - 'coradoc/spec/benchmark/corpus_spec.rb'
 
 # Offense count: 13
 # Configuration parameters: Prefixes, AllowedPatterns.
@@ -387,6 +388,7 @@ RSpec/InstanceVariable:
 RSpec/LeakyConstantDeclaration:
   Exclude:
     - 'coradoc-mirror/spec/coradoc/mirror/reverse_builder_spec.rb'
+    - 'coradoc/spec/benchmark/corpus_spec.rb'
 
 # Offense count: 11
 # Configuration parameters: EnforcedStyle.
@@ -426,6 +428,7 @@ RSpec/NoExpectationExample:
   Exclude:
     - 'coradoc-markdown/spec/parser/markdown_spec.rb'
     - 'coradoc/spec/core_model/inline_content_spec.rb'
+    - 'coradoc/spec/benchmark/corpus_spec.rb'
 
 # Offense count: 2
 RSpec/RepeatedDescription:

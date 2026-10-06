@@ -10,7 +10,7 @@ module Coradoc
       # 8601-encoded so the wire shape is JSON-native.
       module Frontmatter
         def self.call(element, *)
-          entries = build_entries(element.data || {})
+          entries = build_entries(Coradoc::CoreModel::FrontmatterBlock::Codec.to_hash(element))
 
           Node::Frontmatter.new(
             attrs: Node::Frontmatter::Attrs.new(

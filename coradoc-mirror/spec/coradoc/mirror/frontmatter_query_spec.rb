@@ -32,7 +32,7 @@ RSpec.describe Coradoc::Mirror::FrontmatterQuery do
     it 'round-trips a simple title-only frontmatter block through the mirror' do
       core = Coradoc::CoreModel::DocumentElement.new(
         children: [
-          Coradoc::CoreModel::FrontmatterBlock.new(data: { 'title' => 'Hello' })
+          Coradoc::CoreModel::FrontmatterBlock::Codec.from_hash({ 'title' => 'Hello' })
         ]
       )
       mirror = Coradoc::Mirror.transform(core, partition_structural: true)
@@ -49,7 +49,7 @@ RSpec.describe Coradoc::Mirror::FrontmatterQuery do
         'author' => { 'name' => 'Ada', 'email' => 'ada@example.com' }
       }
       core = Coradoc::CoreModel::DocumentElement.new(
-        children: [Coradoc::CoreModel::FrontmatterBlock.new(data: data)]
+        children: [Coradoc::CoreModel::FrontmatterBlock::Codec.from_hash(data)]
       )
       mirror = Coradoc::Mirror.transform(core, partition_structural: true)
       result = described_class.to_hash(mirror)
@@ -59,7 +59,7 @@ RSpec.describe Coradoc::Mirror::FrontmatterQuery do
     it 'finds frontmatter even when wrapped in partitioned structural buckets' do
       core = Coradoc::CoreModel::DocumentElement.new(
         children: [
-          Coradoc::CoreModel::FrontmatterBlock.new(data: { 'title' => 'T' }),
+          Coradoc::CoreModel::FrontmatterBlock::Codec.from_hash({ 'title' => 'T' }),
           Coradoc::CoreModel::SectionElement.new(title: 'S', level: 1)
         ]
       )
@@ -83,7 +83,7 @@ RSpec.describe Coradoc::Mirror::FrontmatterQuery do
     it 'is true when the frontmatter node has at least one entry' do
       core = Coradoc::CoreModel::DocumentElement.new(
         children: [
-          Coradoc::CoreModel::FrontmatterBlock.new(data: { 'title' => 'X' })
+          Coradoc::CoreModel::FrontmatterBlock::Codec.from_hash({ 'title' => 'X' })
         ]
       )
       mirror = Coradoc::Mirror.transform(core, partition_structural: true)

@@ -24,13 +24,13 @@ RSpec.describe 'metanorma.org _posts fixtures', type: :integration do
 
       it 'preserves the title field' do
         skip 'fixture has no frontmatter' unless adoc_text.start_with?("---\n")
-        expect(frontmatter.data['title']).to be_a(String)
-        expect(frontmatter.data['title']).not_to be_empty
+        expect(frontmatter.entry('title')).to be_a(String)
+        expect(frontmatter.entry('title')).not_to be_empty
       end
 
       it 'preserves author/authors field as Hash/Array' do
         skip 'fixture has no frontmatter' unless adoc_text.start_with?("---\n")
-        author_value = frontmatter.data['author'] || frontmatter.data['authors']
+        author_value = frontmatter.entry('author') || frontmatter.entry('authors')
         skip 'no author field' unless author_value
 
         case author_value
@@ -46,7 +46,7 @@ RSpec.describe 'metanorma.org _posts fixtures', type: :integration do
 
       it 'preserves the date field' do
         skip 'fixture has no frontmatter' unless adoc_text.start_with?("---\n")
-        date_value = frontmatter.data['date']
+        date_value = frontmatter.entry('date')
         skip 'no date field' unless date_value
         expect([Date, Time, DateTime]).to include(date_value.class)
       end
@@ -57,16 +57,16 @@ RSpec.describe 'metanorma.org _posts fixtures', type: :integration do
         md_doc = Coradoc::Markdown.from_core_model(core)
         md_out = Coradoc::Markdown.serialize(md_doc)
         expect(md_out).to start_with("---\n")
-        expect(md_out).to include(frontmatter.data['title'])
+        expect(md_out).to include(frontmatter.entry('title'))
 
         md_core = Coradoc::Markdown.to_core_model(md_doc)
         fm2 = md_core.children.find { |c| c.is_a?(Coradoc::CoreModel::FrontmatterBlock) }
         expect(fm2).to be_a(Coradoc::CoreModel::FrontmatterBlock)
-        expect(fm2.data['title']).to eq(frontmatter.data['title'])
-        expect(fm2.data['date']).to eq(frontmatter.data['date'])
+        expect(fm2.entry('title')).to eq(frontmatter.entry('title'))
+        expect(fm2.entry('date')).to eq(frontmatter.entry('date'))
 
-        if (original_tags = frontmatter.data['tags'] || frontmatter.data['categories'])
-          expect(fm2.data['tags'] || fm2.data['categories']).to eq(original_tags)
+        if (original_tags = frontmatter.entry('tags') || frontmatter.entry('categories'))
+          expect(fm2.entry('tags') || fm2.entry('categories')).to eq(original_tags)
         end
       end
 
@@ -81,11 +81,11 @@ RSpec.describe 'metanorma.org _posts fixtures', type: :integration do
 
         fm2 = rebuilt.children.find { |c| c.is_a?(Coradoc::CoreModel::FrontmatterBlock) }
         expect(fm2).to be_a(Coradoc::CoreModel::FrontmatterBlock)
-        expect(fm2.data['title']).to eq(frontmatter.data['title'])
+        expect(fm2.entry('title')).to eq(frontmatter.entry('title'))
         # Typed tree preserves Date/Time semantics as Date/DateTime; the
         # exact class may shift (Time → DateTime) but the instant matches.
-        original_date = frontmatter.data['date']
-        rebuilt_date = fm2.data['date']
+        original_date = frontmatter.entry('date')
+        rebuilt_date = fm2.entry('date')
         if original_date.is_a?(Time) || original_date.is_a?(DateTime) ||
            original_date.is_a?(Date)
           expect(rebuilt_date.iso8601).to eq(original_date.iso8601)

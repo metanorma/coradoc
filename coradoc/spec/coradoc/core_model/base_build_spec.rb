@@ -88,7 +88,7 @@ RSpec.describe 'CoreModel builder API (Base.build + fluent constructors)' do
       ]
 
       frontmatter = Coradoc::CoreModel::FrontmatterBlock.new(
-        data: { 'title' => 'Author Index' }
+        entries: Coradoc::CoreModel::FrontmatterBlock::Codec.entries_from_hash({ 'title' => 'Author Index' })
       )
 
       list = Coradoc::CoreModel::ListBlock.build(marker_type: 'unordered') do |ul|

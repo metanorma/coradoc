@@ -9,7 +9,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Frontmatter do
     it 'builds a typed entries tree from the data hash' do
       element = Coradoc::CoreModel::FrontmatterBlock.new(
         schema: 'https://example.com/s.json',
-        data: { 'title' => 'Hello', 'count' => 42 }
+        entries: Coradoc::CoreModel::FrontmatterBlock::Codec.entries_from_hash({ 'title' => 'Hello', 'count' => 42 })
       )
 
       node = described_class.call(element, context: context)
@@ -36,7 +36,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Frontmatter do
 
     it 'encodes Date values into typed date_value' do
       element = Coradoc::CoreModel::FrontmatterBlock.new(
-        data: { 'date' => Date.new(2026, 6, 14) }
+        entries: Coradoc::CoreModel::FrontmatterBlock::Codec.entries_from_hash({ 'date' => Date.new(2026, 6, 14) })
       )
 
       node = described_class.call(element, context: context)
@@ -47,7 +47,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Frontmatter do
 
     it 'encodes Symbol values into typed symbol_value' do
       element = Coradoc::CoreModel::FrontmatterBlock.new(
-        data: { 'kind' => :release }
+        entries: Coradoc::CoreModel::FrontmatterBlock::Codec.entries_from_hash({ 'kind' => :release })
       )
 
       node = described_class.call(element, context: context)
@@ -58,12 +58,13 @@ RSpec.describe Coradoc::Mirror::Handlers::Frontmatter do
 
     it 'recursively encodes nested arrays of maps' do
       element = Coradoc::CoreModel::FrontmatterBlock.new(
-        data: {
-          'milestones' => [
-            { 'when' => Date.new(2026, 1, 1), 'tag' => :alpha },
-            { 'when' => Date.new(2026, 6, 1), 'tag' => :beta }
-          ]
-        }
+        entries: Coradoc::CoreModel::FrontmatterBlock::Codec.entries_from_hash({
+
+                                                                                 'milestones' => [
+                                                                                   { 'when' => Date.new(2026, 1, 1), 'tag' => :alpha },
+                                                                                   { 'when' => Date.new(2026, 6, 1), 'tag' => :beta }
+                                                                                 ]
+                                                                               })
       )
 
       node = described_class.call(element, context: context)
@@ -82,13 +83,14 @@ RSpec.describe Coradoc::Mirror::Handlers::Frontmatter do
 
     it 'preserves Integer/Float/Boolean/String/nil values' do
       element = Coradoc::CoreModel::FrontmatterBlock.new(
-        data: {
-          's' => 'str',
-          'i' => 1,
-          'f' => 3.14,
-          'b' => true,
-          'n' => nil
-        }
+        entries: Coradoc::CoreModel::FrontmatterBlock::Codec.entries_from_hash({
+
+                                                                                 's' => 'str',
+                                                                                 'i' => 1,
+                                                                                 'f' => 3.14,
+                                                                                 'b' => true,
+                                                                                 'n' => nil
+                                                                               })
       )
 
       node = described_class.call(element, context: context)
@@ -113,7 +115,7 @@ RSpec.describe Coradoc::Mirror::Handlers::Frontmatter do
         'kind' => :release,
         'nested' => { 'a' => [1, 2] }
       }
-      element = Coradoc::CoreModel::FrontmatterBlock.new(data: data)
+      element = Coradoc::CoreModel::FrontmatterBlock::Codec.from_hash(data)
 
       node = described_class.call(element, context: context)
       roundtrip = Coradoc::Mirror::FrontmatterTreeToHash.to_hash(node.attrs.entries)

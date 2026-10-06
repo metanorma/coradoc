@@ -40,7 +40,7 @@ module Coradoc
         def extract(block)
           return empty_result unless block.is_a?(Coradoc::CoreModel::FrontmatterBlock)
 
-          data = block.data || {}
+          data = Coradoc::CoreModel::FrontmatterBlock::Codec.to_hash(block)
           {
             metas: build_metas(data),
             links: build_links(block.schema),

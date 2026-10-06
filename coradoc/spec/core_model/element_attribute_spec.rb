@@ -20,10 +20,8 @@ RSpec.describe Coradoc::CoreModel::ElementAttribute do
   end
 
   describe '#to_h' do
-    it 'returns a hash with name as key' do
-      attr = described_class.new(name: 'class', value: 'highlight')
-
-      expect(attr.to_h).to eq({ 'class' => 'highlight' })
+    it 'is not defined — hash projection is a call-site concern' do
+      expect(described_class.instance_methods).not_to include(:to_h)
     end
   end
 

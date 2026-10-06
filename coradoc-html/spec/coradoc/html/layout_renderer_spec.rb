@@ -35,11 +35,12 @@ RSpec.describe Coradoc::Html::LayoutRenderer do
     describe 'meta tag deduplication (opts vs frontmatter)' do
       let(:frontmatter) do
         CoreModel::FrontmatterBlock.new(
-          data: {
-            'author' => 'From Frontmatter',
-            'description' => 'From frontmatter description',
-            'subject' => 'Kept'
-          }
+          entries: CoreModel::FrontmatterBlock::Codec.entries_from_hash({
+
+                                                                          'author' => 'From Frontmatter',
+                                                                          'description' => 'From frontmatter description',
+                                                                          'subject' => 'Kept'
+                                                                        })
         )
       end
       let(:document) do

@@ -50,14 +50,14 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::FieldTransform do
           end
 
           def apply(block)
-            new_data = (block.data || {}).except('drop_me')
+            new_data = Coradoc::CoreModel::FrontmatterBlock::Codec.to_hash(block).except('drop_me')
             rebuild(block, data: new_data)
           end
         end
         registry.register(klass)
 
         block = Coradoc::CoreModel::FrontmatterBlock.new(
-          data: { 'drop_me' => 'x', 'keep_me' => 'y' }
+          entries: Coradoc::CoreModel::FrontmatterBlock::Codec.entries_from_hash({ 'drop_me' => 'x', 'keep_me' => 'y' })
         )
 
         result = registry.apply_all(block, direction: :to_format, format: :markdown)
@@ -81,7 +81,7 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::FieldTransform do
           end
 
           def apply(block)
-            new_data = (block.data || {}).merge('adoc_only' => '1')
+            new_data = Coradoc::CoreModel::FrontmatterBlock::Codec.to_hash(block).merge('adoc_only' => '1')
             rebuild(block, data: new_data)
           end
         end
@@ -89,7 +89,7 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::FieldTransform do
         registry.register(adoc_only)
 
         block = Coradoc::CoreModel::FrontmatterBlock.new(
-          data: { 'orig' => 'v' }
+          entries: Coradoc::CoreModel::FrontmatterBlock::Codec.entries_from_hash({ 'orig' => 'v' })
         )
 
         result = registry.apply_all(block, direction: :to_format, format: :asciidoc)
@@ -110,11 +110,11 @@ RSpec.describe Coradoc::CoreModel::FrontmatterBlock::FieldTransform do
         registry.register(klass)
 
         block = Coradoc::CoreModel::FrontmatterBlock.new(
-          data: { 'x' => 'y' }
+          entries: Coradoc::CoreModel::FrontmatterBlock::Codec.entries_from_hash({ 'x' => 'y' })
         )
         registry.apply_all(block, direction: :to_format, format: :markdown)
 
-        expect(block.data.size).to eq(1)
+        expect(block.entries.size).to eq(1)
       end
     end
   end
