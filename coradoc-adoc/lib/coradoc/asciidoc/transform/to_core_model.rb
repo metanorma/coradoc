@@ -108,12 +108,22 @@ module Coradoc
             DelimiterMapping::CHAR_TO_SEMANTIC[char] || :open
           end
 
+          # Reused parser/transformer for inline re-parsing: Parsanol's
+          # VM program cache is keyed by atom identity, so a fresh parser
+          # per call recompiled the grammar every time (see also
+          # Transformer::TableCellBuilder).
+          def inline_reparse
+            @inline_reparse ||= [
+              Coradoc::AsciiDoc::Parser::Base.new,
+              Coradoc::AsciiDoc::Transformer.new
+            ]
+          end
+
           def parse_inline_text(raw_text)
             return [] if raw_text.nil? || raw_text.to_s.strip.empty?
 
             text = raw_text.to_s
-            parser = Coradoc::AsciiDoc::Parser::Base.new
-            transformer = Coradoc::AsciiDoc::Transformer.new
+            parser, transformer = inline_reparse
 
             parsed = parser.text_any.parse(text)
             result = transformer.apply({ text: parsed })
