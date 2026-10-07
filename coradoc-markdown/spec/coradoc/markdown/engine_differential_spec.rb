@@ -43,8 +43,8 @@ RSpec.describe 'Markdown ruby-vs-native block-engine differential' do
   end
 
   divergent_corpus.each do |name, input|
-    it "parses '#{name}' to identical trees on both engines (known native gap)" do
-      skip 'native scope divergence — reported upstream' unless ENV['MARKDOWN_NATIVE_GAPS'] == '1'
+    it "parses '#{name}' to identical trees on both engines (known native gap: lazy continuation)" do
+      skip 'native lazy-continuation divergence — parsanol-ruby#160' unless ENV['MARKDOWN_NATIVE_GAPS'] == '1'
 
       ruby_tree = Coradoc::Markdown::Parser::BlockParser.new.parse(input, mode: :ruby)
       native_tree = Coradoc::Markdown::Parser::BlockParser.new.parse(input, mode: :native)
