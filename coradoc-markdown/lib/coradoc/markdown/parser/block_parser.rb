@@ -8,17 +8,16 @@ module Coradoc
 
       class BlockParser < Parsanol::Parser
         include AttributeLists
-        # The Ruby engine remains the default surface: the block
-        # grammar's native lane diverges on scope/continuation shapes
-        # (block-quote markers leak into lines; blank lines and
-        # thematic breaks collapse into paragraphs — the known-gaps
-        # section of engine_differential_spec). The #137 lint blocker
-        # IS resolved (parsanol >= 1.3.75 / crate 0.15.0) and the
-        # fixed-yield sites now use Atoms::Constant, so the remaining
-        # gap is native scope semantics only. InlineParser is
-        # Ruby-pinned: its DynamicOutput callables (entity/code
-        # processing) and class-based lookbehind guards are not yet
-        # wire-expressible.
+        # The Ruby engine remains the default surface. Native parity
+        # covers simple scope shapes (the rs#160 writeback repair in
+        # parsanol >= 1.3.76 / crate 0.16.0; see
+        # engine_differential_spec) but LAZY CONTINUATION — an
+        # unmarked line continuing an open block quote — still drops
+        # out of the scope natively (7 kramdown examples; reported
+        # upstream on #160). InlineParser is Ruby-pinned: its
+        # DynamicOutput callables (entity/code processing) and
+        # class-based lookbehind guards are not yet wire-expressible
+        # (parsanol-ruby#163).
         def parse(input, mode_or_opts = {}, **kwargs)
           opts = mode_or_opts.is_a?(Hash) ? mode_or_opts.merge(kwargs) : {}
           super(input, **opts, mode: opts.fetch(:mode, :ruby))
