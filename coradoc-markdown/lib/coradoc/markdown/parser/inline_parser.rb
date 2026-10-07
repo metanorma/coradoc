@@ -46,14 +46,13 @@ module Coradoc
 
         rule(:escape) { str('\\').ignore >> match["!\"#$%&'\\(\\)*+,\\-./:;<=>?@\\[\\\\\\]\\^_`\\{\\|\\}~"] }
         rule(:dec_entity) do
-          str('&#').ignore >> match['0-9'].repeat(1, 7).dynamic_output(method(:unicode_dec)) >> str(';').ignore
+          str('&#').ignore >> match['0-9'].repeat(1, 7).as(:dec_entity) >> str(';').ignore
         end
         rule(:hex_entity) do
-          str('&#').ignore >> match['xX'].ignore >> match['A-Fa-f0-9'].repeat(1,
-                                                                              6).dynamic_output(method(:unicode_hex)) >> str(';').ignore
+          str('&#').ignore >> match['xX'].ignore >> match['A-Fa-f0-9'].repeat(1, 6).as(:hex_entity) >> str(';').ignore
         end
         rule(:entity) do
-          str('&').ignore >> match['A-Za-z0-9'].repeat(1).dynamic_output(method(:lookup_entity)) >> str(';').ignore
+          str('&').ignore >> match['A-Za-z0-9'].repeat(1).as(:entity_name) >> str(';').ignore
         end
         rule(:nul_byte) { str("\0").output("\uFFFD") }
         rule(:special_char) { escape | dec_entity | hex_entity | entity | nul_byte }
@@ -63,11 +62,11 @@ module Coradoc
         end
 
         rule(:code_span) do
-          str('`').does_not_precede? >>
+          Parsanol::Atoms::Lookbehind.new(1, '`', positive: false) >>
             str('`').repeat(1).capture(:code_opener).ignore >>
             dynamic do |_src, ctx|
-              ending = (str('`').does_not_precede? >> str(ctx.captures[:code_opener]).ignore >> str('`').absent?)
-              (ending.absent? >> any).repeat(1).dynamic_output(method(:process_code)).as(:code) >> ending
+              ending = (Parsanol::Atoms::Lookbehind.new(1, '`', positive: false) >> str(ctx.captures[:code_opener]).ignore >> str('`').absent?)
+              (ending.absent? >> any).repeat(1).as(:code_raw) >> ending
             end
         end
 
@@ -76,14 +75,14 @@ module Coradoc
         end
 
         rule(:both_flanking_delimiter_run) do
-          any.precedes? >>
-            unicode_whitespace.does_not_precede? >> (
+          Parsanol::Atoms::Lookbehind.regex('[\\s\\S]') >>
+            Parsanol::Atoms::Lookbehind.regex('[\\p{Zs}\\t\\r\\n\\f]', positive: false) >> (
               (
-                unicode_punctuation.precedes? >>
+                Parsanol::Atoms::Lookbehind.regex('[\\p{P}\\p{S}]') >>
                 delimiter_run.as(:bfdr) >>
                 unicode_punctuation.present?
               ) | (
-                unicode_punctuation.does_not_precede? >>
+                Parsanol::Atoms::Lookbehind.regex('[\\p{P}\\p{S}]', positive: false) >>
                 delimiter_run.as(:bfdr) >>
                 unicode_punctuation.absent?
               )
@@ -96,21 +95,21 @@ module Coradoc
               delimiter_run.as(:lfdr) >>
               unicode_punctuation.absent?
             ) | (
-              ((unicode_whitespace | unicode_punctuation).precedes? | any.does_not_precede?) >>
+              (Parsanol::Atoms::Lookbehind.regex('[\\p{Zs}\\t\\r\\n\\f\\p{P}\\p{S}]') | Parsanol::Atoms::Lookbehind.regex('[\\s\\S]', positive: false)) >>
               delimiter_run.as(:lfdr)
             )
           ) >> unicode_whitespace.absent?
         end
 
         rule(:right_flanking_delimiter_run) do
-          any.precedes? >>
-            unicode_whitespace.does_not_precede? >> (
+          Parsanol::Atoms::Lookbehind.regex('[\\s\\S]') >>
+            Parsanol::Atoms::Lookbehind.regex('[\\p{Zs}\\t\\r\\n\\f]', positive: false) >> (
               (
-                unicode_punctuation.precedes? >>
+                Parsanol::Atoms::Lookbehind.regex('[\\p{P}\\p{S}]') >>
                 delimiter_run.as(:rfdr) >>
                 (unicode_whitespace | unicode_punctuation).present?
               ) | (
-                unicode_punctuation.does_not_precede? >>
+                Parsanol::Atoms::Lookbehind.regex('[\\p{P}\\p{S}]', positive: false) >>
                 delimiter_run.as(:rfdr)
               )
             )
@@ -125,11 +124,11 @@ module Coradoc
         end
 
         rule(:run_surrounded_by_punctuation) do
-          (unicode_punctuation.precedes? >> flanking_delimiter_run >> unicode_punctuation.present?).as(:rsp)
+          (Parsanol::Atoms::Lookbehind.regex('[\\p{P}\\p{S}]') >> flanking_delimiter_run >> unicode_punctuation.present?).as(:rsp)
         end
 
         rule(:run_preceded_by_punctuation) do
-          (unicode_punctuation.precedes? >> flanking_delimiter_run).as(:rpp)
+          (Parsanol::Atoms::Lookbehind.regex('[\\p{P}\\p{S}]') >> flanking_delimiter_run).as(:rpp)
         end
 
         rule(:run_followed_by_punctuation) do
@@ -265,8 +264,31 @@ module Coradoc
           # pp x
         end
 
+        # Grammar-phase Ruby callables (parsanol-ruby#163: not
+        # wire-expressible) are replaced by raw captures, decoded here
+        # so parse() output is unchanged: {dec_entity: "65"} -> "A",
+        # {code_raw: s} -> {code: process_code(s)}.
+        def normalize_dynamic_captures(node)
+          case node
+          when Array
+            node.map { |child| normalize_dynamic_captures(child) }
+          when Hash
+            if node.size == 1
+              case node.keys.first
+              when :dec_entity then return unicode_dec(node.values.first)
+              when :hex_entity then return unicode_hex(node.values.first)
+              when :entity_name then return lookup_entity(node.values.first)
+              when :code_raw then return { code: process_code(node.values.first.to_s) }
+              end
+            end
+            node.transform_values { |v| normalize_dynamic_captures(v) }
+          else
+            node
+          end
+        end
+
         def parse(io, options = {})
-          process_emphasis(super)
+          process_emphasis(normalize_dynamic_captures(super))
         end
       end
     end
