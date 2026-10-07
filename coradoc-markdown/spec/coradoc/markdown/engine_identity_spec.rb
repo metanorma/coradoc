@@ -15,7 +15,7 @@ RSpec.describe 'Markdown engine identity' do
     expect(Coradoc::Markdown::Transformer).to be < Parsanol::Transform
   end
 
-  it 'parses blocks on the Ruby engine by default' do
+  it 'parses blocks on the native engine by default' do
     parser = Coradoc::Markdown::Parser::BlockParser.new
     tree = parser.parse('# Heading')
     expect(tree).not_to be_nil
