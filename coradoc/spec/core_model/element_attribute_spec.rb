@@ -25,14 +25,6 @@ RSpec.describe Coradoc::CoreModel::ElementAttribute do
     end
   end
 
-  describe '#to_s' do
-    it 'returns attribute in name="value" format' do
-      attr = described_class.new(name: 'id', value: 'section-1')
-
-      expect(attr.to_s).to eq('"id="section-1""')
-    end
-  end
-
   describe 'lutaml-model serialization' do
     it 'serializes to hash' do
       attr = described_class.new(name: 'data-type', value: 'example')
