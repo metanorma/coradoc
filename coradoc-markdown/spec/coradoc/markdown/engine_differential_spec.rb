@@ -20,19 +20,18 @@ RSpec.describe 'Markdown ruby-vs-native block-engine differential' do
     'html block' => "<div>\nraw\n</div>\n"
   }
 
-  # SCOPE SHAPES — tree-identical on darwin/arm64 (1.3.78) but they
-  # SEGFAULT the native replay on linux x86_64 / ruby 3.3 (atom-
-  # valued scope-capture rehydration inside the dispatch callback;
-  # parsanol issue filed with the CI stack). Gated until fixed
-  # upstream — never run un-gated on linux CI.
-  scope_corpus = {
+  # Scope/continuation and lazy-continuation shapes. Un-gated as of
+  # parsanol 1.3.79 (crate 0.17.2): rs#201 replaced the unmarked
+  # host-atom registry with a GC-marked one, ending the linux x86_64
+  # segfault in scope-shape replay (parsanol-ruby#177).
+  corpus.merge!(
     'block quote' => "> quoted\n> more\n",
     'thematic break' => "para\n\n---\n\nafter\n",
     'paragraphs' => "one\n\ntwo\n\nthree\n",
     'lazy quote continuation' => "> bar\nbaz\n",
     'lazy nested quote' => "> > > foo\nbar\n",
     'lazy setext in quote' => "> foo\nbar\n===\n"
-  }
+  )
 
   before do
     skip 'parsanol native extension not available' unless Parsanol::Native.available?
@@ -40,16 +39,6 @@ RSpec.describe 'Markdown ruby-vs-native block-engine differential' do
 
   corpus.each do |name, input|
     it "parses '#{name}' to identical trees on both engines" do
-      ruby_tree = Coradoc::Markdown::Parser::BlockParser.new.parse(input, mode: :ruby)
-      native_tree = Coradoc::Markdown::Parser::BlockParser.new.parse(input, mode: :native)
-      expect(native_tree).to eq(ruby_tree)
-    end
-  end
-
-  scope_corpus.each do |name, input|
-    it "parses '#{name}' to identical trees on both engines (scope shapes)" do
-      skip 'scope shapes segfault native replay on linux; MARKDOWN_NATIVE_SCOPE=1 to run on verified platforms' unless ENV['MARKDOWN_NATIVE_SCOPE'] == '1'
-
       ruby_tree = Coradoc::Markdown::Parser::BlockParser.new.parse(input, mode: :ruby)
       native_tree = Coradoc::Markdown::Parser::BlockParser.new.parse(input, mode: :native)
       expect(native_tree).to eq(ruby_tree)

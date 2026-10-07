@@ -8,18 +8,18 @@ module Coradoc
 
       class BlockParser < Parsanol::Parser
         include AttributeLists
-        # The Ruby engine remains the default surface. Native parity
-        # is verified on darwin/arm64 (differential 16/16 — Atoms::
-        # Constant, the rs#160 writeback repair, rs#199 capture
-        # iteration), but the scope shapes (open_block continuation
-        # chains: atom-valued scope writes re-entered via
-        # continuation) SEGFAULT on linux x86_64 / ruby 3.3 in the
-        # native replay's host-registry rehydration (parsanol issue
-        # filed with the CI stack). Flip when fixed. InlineParser is
-        # Ruby-pinned regardless (parsanol-ruby#163).
+        # Native engine is the default surface for the block grammar.
+        # Full tree parity incl. scope/continuation and lazy
+        # continuation (engine_differential_spec, all shapes always-on;
+        # Atoms::Constant 1.3.75, rs#160 bridge writeback 1.3.76,
+        # rs#199 map-key capture iteration 1.3.78, and the rs#201
+        # GC-marked host-registry fix in 1.3.79 that ended the linux
+        # segfault in scope-shape replay — the gemspec floor).
+        # InlineParser parses native-when-expressible (its grammar is
+        # wire-expressible since the #163 restructure).
         def parse(input, mode_or_opts = {}, **kwargs)
           opts = mode_or_opts.is_a?(Hash) ? mode_or_opts.merge(kwargs) : {}
-          super(input, **opts, mode: opts.fetch(:mode, :ruby))
+          super(input, **opts, mode: opts.fetch(:mode, :native))
         end
 
         # NOTE: Debug method for parser development. Outputs current parse position
