@@ -35,11 +35,14 @@ module Coradoc
 
       # @!attribute element_attributes
       #   @return [Array<ElementAttribute>] collection of element attributes
-      attribute :element_attributes, ElementAttribute, collection: true
+      # Lazy string type names: ElementAttribute/MetadataEntry inherit
+      # Base, so eager constants deadlock the autoload cycle when either
+      # is referenced first (see list_block.rb for the same pattern).
+      attribute :element_attributes, 'Coradoc::CoreModel::ElementAttribute', collection: true
 
       # @!attribute metadata_entries
       #   @return [Array<MetadataEntry>] additional metadata entries
-      attribute :metadata_entries, MetadataEntry, collection: true
+      attribute :metadata_entries, 'Coradoc::CoreModel::MetadataEntry', collection: true
 
       # 1-indexed source line where this element begins, when known.
       # Populated by format transformers (e.g., AsciiDoc's SourceLineExtractor)
