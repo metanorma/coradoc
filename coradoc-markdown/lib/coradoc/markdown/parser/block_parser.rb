@@ -8,10 +8,17 @@ module Coradoc
 
       class BlockParser < Parsanol::Parser
         include AttributeLists
-        # The Ruby engine is the required surface for this grammar.
-        # The native VM's shadowed-alternative lint rejects our
-        # continuation patterns (zero-width lookaheads on dynamic blocks
-        # used as guards inside alternations). File: parsanol-ruby#93.
+        # The Ruby engine remains the default surface: the block
+        # grammar's native lane diverges on scope/continuation shapes
+        # (block-quote markers leak into lines; blank lines and
+        # thematic breaks collapse into paragraphs — the known-gaps
+        # section of engine_differential_spec). The #137 lint blocker
+        # IS resolved (parsanol >= 1.3.75 / crate 0.15.0) and the
+        # fixed-yield sites now use Atoms::Constant, so the remaining
+        # gap is native scope semantics only. InlineParser is
+        # Ruby-pinned: its DynamicOutput callables (entity/code
+        # processing) and class-based lookbehind guards are not yet
+        # wire-expressible.
         def parse(input, mode_or_opts = {}, **kwargs)
           opts = mode_or_opts.is_a?(Hash) ? mode_or_opts.merge(kwargs) : {}
           super(input, **opts, mode: opts.fetch(:mode, :ruby))

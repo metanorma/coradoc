@@ -15,13 +15,17 @@ RSpec.describe 'Markdown engine identity' do
     expect(Coradoc::Markdown::Transformer).to be < Parsanol::Transform
   end
 
-  # The block grammar is pinned to the Ruby engine: the native VM's
-  # shadowed-alternative lint rejects our zero-width continuation
-  # lookaheads (parsanol-ruby#137 / #93). A native differential for
-  # markdown lands when the upstream lint allows the grammar.
-  it 'pins block parsing to the Ruby engine' do
+  it 'parses blocks on the Ruby engine by default' do
     parser = Coradoc::Markdown::Parser::BlockParser.new
     tree = parser.parse('# Heading')
+    expect(tree).not_to be_nil
+  end
+
+  # Inline grammar stays Ruby-pinned: DynamicOutput callables and
+  # class-based lookbehind guards are not yet wire-expressible
+  # (parsanol-ruby#137 follow-up).
+  it 'reaches the Ruby engine when requested' do
+    tree = Coradoc::Markdown::Parser::BlockParser.new.parse('# Heading', mode: :ruby)
     expect(tree).not_to be_nil
   end
 
