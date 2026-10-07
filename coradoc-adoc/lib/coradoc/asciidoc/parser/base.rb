@@ -85,17 +85,15 @@ module Coradoc
           warn e.parse_failure_cause.ascii_tree
         end
 
-        # Native engine is the default surface for this grammar.
-        # Tree parity with the Ruby engine is complete (differential
-        # spec: full corpus incl. tables, 22/22) and the historical
-        # blockers are fixed upstream: capture WRITES across the bridge
-        # (parsanol-ruby#80, 1.3.44) and catastrophic backtracking on
-        # the table grammar (parsanol-rs#174, fixed by the
-        # fragment-boundary undo-log repair, parsanol >= 1.3.73 /
-        # crate 0.13.2 — the gemspec floor). Pass mode: :ruby to
-        # force the reference engine.
-        def parse(string, **options)
-          super(string, **options, mode: options.fetch(:mode, :native))
+        # The compiled PARG artifact (grammar/coradoc-adoc.parg, the
+        # single source of truth) is the parse backend; the Ruby-DSL
+        # grammar defined by this class remains the parity reference
+        # (engine_differential_spec + parg_parity_spec assert the two
+        # produce identical trees, and the artifact routes through
+        # parsanol's compiled-program fast lane — parsanol-ruby#164 —
+        # so it parses at DSL speed, native by default).
+        def parse(string, **)
+          GrammarBackend.parse(string, **)
         end
 
         def rule_dispatch(rule_name, *, **)
@@ -108,6 +106,24 @@ module Coradoc
         # Hash across calls on the same instance.
         def _rule_dispatch_cache
           @_rule_dispatch_cache ||= {}
+        end
+      end
+
+      # Lazily-loaded compiled-grammar backend (the shipped artifact).
+      module GrammarBackend
+        class << self
+          def parse(string, **)
+            artifact.parse('document', string, **)
+          end
+
+          private
+
+          def artifact
+            require 'parsanol/parg'
+            @artifact ||= Parsanol::PARG::Artifact.load(
+              File.expand_path('../../../../grammar/coradoc-adoc.artifact.json', __dir__)
+            )
+          end
         end
       end
 
