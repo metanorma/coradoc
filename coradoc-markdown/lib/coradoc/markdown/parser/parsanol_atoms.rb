@@ -10,22 +10,6 @@ module Coradoc
       # point. Replaces the former parslet_extras module, which
       # reached into Parslet internals via refinements.
       module ParsanolAtoms
-        # Matches +parslet+ but yields a fixed +value+.
-        class Output < Parsanol::Atoms::Custom
-          attr_reader :parslet, :value
-
-          def initialize(parslet, value)
-            @parslet = parslet
-            @value = value
-            super()
-          end
-
-          def try_match(source, context, consume_all)
-            success, = parslet.apply(source, context, consume_all)
-            [success, success ? value : nil]
-          end
-        end
-
         # Matches +parslet+ and yields the callable applied to the
         # flattened match value.
         class DynamicOutput < Parsanol::Atoms::Custom
@@ -115,8 +99,11 @@ end
 module Parsanol
   module Atoms
     module DSL
+      # Matches self (discarding its captures) and yields a fixed
+      # value — built on Atoms::Constant so the shape is
+      # wire-expressible for the native engine (rs#137 follow-up).
       def output(value)
-        Coradoc::Markdown::Parser::ParsanolAtoms::Output.new(self, value)
+        ignore >> Constant.new(value)
       end
 
       def dynamic_output(callable)
