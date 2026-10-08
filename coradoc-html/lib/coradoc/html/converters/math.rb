@@ -7,7 +7,8 @@ module Coradoc
         INSTANCE = new
 
         def to_coradoc(node, _state = {})
-          stem = node.to_s.tr("\n", ' ')
+          # Leptris#to_s returns an inspect string; serialize the node
+          stem = node.to_xml.tr("\n", ' ')
           if Html.input_config.mathml2asciimath
             require 'plurimath'
             stem = Plurimath::Math.parse(stem, :mathml).to_asciimath

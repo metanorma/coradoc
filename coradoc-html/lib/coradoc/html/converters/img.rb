@@ -86,10 +86,12 @@ module Coradoc
           # Use CoreModel::Image
           return unless src
 
+          # HTML title -> image block title (#109): serialized as the
+          # `.title` caption line, not stuffed into the alt attributes.
           Coradoc::CoreModel::Image.new(
             src: src,
             alt: alt,
-            caption: title,
+            title: title,
             width: width&.to_s,
             height: height&.to_s,
             id: id
