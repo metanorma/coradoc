@@ -133,6 +133,13 @@ module Coradoc
         end
 
         def ulist_item(nesting_level = 1)
+          # A bare marker line (`*` then newline) is an empty list
+          # item — without this arm it fell through to a continuation
+          # text line and corrupted the preceding item (#139).
+          empty_item = ulist_marker(nesting_level).as(:marker) >>
+                       str(' [[[').absent? >>
+                       line_ending.as(:lines)
+
           item = ulist_marker(nesting_level).as(:marker) >>
                  str(' [[[').absent? >>
                  match("\n").absent? >> space >>
@@ -145,7 +152,7 @@ module Coradoc
             item >>= (list_marker(nesting_level + 1).present? >>
                    list(nesting_level + 1)).repeat(0).as(:nested)
           end
-          ulist_marker(nesting_level).present? >> item.as(:list_item)
+          (empty_item | item).as(:list_item)
         end
 
         # Continuation lines of a list item's first paragraph. AsciiDoc
