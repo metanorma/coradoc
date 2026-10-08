@@ -41,6 +41,10 @@ module Coradoc
             Postprocessor.process(coremodel)
           end
 
+          coremodel = track_time 'Normalize top-level structure' do
+            normalize_top_level(coremodel)
+          end
+
           plugin_instances.each do |plugin|
             plugin.coremodel_tree = coremodel
             track_time "Postprocessing CoreModel tree with #{plugin.name} plugin" do
@@ -53,6 +57,60 @@ module Coradoc
 
           coremodel
         end
+      end
+
+      # #88/#102/#103: bare body-level text keeps HTML source
+      # whitespace (trim its edges), and section ids must be
+      # non-blank and unique document-wide (no empty or duplicated
+      # [[anchor]]s in the output).
+      def self.normalize_top_level(coremodel)
+        seen_ids = {}
+        normalized = normalize_children(Array(coremodel), seen_ids)
+        coremodel.is_a?(Array) ? normalized : normalized.first
+      end
+
+      def self.normalize_children(children, seen_ids)
+        children.filter_map do |child|
+          case child
+          when Coradoc::CoreModel::TextElement
+            trimmed = child.content.to_s.gsub(/\A[ \t\r\n]+/, '')
+                           .gsub(/[ \t\r\n]+\z/, '')
+            next nil if trimmed.empty?
+
+            child.content = trimmed
+          when Coradoc::CoreModel::SectionElement
+            normalize_section(child, seen_ids)
+          end
+          child
+        end
+      end
+
+      def self.normalize_section(section, seen_ids)
+        id = section.id.to_s.strip
+        if id.empty?
+          id = Coradoc::CoreModel::IdGenerator.generate_from_title(
+            section.title
+          ).to_s.sub(/\A_+/, '')
+        end
+
+        if id.empty?
+          section.id = nil
+        else
+          original = id
+          counter = 1
+          while seen_ids.key?(id)
+            id = "#{original}_#{counter}"
+            counter += 1
+          end
+          section.id = id
+          seen_ids[id] = true
+        end
+
+        nested = Array(section.children).select do |c|
+          c.is_a?(Coradoc::CoreModel::SectionElement)
+        end
+        nested.each { |s| normalize_section(s, seen_ids) }
+        section
       end
 
       def self.prepare_plugin_instances(options)
