@@ -263,14 +263,14 @@ module Coradoc
           # to the constrained marker — the constrained/unstrained
           # distinction is not carried in CoreModel, and constrained
           # is the correct rendering for span-boundary emphasis (#159).
-          def inline_model(klass, inline)
+          def inline_model(klass, inline, unconstrained: false)
             content = if inline.children.nil? || inline.children.empty?
                         inline.content.to_s
                       else
                         create_text_elements(inline.children)
                       end
 
-            klass.new(content: content, unconstrained: false)
+            klass.new(content: content, unconstrained: unconstrained)
           end
 
           # `_*text*_` parses to Italic{Bold{text}}; Metanorma renders
@@ -278,7 +278,7 @@ module Coradoc
           # (`*_text_*`, #159). When an italic's entire content is one
           # bold (or a bold's one italic), rebuild as Bold outer /
           # Italic inner, both constrained.
-          def swap_emphasis_nesting(inline)
+          def swap_emphasis_nesting(inline, unconstrained: false)
             children = Array(inline.children)
             return nil unless children.size == 1
 
@@ -301,19 +301,50 @@ module Coradoc
               content: only.children.nil? || only.children.empty? ? only.content.to_s : create_text_elements(only.children),
               unconstrained: false
             )
-            classes[inner_type].new(content: inner, unconstrained: false)
+            classes[inner_type].new(content: inner, unconstrained: unconstrained)
           end
 
-          def transform_inline(inline)
+          # AsciiDoc constrained markers only reparse as emphasis when
+          # the opening delimiter follows a boundary and the closing
+          # one precedes one. CoreModel does not carry the constraint,
+          # so derive it from the adjacent sibling text: an inline
+          # touching a word character on either side must serialize
+          # with the unconstrained form or the emphasis is lost on
+          # reparse (mid-word bolding is common in Word documents).
+          def unconstrained_flanks?(left, right)
+            left_ok = left.nil? || left.match?(/\s/)
+            right_ok = right.nil? || right.match?(/\s|[[:punct:]]/)
+            !(left_ok && right_ok)
+          end
+
+          def sibling_edge(items, index, direction)
+            item = items[index]
+            text = case item
+                   when Coradoc::CoreModel::TextContent then item.text.to_s
+                   when Coradoc::CoreModel::InlineElement then item.content.to_s
+                   when String then item
+                   else return nil
+                   end
+            return nil if text.empty?
+
+            direction == :last ? text[-1] : text[0]
+          end
+
+          def transform_inline(inline, siblings: nil, index: 0)
+            left = siblings && index.positive? ? sibling_edge(siblings, index - 1, :last) : nil
+            right = siblings ? sibling_edge(siblings, index + 1, :first) : nil
+            unconstrained = unconstrained_flanks?(left, right)
             case inline.resolve_format_type
             when 'bold'
-              inline_model(Coradoc::AsciiDoc::Model::Inline::Bold, inline)
+              inline_model(Coradoc::AsciiDoc::Model::Inline::Bold, inline,
+                           unconstrained: unconstrained)
             when 'italic'
               # #159: italic directly wrapping only bold (`_*text*_`)
               # re-serializes as Bold outer / Italic inner (`*_text_*`)
               # for correct Metanorma rendering.
-              swap_emphasis_nesting(inline) ||
-                inline_model(Coradoc::AsciiDoc::Model::Inline::Italic, inline)
+              swap_emphasis_nesting(inline, unconstrained: unconstrained) ||
+                inline_model(Coradoc::AsciiDoc::Model::Inline::Italic, inline,
+                             unconstrained: unconstrained)
             when 'monospace'
               Coradoc::AsciiDoc::Model::Inline::Monospace.new(content: inline.content)
             when 'highlight'
@@ -598,7 +629,13 @@ module Coradoc
           def create_text_elements(content)
             case content
             when Array
-              content.map { |item| create_text_elements(item) }
+              content.each_with_index.map do |item, i|
+                if item.is_a?(Coradoc::CoreModel::InlineElement)
+                  transform_inline(item, siblings: content, index: i)
+                else
+                  create_text_elements(item)
+                end
+              end
             when Coradoc::CoreModel::InlineElement
               transform_inline(content)
             when Coradoc::CoreModel::TextContent

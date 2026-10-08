@@ -71,5 +71,8 @@
   "|===\n| a | b\n| c | d\n|===\n",
   "|===\n| cell with | pipe escaped \\\\| inside\n|===\n",
   ",===\n, comma table\n,===\n",
-  "|===\n2+^| spans\n|===\n"
+  "|===\n2+^| spans\n|===\n",
+  "*\n",
+  "* a\n* b\n*\n",
+  "*  entry1\n*  entry2\n*  entry3\n*  entry4, and\n*\n"
 ]
