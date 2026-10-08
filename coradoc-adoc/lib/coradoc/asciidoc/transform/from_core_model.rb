@@ -256,12 +256,64 @@ module Coradoc
             )
           end
 
+          # Nested inline structure lives in +children+ (e.g. an
+          # ItalicElement whose single child is a BoldElement);
+          # +content+ is only the flattened display string. Build the
+          # adoc model from children so nesting survives, and default
+          # to the constrained marker — the constrained/unstrained
+          # distinction is not carried in CoreModel, and constrained
+          # is the correct rendering for span-boundary emphasis (#159).
+          def inline_model(klass, inline)
+            content = if inline.children.nil? || inline.children.empty?
+                        inline.content.to_s
+                      else
+                        create_text_elements(inline.children)
+                      end
+
+            klass.new(content: content, unconstrained: false)
+          end
+
+          # `_*text*_` parses to Italic{Bold{text}}; Metanorma renders
+          # same-span emphasis correctly only with italic innermost
+          # (`*_text_*`, #159). When an italic's entire content is one
+          # bold (or a bold's one italic), rebuild as Bold outer /
+          # Italic inner, both constrained.
+          def swap_emphasis_nesting(inline)
+            children = Array(inline.children)
+            return nil unless children.size == 1
+
+            only = children.first
+            return nil unless only.is_a?(CoreModel::InlineElement)
+
+            inner_kids = Array(only.children)
+            return nil unless inner_kids.empty? || inner_kids.all? { |k| k.is_a?(CoreModel::TextContent) }
+
+            outer_type = inline.resolve_format_type
+            inner_type = only.resolve_format_type
+            return nil unless %w[bold italic].include?(outer_type) && outer_type != inner_type &&
+                              %w[bold italic].include?(inner_type)
+
+            classes = {
+              'bold' => Coradoc::AsciiDoc::Model::Inline::Bold,
+              'italic' => Coradoc::AsciiDoc::Model::Inline::Italic
+            }
+            inner = classes[outer_type].new(
+              content: only.children.nil? || only.children.empty? ? only.content.to_s : create_text_elements(only.children),
+              unconstrained: false
+            )
+            classes[inner_type].new(content: inner, unconstrained: false)
+          end
+
           def transform_inline(inline)
             case inline.resolve_format_type
             when 'bold'
-              Coradoc::AsciiDoc::Model::Inline::Bold.new(content: inline.content)
+              inline_model(Coradoc::AsciiDoc::Model::Inline::Bold, inline)
             when 'italic'
-              Coradoc::AsciiDoc::Model::Inline::Italic.new(content: inline.content)
+              # #159: italic directly wrapping only bold (`_*text*_`)
+              # re-serializes as Bold outer / Italic inner (`*_text_*`)
+              # for correct Metanorma rendering.
+              swap_emphasis_nesting(inline) ||
+                inline_model(Coradoc::AsciiDoc::Model::Inline::Italic, inline)
             when 'monospace'
               Coradoc::AsciiDoc::Model::Inline::Monospace.new(content: inline.content)
             when 'highlight'
