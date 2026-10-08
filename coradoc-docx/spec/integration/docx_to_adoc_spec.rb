@@ -25,7 +25,7 @@ RSpec.describe 'DOCX to AsciiDoc conversion', type: :integration do
 
     adoc = transform_to_adoc(doc)
 
-    expect(adoc).to include('Normal **bold** and __italic__')
+    expect(adoc).to include('Normal *bold* and _italic_')
   end
 
   it 'converts tables to AsciiDoc table format' do

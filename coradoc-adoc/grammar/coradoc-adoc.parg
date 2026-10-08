@@ -236,7 +236,7 @@ grammar CoradocAdoc version "0.2.0" {
   # the preceding item.
   ulist_item_1 = (empty_ulist_item_1 / ulist_item_1_nonempty)
 
-  empty_ulist_item_1 = (&(ulist_marker_1) ((ulist_marker_1 as marker) !(" [[[") (%x0A as lines)))
+  empty_ulist_item_1 = (&(ulist_marker_1) (((ulist_marker_1 as marker) !(" [[[") (%x0A as lines)) as list_item))
 
   ulist_item_1_nonempty = (&(ulist_marker_1) (((ulist_marker_1 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
   olist_item_1 = (&(olist_marker_1) (((olist_marker_1 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
