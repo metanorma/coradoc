@@ -286,7 +286,7 @@ module Coradoc
             return nil unless only.is_a?(CoreModel::InlineElement)
 
             inner_kids = Array(only.children)
-            return nil unless inner_kids.empty? || inner_kids.all? { |k| k.is_a?(CoreModel::TextContent) }
+            return nil unless inner_kids.empty? || inner_kids.all?(CoreModel::TextContent)
 
             outer_type = inline.resolve_format_type
             inner_type = only.resolve_format_type
