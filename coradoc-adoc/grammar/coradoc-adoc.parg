@@ -230,7 +230,14 @@ grammar CoradocAdoc version "0.2.0" {
   list_item_continuation_lines = (*(line_not_text list_body_text_line))
   list_attached_block = (admonition_line / unordered_list_1 / ordered_list_1 / paragraph / block_3)
   list_item_attached = ((*(&(list_continuation) list_continuation list_attached_block)) as attached)
-  ulist_item_1 = (&(ulist_marker_1) (((ulist_marker_1 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
+  # a bare marker line is an empty list item — without this
+  # arm it falls through to a continuation text line and corrupts
+  # the preceding item.
+  ulist_item_1 = (empty_ulist_item_1 / ulist_item_1_nonempty)
+
+  empty_ulist_item_1 = (&(ulist_marker_1) ((ulist_marker_1 as marker) !(" [[[") (%x0A as lines)))
+
+  ulist_item_1_nonempty = (&(ulist_marker_1) (((ulist_marker_1 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
   olist_item_1 = (&(olist_marker_1) (((olist_marker_1 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
   ulist_item_2 = (&(ulist_marker_2) (((ulist_marker_2 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_3) list_3)) as nested)) as list_item))
   olist_item_2 = (&(olist_marker_2) (((olist_marker_2 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_3) list_3)) as nested)) as list_item))
