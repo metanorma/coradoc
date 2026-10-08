@@ -31,12 +31,15 @@ RSpec.describe 'PARG artifact parity with the Ruby DSL' do
 
   artifact = Parsanol::PARG::Artifact.load(artifact_path)
   dsl = Coradoc::AsciiDoc::Parser::Base.new
+  # Base#parse routes to the compiled artifact (GrammarBackend);
+  # reach the Ruby-DSL grammar this spec is the parity reference for.
+  dsl_parse = ->(input) { dsl.method(:parse).super_method.call(input, mode: :native) }
   corpus = JSON.parse(File.read(corpus_path))
 
   corpus.each_with_index do |input, i|
     it "parses corpus entry #{i} identically" do
       a_tree = parse_outcome(-> { artifact.parse('document', input, mode: :ruby) })
-      d_tree = parse_outcome(-> { dsl.parse(input) })
+      d_tree = parse_outcome(-> { dsl_parse.call(input) })
       expect(a_tree).to eq(d_tree)
     end
   end
