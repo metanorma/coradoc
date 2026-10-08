@@ -41,8 +41,14 @@ RSpec.describe 'AsciiDoc ruby-vs-native engine differential' do
 
   corpus.each do |name, input|
     it "parses '#{name}' to identical trees on both engines" do
-      ruby_tree = Coradoc::AsciiDoc::Parser::Base.new.parse(input, mode: :ruby)
-      native_tree = Coradoc::AsciiDoc::Parser::Base.new.parse(input, mode: :native)
+      # Base#parse routes to the compiled PARG artifact; this spec
+      # differentiates the Ruby-DSL grammar's own engines, so reach
+      # the shadowed Parsanol parse (artifact ruby/native parity is
+      # covered by parg_parity_spec).
+      parser = Coradoc::AsciiDoc::Parser::Base.new
+      dsl_parse = parser.method(:parse).super_method
+      ruby_tree = dsl_parse.call(input, mode: :ruby)
+      native_tree = dsl_parse.call(input, mode: :native)
       expect(native_tree).to eq(ruby_tree)
     end
   end
