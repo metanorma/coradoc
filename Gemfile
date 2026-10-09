@@ -10,7 +10,7 @@ gem 'coradoc-html', path: './coradoc-html'
 gem 'coradoc-markdown', path: './coradoc-markdown'
 gem 'coradoc-mirror', path: './coradoc-mirror'
 
-gem 'lutaml-model', github: 'lutaml/lutaml-model', ref: 'c300bfcbb56f'
+gem 'lutaml-model', github: 'lutaml/lutaml-model'
 gem 'lutaml-xsd'
 
 # In-house parsing engines (roadmap: TODO.inhouseparsing/)
