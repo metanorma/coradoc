@@ -181,7 +181,7 @@ RSpec.describe 'Cross-format round-trip (Markdown → AsciiDoc → CoreModel)', 
 
   it 'preserves bold and italic' do
     _c1, _, adoc = md_to_adoc_to_core("**bold** and *italic*\n")
-    expect(adoc).to include('**bold**')
-    expect(adoc).to include('*italic*')
+    expect(adoc).to include('*bold*')
+    expect(adoc).to include('_italic_')
   end
 end

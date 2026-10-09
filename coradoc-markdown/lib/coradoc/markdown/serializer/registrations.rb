@@ -12,6 +12,7 @@ require_relative 'serializers/image'
 require_relative 'serializers/horizontal_rule'
 require_relative 'serializers/table'
 require_relative 'serializers/emphasis'
+require_relative 'serializers/text'
 require_relative 'serializers/strong'
 require_relative 'serializers/code'
 require_relative 'serializers/strikethrough'
@@ -58,6 +59,7 @@ module Coradoc
           Serializers::HorizontalRule,
           Serializers::Table,
           Serializers::Emphasis,
+          Serializers::Text,
           Serializers::Strong,
           Serializers::Code,
           Serializers::Strikethrough,

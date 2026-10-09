@@ -230,8 +230,9 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
         Coradoc::Markdown::Text.new(content: 'plain text')
       end
 
-      it 'returns the content as string' do
-        expect(transform).to eq('plain text')
+      it 'returns a TextContent carrying the text' do
+        expect(transform).to be_a(Coradoc::CoreModel::TextContent)
+        expect(transform.text).to eq('plain text')
       end
     end
 

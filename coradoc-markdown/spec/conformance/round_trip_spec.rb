@@ -159,6 +159,7 @@ RSpec.describe 'Markdown serialization round-trip', :aggregate_failures do
       walk = lambda do |node|
         case node
         when Coradoc::CoreModel::Footnote then footnotes << node
+        when Coradoc::CoreModel::TextContent then nil
         when Coradoc::CoreModel::Base then Array(node.children).each { |c| walk.call(c) }
         when Array then node.each { |c| walk.call(c) }
         end

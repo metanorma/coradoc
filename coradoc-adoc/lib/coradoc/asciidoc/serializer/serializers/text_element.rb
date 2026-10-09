@@ -9,7 +9,9 @@ module Coradoc
           def to_adoc(model, _options = {})
             result = ''
             result += "[[#{model.id}]] " if model.id
-            result += serialize_content(model.content)
+            content = serialize_content(model.content)
+            content = Coradoc::Util::AsciiDoc.escape_text_delimiters(content) if content.is_a?(String)
+            result += content
             result += model.line_break.to_s
             result
           end
