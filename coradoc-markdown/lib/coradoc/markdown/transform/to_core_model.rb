@@ -38,6 +38,8 @@ module Coradoc
               transform_image(model)
             when Coradoc::Markdown::Link
               transform_link(model)
+            when Coradoc::Markdown::Text
+              Coradoc::CoreModel::TextContent.new(text: model.content)
             when Coradoc::Markdown::Emphasis
               transform_inline(model, 'italic')
             when Coradoc::Markdown::Strong
@@ -64,8 +66,6 @@ module Coradoc
               transform_attribute_list(model)
             when Coradoc::Markdown::Comment
               Coradoc::CoreModel::CommentBlock.new(content: model.text.to_s)
-            when Coradoc::Markdown::Text
-              model.content.to_s
             when Array
               model.map { |item| transform(item) }
             else
@@ -114,7 +114,8 @@ module Coradoc
             content = extract_text(para.text)
 
             Coradoc::CoreModel::ParagraphBlock.new(
-              content: content
+              content: content,
+              children: para.children.map { |child| transform(child) }
             )
           end
 

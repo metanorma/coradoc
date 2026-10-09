@@ -279,7 +279,8 @@ module Coradoc
 
           if element.key?(:p)
             text = extract_text_from_p(element[:p])
-            paragraph = Paragraph.new(text: text)
+            paragraph = Paragraph.new(text: text,
+                                      children: inline_models_for(element[:p]))
             apply_ial_to_element(paragraph, element[:ial]) if element.key?(:ial)
             return paragraph
           end
@@ -509,6 +510,47 @@ module Coradoc
           else
             p.to_s
           end
+        end
+
+        # Inline models for a paragraph's raw lines: runs the InlineParser
+        # over each line so emphasis/code/link survive to CoreModel as
+        # InlineElements instead of flattened marker text.
+        def inline_models_for(p)
+          lines = if p.is_a?(Hash)
+                    [p[:ln]]
+                  else
+                    Array(p).map { |l| l.is_a?(Hash) ? l[:ln] : l }
+                  end
+          lines.compact.flat_map.with_index do |line, idx|
+            models = build_inline_models(line.to_s)
+            if idx.zero?
+              models
+            else
+              [Text.new(content: "\n"), *models]
+            end
+          end
+        end
+
+        def build_inline_models(line)
+          Coradoc::Markdown.parse_inline(line).map do |el|
+            next Text.new(content: el.to_s) unless el.is_a?(Hash)
+
+            if el.key?(:strong)
+              Strong.new(text: inline_text(el[:strong]))
+            elsif el.key?(:emph)
+              Emphasis.new(text: inline_text(el[:emph]))
+            elsif el.key?(:code)
+              Code.new(text: el[:code].to_s)
+            elsif el.key?(:text)
+              Text.new(content: el[:text].to_s)
+            else
+              Text.new(content: el.values.map(&:to_s).join)
+            end
+          end
+        end
+
+        def inline_text(subtree)
+          Array(subtree).map { |n| n.is_a?(Hash) ? n.values.map(&:to_s).join : n.to_s }.join
         end
 
         # Extract code from code_block structure
