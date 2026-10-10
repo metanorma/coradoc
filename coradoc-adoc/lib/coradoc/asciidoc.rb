@@ -32,6 +32,8 @@ module Coradoc
     autoload :Model, "#{__dir__}/asciidoc/model"
     autoload :Parser, "#{__dir__}/asciidoc/parser"
     autoload :Transformer, "#{__dir__}/asciidoc/transformer"
+    # Registration side effect: loading registers rules into Coradoc::Lint.registry.
+    autoload :Lint, "#{__dir__}/asciidoc/lint"
     autoload :Serializer, "#{__dir__}/asciidoc/serializer"
     autoload :Transform, "#{__dir__}/asciidoc/transform"
     autoload :Builder, "#{__dir__}/asciidoc/builder"
