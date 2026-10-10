@@ -13,6 +13,16 @@ module Coradoc
           ).as(:list)
         end
 
+        # A list item at ANY depth starts a list construct: a nested
+        # list (`* a` followed by `** b`) must stop the parent item's
+        # continuation text and attach as `nested` instead. Full items
+        # (not bare markers) so `**un**constrained` — no space after
+        # the marker — stays ordinary text.
+        def list_start
+          (1..5).map { |level| unordered_list(level) | ordered_list(level) }
+                .reduce(:|)
+        end
+
         def list_continuation
           line_start? >> str("+\n")
         end
