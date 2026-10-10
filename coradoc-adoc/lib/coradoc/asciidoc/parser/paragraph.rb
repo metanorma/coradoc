@@ -9,7 +9,7 @@ module Coradoc
             (attribute_list >> newline).absent? >>
             block_delimiter.absent? >>
             (str('|===') >> newline).absent? >>
-            list.absent? >>
+            list_start.absent? >>
             list_prefix.absent? >>
             list_continuation.absent? >>
             element_id.absent? >>

@@ -80,5 +80,8 @@
   "xref \\<<here>> stays literal\n",
   "foo_bar_baz\n",
   "a*b mid *c*\n",
-  "a *b* c and _em_ text\n"
+  "a *b* c and _em_ text\n",
+  "* a\n** b\n",
+  ". a\n.. b\n",
+  "* a\n** b\n* c\n"
 ]

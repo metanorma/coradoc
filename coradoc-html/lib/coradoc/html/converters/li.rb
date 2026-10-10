@@ -20,10 +20,14 @@ module Coradoc
                       treat_children_coradoc(node, state)
                     end
 
-          # Use CoreModel::ListItem with children for mixed content
-          # content can be an array of inline elements or a single string
+          # Nested lists live in the canonical +nested_list+ slot
+          # (single); remaining children carry inline content.
+          nested = Array(content).find { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+          children = nested ? Array(content).reject { |c| c.equal?(nested) } : content
+
           Coradoc::CoreModel::ListItem.new(
-            children: content,
+            children: children,
+            nested_list: nested,
             id: id
           )
         end

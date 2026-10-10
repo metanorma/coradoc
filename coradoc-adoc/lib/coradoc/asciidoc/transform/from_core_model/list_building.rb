@@ -16,9 +16,9 @@ module Coradoc
               content: item.flat_text,
               marker: item.marker || (default_marker(list.marker_type) * depth)
             )
-            Array(item.children).each do |child|
-              next unless child.is_a?(CoreModel::ListBlock)
-
+            nested_blocks = [item.nested_list,
+                             *Array(item.children).grep(CoreModel::ListBlock)].compact
+            nested_blocks.each do |child|
               child_depth = child.marker_type == list.marker_type ? depth + 1 : 1
               items.concat(transform_list(child, child_depth).items)
             end

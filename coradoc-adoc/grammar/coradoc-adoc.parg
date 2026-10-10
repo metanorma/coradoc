@@ -187,7 +187,9 @@ grammar CoradocAdoc version "0.2.0" {
   literal_space = 1*(%x20 / %x09)
   section_prefix = (%x3D *(%x3D) (!(%x0A) any_char))
   list_prefix = (((%x2A 1*5(%x2A)) / (%x2E 1*5(%x2E))) " ")
-  line_not_text = (!(list_1) !(ulist_item_1) !(list_prefix) !(list_continuation) !((attribute_list newline)) !(block_delimiter) !((%x7C %x3D %x3D %x3D newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
+  # Any-depth list markers stop continuation text: a nested list
+  # (`** b` under `* a`) attaches as `nested`, not continuation.
+  line_not_text = (!(list_1) !(ulist_item_1) !(list_2) !(list_3) !(list_4) !(list_5) !(list_prefix) !(list_continuation) !((attribute_list newline)) !(block_delimiter) !((%x7C %x3D %x3D %x3D newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
   asciidoc_char = (%x2A / %x5F / %x3A / %x2B / %x3D / %x2D)
   asciidoc_char_with_id = (asciidoc_char / (%x5B %x23) / (%x5B %x5B))
   element_id_inline = ((%x5B %x5B (keyword) as id %x5D %x5D) / (%x5B %x23 (keyword) as id %x5D))
