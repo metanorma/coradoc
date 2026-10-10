@@ -4,11 +4,11 @@ require 'spec_helper'
 require 'coradoc/html'
 
 RSpec.describe Coradoc::AsciiDoc::Formatter do
-  def format(text)
+  def fmt(text)
     described_class.call(text)
   end
 
-  SAMPLES = [
+  [
     "= T\n\n== S\n\ntext here\n",
     "para\n\n----\ncode\n----\n",
     "[source,ruby]\n----\nputs 1\n----\n",
@@ -21,36 +21,34 @@ RSpec.describe Coradoc::AsciiDoc::Formatter do
     "term:: definition\n",
     "include::part.adoc[]\n",
     "'''\n"
-  ].freeze
-
-  SAMPLES.each do |sample|
+  ].each do |sample|
     it "is idempotent for #{sample.inspect[0..40]}" do
-      once = format(sample)
-      expect(format(once)).to eq(once)
+      once = fmt(sample)
+      expect(fmt(once)).to eq(once)
     end
   end
 
   it 'collapses inflated inter-block spacing to a single blank line' do
-    expect(format("para\n\n\n\n----\ncode\n----\n"))
+    expect(fmt("para\n\n\n\n----\ncode\n----\n"))
       .to eq("para\n\n[source]\n----\ncode\n----\n")
   end
 
   it 'strips leading blank lines and keeps exactly one trailing newline' do
-    expect(format("\n\n\n* a\n* b\n\n\n")).to eq("* a\n* b\n")
+    expect(fmt("\n\n\n* a\n* b\n\n\n")).to eq("* a\n* b\n")
   end
 
   it 'emits [source] without a trailing comma when the language is empty' do
-    expect(format("----\ncode\n----\n")).to include("[source]\n")
+    expect(fmt("----\ncode\n----\n")).to include("[source]\n")
   end
 
   it 'preserves blank lines inside listing fences' do
     source = "----\na\n\n\nb\n----\n"
 
-    expect(format(source)).to eq("[source]\n----\na\n\n\nb\n----\n")
+    expect(fmt(source)).to eq("[source]\n----\na\n\n\nb\n----\n")
   end
 
   it 'canonicalizes loose list spacing to tight (documented v1 style)' do
-    expect(format("* a\n\n* b\n")).to eq("* a\n* b\n")
+    expect(fmt("* a\n\n* b\n")).to eq("* a\n* b\n")
   end
 
   it 'round-trips through Coradoc::AsciiDoc.format' do
