@@ -33,7 +33,7 @@ module Coradoc
 
         def extract(node)
           case node
-          when Parsanol::Slice then line_of(node)
+          when Parsanol::Slice, Coradoc::AsciiDoc::Parser::PositionedString then line_of(node)
           when Coradoc::AsciiDoc::Model::Base then node.source_line
           when Hash then extract_from_hash(node)
           when Array then extract_from_array(node)

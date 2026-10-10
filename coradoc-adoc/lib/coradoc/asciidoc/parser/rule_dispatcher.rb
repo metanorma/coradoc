@@ -47,7 +47,7 @@ module Coradoc
               end
               cache[key] = rule_name
             end
-            parser_instance.public_send(cache[key])
+            TreeMaterializer.convert(parser_instance.public_send(cache[key]))
           end
 
           private
@@ -59,7 +59,8 @@ module Coradoc
           # Wrapping `__send__` in particular causes infinite recursion.
           # @return [Hash{Symbol => Array<Module>}]
           def collect_rule_names
-            parser_constants = Parser.constants - %i[Base Cache FixFiles RuleDispatcher]
+            parser_constants = Parser.constants - %i[Base Cache FixFiles RuleDispatcher
+                                                     PositionedString TreeMaterializer]
             parser_constants.each_with_object({}) do |const, acc|
               Parser.const_get(const).instance_methods(false).each do |name|
                 acc[name] ||= []

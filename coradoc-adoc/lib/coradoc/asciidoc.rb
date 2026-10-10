@@ -34,6 +34,7 @@ module Coradoc
     autoload :Transformer, "#{__dir__}/asciidoc/transformer"
     # Registration side effect: loading registers rules into Coradoc::Lint.registry.
     autoload :Lint, "#{__dir__}/asciidoc/lint"
+    autoload :Formatter, "#{__dir__}/asciidoc/formatter"
     autoload :Serializer, "#{__dir__}/asciidoc/serializer"
     autoload :Transform, "#{__dir__}/asciidoc/transform"
     autoload :Builder, "#{__dir__}/asciidoc/builder"
@@ -79,6 +80,15 @@ module Coradoc
       # @return [Coradoc::CoreModel::Base] CoreModel
       def to_core(document)
         Transform::ToCoreModel.transform(document)
+      end
+
+      # Canonical-format AsciiDoc text (#110): parse to the model
+      # tree, serialize, and normalize inter-block whitespace.
+      #
+      # @param text [String] AsciiDoc content
+      # @return [String] canonically formatted AsciiDoc
+      def format(text)
+        Formatter.call(text)
       end
 
       # Serialize a document model to AsciiDoc string

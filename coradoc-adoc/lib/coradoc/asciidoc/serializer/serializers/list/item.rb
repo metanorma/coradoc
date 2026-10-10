@@ -87,6 +87,10 @@ module Coradoc
                 "+\n#{elem.to_adoc}"
               end.join
               nest = model.nested.nil? || (model.nested.is_a?(Array) && model.nested.empty?) ? '' : model.nested.to_adoc
+              # The nested list serializer opens with a block separator;
+              # adjacent to the item line it would read as a detached
+              # sibling list on re-parse.
+              nest = nest.sub(/\A\n+/, '')
               out = " #{_anchor}#{out}#{model.line_break}"
               out + attach + nest
             end
