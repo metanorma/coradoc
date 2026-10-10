@@ -3,11 +3,6 @@
 require 'rspec/its'
 require 'simplecov'
 
-# The suite exercises the portable Leptris FFI surface (same choice the
-# leptris gem's own suite makes); platform native acceleration is
-# orthogonal to these specs.
-ENV['LEPTRIS_NO_NATIVE'] ||= '1'
-
 # Require the main coradoc gem first
 require 'coradoc'
 
