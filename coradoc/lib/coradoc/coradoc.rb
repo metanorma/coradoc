@@ -148,6 +148,7 @@ module Coradoc
   autoload :IncludeResolver, "#{__dir__}/include_resolver"
   autoload :IncludeSelectors, "#{__dir__}/include_selectors"
   autoload :ResolveIncludes, "#{__dir__}/resolve_includes"
+  autoload :SourceGraph, "#{__dir__}/source_graph"
   autoload :Pipeline, "#{__dir__}/pipeline"
   autoload :FormatCatalog, "#{__dir__}/format_catalog"
   autoload :Introspection, "#{__dir__}/introspection"
