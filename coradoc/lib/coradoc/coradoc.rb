@@ -134,6 +134,7 @@ module Coradoc
   end
 
   autoload :Error, "#{__dir__}/errors"
+  autoload :UnsupportedFormatError, "#{__dir__}/errors"
   autoload :Version, "#{__dir__}/version"
   autoload :Logger, "#{__dir__}/logger"
   autoload :Hooks, "#{__dir__}/hooks"
@@ -149,6 +150,7 @@ module Coradoc
   autoload :IncludeSelectors, "#{__dir__}/include_selectors"
   autoload :ResolveIncludes, "#{__dir__}/resolve_includes"
   autoload :SourceGraph, "#{__dir__}/source_graph"
+  autoload :Lint, "#{__dir__}/lint"
   autoload :Pipeline, "#{__dir__}/pipeline"
   autoload :FormatCatalog, "#{__dir__}/format_catalog"
   autoload :Introspection, "#{__dir__}/introspection"

@@ -84,6 +84,35 @@ module Coradoc
       puts "Coradoc #{Coradoc::VERSION}"
     end
 
+    desc 'lint FILE...', 'Lint documents with model-driven rules (ADOC001...)'
+    option :format, aliases: '-f', desc: 'Source format (auto-detected from extension)', type: :string
+    option :only, desc: 'Run only these rule ids', type: :array
+    option :except, desc: 'Skip these rule ids', type: :array
+    def lint(*files)
+      files.each do |file|
+        unless File.exist?(file)
+          error "Error: #{file} not found"
+          exit 1
+        end
+      end
+
+      format = options[:format]&.to_sym
+      violations = Coradoc::Lint.run(files, format: format,
+                                            only: options[:only],
+                                            except: options[:except])
+      violations.each { |v| puts v }
+
+      if violations.empty?
+        puts '✓ No lint violations'
+      else
+        error "✗ #{violations.size} violation(s)"
+        exit 1
+      end
+    rescue Coradoc::Error => e
+      error "Error: #{e.message}"
+      exit 1
+    end
+
     desc 'validate FILE', 'Validate a document against its schema'
     option :format, aliases: '-f', desc: 'Source format (auto-detected from extension)', type: :string
     option :strict, desc: 'Enable strict validation mode', type: :boolean, default: false
