@@ -8,6 +8,7 @@ module Coradoc
       autoload :ToCoreModel, "#{__dir__}/transform/to_core_model"
       autoload :ToCoreModelRegistrations, "#{__dir__}/transform/to_core_model_registrations"
       autoload :FromCoreModel, "#{__dir__}/transform/from_core_model"
+      autoload :ListBuilding, "#{__dir__}/transform/from_core_model/list_building"
       autoload :FromCoreModelRegistrations, "#{__dir__}/transform/from_core_model_registrations"
       autoload :TextExtractVisitor, "#{__dir__}/transform/text_extract_visitor"
       autoload :InlineTransformVisitor, "#{__dir__}/transform/inline_transform_visitor"

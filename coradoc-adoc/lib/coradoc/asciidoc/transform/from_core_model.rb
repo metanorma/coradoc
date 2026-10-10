@@ -5,6 +5,8 @@ module Coradoc
     module Transform
       # Transforms CoreModel to AsciiDoc models
       class FromCoreModel
+        extend Transform::ListBuilding
+
         @registered = false
 
         class << self
@@ -221,33 +223,6 @@ module Coradoc
           # without this, item children other than text were dropped
           # entirely (#68 territory). Nested lists keep their own
           # marker type one level deeper.
-          def transform_list(list, depth = 1)
-            items = []
-            Array(list.items).each do |item|
-              items << Coradoc::AsciiDoc::Model::List::Item.new(
-                content: item.flat_text,
-                marker: item.marker || (default_marker(list.marker_type) * depth)
-              )
-              Array(item.children).each do |child|
-                next unless child.is_a?(CoreModel::ListBlock)
-
-                # A marker-type change alone signals nesting to
-                # AsciiDoc; same-type nesting needs a deeper marker.
-                child_depth = child.marker_type == list.marker_type ? depth + 1 : 1
-                items.concat(transform_list(child, child_depth).items)
-              end
-            end
-
-            case list.marker_type
-            when 'ordered'
-              Coradoc::AsciiDoc::Model::List::Ordered.new(items: items)
-            when 'definition'
-              Coradoc::AsciiDoc::Model::List::Definition.new(items: items)
-            else
-              Coradoc::AsciiDoc::Model::List::Unordered.new(items: items)
-            end
-          end
-
           def transform_list_item(item)
             Coradoc::AsciiDoc::Model::List::Item.new(
               content: item.flat_text,
@@ -679,13 +654,6 @@ module Coradoc
             attrs = {}
             attrs['language'] = block.language if block.language
             attrs
-          end
-
-          def default_marker(marker_type)
-            case marker_type
-            when 'ordered' then '.'
-            else '*'
-            end
           end
         end
 
