@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'plurimath'
+
 module Coradoc
   module Html
     module Converters
@@ -9,10 +11,7 @@ module Coradoc
         def to_coradoc(node, _state = {})
           # Leptris#to_s returns an inspect string; serialize the node
           stem = node.to_xml.tr("\n", ' ')
-          if Html.input_config.mathml2asciimath
-            require 'plurimath'
-            stem = Plurimath::Math.parse(stem, :mathml).to_asciimath
-          end
+          stem = Plurimath::Math.parse(stem, :mathml).to_asciimath
 
           unless stem.nil?
             stem = stem.gsub('[', '\\[')

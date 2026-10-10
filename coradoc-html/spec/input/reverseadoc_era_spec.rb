@@ -24,7 +24,7 @@ RSpec.describe 'ReverseAdoc-era regressions' do
   it '#89: math converts without object dump' do
     out = conv('<p>Converted <math><mi>x</mi></math>, end.</p>')
     expect(out).not_to include('Leptris')
-    expect(out).to include('mathml:[<math><mi>x</mi></math>]')
+    expect(out).to include('mathml:[x], end.') # plurimath MathML→AsciiMath (#158)
   end
 
   it '#102: duplicate section ids are deduplicated' do
