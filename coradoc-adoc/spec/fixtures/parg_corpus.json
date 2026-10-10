@@ -74,5 +74,11 @@
   "|===\n2+^| spans\n|===\n",
   "*\n",
   "* a\n* b\n*\n",
-  "*  entry1\n*  entry2\n*  entry3\n*  entry4, and\n*\n"
+  "*  entry1\n*  entry2\n*  entry3\n*  entry4, and\n*\n",
+  "foo\\_bar\\_baz\n",
+  "see \\*this\\* here and \\`code\\`\n",
+  "xref \\<<here>> stays literal\n",
+  "foo_bar_baz\n",
+  "a*b mid *c*\n",
+  "a *b* c and _em_ text\n"
 ]

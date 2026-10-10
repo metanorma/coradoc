@@ -109,15 +109,18 @@ module Coradoc
 
         # Collections
         def visit_array(models)
+          # Fragments of one source line concatenate (an escape splits
+          # `foo\_bar` into three pieces); a soft line break joins
+          # with a space (soft-wrapped paragraph lines).
           result = []
           models.each_with_index do |item, idx|
             text = visit(item)
             next if text.empty?
 
             result << text
-            next unless idx < models.length - 1 && !text.empty?
+            next if idx == models.length - 1
 
-            result << ' ' if item.is_a?(Model::TextElement) && item.line_break != '+'
+            result << ' ' if item.is_a?(Model::TextElement) && item.line_break == "\n"
           end
           result.join
         end

@@ -28,11 +28,7 @@ RSpec.describe 'Text delimiter escaping (#92)' do
     expect(conv('<p>foo_bar_baz and 2 * 3</p>')).to eq('foo_bar_baz and 2 * 3')
   end
 
-  # Blocked on the parse-side \X handling (see #281): the adoc parser
-  # keeps the backslash and drops the escaped character, so escaped
-  # output does not yet reparse to itself.
   it 'keeps escaped output stable across an adoc reparse' do
-    pending 'parse-side \X escape handling (see #281)'
     out = conv('<p>a __literal__ pair</p>')
     again = Coradoc.convert(out, from: :asciidoc, to: :asciidoc)
     expect(again).to eq(out)
