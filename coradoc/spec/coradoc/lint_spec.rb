@@ -74,22 +74,26 @@ RSpec.describe Coradoc::Lint do
   end
 
   describe Coradoc::Lint::Registry do
-    RuleOne = Class.new(Coradoc::Lint::Rule) do
-      rule_id 'X001'
-      applies_to :testing
+    let(:rule_one) do
+      Class.new(Coradoc::Lint::Rule) do
+        rule_id 'X001'
+        applies_to :testing
+      end
     end
 
-    RuleTwo = Class.new(Coradoc::Lint::Rule) do
-      rule_id 'X002'
-      applies_to :testing
+    let(:rule_two) do
+      Class.new(Coradoc::Lint::Rule) do
+        rule_id 'X002'
+        applies_to :testing
+      end
     end
 
-    Anonymous = Class.new(Coradoc::Lint::Rule)
+    let(:anonymous) { Class.new(Coradoc::Lint::Rule) }
 
     def registry
       reg = described_class.new
-      reg.register(RuleOne)
-      reg.register(RuleTwo)
+      reg.register(rule_one)
+      reg.register(rule_two)
       reg
     end
 
@@ -104,7 +108,7 @@ RSpec.describe Coradoc::Lint do
     end
 
     it 'rejects rules without id or format' do
-      expect { registry.register(Anonymous) }.to raise_error(ArgumentError, /id/)
+      expect { registry.register(anonymous) }.to raise_error(ArgumentError, /id/)
     end
   end
 end
