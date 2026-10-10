@@ -25,6 +25,10 @@ module Coradoc
 
         @split_sections   = nil
 
+        # Replace source-derived anchor ids (e.g. Word _Toc… anchors)
+        # with ids generated from section titles (#83).
+        @renumber_anchors = false
+
         @doc_width        = 1000
 
         @plugins          = []
@@ -60,6 +64,7 @@ module Coradoc
       declare_option :input_format
       declare_option :html_version
       declare_option :split_sections
+      declare_option :renumber_anchors
       declare_option :doc_width
       declare_option :plugins
       declare_option :track_time

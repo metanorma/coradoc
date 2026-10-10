@@ -85,8 +85,14 @@ module Coradoc
         end
       end
 
+      # Renumbering replaces source-derived anchors (Word `_Toc…`,
+      # `anchor-16`, …) with title-generated ids (#83).
+      def self.renumber_anchors?
+        Coradoc::Html.input_config.renumber_anchors
+      end
+
       def self.normalize_section(section, seen_ids)
-        id = section.id.to_s.strip
+        id = renumber_anchors? ? '' : section.id.to_s.strip
         if id.empty?
           id = Coradoc::CoreModel::IdGenerator.generate_from_title(
             section.title

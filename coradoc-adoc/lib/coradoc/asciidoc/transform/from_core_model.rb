@@ -216,12 +216,26 @@ module Coradoc
             )
           end
 
-          def transform_list(list)
-            items = Array(list.items).map do |item|
-              Coradoc::AsciiDoc::Model::List::Item.new(
+          # Lists nested inside list items carry depth markers so
+          # AsciiDoc reads them as nested rather than sibling lists —
+          # without this, item children other than text were dropped
+          # entirely (#68 territory). Nested lists keep their own
+          # marker type one level deeper.
+          def transform_list(list, depth = 1)
+            items = []
+            Array(list.items).each do |item|
+              items << Coradoc::AsciiDoc::Model::List::Item.new(
                 content: item.flat_text,
-                marker: item.marker || default_marker(list.marker_type)
+                marker: item.marker || (default_marker(list.marker_type) * depth)
               )
+              Array(item.children).each do |child|
+                next unless child.is_a?(CoreModel::ListBlock)
+
+                # A marker-type change alone signals nesting to
+                # AsciiDoc; same-type nesting needs a deeper marker.
+                child_depth = child.marker_type == list.marker_type ? depth + 1 : 1
+                items.concat(transform_list(child, child_depth).items)
+              end
             end
 
             case list.marker_type
