@@ -72,7 +72,7 @@ Format gems register via `Coradoc.register_format(:name, Module)` and must imple
 
 - `lutaml-model` — serialization framework for model classes (used by CoreModel and AsciiDoc model)
 - `parslet` — PEG parser (used by AsciiDoc and Markdown parsers; Parsanol migration in flight — see the `wip/parsanol-migration` branch and parsanol-ruby#67)
-- `leptris` — Leptris::XML FFI binding: HTML parsing + DOM + serialization (used by the HTML gem). Parse via the `Leptris::HTML` facade (`Leptris::HTML.parse` = html4/Nokogiri-parity lane, `Leptris::HTML5.parse` = WHATWG; selected with the `html_version:` input option). Set `LEPTRIS_NO_NATIVE=1` for dev/CI until the native-bundle codesign issue is resolved
+- `leptris` — Leptris::XML FFI binding: HTML parsing + DOM + serialization (used by the HTML gem). Parse via the `Leptris::HTML` facade (`Leptris::HTML.parse` = html4/Nokogiri-parity lane, `Leptris::HTML5.parse` = WHATWG; selected with the `html_version:` input option). Native binaries are signed as of leptris 1.9.334; set `LEPTRIS_NO_NATIVE=1` only to force the pure-Ruby fallback
 - `thor` — CLI framework
 
 ## Conventions

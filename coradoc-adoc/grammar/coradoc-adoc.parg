@@ -145,7 +145,7 @@ grammar CoradocAdoc version "0.2.0" {
   escaped_xref = (%x5C (%x3C %x3C) as text)
   # \X (X punctuation, minus < for escaped_xref and \ itself)
   # yields the literal X without firing any inline rule (#281)
-  escape_char = (%x5C (%x21 / %x22 / %x23 / %x24 / %x25 / %x26 / %x27 / %x28 / %x29 / %x2A / %x2B / %x2C / %x2D / %x2E / %x2F / %x3A / %x3B / %x3C / %x3D / %x3E / %x3F / %x40 / %x5B / %x5D / %x5E / %x5F / %x60 / %x7B / %x7C / %x7D / %x7E) as text)
+  escape_char = (%x5C ((%x21-2f / %x3a-3b / %x3d-40 / %x5b / %x5d-60 / %x7b-7e)) as text)
   cross_reference = (((%x3C %x3C) ((1*(!((%x2C / %x3E)) any_char)) as href) [((%x2C) ((*(!((%x3E)) any_char)) as text))] (%x3E %x3E)) as cross_reference)
 
   term_inline = (term_type ":[" ((1*(!(%x5D) any_char))) as term %x5D)

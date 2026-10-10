@@ -29,4 +29,18 @@ RSpec.describe 'Nested lists in html→adoc (#68 territory)' do
     html = '<ul><li>a<ul><li>b</li></ul></li><li>c</li></ul>'
     expect(conv(html)).to eq("* a\n** b\n* c")
   end
+
+  it 'emits a list continuation instead of gluing <p> into the item text' do
+    expect(conv('<ul><li>a<p>b</p></li></ul>')).to eq("* a\n+\nb")
+  end
+
+  it 'collapses a wrapper item whose only content is a nested list (#68)' do
+    expect(conv('<ul><li><ul><li>a</li><li>b</li></ul></li></ul>')).to eq("* a\n* b")
+    expect(conv('<ol><li><ol><li>a</li></ol></li></ol>')).to eq('. a')
+    expect(conv('<ul><li><ol><li>a</li></ol></li></ul>')).to eq('. a')
+  end
+
+  it 'keeps a genuinely empty item as {empty}' do
+    expect(conv('<ul><li></li></ul>')).to eq('* {empty}')
+  end
 end
