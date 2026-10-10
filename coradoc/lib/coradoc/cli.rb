@@ -84,6 +84,41 @@ module Coradoc
       puts "Coradoc #{Coradoc::VERSION}"
     end
 
+    desc 'format FILE', 'Canonical-format a document (like rufo, #110)'
+    option :format, aliases: '-f', desc: 'Source format (auto-detected from extension)', type: :string
+    option :in_place, aliases: '-i', desc: 'Rewrite the file in place', type: :boolean, default: false
+    option :check, desc: 'Exit 1 when the file is not canonically formatted (no rewrite)', type: :boolean, default: false
+    def format(file)
+      source_format = resolve_format(file)
+      unless source_format
+        error 'Error: Could not determine format. Use --format option.'
+        exit 1
+      end
+
+      formatted = FormatCatalog.get_format(source_format).format(File.read(file))
+      if formatted.nil?
+        error "Error: No formatter available for #{source_format}"
+        exit 1
+      end
+
+      if options[:check]
+        if formatted == File.read(file)
+          puts '✓ Already formatted'
+        else
+          error "✗ #{file} is not canonically formatted"
+          exit 1
+        end
+      elsif options[:in_place]
+        File.write(file, formatted) unless formatted == File.read(file)
+        puts "Formatted #{file}"
+      else
+        puts formatted
+      end
+    rescue Coradoc::Error => e
+      error "Error: #{e.message}"
+      exit 1
+    end
+
     desc 'lint FILE...', 'Lint documents with model-driven rules (ADOC001...)'
     option :format, aliases: '-f', desc: 'Source format (auto-detected from extension)', type: :string
     option :only, desc: 'Run only these rule ids', type: :array

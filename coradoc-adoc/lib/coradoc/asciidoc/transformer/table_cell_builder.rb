@@ -69,14 +69,15 @@ module Coradoc
         # @param style [String, nil] 'a' (AsciiDoc), 'l' (literal), or nil
         # @return [Array<Model::TextElement>]
         def parse_inline_content(text, style = nil)
-          return [Model::TextElement.new(content: '')] if text.nil? || text.to_s.strip.empty?
+          text = text.to_s.strip unless style == 'l'
+          return [Model::TextElement.new(content: '')] if text.empty?
 
           return parse_block_content(text) if style == 'a'
           return [Model::TextElement.new(content: text.to_s)] if style == 'l'
 
           parser = inline_parser
           begin
-            ast = parser.text_any.parse(text.to_s)
+            ast = Parser::TreeMaterializer.convert(parser.text_any.parse(text.to_s))
             transformed = Transformer.new.apply(ast)
             content_array = transformed.is_a?(Array) ? transformed : [transformed]
             [Model::TextElement.new(content: content_array)]
@@ -99,14 +100,14 @@ module Coradoc
             if list_match
               list_text = list_match[1] + list_match[2]
               begin
-                ast = parser.list.parse(list_text)
+                ast = Parser::TreeMaterializer.convert(parser.list.parse(list_text))
                 transformed = Transformer.new.apply(ast)
 
                 before_list = text_str[0, list_match.begin(1) - 1].strip
                 before_elements = []
                 unless before_list.empty?
                   begin
-                    before_ast = parser.text_any.parse(before_list)
+                    before_ast = Parser::TreeMaterializer.convert(parser.text_any.parse(before_list))
                     before_transformed = Transformer.new.apply(before_ast)
                     before_array = before_transformed.is_a?(Array) ? before_transformed : [before_transformed]
                     before_elements = [Model::TextElement.new(content: before_array)]
@@ -123,7 +124,7 @@ module Coradoc
           end
 
           begin
-            ast = parser.text_any.parse(text_str)
+            ast = Parser::TreeMaterializer.convert(parser.text_any.parse(text_str))
             transformed = Transformer.new.apply(ast)
             content_array = transformed.is_a?(Array) ? transformed : [transformed]
             [Model::TextElement.new(content: content_array)]
