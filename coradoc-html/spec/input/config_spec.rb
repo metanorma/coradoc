@@ -34,10 +34,6 @@ RSpec.describe Coradoc::Html::InputConfig do
       expect(config.input_format).to eq(:html)
     end
 
-    it 'has false for mathml2asciimath' do
-      expect(config.mathml2asciimath).to be false
-    end
-
     it 'has false for external_images' do
       expect(config.external_images).to be false
     end

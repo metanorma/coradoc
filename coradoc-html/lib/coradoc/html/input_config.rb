@@ -9,7 +9,6 @@ module Coradoc
         @unknown_tags     = :pass_through
         @input_format     = :html
         @html_version     = :html4
-        @mathml2asciimath = false
         @external_images  = false
 
         @destination      = nil
@@ -55,7 +54,6 @@ module Coradoc
 
       declare_option :unknown_tags
       declare_option :tag_border
-      declare_option :mathml2asciimath
       declare_option :external_images
       declare_option :destination
       declare_option :sourcedir
