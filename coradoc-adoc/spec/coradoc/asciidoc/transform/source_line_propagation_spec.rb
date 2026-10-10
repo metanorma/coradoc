@@ -10,7 +10,8 @@ require 'coradoc/asciidoc'
 class SliceFinder
   class << self
     def first(node)
-      return node if node.is_a?(Parsanol::Slice)
+      return node if node.is_a?(Parsanol::Slice) ||
+                     node.is_a?(Coradoc::AsciiDoc::Parser::PositionedString)
 
       walk(node)
     end
@@ -213,7 +214,7 @@ RSpec.describe 'Source-line propagation', :asciidoc do
       it { is_expected.to eq(11) }
     end
 
-    context 'with a real Parsanol::Slice from the parser' do
+    context 'with a real positioned string from the parser' do
       let(:node) do
         ast = Coradoc::AsciiDoc::Parser::Base.new.parse("line one\nline two\n")
         SliceFinder.first(ast)
@@ -223,8 +224,9 @@ RSpec.describe 'Source-line propagation', :asciidoc do
         expect(line).to eq(1)
       end
 
-      it 'is a Parsanol::Slice' do
-        expect(node).to be_a(Parsanol::Slice)
+      it 'is a PositionedString (immutable, position-bearing)' do
+        expect(node).to be_a(Coradoc::AsciiDoc::Parser::PositionedString)
+        expect(node).to be_a(String)
       end
     end
   end

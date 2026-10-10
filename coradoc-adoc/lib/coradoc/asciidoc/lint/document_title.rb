@@ -10,8 +10,12 @@ module Coradoc
         applies_to :asciidoc
 
         def check(document, path)
-          content = document.header&.title&.content
-          return [] if content && !content.to_s.strip.empty?
+          title = document.header&.title
+          text = case title
+                 when Coradoc::AsciiDoc::Model::Title then title.content
+                 when String then title
+                 end
+          return [] if text && !text.strip.empty?
 
           [build_violation(path: path,
                            message: 'document has no level-0 title (= ...)')]

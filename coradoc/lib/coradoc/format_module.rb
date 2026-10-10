@@ -30,6 +30,14 @@ module Coradoc
         true
       end
 
+      # Canonical formatter (#110): parse the format model tree and
+      # serialize canonically. Formats without a formatter keep the
+      # default nil and callers report "no formatter" instead of
+      # silently passing text through.
+      def format(_text)
+        nil
+      end
+
       # Whether the serializer can represent unresolved include edges
       # (graph-mode CoreModel::Include nodes) without losing them.
       # Formats that round-trip the directive natively (asciidoc,

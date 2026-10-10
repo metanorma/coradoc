@@ -8,7 +8,9 @@ module Coradoc
           class SourceCode < Core
             def to_adoc(model, _options = {})
               @model = model
-              "\n\n#{gen_anchor}[source,#{model.lang}]\n#{gen_delimiter}\n" <<
+              lang = model.lang.to_s.strip
+              header = lang.empty? ? '[source]' : "[source,#{lang}]"
+              "\n\n#{gen_anchor}#{header}\n#{gen_delimiter}\n" <<
                 gen_lines << "\n#{gen_delimiter}\n\n"
             end
           end

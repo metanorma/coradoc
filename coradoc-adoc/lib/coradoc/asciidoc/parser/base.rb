@@ -114,7 +114,7 @@ module Coradoc
       module GrammarBackend
         class << self
           def parse(string, **)
-            artifact.parse('document', string, **)
+            TreeMaterializer.convert(artifact.parse('document', string, **))
           end
 
           private
