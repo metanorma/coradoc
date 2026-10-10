@@ -23,10 +23,8 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::BlockTransform
     it 'preserves source line structure for multi-line paragraphs' do
       para = Coradoc::AsciiDoc::Model::Paragraph.new(
         content: [
-          Coradoc::AsciiDoc::Model::TextElement.new(content: 'This is line one', line_break: "
-"),
-          Coradoc::AsciiDoc::Model::TextElement.new(content: 'of a paragraph', line_break: "
-"),
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'This is line one', line_break: "\n"),
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'of a paragraph', line_break: "\n"),
           Coradoc::AsciiDoc::Model::TextElement.new(content: 'that spans three.')
         ]
       )
@@ -193,10 +191,8 @@ RSpec.describe Coradoc::AsciiDoc::Transform::ElementTransformers::BlockTransform
     it 'groups consecutive soft-wrapped lines into a single paragraph' do
       block = Coradoc::AsciiDoc::Model::Block::Example.new(
         lines: [
-          Coradoc::AsciiDoc::Model::TextElement.new(content: 'First paragraph line 1.', line_break: "
-"),
-          Coradoc::AsciiDoc::Model::TextElement.new(content: 'First paragraph line 2.', line_break: "
-"),
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'First paragraph line 1.', line_break: "\n"),
+          Coradoc::AsciiDoc::Model::TextElement.new(content: 'First paragraph line 2.', line_break: "\n"),
           Coradoc::AsciiDoc::Model::LineBreak.new,
           Coradoc::AsciiDoc::Model::TextElement.new(content: 'Second paragraph here.')
         ]
