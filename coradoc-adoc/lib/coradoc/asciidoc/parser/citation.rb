@@ -22,6 +22,16 @@ module Coradoc
         def escaped_xref
           str('\\') >> str('<<').as(:text)
         end
+
+        # General AsciiDoc escape: \X (X punctuation, minus < for
+        # escaped_xref and \ itself) yields the literal character X
+        # without firing any inline rule (#281).
+        def escape_char
+          # Explicit class (all ASCII punctuation except < for
+          # escaped_xref and \ itself): the native engine does not
+          # compile && class intersections.
+          str('\\') >> match("[!\"#$%&'()*+,\\-./:;=?@\\[\\]^_`{|}~]").as(:text)
+        end
       end
     end
   end

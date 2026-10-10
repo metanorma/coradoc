@@ -249,7 +249,7 @@ module Coradoc
           monospace_unconstrained monospace_constrained
           superscript subscript
           attribute_reference
-          escaped_xref cross_reference
+          escaped_xref escape_char cross_reference
           term_inline term_inline2
           footnote stem
           link inline_image

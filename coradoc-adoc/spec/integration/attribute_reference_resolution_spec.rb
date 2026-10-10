@@ -9,7 +9,7 @@ RSpec.describe 'Attribute reference resolution', type: :integration do
       core = Coradoc.parse(adoc, format: :asciidoc)
 
       para = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ParagraphBlock) }
-      expect(para.content).to eq('Hello  Bar Value world.')
+      expect(para.content).to eq('Hello Bar Value world.')
 
       inline_texts = para.children.map { |c| c.is_a?(Coradoc::CoreModel::TextContent) ? c.text : nil }.compact
       expect(inline_texts).to include('Bar Value')

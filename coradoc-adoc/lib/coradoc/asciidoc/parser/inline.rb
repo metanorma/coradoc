@@ -46,10 +46,14 @@ module Coradoc
         # highlight_unconstrained was previously inconsistent (excluded
         # newlines). All four are now uniform.
 
+        # Constrained markers delimit at boundaries only (#281): the
+        # opening marker must not follow a word char, the closing one
+        # must not precede one — `foo_bar_baz` stays plain text.
         def constrained_mark(marker, reject_paragraph_break: false, content: nil)
-          open_guard = str(marker) >> str(marker).absent?
+          open_guard = Parsanol::Atoms::Lookbehind.regex('[[:word:]]', positive: false) >>
+                       str(marker) >> str(marker).absent?
           content_rule = content || default_constrained_content(marker)
-          close_guard = str(marker) >> str(marker).absent?
+          close_guard = str(marker) >> str(marker).absent? >> match('[[:word:]]').absent?
           sequence = open_guard >> content_rule >> close_guard
           sequence >>= str("\n\n").absent? if reject_paragraph_break
           sequence
@@ -204,7 +208,7 @@ module Coradoc
           # Single lookahead over the whole dispatch alternation; the former
           # per-branch .present? chain put zero-width branches in every
           # non-last slot (shadowed-alternative lint, parsanol 1.3.55+).
-          (match('[\[*#_{<^~`]') |
+          (match('[\\\\\[*#_{<^~`]') |
              typographic_quote |
              str('http') |
              str('https') |
@@ -247,7 +251,7 @@ module Coradoc
           monospace_unconstrained monospace_constrained
           superscript subscript
           attribute_reference
-          escaped_xref cross_reference
+          escaped_xref escape_char cross_reference
           term_inline term_inline2
           footnote stem
           link inline_image

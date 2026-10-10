@@ -147,8 +147,14 @@ RSpec.describe Coradoc::AsciiDoc::Transform::TextExtractVisitor do
         expect(visitor.extract(items)).to eq('bolditalic')
       end
 
-      it 'inserts spaces between TextElements' do
+      it 'concatenates same-line TextElement fragments' do
         te1 = Coradoc::AsciiDoc::Model::TextElement.new(content: 'hello')
+        te2 = Coradoc::AsciiDoc::Model::TextElement.new(content: 'world')
+        expect(visitor.extract([te1, te2])).to eq('helloworld')
+      end
+
+      it 'joins soft-wrapped lines with a space' do
+        te1 = Coradoc::AsciiDoc::Model::TextElement.new(content: 'hello', line_break: "\n")
         te2 = Coradoc::AsciiDoc::Model::TextElement.new(content: 'world')
         expect(visitor.extract([te1, te2])).to eq('hello world')
       end

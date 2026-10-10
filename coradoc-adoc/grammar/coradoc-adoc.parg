@@ -143,6 +143,9 @@ grammar CoradocAdoc version "0.2.0" {
   stem_type = ("stem" / "latexmath" / "asciimath") as stem_type
 
   escaped_xref = (%x5C (%x3C %x3C) as text)
+  # \X (X punctuation, minus < for escaped_xref and \ itself)
+  # yields the literal X without firing any inline rule (#281)
+  escape_char = (%x5C (%x21 / %x22 / %x23 / %x24 / %x25 / %x26 / %x27 / %x28 / %x29 / %x2A / %x2B / %x2C / %x2D / %x2E / %x2F / %x3A / %x3B / %x3C / %x3D / %x3E / %x3F / %x40 / %x5B / %x5D / %x5E / %x5F / %x60 / %x7B / %x7C / %x7D / %x7E) as text)
   cross_reference = (((%x3C %x3C) ((1*(!((%x2C / %x3E)) any_char)) as href) [((%x2C) ((*(!((%x3E)) any_char)) as text))] (%x3E %x3E)) as cross_reference)
 
   term_inline = (term_type ":[" ((1*(!(%x5D) any_char))) as term %x5D)
@@ -156,20 +159,20 @@ grammar CoradocAdoc version "0.2.0" {
 
   # constrained/unstrained marks — content keeps Ruby's .as(:text).repeat(1,1)
   # array wrap (1*1) except where Ruby uses a bare .as
-  bold_constrained = ((%x2A !(%x2A) (1*1(((1*(!(%x2A / %x0A) any_char))) as text)) %x2A !(%x2A)) !(%x0A %x0A)) as bold_constrained
+  bold_constrained = ((!< WORD %x2A !(%x2A) (1*1(((1*(!(%x2A / %x0A) any_char))) as text)) %x2A !(%x2A) !(WORD)) !(%x0A %x0A)) as bold_constrained
   bold_unconstrained = ((%x2A %x2A (1*1(((1*(!(%x2A) any_char))) as text)) %x2A %x2A)) as bold_unconstrained
-  span_constrained = (attribute_list %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23 !(%x23)) as span_constrained
+  span_constrained = (attribute_list %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23 !(%x23) !(WORD)) as span_constrained
   span_unconstrained = (attribute_list %x23 %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23 %x23) as span_unconstrained
-  italic_constrained = ((%x5F !(%x5F) (1*1(((1*(!(%x5F / %x0A) any_char))) as text)) %x5F !(%x5F))) as italic_constrained
+  italic_constrained = ((!< WORD %x5F !(%x5F) (1*1(((1*(!(%x5F / %x0A) any_char))) as text)) %x5F !(%x5F) !(WORD))) as italic_constrained
   italic_unconstrained = ((%x5F %x5F (1*1(((1*(!(%x5F) any_char))) as text)) %x5F %x5F)) as italic_unconstrained
-  highlight_constrained = ((%x23 !(%x23) (1*1(((1*(!(%x23 / %x0A) any_char))) as text)) %x23 !(%x23))) as highlight_constrained
+  highlight_constrained = ((!< WORD %x23 !(%x23) (1*1(((1*(!(%x23 / %x0A) any_char))) as text)) %x23 !(%x23) !(WORD))) as highlight_constrained
   highlight_unconstrained = ((%x23 %x23 (1*1(((1*(!(%x23) any_char))) as text)) %x23 %x23)) as highlight_unconstrained
-  monospace_constrained = ((%x60 !(%x60) (1*1((1*((!(%x60 / %x0A) any_char) / (%x60 %x60))) as text)) %x60 !(%x60))) as monospace_constrained
+  monospace_constrained = ((!< WORD %x60 !(%x60) (1*1((1*((!(%x60 / %x0A) any_char) / (%x60 %x60))) as text)) %x60 !(%x60) !(WORD))) as monospace_constrained
   monospace_unconstrained = ((%x60 %x60 (1*1(((1*(!(%x60) any_char))) as text)) %x60 %x60)) as monospace_unconstrained
   superscript = (%x5E (1*1(((1*(!(%x5E / %x0A) any_char))) as text)) %x5E) as superscript
   subscript = (%x7E (1*1(((1*(!(%x7E / %x0A) any_char))) as text)) %x7E) as subscript
 
-  inline = (typographic_quote / bold_unconstrained / bold_constrained / span_unconstrained / span_constrained / italic_unconstrained / italic_constrained / highlight_unconstrained / highlight_constrained / monospace_unconstrained / monospace_constrained / superscript / subscript / attribute_reference / escaped_xref / cross_reference / term_inline / term_inline2 / footnote / stem / link / inline_image / inline_passthrough / underline / small / hard_line_break)
+  inline = (typographic_quote / bold_unconstrained / bold_constrained / span_unconstrained / span_constrained / italic_unconstrained / italic_constrained / highlight_unconstrained / highlight_constrained / monospace_unconstrained / monospace_constrained / superscript / subscript / attribute_reference / escaped_xref / escape_char / cross_reference / term_inline / term_inline2 / footnote / stem / link / inline_image / inline_passthrough / underline / small / hard_line_break)
 
   # text.rb/inline.rb text layers
   inline_chars = ((%x5B / %x2A / %x23 / %x5F / %x7B / %x3C / %x5E / %x7E / %x60 / %x5C) / typographic_quote / "https" / "http" / "link:" / "image:" / "+++" / "pass:" / term_type / "footnote" / stem_type / (%x5C %x3C %x3C) / hard_line_break)
@@ -222,7 +225,7 @@ grammar CoradocAdoc version "0.2.0" {
   ulist_marker_5 = ([*literal_space] (5%x2A !(%x2A) !("===")))
   olist_marker_5 = ([*literal_space] 5%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
   list_marker_5 = (olist_marker_5 / ulist_marker_5)
-  inline_lb = (typographic_quote / bold_unconstrained / bold_constrained / span_unconstrained / span_constrained / italic_unconstrained / italic_constrained / highlight_unconstrained / highlight_constrained / monospace_unconstrained / monospace_constrained / superscript / subscript / attribute_reference / escaped_xref / cross_reference / term_inline / term_inline2 / footnote / stem / link / inline_image / inline_passthrough / underline / small)
+  inline_lb = (typographic_quote / bold_unconstrained / bold_constrained / span_unconstrained / span_constrained / italic_unconstrained / italic_constrained / highlight_unconstrained / highlight_constrained / monospace_unconstrained / monospace_constrained / superscript / subscript / attribute_reference / escaped_xref / escape_char / cross_reference / term_inline / term_inline2 / footnote / stem / link / inline_image / inline_passthrough / underline / small)
   list_body_hard_break = ((" +" %x0A) / (%x5C %x0A))
   list_body_text_unformatted = (1*(!("\\<<") !(inline_lb) !(list_body_hard_break) !(%x0A) any_char))
   list_body_text_any = (1*(inline_lb / (list_body_text_unformatted as text)))
