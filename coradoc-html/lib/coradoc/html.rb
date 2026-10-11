@@ -21,6 +21,8 @@ module Coradoc
     autoload :Postprocessor, 'coradoc/html/postprocessor'
     autoload :Converters, 'coradoc/html/converters'
     autoload :HtmlConverter, 'coradoc/html/html_converter'
+    # Registration side effect: loading registers rules into Coradoc::Lint.registry.
+    autoload :Lint, 'coradoc/html/lint'
 
     def self.input_config
       @input_config ||= InputConfig.new
