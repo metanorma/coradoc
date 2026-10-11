@@ -4,11 +4,12 @@ module Coradoc
   module Html
     class Cleaner
       INNER_WHITESPACE_REGEX_1 = /\n stem:\[/
-      # Unrolled loop (no ambiguous alternation under a star) so crafted
-      # content cannot trigger polynomial backtracking (CodeQL
-      # rb/polynomial-redos). Escaped chars consume as units; plain
-      # runs exclude backslash and closing bracket entirely.
-      INNER_WHITESPACE_REGEX_2 = /(stem:\[[^\]\\]*(?:\\.[^\]\\]*)*\])\n(?=\S)/
+      # Possessive quantifiers (Ruby 3.2+) make the match linear by
+      # construction — no backtracking into consumed runs, so crafted
+      # content cannot trigger polynomial behavior (CodeQL
+      # rb/polynomial-redos). Plain runs exclude backslash and closing
+      # bracket; escaped chars consume as units.
+      INNER_WHITESPACE_REGEX_2 = /(stem:\[[^\]\\]*+(?:\\.[^\]\\]*+)*+\])\n(?=\S)/
       NEWLINES_REGEX = /\n{3,}/
       LEADING_NEWLINE_REGEX = /\A\n+/
       WHITESPACE_REGEX = /[ \t\r\n]+/
