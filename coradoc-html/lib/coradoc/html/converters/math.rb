@@ -14,6 +14,11 @@ module Coradoc
           stem = Plurimath::Math.parse(stem, :mathml).to_asciimath
 
           unless stem.nil?
+            # stem:[...] is an inline macro: backslashes must be
+            # escaped FIRST, then the macro-terminating brackets —
+            # otherwise an input backslash would swallow our escapes
+            # (CodeQL rb/incomplete-sanitization).
+            stem = stem.gsub('\\', '\\\\')
             stem = stem.gsub('[', '\\[')
             stem = stem.gsub(']', '\\]')
             loop do

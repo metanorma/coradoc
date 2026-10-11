@@ -61,6 +61,24 @@ RSpec.describe Coradoc::Html::Cleaner do
     end
   end
 
+  describe '#remove_inner_whitespaces (stem macro)' do
+    it 'removes the newline joining a stem macro to following text' do
+      result = cleaner.remove_inner_whitespaces(+"stem:[x + 1]\ntext")
+      expect(result).to eq('stem:[x + 1]text')
+    end
+
+    it 'matches through escaped closing brackets inside the macro' do
+      result = cleaner.remove_inner_whitespaces(+"stem:[a\\]b]\ntext")
+      expect(result).to eq('stem:[a\\]b]text')
+    end
+
+    it 'completes on adversarial content without polynomial blowup' do
+      adversarial = +'stem:[' + ('a' * 100_000) + "\ntrailing"
+
+      expect { cleaner.remove_inner_whitespaces(adversarial) }.not_to raise_error
+    end
+  end
+
   describe '#preprocess_word_html' do
     it 'scrubs whitespace and cleans headings' do
       input = '<h1>Title</h1><p>Content&nbsp;</p>'
