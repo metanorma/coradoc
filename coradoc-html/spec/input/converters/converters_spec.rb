@@ -518,6 +518,19 @@ RSpec.describe Coradoc::Html::Converters do
         expect(result).to be_a(Coradoc::CoreModel::StemElement)
         expect(result.stem_type).to eq('mathml')
       end
+
+      it 'escapes macro-significant characters completely for stem:[] output' do
+        html = '<math><mi>a</mi><mo>[</mo><mo>]</mo></math>'
+        node = html_fragment(html).at('math')
+
+        plain = converter.to_coradoc(node, {}).content
+        escaped = converter.to_coradoc(html_fragment('<math><mi>a</mi><mo>\\</mo><mo>[</mo><mo>]</mo></math>').at('math'), {}).content
+
+        # Backslash FIRST, then brackets: an input backslash must not
+        # swallow the injected bracket escapes in stem:[...] macros.
+        expect(escaped).to eq(plain.sub('a ', 'a \\\\ '))
+        expect(escaped).to include('\\[')
+      end
     end
   end
 

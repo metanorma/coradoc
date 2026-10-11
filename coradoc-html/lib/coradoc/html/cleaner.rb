@@ -4,7 +4,11 @@ module Coradoc
   module Html
     class Cleaner
       INNER_WHITESPACE_REGEX_1 = /\n stem:\[/
-      INNER_WHITESPACE_REGEX_2 = /(stem:\[([^\]]|\\\])*\])\n(?=\S)/
+      # Unrolled loop (no ambiguous alternation under a star) so crafted
+      # content cannot trigger polynomial backtracking (CodeQL
+      # rb/polynomial-redos). Escaped chars consume as units; plain
+      # runs exclude backslash and closing bracket entirely.
+      INNER_WHITESPACE_REGEX_2 = /(stem:\[[^\]\\]*(?:\\.[^\]\\]*)*\])\n(?=\S)/
       NEWLINES_REGEX = /\n{3,}/
       LEADING_NEWLINE_REGEX = /\A\n+/
       WHITESPACE_REGEX = /[ \t\r\n]+/
