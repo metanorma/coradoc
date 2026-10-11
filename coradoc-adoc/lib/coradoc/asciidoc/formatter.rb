@@ -7,7 +7,12 @@ module Coradoc
     # lines inside verbatim/example fences are preserved — the pass
     # tracks delimiter pairs and only squeezes outside them.
     module Formatter
-      FENCE = /\A(?:[-=*_']{4,})\s*\z/
+      # Delimiter-line fence characters: listings, examples, sidebars,
+      # quotes, passthroughs, thematic breaks. A fence is 4+ repetitions
+      # of ONE character (CodeQL rb/polynomial-redos: the earlier regex
+      # form flagged as polynomial; a same-char scan is linear and also
+      # stricter — mixed runs are not fences).
+      FENCE_CHARACTERS = %w[- = * _ ' +].freeze
 
       module_function
 
@@ -25,8 +30,8 @@ module Coradoc
 
           if fence
             out << line
-            fence = nil if FENCE.match?(stripped) && stripped == fence
-          elsif FENCE.match?(stripped)
+            fence = nil if stripped == fence && fence_delimiter(stripped)
+          elsif fence_delimiter(stripped)
             emit_blanks(out, blanks)
             blanks = 0
             out << line
@@ -40,6 +45,17 @@ module Coradoc
           end
         end
         out.join.sub(/\n+\z/, "\n")
+      end
+
+      # The delimiter character when +stripped+ is a fence line
+      # (4+ repetitions of one fence character); nil otherwise.
+      def fence_delimiter(stripped)
+        return nil unless stripped.length >= 4
+
+        first = stripped[0]
+        return nil unless FENCE_CHARACTERS.include?(first)
+
+        stripped.each_char.all?(first) ? first : nil
       end
 
       # Exactly one blank line between blocks; none before the first
