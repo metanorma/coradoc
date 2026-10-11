@@ -9,7 +9,10 @@ module Coradoc
         suffix = title.to_s.downcase
                       .gsub(/[^a-z0-9\s]/, '')
                       .gsub(/\s+/, '_')
-                      .gsub(/^_+|_+$/, '')
+        # Trim edge underscore runs without end-anchored quantified
+        # patterns (CodeQL rb/polynomial-redos).
+        suffix = suffix[1..] while suffix.start_with?('_')
+        suffix = suffix[0...-1] while suffix.end_with?('_')
 
         return "_#{suffix}" if parent_id.nil? || parent_id.to_s.strip.empty?
 

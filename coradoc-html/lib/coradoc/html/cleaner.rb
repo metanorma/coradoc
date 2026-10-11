@@ -86,7 +86,7 @@ module Coradoc
         result = +''
         string.each_line do |line|
           result << preserve_border_whitespaces(line) do
-            line.gsub(/\A[ \t\r\n]+/, '').gsub(/[ \t\r\n]+\z/, '').gsub(/[ \t]{2,}/, ' ')
+            line.strip.gsub(/[ \t]{2,}/, ' ')
           end
         end
         result
@@ -141,10 +141,25 @@ module Coradoc
 
         default_border = options.fetch(:default_border, '')
         default_border = '' if /[\[(\])]/.match?(string)
-        string_start   = present_or_default(string[/\A\s*/], default_border)
-        string_end     = present_or_default(string[/\s*\Z/], default_border)
+        string_start   = present_or_default(leading_whitespace(string), default_border)
+        string_end     = present_or_default(trailing_whitespace(string), default_border)
         result         = yield
         string_start + result + string_end
+      end
+
+      # Leading/trailing whitespace runs via a linear scan — the
+      # /\s*\Z/ and /\A\s*/ forms are modeled as polynomial-redos
+      # risks by CodeQL.
+      def leading_whitespace(string)
+        i = 0
+        i += 1 while i < string.length && string[i].match?(/\s/)
+        string[0, i]
+      end
+
+      def trailing_whitespace(string)
+        i = string.length
+        i -= 1 while i.positive? && string[i - 1].match?(/\s/)
+        string[i..]
       end
 
       def present_or_default(string, default)

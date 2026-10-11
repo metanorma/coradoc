@@ -40,14 +40,27 @@ module Coradoc
           line_break.to_s.empty?
         end
 
+        # Escape whole runs of '*'/'_' that touch whitespace on either
+        # side. Run-aware two-pass scan — the lookaround + alternation
+        # + quantifier regex is modeled as polynomial-redos by CodeQL.
         def self.escape_keychars(string)
           subs = { '*' => '\*', '_' => '\_' }
-          string
-            .gsub(/((?<=\s)[*_]+)|[*_]+(?=\s)/) do |n|
-            n.chars.map do |char|
-              subs[char]
-            end.join
+          chars = string.chars
+          escaped = Array.new(chars.length, false)
+          i = 0
+          while i < chars.length
+            unless subs.key?(chars[i])
+              i += 1
+              next
+            end
+            j = i
+            j += 1 while j < chars.length && subs.key?(chars[j])
+            touches = (i.positive? && chars[i - 1].match?(/\s/)) ||
+                      (j < chars.length && chars[j].match?(/\s/))
+            (i...j).each { |k| escaped[k] = true } if touches
+            i = j
           end
+          chars.each_with_index.map { |ch, k| escaped[k] ? subs[ch] : ch }.join
         end
 
         # Get text content as a string. Handles the polymorphic shape of

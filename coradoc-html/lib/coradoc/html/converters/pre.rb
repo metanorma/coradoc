@@ -45,9 +45,12 @@ module Coradoc
           class_str = node['class'].to_s
           return nil unless class_str.include?('brush:')
 
-          # Extract language from brush: language; pattern
-          match = class_str.match(/brush:\s*([^;]+);/)
-          match ? match[1].strip : nil
+          # Extract language from brush: language; pattern — index +
+          # linear scan (CodeQL rb/polynomial-redos: /\s*[^;]+/ has
+          # overlapping quantifiers).
+          rest = class_str[(class_str.index('brush:') + 6)..].to_s
+          lang = rest.lstrip[/\A([^;]+);/, 1]
+          lang&.strip
         end
       end
 
