@@ -102,11 +102,41 @@ module Coradoc
           end
         end
 
-        result.gsub(/\s?\[.*?\]\s?/) do |match|
-          preserve_border_whitespaces(match) do
+        clean_bracket_borders(result)
+      end
+
+      # Tidy brackets plus at most one adjacent whitespace per side.
+      # Linear scan — /\s?\[.*?\]\s?/ is modeled as polynomial-redos
+      # by CodeQL. Lazy .? semantics: the segment ends at the first
+      # ']' on the same line.
+      def clean_bracket_borders(result)
+        out = +''
+        i = 0
+        while i < result.length
+          start = result.index('[', i)
+          if start.nil?
+            out << result[i..]
+            break
+          end
+
+          j = start + 1
+          j += 1 while j < result.length && result[j] != ']' && result[j] != "\n"
+          unless j < result.length && result[j] == ']'
+            out << result[i..start]
+            i = start + 1
+            next
+          end
+
+          lead = start.positive? && /\s/.match?(result[start - 1]) ? start - 1 : start
+          trail = j + 1 < result.length && /\s/.match?(result[j + 1]) ? j + 2 : j + 1
+          out << result[i...lead]
+          match = result[lead...trail]
+          out << preserve_border_whitespaces(match) do
             match.strip.sub('[ ', '[').sub(' ]', ']')
           end
+          i = trail
         end
+        out
       end
 
       def clean_punctuation_characters(string)
@@ -120,18 +150,52 @@ module Coradoc
       def scrub_whitespace(string)
         string.gsub!(/&nbsp;|&#xA0;| /i, '&#xA0;')
         string = Coradoc.strip_unicode(string)
-        string.gsub!(/( +)$/, ' ')
+        # Trim the trailing space run without an end-anchored
+        # quantified pattern (CodeQL rb/polynomial-redos).
+        string[0...-1] while string.end_with?(' ')
         string.gsub!("\n\n\n\n", "\n\n")
         string
       end
 
+      # Empty <hN ...></hN> headings collapse to a space; headings
+      # carrying the vertical-align: super style become <sup>body</sup>.
+      # Single linear pass — the gsub pair used a backreference and
+      # nested quantifiers that CodeQL models as polynomial-redos.
       def clean_headings(string)
-        string.gsub!(%r{<h([1-9])[^>]*></h\1>}, ' ')
-        string.gsub!(
-          %r{<h([1-9])[^>]* style="vertical-align: super;[^>]*>(.+?)</h\1>},
-          '<sup>\\2</sup>'
-        )
-        string
+        out = +''
+        i = 0
+        while (h = string.index('<h', i))
+          digit = string[h + 2]
+          unless digit&.match?(/[1-9]/)
+            out << string[i..h + 1]
+            i = h + 3
+            next
+          end
+
+          gt = string.index('>', h + 3)
+          if gt.nil?
+            out << string[i..]
+            break
+          end
+
+          close_tag = "</h#{digit}>"
+          body_start = gt + 1
+          body_end = string.index(close_tag, body_start)
+          body = body_end&.then { |end_idx| string[body_start...end_idx] }
+          if body_end == body_start
+            out << string[i...h] << ' '
+            i = body_start + close_tag.length
+          elsif !body.nil? && !body.empty? && !body.include?("\n") &&
+                string[h...gt].include?(' style="vertical-align: super;')
+            out << string[i...h] << '<sup>' << body << '</sup>'
+            i = body_end + close_tag.length
+          else
+            out << string[i..h + 2]
+            i = h + 3
+          end
+        end
+        out << string[i..] if i < string.length
+        out
       end
 
       private

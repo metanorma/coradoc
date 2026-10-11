@@ -43,15 +43,30 @@ module Coradoc
           ''
         end
 
-        @original.gsub!(/\[([^\]]+)\]/) do
-          attr_expr = ::Regexp.last_match(1)
-          parse_attribute(attr_expr)
-          ''
-        end
+        parse_attribute_pairs
 
         parse_pseudo_classes
 
         self
+      end
+
+      # Attribute pass without a bracket regex — CodeQL
+      # rb/polynomial-redos models /\[([^\]]+)\]/ as polynomial.
+      def parse_attribute_pairs
+        pos = 0
+        while (open_idx = @original.index('[', pos))
+          close_idx = @original.index(']', open_idx + 1)
+          break if close_idx.nil?
+
+          if close_idx == open_idx + 1
+            pos = close_idx + 1
+            next
+          end
+
+          parse_attribute(@original[(open_idx + 1)...close_idx])
+          @original.slice!(open_idx, close_idx - open_idx + 1)
+          pos = open_idx
+        end
       end
 
       # Pseudo-class pass without quantified-group nesting — CodeQL
