@@ -35,6 +35,9 @@ module Coradoc
     autoload :Heading, 'coradoc/markdown/model/heading'
     autoload :Paragraph, 'coradoc/markdown/model/paragraph'
     autoload :Text, 'coradoc/markdown/model/text'
+
+    # Registration side effect: loading registers rules into Coradoc::Lint.registry.
+    autoload :Lint, 'coradoc/markdown/lint'
     autoload :List, 'coradoc/markdown/model/list'
     autoload :ListItem, 'coradoc/markdown/model/list_item'
     autoload :CodeBlock, 'coradoc/markdown/model/code_block'
