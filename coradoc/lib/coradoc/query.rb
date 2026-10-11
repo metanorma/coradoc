@@ -129,38 +129,30 @@ module Coradoc
         @element_type == '*' || @original == '*'
       end
 
+      OPERATORS = { '=' => :equals, '~=' => :includes, '^=' => :starts_with,
+                    '$=' => :ends_with, '*=' => :contains }.freeze
+
       private
 
+      # Attribute selector parse without overlapping adjacent
+      # quantifiers — CodeQL rb/polynomial-redos models the
+      # /(\w+)\s*op\s*["']?([^"]']+)['"]?/ family as polynomial.
+      # Scan: name word, optional spaces, operator, optional quotes.
       def parse_attribute(expr)
-        case expr
-        when /(\w+)\s*=\s*["']?([^"']+)["']?/
-          @attributes[::Regexp.last_match(1).to_sym] = {
-            operator: :equals,
-            value: ::Regexp.last_match(2)
-          }
-        when /(\w+)\s*~=\s*["']?([^"']+)["']?/
-          @attributes[::Regexp.last_match(1).to_sym] = {
-            operator: :includes,
-            value: ::Regexp.last_match(2)
-          }
-        when /(\w+)\s*\^=\s*["']?([^"']+)["']?/
-          @attributes[::Regexp.last_match(1).to_sym] = {
-            operator: :starts_with,
-            value: ::Regexp.last_match(2)
-          }
-        when /(\w+)\s*\$=\s*["']?([^"']+)["']?/
-          @attributes[::Regexp.last_match(1).to_sym] = {
-            operator: :ends_with,
-            value: ::Regexp.last_match(2)
-          }
-        when /(\w+)\s*\*=\s*["']?([^"']+)["']?/
-          @attributes[::Regexp.last_match(1).to_sym] = {
-            operator: :contains,
-            value: ::Regexp.last_match(2)
-          }
-        when /(\w+)/
-          @attributes[::Regexp.last_match(1).to_sym] = { operator: :present }
+        name = expr[/\A\w+/]
+        return if name.nil?
+
+        rest = expr[name.length..].to_s.lstrip
+        op = OPERATORS.keys.find { |candidate| rest.start_with?(candidate) }
+        if op.nil?
+          @attributes[name.to_sym] = { operator: :present }
+          return
         end
+
+        value = rest[op.length..].to_s.lstrip
+        value = value[1..] if value.start_with?('"', "'")
+        value = value[0...-1] if value.end_with?('"', "'")
+        @attributes[name.to_sym] = { operator: OPERATORS[op], value: value }
       end
 
       def type_matches?(element)
