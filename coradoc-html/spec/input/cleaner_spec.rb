@@ -73,7 +73,7 @@ RSpec.describe Coradoc::Html::Cleaner do
     end
 
     it 'completes on adversarial content without polynomial blowup' do
-      adversarial = +'stem:[' + ('a' * 100_000) + "\ntrailing"
+      adversarial = "stem:[#{'a' * 100_000}\ntrailing"
 
       expect { cleaner.remove_inner_whitespaces(adversarial) }.not_to raise_error
     end
