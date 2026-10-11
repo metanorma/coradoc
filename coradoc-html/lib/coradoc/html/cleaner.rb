@@ -4,12 +4,6 @@ module Coradoc
   module Html
     class Cleaner
       INNER_WHITESPACE_REGEX_1 = /\n stem:\[/
-      # Possessive quantifiers (Ruby 3.2+) make the match linear by
-      # construction — no backtracking into consumed runs, so crafted
-      # content cannot trigger polynomial behavior (CodeQL
-      # rb/polynomial-redos). Plain runs exclude backslash and closing
-      # bracket; escaped chars consume as units.
-      INNER_WHITESPACE_REGEX_2 = /(stem:\[[^\]\\]*+(?:\\.[^\]\\]*+)*+\])\n(?=\S)/
       NEWLINES_REGEX = /\n{3,}/
       LEADING_NEWLINE_REGEX = /\A\n+/
       WHITESPACE_REGEX = /[ \t\r\n]+/
@@ -53,11 +47,41 @@ module Coradoc
         string.gsub(LEADING_NEWLINE_REGEX, '')
       end
 
+      # Drop the newline joining a stem macro's closing bracket to the
+      # following text. A linear character scan instead of a regex —
+      # CodeQL rb/polynomial-redos flags even nested-star and
+      # possessive-quantifier forms, so no quantifiers at all.
+      def remove_stem_macro_newlines(string)
+        pos = 0
+        while (start = string.index('stem:[', pos))
+          close = closing_bracket_after(string, start + 6)
+          break if close.nil?
+
+          next unless string[close + 1] == "\n" && string[close + 2]&.match?(/\S/)
+
+          string.slice! close + 1, 1
+          pos = close + 1
+        end
+        string
+      end
+
+      # Index of the first unescaped ']' at or after +from+.
+      def closing_bracket_after(string, from)
+        i = from
+        while i < string.length
+          char = string[i]
+          return i if char == ']'
+
+          i += char == '\\' ? 2 : 1
+        end
+        nil
+      end
+
       def remove_inner_whitespaces(string)
         unless string.nil?
           string.gsub!("\n stem:[", "\nstem:[")
           string.gsub!(INNER_WHITESPACE_REGEX_1, '\\1 ')
-          string.gsub!(INNER_WHITESPACE_REGEX_2, '\\1')
+          remove_stem_macro_newlines(string)
         end
         result = +''
         string.each_line do |line|
