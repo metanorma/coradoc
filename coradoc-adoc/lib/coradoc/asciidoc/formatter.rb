@@ -44,7 +44,14 @@ module Coradoc
             out << line
           end
         end
-        out.join.sub(/\n+\z/, "\n")
+        joined = out.join
+        return joined if joined.empty?
+
+        # Exactly one trailing newline — a reverse scan, not a regex
+        # (CodeQL rb/polynomial-redos models /\n+\z/ as polynomial).
+        end_index = joined.length
+        end_index -= 1 while end_index.positive? && joined[end_index - 1] == "\n"
+        "#{joined[0, end_index]}\n"
       end
 
       # The delimiter character when +stripped+ is a fence line
