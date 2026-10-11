@@ -40,17 +40,15 @@ module Coradoc
             elements = []
             remaining = text
 
-            # Pattern for footnote reference: [^name]
-            fn_pattern = /\[\^([^\]]+)\]/
-
+            # Footnote reference scan: [^name] — linear index search
+            # instead of a regex (CodeQL rb/polynomial-redos).
             until remaining.empty?
-              match = remaining.match(fn_pattern)
-              if match
-                # Add text before the match
-                elements << match.pre_match unless match.pre_match.empty?
-                # Add the footnote reference
-                elements << { fn_ref: match[1] }
-                remaining = match.post_match
+              open_idx = remaining.index('[^')
+              close_idx = open_idx && remaining.index(']', open_idx + 2)
+              if close_idx
+                elements << remaining[0...open_idx] unless open_idx.zero?
+                elements << { fn_ref: remaining[(open_idx + 2)...close_idx] }
+                remaining = remaining[(close_idx + 1)..]
               else
                 # No more matches - add remaining text
                 elements << remaining

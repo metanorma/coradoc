@@ -1,5 +1,8 @@
 name: bundle-audit
 
+permissions:
+  contents: read
+
 on:
   schedule:
     # every day at 9:00 UTC

@@ -30,13 +30,16 @@ module Coradoc
           ''
         end
 
-        @original.sub!(/#([a-z_][a-z0-9_-]*)/i) do
-          @id = ::Regexp.last_match(1)
+        @original.sub!(/#([a-z_])([a-z0-9_-]*)/i) do
+          @id = ::Regexp.last_match(1) + ::Regexp.last_match(2)
           ''
         end
 
-        @original.gsub!(/\.([a-z_][a-z0-9_-]*)/i) do
-          @classes << ::Regexp.last_match(1)
+        # Two separate captures: a single class can't disambiguate
+        # adjacent overlapping classes ([a-z_] vs [a-z0-9_-] share
+        # members), which CodeQL models as polynomial-redos.
+        @original.gsub!(/\.([a-z_])([a-z0-9_-]*)/i) do
+          @classes << (::Regexp.last_match(1) + ::Regexp.last_match(2))
           ''
         end
 
@@ -46,14 +49,35 @@ module Coradoc
           ''
         end
 
-        @original.gsub!(/:([a-z-]+)(?:\(([^)]+)\))?/i) do
-          name = ::Regexp.last_match(1).downcase
-          arg = ::Regexp.last_match(2)
-          @pseudo_classes << { name: name, argument: arg }
-          ''
-        end
+        parse_pseudo_classes
 
         self
+      end
+
+      # Pseudo-class pass without quantified-group nesting — CodeQL
+      # rb/polynomial-redos models /:([a-z-]+)(?:\(([^)]+)\))?/ as
+      # polynomial. ':' + name chars + optional parens, one scan.
+      def parse_pseudo_classes
+        pos = 0
+        while (colon = @original.index(':', pos))
+          j = colon + 1
+          j += 1 while j < @original.length && @original[j].match?(/[a-z-]/i)
+          name = @original[(colon + 1)...j].downcase
+          if name.empty?
+            pos = colon + 1
+            next
+          end
+
+          arg = nil
+          if @original[j] == '('
+            close = @original.index(')', j + 1)
+            arg = @original[(j + 1)...close] if close
+            j = close + 1 if close
+          end
+          @pseudo_classes << { name: name, argument: arg }
+          @original.slice!(colon, j - colon)
+          pos = colon
+        end
       end
 
       def matches?(element)
