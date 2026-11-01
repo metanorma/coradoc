@@ -32,8 +32,21 @@ module Coradoc
           def transform_row(row, context)
             CoreModel::TableRow.new(
               cells: row.cells.map { |c| transform_cell(c, context) },
-              header: row.header?
+              header: row_header?(row)
             )
+          end
+
+          # The persisted header flag lives in w:trPr/w:tblHeader
+          # (row.properties.tbl_header); TableRow#header? is a runtime-only
+          # accessor that deserialized documents never populate.
+          def row_header?(row)
+            tbl_header = row.properties&.tbl_header
+            return row.header? unless tbl_header.is_a?(Uniword::Wordprocessingml::ValInt)
+
+            # <w:tblHeader/> without w:val means "on" (ST_OnOff semantics)
+            return true if tbl_header.value.nil?
+
+            tbl_header.value.to_i.positive?
           end
 
           def transform_cell(cell, context)

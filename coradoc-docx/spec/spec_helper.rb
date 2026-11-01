@@ -97,6 +97,43 @@ module OoxmlHelper
     para
   end
 
+  # Builds a list paragraph the way uniword deserializes it from DOCX:
+  # w:numPr lives in the NESTED numbering_properties, not in the flat
+  # num_id/ilvl attributes (those are builder/YAML-only).
+  def build_num_pr_paragraph(text, num_id:, ilvl: 0)
+    para = Uniword::Wordprocessingml::Paragraph.new
+    para.properties = Uniword::Wordprocessingml::ParagraphProperties.new(
+      numbering_properties: Uniword::Properties::NumberingProperties.new(
+        num_id: Uniword::Properties::NumberingId.new(value: num_id),
+        ilvl: Uniword::Properties::NumberingLevel.new(value: ilvl)
+      )
+    )
+    run = Uniword::Wordprocessingml::Run.new
+    run.text = Uniword::Wordprocessingml::Text.new(content: text)
+    para.runs << run
+    para
+  end
+
+  # Builds a table row with the persisted w:trPr/w:tblHeader flag.
+  def build_header_row(*cell_texts)
+    row = Uniword::Wordprocessingml::TableRow.new
+    row.properties = Uniword::Wordprocessingml::TableRowProperties.new(
+      tbl_header: Uniword::Wordprocessingml::ValInt.new(value: 1)
+    )
+    cell_texts.each { |t| row.cells << build_cell(t) }
+    row
+  end
+
+  def build_cell(text)
+    cell = Uniword::Wordprocessingml::TableCell.new
+    para = Uniword::Wordprocessingml::Paragraph.new
+    run = Uniword::Wordprocessingml::Run.new
+    run.text = Uniword::Wordprocessingml::Text.new(content: text)
+    para.runs << run
+    cell.paragraphs << para
+    cell
+  end
+
   def run_text(run)
     Array(run.text).map(&:to_s).join
   end

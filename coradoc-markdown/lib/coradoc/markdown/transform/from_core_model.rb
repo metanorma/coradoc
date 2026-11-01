@@ -93,12 +93,30 @@ module Coradoc
           def transform_document(doc)
             blocks, frontmatter = extract_frontmatter(Array(doc.children))
             blocks = blocks.flat_map { |child| flatten_result(transform(child)) }
+            blocks = prepend_title_heading(doc.title, blocks)
 
             Coradoc::Markdown::Document.new(
               id: doc.id,
               blocks: blocks,
               frontmatter: frontmatter
             )
+          end
+
+          # The document title renders as a leading "# {title}" H1. Skipped
+          # when the body already opens with a heading of the same text —
+          # a Markdown→CoreModel pass keeps its first heading (of any
+          # level) both as the title and as a section, and emitting the
+          # title again would duplicate it.
+          def prepend_title_heading(title, blocks)
+            return blocks if title.nil? || title.to_s.strip.empty?
+            return blocks if title_heading_duplicated?(title, blocks)
+
+            [Coradoc::Markdown::Heading.new(level: 1, text: title.to_s), *blocks]
+          end
+
+          def title_heading_duplicated?(title, blocks)
+            first = blocks.first
+            first.is_a?(Coradoc::Markdown::Heading) && first.text == title.to_s
           end
 
           # If the first CoreModel child is a FrontmatterBlock, serialize

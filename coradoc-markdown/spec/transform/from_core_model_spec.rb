@@ -25,6 +25,51 @@ RSpec.describe Coradoc::Markdown::Transform::FromCoreModel do
         expect(transform.id).to eq('doc-1')
         expect(transform.blocks).to be_an(Array)
       end
+
+      it 'renders the document title as a leading level-1 heading' do
+        heading = transform.blocks.first
+
+        expect(heading).to be_a(Coradoc::Markdown::Heading)
+        expect(heading.level).to eq(1)
+        expect(heading.text).to eq('Document Title')
+      end
+
+      it 'does not duplicate the title when the body opens with the same H1' do
+        core_model.children.unshift(
+          Coradoc::CoreModel::SectionElement.new(level: 1, title: 'Document Title')
+        )
+
+        headings = transform.blocks.select { |b| b.is_a?(Coradoc::Markdown::Heading) }
+
+        expect(headings.map(&:text).count('Document Title')).to eq(1)
+      end
+
+      it 'does not duplicate the title when the body opens with the same H2' do
+        core_model.children.unshift(
+          Coradoc::CoreModel::SectionElement.new(level: 2, title: 'Document Title')
+        )
+
+        headings = transform.blocks.select { |b| b.is_a?(Coradoc::Markdown::Heading) }
+
+        expect(headings.map(&:text).count('Document Title')).to eq(1)
+        expect(headings.first.level).to eq(2)
+      end
+
+      it 'omits the title heading when the document has no title' do
+        core_model_without_title = Coradoc::CoreModel::DocumentElement.new(
+          id: 'doc-2',
+          children: [
+            Coradoc::CoreModel::Block.new(
+              element_type: 'paragraph',
+              content: 'Just a paragraph'
+            )
+          ]
+        )
+
+        blocks = described_class.transform(core_model_without_title).blocks
+
+        expect(blocks).not_to include(an_instance_of(Coradoc::Markdown::Heading))
+      end
     end
 
     context 'with SectionElement (section)' do

@@ -24,6 +24,8 @@ module Coradoc
       #   core = ToCoreModel.transform(doc)
       #   # => Coradoc::CoreModel::StructuralElement
       class ToCoreModel
+        include NumberingAccess
+
         class << self
           def transform(document)
             new.transform(document)
@@ -154,7 +156,7 @@ module Coradoc
         # Collect consecutive list items with the same numId into a ListBlock
         def group_list(elements, start_index, context)
           first = elements[start_index]
-          num_id = first.properties&.num_id.to_i
+          num_id = paragraph_num_id(first).to_i
           items = []
           consumed = 0
 
@@ -163,7 +165,7 @@ module Coradoc
             para = elements[idx]
             break unless paragraph?(para)
             break unless context.style_resolver.list_item?(para)
-            break unless para.properties&.num_id.to_i == num_id
+            break unless paragraph_num_id(para).to_i == num_id
 
             items << @list_item_rule.apply(para, context)
             consumed += 1

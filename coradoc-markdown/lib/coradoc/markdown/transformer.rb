@@ -346,12 +346,14 @@ module Coradoc
         def transform_list_item(li)
           nodes = normalize_list_item_nodes(li)
           text_parts = []
+          inline_children = []
           sublist = nil
           nodes.each do |n|
             case n
             when Hash
               if n.key?(:p)
                 text_parts << extract_text_from_p(n[:p])
+                inline_children.concat(inline_models_for(n[:p]))
               elsif n.key?(:ul)
                 sublist = transform_list(n[:ul], ordered: false)
               elsif n.key?(:ol)
@@ -361,7 +363,8 @@ module Coradoc
               text_parts << n.to_s
             end
           end
-          item = ListItem.new(text: text_parts.join(' ').strip)
+          item = ListItem.new(text: text_parts.join(' ').strip,
+                              children: inline_children)
           item.sublist = sublist if sublist
           item
         end
@@ -532,25 +535,51 @@ module Coradoc
         end
 
         def build_inline_models(line)
-          Coradoc::Markdown.parse_inline(line).map do |el|
-            next Text.new(content: el.to_s) unless el.is_a?(Hash)
+          Coradoc::Markdown.parse_inline(line).flat_map { |el| inline_model(el) }
+        end
 
-            if el.key?(:strong)
-              Strong.new(text: inline_text(el[:strong]))
-            elsif el.key?(:emph)
-              Emphasis.new(text: inline_text(el[:emph]))
-            elsif el.key?(:code)
-              Code.new(text: el[:code].to_s)
-            elsif el.key?(:text)
-              Text.new(content: el[:text].to_s)
-            else
-              Text.new(content: el.values.map(&:to_s).join)
-            end
+        # Build Markdown model(s) for one inline-parser node. Emphasis
+        # subtrees (nested strong/emph/code/text) collapse to the
+        # outermost style with their literal text — CoreModel inline
+        # nodes carry flat content, matching the DOCX-side shape where
+        # each run becomes a single InlineElement.
+        def inline_model(el)
+          return Text.new(content: el.to_s) unless el.is_a?(Hash)
+
+          if el.key?(:strong)
+            Strong.new(text: flatten_inline_text(el[:strong]))
+          elsif el.key?(:emph)
+            Emphasis.new(text: flatten_inline_text(el[:emph]))
+          elsif el.key?(:code)
+            Code.new(text: el[:code].to_s)
+          elsif el.key?(:text)
+            Text.new(content: el[:text].to_s)
+          else
+            Text.new(content: flatten_inline_text([el]))
           end
         end
 
-        def inline_text(subtree)
-          Array(subtree).map { |n| n.is_a?(Hash) ? n.values.map(&:to_s).join : n.to_s }.join
+        # Recursively flatten any inline subtree (arrays, nested
+        # strong/emph hashes, code spans, Parsanol slices) to its
+        # literal text. Inner style markers survive as characters so
+        # the round trip stays stable.
+        def flatten_inline_text(subtree)
+          case subtree
+          when Array
+            subtree.map { |n| flatten_inline_text(n) }.join
+          when Hash
+            if subtree.key?(:text)
+              subtree[:text].to_s
+            elsif subtree.key?(:code)
+              "`#{subtree[:code]}`"
+            else
+              subtree.values.map { |v| flatten_inline_text(v) }.join
+            end
+          when Parsanol::Slice
+            subtree.to_s
+          else
+            subtree.to_s
+          end
         end
 
         # Extract code from code_block structure

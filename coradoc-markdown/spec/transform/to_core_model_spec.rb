@@ -269,4 +269,70 @@ RSpec.describe Coradoc::Markdown::Transform::ToCoreModel do
       end
     end
   end
+
+  describe 'inline formatting through parse_to_core' do
+    def paragraph_children(markdown)
+      core = Coradoc::Markdown.parse_to_core(markdown)
+      core.children.find { |c| c.is_a?(Coradoc::CoreModel::ParagraphBlock) }
+          &.children || []
+    end
+
+    it 'preserves bold as a bold InlineElement' do
+      bold = paragraph_children('**bold** and rest').find do |c|
+        c.is_a?(Coradoc::CoreModel::InlineElement)
+      end
+
+      expect(bold).not_to be_nil
+      expect(bold.resolve_format_type).to eq('bold')
+      expect(bold.content).to eq('bold')
+    end
+
+    it 'preserves italic as an italic InlineElement' do
+      italic = paragraph_children('plain *ital* plain').find do |c|
+        c.is_a?(Coradoc::CoreModel::InlineElement)
+      end
+
+      expect(italic).not_to be_nil
+      expect(italic.resolve_format_type).to eq('italic')
+      expect(italic.content).to eq('ital')
+    end
+
+    it 'preserves mixed bold and italic as separate styled nodes' do
+      children = paragraph_children('**bold** and *ital*')
+      types = children.select { |c| c.is_a?(Coradoc::CoreModel::InlineElement) }
+                      .map(&:resolve_format_type)
+
+      expect(types).to eq(%w[bold italic])
+    end
+
+    it 'collapses nested emphasis to the outermost style with literal text' do
+      nested = paragraph_children('***both***').find do |c|
+        c.is_a?(Coradoc::CoreModel::InlineElement)
+      end
+
+      expect(nested).not_to be_nil
+      expect(nested.resolve_format_type).to eq('italic')
+      expect(nested.content).to eq('both')
+    end
+
+    it 'keeps a code span inside bold as literal text' do
+      bold = paragraph_children('**x `code` y**').find do |c|
+        c.is_a?(Coradoc::CoreModel::InlineElement)
+      end
+
+      expect(bold.resolve_format_type).to eq('bold')
+      expect(bold.content).to eq('x `code` y')
+    end
+
+    it 'preserves bold and italic inside list items as styled children' do
+      core = Coradoc::Markdown.parse_to_core('- item with **bold** and *ital*')
+      item = core.children.find { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+                 &.items&.first
+
+      types = item.children.select { |c| c.is_a?(Coradoc::CoreModel::InlineElement) }
+                  .map(&:resolve_format_type)
+
+      expect(types).to eq(%w[bold italic])
+    end
+  end
 end

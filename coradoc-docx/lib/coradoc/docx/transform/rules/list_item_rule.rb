@@ -17,13 +17,14 @@ module Coradoc
         # dispatches directly after checking style_resolver.list_item?.
         class ListItemRule < Rule
           include OrderedContent
+          include NumberingAccess
 
           def matches?(_element)
             false # Never auto-matched; orchestrator dispatches directly
           end
 
           def apply(paragraph, context)
-            ilvl = paragraph.properties&.ilvl.to_i
+            ilvl = paragraph_ilvl(paragraph).to_i
 
             children = transform_paragraph_content(paragraph, context)
 

@@ -134,6 +134,22 @@ RSpec.describe Coradoc::Docx::Transform::ToCoreModel do
         table = core.children.find { |c| c.is_a?(Coradoc::CoreModel::Table) }
         expect(table.rows[0].cells.map(&:content)).to eq(%w[A B])
       end
+
+      it 'marks a row as header via the persisted tblHeader property' do
+        doc = build_document
+        data_row = Uniword::Wordprocessingml::TableRow.new
+        data_row.cells << build_cell('alpha') << build_cell('42')
+        table = Uniword::Wordprocessingml::Table.new
+        table.rows << build_header_row('Name', 'Value')
+        table.rows << data_row
+        doc.body.tables << table
+
+        core = transform_to_core(doc)
+
+        core_table = core.children.find { |c| c.is_a?(Coradoc::CoreModel::Table) }
+        expect(core_table.rows[0].header).to be(true)
+        expect(core_table.rows[1].header).to be(false)
+      end
     end
 
     context 'with lists' do
@@ -163,6 +179,55 @@ RSpec.describe Coradoc::Docx::Transform::ToCoreModel do
         expect(lists.length).to eq(2)
         expect(lists[0].items.length).to eq(2)
         expect(lists[1].items.length).to eq(1)
+      end
+    end
+
+    # uniword deserializes w:numPr into the NESTED numbering_properties
+    # (paragraph.properties.numbering_properties.num_id / .ilvl); the flat
+    # num_id/ilvl attributes are only populated by the builder/YAML API.
+    context 'with lists using nested numbering properties (deserialized w:numPr)' do
+      it 'detects nested-numPr paragraphs as list items' do
+        doc = build_document
+        doc.body.paragraphs << build_num_pr_paragraph('First item', num_id: 1)
+        doc.body.paragraphs << build_num_pr_paragraph('Second item', num_id: 1)
+
+        core = transform_to_core(doc)
+
+        lists = core.children.select { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+        expect(lists.length).to eq(1)
+        expect(lists.first.items.map(&:content)).to eq(['First item', 'Second item'])
+      end
+
+      it 'separates nested-numPr lists with different numId' do
+        doc = build_document
+        doc.body.paragraphs << build_num_pr_paragraph('Item A1', num_id: 1)
+        doc.body.paragraphs << build_num_pr_paragraph('Item B1', num_id: 2)
+
+        core = transform_to_core(doc)
+
+        lists = core.children.select { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+        expect(lists.length).to eq(2)
+      end
+
+      it 'applies nesting level from the nested ilvl' do
+        doc = build_document
+        doc.body.paragraphs << build_num_pr_paragraph('Nested item', num_id: 3, ilvl: 2)
+
+        core = transform_to_core(doc)
+
+        lists = core.children.select { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+        expect(lists.length).to eq(1)
+        expect(lists.first.items.first.marker).to eq('***')
+      end
+
+      it 'still honors the flat builder attributes as a fallback' do
+        doc = build_document
+        doc.body.paragraphs << build_list_paragraph('Flat item', num_id: 1)
+
+        core = transform_to_core(doc)
+
+        lists = core.children.select { |c| c.is_a?(Coradoc::CoreModel::ListBlock) }
+        expect(lists.first.items.map(&:content)).to eq(['Flat item'])
       end
     end
 

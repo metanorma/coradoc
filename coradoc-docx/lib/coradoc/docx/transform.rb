@@ -10,6 +10,7 @@ module Coradoc
       autoload :FromCoreModel, 'coradoc/docx/transform/from_core_model'
       autoload :StyleResolver, 'coradoc/docx/transform/style_resolver'
       autoload :NumberingResolver, 'coradoc/docx/transform/numbering_resolver'
+      autoload :NumberingAccess, 'coradoc/docx/transform/numbering_access'
       autoload :OrderedContent, 'coradoc/docx/transform/ordered_content'
       autoload :FrontmatterCoreProperties, 'coradoc/docx/transform/frontmatter_core_properties'
 

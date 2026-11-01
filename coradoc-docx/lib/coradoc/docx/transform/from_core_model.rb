@@ -234,6 +234,14 @@ module Coradoc
           builder.table do |t|
             table.rows.each do |row|
               t.row do |r|
+                # TableRowBuilder#header_row is broken upstream (calls a
+                # nonexistent table_header= setter), so set the persisted
+                # w:tblHeader property on the row model directly
+                if row.header
+                  r.model.properties = Uniword::Wordprocessingml::TableRowProperties.new(
+                    tbl_header: Uniword::Wordprocessingml::ValInt.new(value: 1)
+                  )
+                end
                 row.cells.each do |cell|
                   r.cell(text: cell.flat_text)
                 end
@@ -295,7 +303,9 @@ module Coradoc
 
           props = Uniword::Wordprocessingml::RunProperties.new
 
-          case inline.format_type
+          # resolve_format_type covers typed subclasses (BoldElement etc.)
+          # that carry no explicit format_type attribute
+          case inline.resolve_format_type
           when 'bold'
             props.bold = Uniword::Properties::Bold.new
           when 'italic'
@@ -355,6 +365,11 @@ module Coradoc
 
           table.rows.each do |row|
             tr = Uniword::Wordprocessingml::TableRow.new
+            if row.header
+              tr.properties = Uniword::Wordprocessingml::TableRowProperties.new(
+                tbl_header: Uniword::Wordprocessingml::ValInt.new(value: 1)
+              )
+            end
             row.cells.each do |cell|
               tc = Uniword::Wordprocessingml::TableCell.new
 
@@ -403,7 +418,9 @@ module Coradoc
         def build_inline_text(inline)
           text = inline.content.to_s
 
-          case inline.format_type
+          # resolve_format_type covers typed subclasses (BoldElement etc.)
+          # that carry no explicit format_type attribute
+          case inline.resolve_format_type
           when 'bold'    then Uniword::Builder.text(text, bold: true)
           when 'italic'  then Uniword::Builder.text(text, italic: true)
           when 'underline' then Uniword::Builder.text(text, underline: true)
@@ -414,7 +431,7 @@ module Coradoc
             run = Uniword::Wordprocessingml::Run.new(text: text)
             props = Uniword::Wordprocessingml::RunProperties.new
             va = Uniword::Properties::VerticalAlign.new
-            va.value = inline.format_type
+            va.value = inline.resolve_format_type
             props.vertical_align = va
             run.properties = props
             run

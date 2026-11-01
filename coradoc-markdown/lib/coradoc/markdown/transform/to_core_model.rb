@@ -138,7 +138,8 @@ module Coradoc
               Coradoc::CoreModel::ListItem.new(
                 content: extract_text(item.text),
                 marker: list.ordered ? '1.' : '*',
-                nested_list: nested
+                nested_list: nested,
+                children: inline_children(item)
               )
             end
 
@@ -148,13 +149,20 @@ module Coradoc
             )
           end
 
+          # Carry inline models (bold, italic, code) parsed from the item
+          # text through to the CoreModel item as styled children.
+          def inline_children(item)
+            Array(item.children).map { |child| transform(child) }
+          end
+
           def transform_table(table)
             # Convert Markdown table to CoreModel table
             rows = []
 
-            # Add header row if present
+            # Add header row if present (GFM tables always lead with one)
             if table.headers.any?
               rows << Coradoc::CoreModel::TableRow.new(
+                header: true,
                 cells: table.headers.map do |h|
                   Coradoc::CoreModel::TableCell.new(content: h.to_s, header: true)
                 end

@@ -15,6 +15,8 @@ module Coradoc
       # The style map is built from the Uniword StylesConfiguration by walking
       # all style definitions and their basedOn chains.
       class StyleResolver
+        include NumberingAccess
+
         HEADING_PATTERN = /^(heading|heading|h)\s*(\d+)$/i
         QUOTE_PATTERN = /\bquote\b/i
         CODE_PATTERN = /\b(code|source|listing)\b/i
@@ -93,13 +95,10 @@ module Coradoc
         def list_item?(paragraph)
           return false unless paragraph.properties
 
-          num_id = paragraph.properties.num_id
-          # Uniword (via lutaml-model) returns an UninitializedClass
-          # sentinel for attributes that weren't deserialized from source.
-          # Treat anything that isn't a real Integer as "no list id".
-          return false unless num_id.is_a?(Integer)
-
-          num_id.positive?
+          # w:numPr is persisted as nested numbering_properties; the flat
+          # num_id is only set by the builder/YAML API (see NumberingAccess)
+          num_id = paragraph_num_id(paragraph)
+          !num_id.nil? && num_id.positive?
         end
 
         # Check if paragraph has a specific role based on style name
