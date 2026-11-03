@@ -3,6 +3,61 @@
 require_relative '../../../spec_helper'
 
 RSpec.describe Coradoc::Docx::Transform::ToCoreModel do
+  context 'with a footnotes part (regression: #299)' do
+    def build_footnotes_part(entries)
+      part = Uniword::Wordprocessingml::Footnotes.new
+      if Uniword::Wordprocessingml::Footnotes.method_defined?(:footnote_entries)
+        part.footnote_entries = entries
+      else
+        part.footnotes = entries
+      end
+      part
+    end
+
+    def build_footnote_reference(id)
+      Uniword::Wordprocessingml::FootnoteReference.new(id: id)
+    end
+
+    it 'collects footnotes through uniword 1.7 footnote_entries without crashing' do
+      note = Uniword::Wordprocessingml::Footnote.new(
+        id: '1',
+        paragraphs: [build_paragraph('note body')]
+      )
+      doc = build_document
+      doc.footnotes = build_footnotes_part([note])
+
+      expect { transform_to_core(doc) }.not_to raise_error
+    end
+
+    it 'resolves footnote reference content from the footnotes part' do
+      note = Uniword::Wordprocessingml::Footnote.new(
+        id: '2',
+        paragraphs: [build_paragraph('resolvable body')]
+      )
+      doc = build_document
+      doc.footnotes = build_footnotes_part([note])
+      para = build_paragraph('body text')
+      run = Uniword::Wordprocessingml::Run.new
+      run.footnote_reference = build_footnote_reference('2')
+      para.runs << run
+      doc.body.paragraphs << para
+
+      core = transform_to_core(doc)
+
+      refs = []
+      walk = lambda do |node|
+        next unless node.is_a?(Coradoc::CoreModel::HasChildren)
+
+        Array(node.children).each do |child|
+          refs << child if child.is_a?(Coradoc::CoreModel::FootnoteReference)
+          walk.call(child)
+        end
+      end
+      walk.call(core)
+      expect(refs.map(&:id)).to eq(%w[2])
+    end
+  end
+
   describe '.transform' do
     it 'returns a StructuralElement with element_type document' do
       doc = build_document
