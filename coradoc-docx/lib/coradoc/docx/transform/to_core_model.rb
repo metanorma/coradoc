@@ -210,6 +210,16 @@ module Coradoc
             element.is_a?(Uniword::Wordprocessingml::Paragraph)
         end
 
+        # uniword 1.7+ names the Footnote collection +footnote_entries+;
+        # 1.6-era shapes used +footnotes+. Read whichever exists.
+        def footnote_collection(part)
+          if part.class.method_defined?(:footnote_entries)
+            part.footnote_entries
+          else
+            part.footnotes
+          end
+        end
+
         def collect_footnotes(document)
           footnotes = {}
 
@@ -223,7 +233,10 @@ module Coradoc
 
           if defined?(Uniword::Wordprocessingml::Footnotes) &&
              document.footnotes.is_a?(Uniword::Wordprocessingml::Footnotes)
-            document.footnotes.footnotes.each do |fn|
+            # uniword >= 1.7 exposes +footnote_entries+ (Footnote
+            # collection); older shapes carried +footnotes+.
+            entries = footnote_collection(document.footnotes)
+            entries.each do |fn|
               id = fn.id&.to_s
               next unless id
 
