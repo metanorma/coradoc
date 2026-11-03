@@ -13,13 +13,12 @@ module Coradoc
     # model tree. That concern lives in the parser/serializer, not
     # in a lint.
     module Lint
-      require_relative 'lint/heading_levels'
       require_relative 'lint/document_title'
       require_relative 'lint/empty_section'
-      require_relative 'lint/duplicate_ids'
+      require_relative 'lint/registrations'
 
-      RULES = [HeadingLevels, DocumentTitle, EmptySection,
-               DuplicateIds].freeze
+      RULES = [DocumentTitle, EmptySection,
+               *Registrations::RULES].freeze
 
       RULES.each { |rule| Coradoc::Lint.registry.register(rule) }
     end

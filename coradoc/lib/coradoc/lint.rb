@@ -18,6 +18,7 @@ module Coradoc
   module Lint
     autoload :Violation, "#{__dir__}/lint/violation"
     autoload :Rule, "#{__dir__}/lint/rule"
+    autoload :Template, "#{__dir__}/lint/template"
     autoload :Registry, "#{__dir__}/lint/registry"
     autoload :Runner, "#{__dir__}/lint/runner"
 
