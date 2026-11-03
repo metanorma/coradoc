@@ -104,6 +104,7 @@ module Coradoc
       autoload :HTML_ENTITIES, 'coradoc/markdown/parser/html_entities'
       autoload :AstProcessor, 'coradoc/markdown/parser/ast_processor'
       autoload :FrontmatterParser, 'coradoc/markdown/parser/frontmatter_parser'
+      autoload :Grammar, 'coradoc/markdown/parser/grammar'
     end
 
     # Shared parser utilities
