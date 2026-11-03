@@ -81,3 +81,24 @@ RSpec.describe 'Markdown bound-vs-unbound differential (M2 BindingInflater seam)
     end
   end
 end
+
+RSpec.describe 'Markdown bindings embedded in the artifact (M4)' do
+  it 'ships the sidecar table inside the compiled artifact' do
+    table = Coradoc::Markdown::Parser::Grammar.model_bindings
+    expect(table['version']).to eq(1)
+    expect(table['rules'].fetch('thematic_break')).to include('keys' => ['hr'], 'model' => 'HorizontalRule')
+  end
+
+  it 'keeps the artifact table equal to the sidecar source' do
+    sidecar = YAML.safe_load_file(Coradoc::Markdown::Parser::Grammar::BINDINGS_PATH)
+    embedded = Coradoc::Markdown::Parser::Grammar.model_bindings
+    expect(embedded['rules'].transform_values { |r| r.slice(*sidecar['rules'].values.first.keys) })
+      .to eq(sidecar['rules'])
+  end
+
+  it 'inflates a thematic break from the embedded table' do
+    node = Coradoc::Markdown::Bindings.inflater.inflate({ hr: true }) { raise 'residual reached' }
+    expect(node).to be_a(Coradoc::Markdown::Generated::HorizontalRule)
+    expect(node.style).to eq('---')
+  end
+end

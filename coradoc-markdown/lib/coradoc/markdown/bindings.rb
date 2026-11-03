@@ -9,21 +9,17 @@ module Coradoc
     # time as bindings replace hand-written transformation.
     #
     # The binding machinery proper (codegen-ed bindings, typed capture
-    # assignment) is lutaml-model#1033; these declarations are the data
-    # it will back.
+    # assignment) is lutaml-model#1033. The table itself ships inside the
+    # compiled artifact (grammar/coradoc-markdown.bindings.yml is its
+    # sidecar source), so the inflater needs no side file at runtime.
     module Bindings
-      # Thematic break: `{hr: true}` -> HorizontalRule(style: '---').
-      THEMATIC_BREAK = Coradoc::BindingInflater::Binding.new(
-        keys: [:hr],
-        model: -> { Schema.generated_class('HorizontalRule') },
-        captures: {},
-        defaults: { style: '---' }
-      )
-
       class << self
         # @return [Coradoc::BindingInflater] the inflater for the bound rules
         def inflater
-          @inflater ||= Coradoc::BindingInflater.new(bindings: [THEMATIC_BREAK])
+          @inflater ||= Coradoc::BindingInflater.from_table(
+            Parser::Grammar.model_bindings,
+            models: ->(name) { Schema.generated_class(name) }
+          )
         end
       end
     end
