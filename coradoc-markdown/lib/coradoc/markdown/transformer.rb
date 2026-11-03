@@ -142,6 +142,20 @@ module Coradoc
         # ALD storage - maps name to AttributeList
         attr_accessor :ald_registry
 
+        # Active Coradoc::BindingInflater, if any (nil = every rule takes
+        # the hand-written path below).
+        attr_reader :bindings
+
+        # Run the block with a BindingInflater active; unbound nodes fall
+        # through to #transform_element.
+        def with_bindings(inflater)
+          previous = @bindings
+          @bindings = inflater
+          yield
+        ensure
+          @bindings = previous
+        end
+
         # Transform AST into a Document model
         #
         # @param ast [Array] The parsed AST from BlockParser
@@ -155,6 +169,10 @@ module Coradoc
         # Transform a single element
         def transform_element(element)
           return nil if element.nil?
+
+          # Bound rules inflate straight to their model class; the rest is
+          # the residual: this method itself, on the unbound node.
+          return @bindings.inflate(element) { |unbound| transform_element(unbound) } if @bindings&.bound?(element)
 
           case element
           when Hash

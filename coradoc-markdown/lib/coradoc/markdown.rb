@@ -104,21 +104,26 @@ module Coradoc
       autoload :HTML_ENTITIES, 'coradoc/markdown/parser/html_entities'
       autoload :AstProcessor, 'coradoc/markdown/parser/ast_processor'
       autoload :FrontmatterParser, 'coradoc/markdown/parser/frontmatter_parser'
+      autoload :Grammar, 'coradoc/markdown/parser/grammar'
     end
 
     # Shared parser utilities
     autoload :ParserUtil, 'coradoc/markdown/parser_util'
+    autoload :Bindings, 'coradoc/markdown/bindings'
 
     class << self
       # Parse Markdown content into a Document model
       #
       # @param content [String] The Markdown content to parse
       # @param options [Hash] Parsing options
+      # @option options [Coradoc::BindingInflater] :bindings inflate bound
+      #   rules straight to model classes (see Bindings); unbound rules take
+      #   the regular Transformer path
       # @return [Coradoc::Markdown::Document] The parsed document model
-      def parse(content, _options = {})
+      def parse(content, options = {})
         split = Parser::FrontmatterParser.call(content)
         ast = Parser::BlockParser.new.parse(split.body)
-        doc = Transformer.transform_document(ast)
+        doc = Transformer.with_bindings(options[:bindings]) { Transformer.transform_document(ast) }
         doc.frontmatter = split.frontmatter if split.frontmatter?
         doc
       end

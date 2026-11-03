@@ -6,3 +6,23 @@ require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new(:spec)
 
 task default: :spec
+
+namespace :grammar do
+  desc 'Compile grammar/coradoc-markdown.parg to its artifact'
+  task :compile do
+    require 'coradoc'
+    require 'coradoc/markdown'
+    grammar = Coradoc::Markdown::Parser::Grammar
+    File.write(grammar::ARTIFACT_PATH, grammar.compile_source)
+    puts "wrote #{grammar::ARTIFACT_PATH}"
+  end
+
+  desc 'Fail when the artifact is stale against the .parg source'
+  task :check do
+    require 'coradoc'
+    require 'coradoc/markdown'
+    grammar = Coradoc::Markdown::Parser::Grammar
+    abort 'artifact is stale: run `rake grammar:compile`' unless grammar.artifact.fresh_against?(File.read(grammar::SOURCE_PATH))
+    puts 'artifact is fresh'
+  end
+end

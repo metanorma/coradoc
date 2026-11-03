@@ -1,0 +1,159 @@
+# Coradoc Markdown block grammar — PARG single source of truth (M2).
+#
+# Port of lib/coradoc/markdown/parser/block_parser.rb (the Ruby DSL
+# grammar stays as the parity reference; grammar_parity_spec asserts
+# identical trees over the markdown corpus). Compile with
+# `rake grammar:compile`; `rake grammar:check` fails on a stale artifact.
+#
+# Context-sensitive machinery that PARG cannot express as data lives in
+# Ruby-tier custom atoms (parser/grammar_runtime.rb), the same escape
+# hatch the PARG state vocabulary provides:
+#   continuation / bq_scope / p_scope           block-nesting stack
+#                                                (scope + continuation)
+#   fence_info / fence_close / fence_indent_consume  fence-aware rules
+#   ign_* / const_*                              Parslet `.ignore` and
+#                                                `.output(value)`
+# Everything else is plain PEG.
+
+grammar CoradocMarkdown version "0.1.0" {
+
+  any_char = %x00-10FFFF
+
+  # ---- terminals ----
+  line_ending_raw = ("\n" / "\r\n" / "\r")
+  custom line_ending = "Coradoc::Markdown::Parser::Ign::LineEnding"
+  line_ending_or_eof = (line_ending / !any_char)
+  whitespace = (" " / %x09)
+  blank_line_raw = ((1*whitespace !any_char) / (*whitespace line_ending_raw))
+  custom blank_line = "Coradoc::Markdown::Parser::Ign::BlankLine"
+  blank_line_verbatim = (((1*whitespace) as ln !any_char) / ((*whitespace) as ln line_ending))
+  line_char = (!("\r" / "\n") any_char)
+  line_verbatim = ((1*line_char) as ln line_ending_or_eof)
+  non_indent_space = *3" "
+  whitespace_repeat = *whitespace
+  any_char_present = &any_char
+  space_char = (%x20 / %x09-0D)
+  word_char = (%x41-5A / %x61-7A / %x30-39 / "_")
+  word_dash_char = (word_char / "-")
+
+  custom ign_ws_rep = "Coradoc::Markdown::Parser::Ign::WhitespaceRepeat"
+  custom ign_thematic_chars = "Coradoc::Markdown::Parser::Ign::ThematicChars"
+  custom ign_thematic_in_list = "Coradoc::Markdown::Parser::Ign::ThematicInList"
+  custom ign_blank_line_verbatim = "Coradoc::Markdown::Parser::Ign::BlankLineVerbatim"
+  custom const_hr = "Coradoc::Markdown::Parser::Const::Hr"
+  custom const_ln_empty = "Coradoc::Markdown::Parser::Const::LnEmpty"
+  custom const_empty = "Coradoc::Markdown::Parser::Const::Empty"
+
+  # ---- block nesting (scope + continuation) ----
+  custom continuation = "Coradoc::Markdown::Parser::Nesting::Continuation"
+  custom bq_scope = "Coradoc::Markdown::Parser::Nesting::BlockQuoteScope"
+  custom p_scope = "Coradoc::Markdown::Parser::Nesting::ParagraphScope"
+
+  # ---- ATX heading / thematic break ----
+  atx_ending_seq = (1*whitespace *"#" *whitespace !line_char)
+  escaped_hash = ("\\" "#")
+  atx_heading = (non_indent_space !escaped_hash ((1*6"#") as heading) !"#" [(!atx_ending_seq 1*" " ((1*(!atx_ending_seq line_char)) as text))] [atx_ending_seq] line_ending_or_eof)
+  thematic_break_chars = (3*("-" *whitespace) / 3*("_" *whitespace) / 3*("*" *whitespace))
+  thematic_break = (non_indent_space ign_thematic_chars const_hr line_ending_or_eof)
+
+  # ---- code blocks ----
+  indented_code_line = ("    " line_verbatim)
+  indented_code_blank_line = (ign_blank_line_verbatim const_ln_empty &(continuation ("    " / blank_line_verbatim)))
+  indented_code_block = ((indented_code_line *(continuation (indented_code_line / indented_code_blank_line))) as code_block)
+
+  state fence: string
+  state fence_indent: string
+  fence_info_backtick = [((1*(!"`" line_char)) as info)]
+  fence_info_tilde = [((1*line_char) as info)]
+  custom fence_info = "Coradoc::Markdown::Parser::Nesting::FenceInfo"
+  custom fence_close_marker = "Coradoc::Markdown::Parser::Nesting::FenceClose"
+  custom consume_fenced_indent = "Coradoc::Markdown::Parser::Nesting::ConsumeFencedIndent"
+  code_fence_open = ((set fence_indent = (non_indent_space)) (set fence = ((3*"`") / (3*"~"))) fence_info line_ending_or_eof)
+  code_fence_close = (non_indent_space fence_close_marker line_ending_or_eof)
+  fenced_code_block = (code_fence_open ((*(continuation !code_fence_close consume_fenced_indent (line_verbatim / (ign_blank_line_verbatim const_ln_empty)))) as code_block) ((continuation code_fence_close) / !(continuation any_char)))
+
+  # ---- block quote / paragraph / setext ----
+  block_quote_marker = (non_indent_space ">" [" "])
+  block_quote_item = (block / (!any_char const_empty))
+  block_quote_body = (((block_quote_item *(continuation block_quote_item))) as block_quote)
+  block_quote = (block_quote_marker bq_scope)
+
+  ial_block = (*3whitespace (ial / ald) line_ending_or_eof)
+  paragraph_interrupt = (blank_line / atx_heading / thematic_break / code_fence_open / block_quote / ial_block / extension / unordered_list_marker / ordered_list_marker / definition_marker)
+  paragraph_line = (((1*line_char) as ln !any_char) / ((*line_char) as ln line_ending))
+  paragraph_continued_line = (ign_ws_rep paragraph_line)
+  paragraph_cont = !paragraph_interrupt
+  lazy_continuation = (!paragraph_interrupt &paragraph_continued_line)
+  paragraph_body = ((paragraph_line *(continuation paragraph_continued_line)) as p)
+  paragraph = (non_indent_space p_scope)
+
+  setext_underline = (non_indent_space (((1*"-") / (1*"=")) as heading) ign_ws_rep line_ending_or_eof)
+  setext_check = (!paragraph_interrupt !setext_underline)
+  setext_heading = (setext_check non_indent_space ((paragraph_line *(continuation setext_check paragraph_continued_line)) as text) continuation setext_underline)
+
+  # ---- kramdown attribute lists ----
+  ial_class = ("." 1*word_dash_char)
+  ial_id = ("#" 1*word_dash_char)
+  ial_key_value = (1*word_dash_char "=" (("\"" *(!"\"" any_char) "\"") / ("'" *(!"'" any_char) "'") / 1*(!(space_char / "}") any_char)))
+  ial_content = 1*(*whitespace (ial_class / ial_id / ial_key_value))
+  ial = ("{:" (ial_content as ial) "}")
+  ald_name = (1*word_char ":")
+  ald = ("{:" (ald_name as ald_name) 1*whitespace (ial_content as ial) "}")
+
+  # ---- kramdown extensions / math ----
+  extension_name = 1*%x61-7A
+  extension_option = (1*word_dash_char "=" (("\"" *(!"\"" any_char) "\"") / ("'" *(!"'" any_char) "'") / 1*(!(space_char / "/" / "}") any_char)))
+  extension_options = *(1*whitespace extension_option)
+  extension_self_closing = ("{::" (extension_name as ext_name) (extension_options as ext_options) *whitespace "/}")
+  extension_with_body = ("{::" (extension_name as ext_name) (extension_options as ext_options) "}" ((*(!"{:/" any_char)) as ext_body) "{:/}")
+  extension = ((extension_self_closing / extension_with_body) as extension)
+  block_math = ("$$" line_ending ((*(!"$$" any_char)) as math_content) "$$")
+
+  # ---- GFM tables ----
+  table_cell = ((*(!"|" line_char)) as cell)
+  table_row = (("|" [whitespace] ((1*(table_cell [whitespace] "|" [whitespace])) as row)) / ((table_cell [whitespace] "|" [whitespace] ((*(table_cell [whitespace] "|" [whitespace])) as row_rest) ([table_cell] as last_cell)) as row))
+  table_separator_cell = ([":"] 1*"-" [":"])
+  table_separator_row = (("|" [whitespace] 1*((table_separator_cell as sep) [whitespace] "|" [whitespace])) / ((table_separator_cell as sep) [whitespace] "|" [whitespace] *((table_separator_cell as sep) [whitespace] "|" [whitespace]) [(table_separator_cell as sep)]))
+  table = ((table_row as table_header) line_ending (table_separator_row as table_separator) line_ending ((1*((table_row as table_body_row) (line_ending / !any_char))) as table_body))
+
+  block = (blank_line / eob_marker / atx_heading / thematic_break / indented_code_block / fenced_code_block / block_quote / setext_heading / unordered_list / ordered_list / definition_list / footnote_definition / abbreviation_definition / ial_block / extension / block_math / table / paragraph)
+
+  # ---- lists ----
+  list_interrupt = (1*blank_line / atx_heading / thematic_break / code_fence_open / block_quote / unordered_list_marker / ordered_list_marker)
+  unordered_list_marker = (non_indent_space ("-" / "*" / "+") 1*" ")
+  ordered_list_marker = (non_indent_space %x31-39 *%x30-39 ("." / ")") 1*" ")
+  nested_list_marker = (("    " / "\t") ((("-" / "*" / "+") 1*" ") / (%x31-39 *%x30-39 ("." / ")") 1*" ")))
+  list_continuation_line = ((("    " / "\t") !nested_list_marker line_verbatim) / (!nested_list_marker line_verbatim))
+  thematic_break_in_list = ((("*" *whitespace "*" *whitespace "*") / ("-" *whitespace "-" *whitespace "-") / ("_" *whitespace "_" *whitespace "_")) *whitespace line_ending_or_eof)
+  unordered_list_item = ((set list_marker = (unordered_list_marker)) ((ign_thematic_in_list const_hr) as li / (list_item_content as li)))
+  list_item_content = (list_item_paragraph *(continuation !list_interrupt nested_block))
+  nested_block = ((("    " / "\t") nested_unordered_list) / (("    " / "\t") nested_ordered_list))
+  nested_unordered_list = ((nested_unordered_list_item *(continuation ("    " / "\t") nested_unordered_list_item)) as ul)
+  nested_ordered_list = ((nested_ordered_list_item *(continuation ("    " / "\t") nested_ordered_list_item)) as ol)
+  line_text = (1*line_char line_ending_or_eof)
+  nested_unordered_list_item = (unordered_list_marker (line_text as li))
+  nested_ordered_list_item = (ordered_list_marker (line_text as li))
+  list_item_paragraph = ((line_verbatim *(continuation !list_interrupt !nested_list_marker list_continuation_line)) as p)
+  ordered_list_item = (ordered_list_marker (list_item_content as li))
+  unordered_list = ((unordered_list_item *(continuation !thematic_break [blank_line] unordered_list_item)) as ul)
+  ordered_list = ((ordered_list_item *(continuation !thematic_break [blank_line] ordered_list_item)) as ol)
+
+  # ---- kramdown definition lists ----
+  definition_marker = (non_indent_space ":" 1*" ")
+  definition_term_line = (non_indent_space !":" line_verbatim)
+  definition_term = ((definition_term_line *(continuation !definition_marker !blank_line definition_term_line)) as def_term)
+  definition_content = ((line_verbatim *(continuation !definition_marker !blank_line [(" " / "\t")] line_verbatim)) as def_content)
+  definition_item = (definition_marker definition_content)
+  definition_list_item = (definition_term 1*(continuation definition_item))
+  definition_list = ((definition_list_item *(continuation [blank_line] definition_list_item)) as dl)
+
+  # ---- kramdown footnotes / abbreviations / EOB ----
+  footnote_id = ("[^" ((1*(!"]" any_char)) as fn_id) "]")
+  footnote_definition = (non_indent_space footnote_id ":" *whitespace (line_verbatim as fn_content) ((*(continuation 1*4(" " / "\t") line_verbatim)) as fn_content_continued))
+  abbreviation_term = ("*[" ((1*(!"]" any_char)) as abbr_term) "]")
+  abbreviation_definition = (non_indent_space abbreviation_term ":" *whitespace ((*line_char) as abbr_def) line_ending_or_eof)
+  eob_marker = (*whitespace "^" *whitespace line_ending_or_eof)
+
+  document = *block
+  entry document: document
+}

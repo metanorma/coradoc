@@ -31,6 +31,15 @@ module Coradoc
           load_generated(namespace: 'Coradoc::Markdown')
         end
 
+        # A schema-generated class by short name, in the default
+        # namespace. The schemas compile once per process.
+        #
+        # @param name [String] e.g. 'HorizontalRule'
+        def generated_class(name)
+          @generated ||= load_generated.to_h { |klass| [klass.name.split('::').last, klass] }
+          @generated.fetch(name)
+        end
+
         # Compile the schemas and load the resulting classes.
         #
         # @param namespace [String] module that hosts the generated classes
