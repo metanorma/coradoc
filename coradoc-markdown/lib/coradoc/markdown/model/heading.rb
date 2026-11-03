@@ -11,28 +11,7 @@ module Coradoc
       attribute :level, :integer, default: 1
       attribute :text, :string
 
-      # Generate an auto ID from the heading text
-      #
-      # @return [String] A slugified version of the text suitable for use as an ID
-      # @example
-      #   Heading.new(text: "Hello World!").auto_id #=> "hello-world"
-      def auto_id
-        return '' if text.nil? || text.empty?
-
-        # Downcase, replace non-alphanumeric with hyphens, collapse multiple hyphens
-        slug = text.to_s
-                   .downcase
-                   .gsub(/[^a-z0-9]+/, '-')
-                   .gsub(/^-+|-+$/, '')
-        slug.empty? ? 'section' : slug
-      end
-
-      # Get the ID for this heading (uses explicit id if set, otherwise auto_id)
-      #
-      # @return [String] The ID to use for this heading
-      def heading_id
-        id || auto_id
-      end
+      prepend Behaviors::Heading
     end
   end
 end

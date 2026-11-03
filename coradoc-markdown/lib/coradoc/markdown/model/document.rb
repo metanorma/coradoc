@@ -27,22 +27,7 @@ module Coradoc
       # without dragging YAML semantics into the Markdown model (MECE).
       attribute :frontmatter, :string
 
-      # @param [Integer] index The index of the block to retrieve
-      # @return [Coradoc::Markdown::Base] The block at the specified index
-      def [](index)
-        blocks[index]
-      end
-
-      # @param [Integer] index The index of the block to set
-      # @param [Coradoc::Markdown::Base] value The block to set
-      def []=(index, value)
-        blocks[index] = value
-      end
-
-      # Create a document from an array of blocks
-      def self.from_ast(elements)
-        new(blocks: elements)
-      end
+      prepend Behaviors::Document
     end
   end
 end

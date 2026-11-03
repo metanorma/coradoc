@@ -1,0 +1,35 @@
+# coradoc-markdown model schema: ordered/unordered and definition lists.
+# Source of truth for generated classes (see Coradoc::Markdown::Schema).
+# Types: string|integer|boolean are scalars; anything else names a model class.
+# `behaviors` names modules in Coradoc::Markdown::Behaviors prepended after load.
+classes:
+  List:
+    parent: Base
+    attributes:
+      ordered: { type: boolean, default: false }
+      items: { type: ListItem, collection: true }
+      start_number: { type: integer, default: 1 }
+  ListItem:
+    parent: Base
+    attributes:
+      text: { type: string }
+      checked: { type: boolean }
+      sublist: { type: List }
+      children: { type: Base, collection: true, default: [] }
+  DefinitionList:
+    parent: Base
+    attributes:
+      items: { type: DefinitionTerm, collection: true }
+  DefinitionTerm:
+    parent: Base
+    attributes:
+      text: { type: string }
+      definitions: { type: DefinitionItem, collection: true, default: [] }
+      text_children: { type: Base, collection: true, default: [] }
+      nested: { type: DefinitionList }
+  DefinitionItem:
+    parent: Base
+    attributes:
+      content: { type: string }
+      inline_content: { type: Base, collection: true, default: [] }
+      blocks: { type: string, collection: true }

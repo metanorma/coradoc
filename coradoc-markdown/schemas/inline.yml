@@ -1,0 +1,58 @@
+# coradoc-markdown model schema: inline nodes.
+# Source of truth for generated classes (see Coradoc::Markdown::Schema).
+# Types: string|integer|boolean are scalars; anything else names a model class.
+# `behaviors` names modules in Coradoc::Markdown::Behaviors prepended after load.
+classes:
+  Text:
+    parent: Base
+    behaviors: [Text]
+    attributes:
+      content: { type: string }
+  Emphasis:
+    parent: Base
+    attributes:
+      text: { type: string }
+  Strong:
+    parent: Base
+    attributes:
+      text: { type: string }
+  Code:
+    parent: Base
+    attributes:
+      text: { type: string }
+  Link:
+    parent: Base
+    attributes:
+      text: { type: string }
+      url: { type: string }
+      title: { type: string }
+  Image:
+    parent: Base
+    attributes:
+      alt: { type: string }
+      src: { type: string }
+      title: { type: string }
+  Strikethrough:
+    parent: Base
+    attributes:
+      text: { type: string }
+  Highlight:
+    parent: Base
+    attributes:
+      text: { type: string }
+  Subscript:
+    parent: Base
+    attributes:
+      text: { type: string }
+  Superscript:
+    parent: Base
+    attributes:
+      text: { type: string }
+  Underline:
+    parent: Base
+    attributes:
+      text: { type: string }
+  HardLineBreak:
+    parent: Base
+    behaviors: [HardLineBreak]
+    attributes: {}

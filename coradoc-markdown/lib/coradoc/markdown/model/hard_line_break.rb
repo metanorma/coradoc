@@ -13,9 +13,7 @@ module Coradoc
     #
     # AsciiDoc `+` line-continuation maps to this element.
     class HardLineBreak < Base
-      def initialize(**_rest)
-        super
-      end
+      prepend Behaviors::HardLineBreak
     end
   end
 end

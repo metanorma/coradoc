@@ -1,0 +1,55 @@
+# coradoc-markdown model schema: document container, metadata and reference-like nodes.
+# Source of truth for generated classes (see Coradoc::Markdown::Schema).
+# Types: string|integer|boolean are scalars; anything else names a model class.
+# `behaviors` names modules in Coradoc::Markdown::Behaviors prepended after load.
+classes:
+  Document:
+    parent: Base
+    behaviors: [Document]
+    attributes:
+      blocks: { type: Base, collection: true }
+      frontmatter: { type: string }
+  NamedValue:
+    parent: Base
+    attributes:
+      name: { type: string }
+      value: { type: string }
+  AttributeList:
+    parent: Base
+    behaviors: [AttributeList]
+    attributes:
+      id: { type: string }
+      classes: { type: string, collection: true, default: [] }
+      attributes: { type: NamedValue, collection: true, default: [] }
+      name: { type: string }
+  Extension:
+    parent: Base
+    behaviors: [Extension]
+    attributes:
+      name: { type: string }
+      options: { type: NamedValue, collection: true, default: [] }
+      content: { type: string }
+      body: { type: string }
+  Comment:
+    parent: Base
+    attributes:
+      text: { type: string }
+  Abbreviation:
+    parent: Base
+    attributes:
+      term: { type: string }
+      definition: { type: string }
+  Footnote:
+    parent: Base
+    attributes:
+      content: { type: string }
+      inline_content: { type: string, collection: true }
+      backlink: { type: boolean, default: true }
+  FootnoteReference:
+    parent: Base
+    attributes: {}
+  CrossReference:
+    parent: Base
+    attributes:
+      text: { type: string }
+      target: { type: string }
