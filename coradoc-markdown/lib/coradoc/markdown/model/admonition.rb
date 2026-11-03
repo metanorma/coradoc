@@ -18,8 +18,6 @@ module Coradoc
     # Type is stored lowercase. Content is raw Markdown text (already
     # serialized). Title is optional.
     class Admonition < Base
-      ALLOWED_TYPES = %w[note tip warning important caution].freeze
-
       attribute :admonition_type, :string
       attribute :content, :string
       attribute :title, :string
@@ -29,12 +27,7 @@ module Coradoc
       # references, code spans, etc. When empty, fall back to `content`.
       attribute :children, Coradoc::Markdown::Base, collection: true, default: []
 
-      # Normalize type on assignment. Callers can pass "NOTE", "Note",
-      # or "note" — storage is always lowercase so downstream comparison
-      # and CSS class generation don't need to repeat the normalization.
-      def admonition_type=(value)
-        super(value.to_s.downcase)
-      end
+      prepend Behaviors::Admonition
     end
   end
 end

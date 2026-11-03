@@ -15,22 +15,7 @@ module Coradoc
       attribute :content, :string
       attribute :inline, :boolean, default: false
 
-      # Check if this is inline math
-      # @return [Boolean]
-      def inline?
-        inline == true
-      end
-
-      # Create an inline math element
-      # @param content [String] The math content
-      # @return [Math]
-      def self.inline(content)
-        new(content: content, inline: true)
-      end
-
-      def self.block(content)
-        new(content: content, inline: false)
-      end
+      prepend Behaviors::Math
     end
   end
 end

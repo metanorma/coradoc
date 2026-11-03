@@ -1,0 +1,73 @@
+# coradoc-markdown model schema: headings and block-level nodes.
+# Source of truth for generated classes (see Coradoc::Markdown::Schema).
+# Types: string|integer|boolean are scalars; anything else names a model class.
+# `behaviors` names modules in Coradoc::Markdown::Behaviors prepended after load.
+classes:
+  Heading:
+    parent: Base
+    behaviors: [Heading]
+    attributes:
+      level: { type: integer, default: 1 }
+      text: { type: string }
+  Paragraph:
+    parent: Base
+    attributes:
+      text: { type: string }
+      children: { type: Base, collection: true, default: [] }
+  CodeBlock:
+    parent: Base
+    attributes:
+      language: { type: string }
+      code: { type: string }
+  Blockquote:
+    parent: Base
+    attributes:
+      content: { type: string }
+  HorizontalRule:
+    parent: Base
+    attributes:
+      style: { type: string, default: '---' }
+  Admonition:
+    parent: Base
+    behaviors: [Admonition]
+    attributes:
+      admonition_type: { type: string }
+      content: { type: string }
+      title: { type: string }
+      children: { type: Base, collection: true, default: [] }
+  ExampleBlock:
+    parent: Base
+    attributes:
+      content: { type: string }
+      caption: { type: string }
+      children: { type: Base, collection: true, default: [] }
+  OpenBlock:
+    parent: Base
+    attributes:
+      children: { type: Base, collection: true, default: [] }
+  Sidebar:
+    parent: Base
+    attributes:
+      content: { type: string }
+      title: { type: string }
+      children: { type: Base, collection: true, default: [] }
+  Verse:
+    parent: Base
+    attributes:
+      content: { type: string }
+      attribution: { type: string }
+      citetitle: { type: string }
+  Pass:
+    parent: Base
+    attributes:
+      content: { type: string }
+  Literal:
+    parent: Base
+    attributes:
+      content: { type: string }
+  Math:
+    parent: Base
+    behaviors: [Math]
+    attributes:
+      content: { type: string }
+      inline: { type: boolean, default: false }

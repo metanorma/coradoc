@@ -1,0 +1,32 @@
+# Run the coradoc-markdown specs against the classes generated from
+# coradoc-markdown/schemas/*.yml instead of the hand-written models.
+name: markdown-generated
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    paths:
+      - 'coradoc-markdown/**'
+      - 'Gemfile'
+      - '.github/workflows/markdown-generated.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  generated-models:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+
+      - name: Markdown specs on generated classes
+        env:
+          CORADOC_MARKDOWN_GENERATED: '1'
+        run: bundle exec rake spec:coradoc_markdown

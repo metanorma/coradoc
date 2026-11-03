@@ -75,6 +75,10 @@ module Coradoc
     autoload :Literal, 'coradoc/markdown/model/literal'
     autoload :HardLineBreak, 'coradoc/markdown/model/hard_line_break'
 
+    # Declarative schemas + generated classes; hand-written behavior modules
+    autoload :Schema, 'coradoc/markdown/schema'
+    autoload :Behaviors, 'coradoc/markdown/behaviors'
+
     # Serializer
     autoload :Serializer, 'coradoc/markdown/serializer'
 
@@ -197,6 +201,10 @@ module Coradoc
       end
     end
   end
+
+  # Opt-in: replace the hand-written model classes with the ones generated
+  # from coradoc-markdown/schemas/*.yml (see Coradoc::Markdown::Schema).
+  Markdown::Schema.install! if ENV['CORADOC_MARKDOWN_GENERATED'] == '1'
 
   # Register the Markdown format with Coradoc
   register_format(:markdown, Markdown,

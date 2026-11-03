@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
 
   # Include all lib/ files
   spec.files = Dir.chdir(__dir__) do
-    Dir['lib/**/*.rb'] + ['LICENSE.txt']
+    Dir['lib/**/*.rb', 'schemas/*.yml'] + ['LICENSE.txt']
   end
 
   spec.bindir = 'exe'

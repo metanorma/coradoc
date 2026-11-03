@@ -1,0 +1,11 @@
+# coradoc-markdown model schema: tables.
+# Source of truth for generated classes (see Coradoc::Markdown::Schema).
+# Types: string|integer|boolean are scalars; anything else names a model class.
+# `behaviors` names modules in Coradoc::Markdown::Behaviors prepended after load.
+classes:
+  Table:
+    parent: Base
+    attributes:
+      headers: { type: string, collection: true }
+      rows: { type: string, collection: true, default: [] }
+      alignments: { type: string, collection: true }

@@ -7,9 +7,7 @@ module Coradoc
     class Text < Base
       attribute :content, :string
 
-      def to_s
-        content
-      end
+      prepend Behaviors::Text
     end
   end
 end
