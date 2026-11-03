@@ -27,6 +27,10 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
+          # Explicit pin: never resolve the checked-out .ruby-version —
+          # PR branches predating version bumps would fail provisioning
+          # on refreshed runner images (#312).
+          ruby-version: '3.4'
           bundler-cache: true
 
       - name: Prepare RuboCop cache
