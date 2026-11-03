@@ -35,6 +35,7 @@ module Coradoc
   autoload :VERSION, 'coradoc/version'
   autoload :CLI, 'coradoc/cli'
   autoload :Visitor, 'coradoc/visitor'
+  autoload :BindingInflater, 'coradoc/binding_inflater'
   autoload :LinkRewriter, 'coradoc/link_rewriter'
   autoload :RelativePath, 'coradoc/relative_path'
 end
