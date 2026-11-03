@@ -6,10 +6,9 @@ module Coradoc
     # element array that Coradoc::Html.parse produces. Rules
     # self-register into Coradoc::Lint.registry when required.
     module Lint
-      require_relative 'lint/heading_levels'
-      require_relative 'lint/image_alt'
+      require_relative 'lint/registrations'
 
-      RULES = [HeadingLevels, ImageAlt].freeze
+      RULES = Registrations::RULES
 
       RULES.each { |rule| Coradoc::Lint.registry.register(rule) }
     end
