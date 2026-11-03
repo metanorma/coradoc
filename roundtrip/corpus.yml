@@ -1,0 +1,14 @@
+# Fixture corpus for the round-trip harness, as globs relative to the repo root.
+# Set CORADOC_ROUNDTRIP_EXTRA to a directory to add an external corpus
+# (e.g. mn-samples, plateau): *.adoc are checked as asciidoc, *.md and
+# *.markdown as markdown.
+asciidoc:
+  - 'README*.adoc'
+  - 'coradoc*/README.adoc'
+  - 'coradoc/spec/fixtures/**/*.adoc'
+  - 'coradoc-plugin-kotoshu/spec/fixtures/**/*.adoc'
+  - 'examples/**/*.adoc'
+  - 'docs/**/*.adoc'
+markdown:
+  - 'coradoc-markdown/spec/fixtures/**/*.text'
+  - 'BUGREPORT.model-driven/*.md'
