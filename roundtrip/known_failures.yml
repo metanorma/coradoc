@@ -1,0 +1,214 @@
+---
+asciidoc:README.Docker.adoc: 'untriaged: model at $.children[1].children[0].text'
+asciidoc:README.adoc: 'untriaged: model at $.children[1].lines[0]'
+asciidoc:coradoc-docx/README.adoc: 'untriaged: model at $.children[2].children[0].text'
+asciidoc:coradoc-plugin-kotoshu/spec/fixtures/sample.adoc: 'untriaged: model at $.children[1].children[0].text'
+asciidoc:coradoc/spec/fixtures/metanorma_org_posts/2018-08-24-metanorma-wins-stevie-awards.adoc: 'untriaged:
+  model at $.children[1].children[0].text'
+asciidoc:coradoc/spec/fixtures/metanorma_org_posts/2018-12-05-intro-to-metanorma.adoc: 'untriaged:
+  model at $.children[2].children[2].text'
+asciidoc:coradoc/spec/fixtures/metanorma_org_posts/2019-10-08-metanorma-with-latex-support-alpha.adoc: 'untriaged:
+  model at $.children[2].children[0].text'
+asciidoc:coradoc/spec/fixtures/metanorma_org_posts/2024-07-09-metanorma-cli-1.10.2-release.adoc: 'untriaged:
+  model at $.children[1].children[2].children[0].children[1].items[3].children[1]'
+asciidoc:docs/_guides/configuration.adoc: 'untriaged: model at $.children[4].children[0].children[1].children[0].@type'
+asciidoc:docs/_guides/custom-blocks.adoc: 'untriaged: model at $.children[3].children[1].children[2].text'
+asciidoc:docs/_guides/custom-inline.adoc: 'untriaged: model at $.children[3].children[1].children[2].text'
+asciidoc:docs/_guides/schema-system.adoc: 'untriaged: model at $.children[3].children[1].children[0].text'
+asciidoc:docs/_guides/troubleshooting.adoc: 'untriaged: model at $.children[4].children[2].children[0].@type'
+asciidoc:docs/_pages/architecture.adoc: 'untriaged: model at $.children[3].children[2].children[0].children[2].text'
+asciidoc:docs/_pages/getting-started.adoc: 'untriaged: model at $.children[5].children[2].children[1].items[0].children[0].@type'
+asciidoc:docs/_pages/model.adoc: 'untriaged: model at $.children[5].children[1].children[0].@type'
+asciidoc:docs/_pages/parsing.adoc: 'untriaged: model at $.children[4].children[0].children[2].children[0].text'
+asciidoc:docs/_pages/serialization.adoc: 'untriaged: model at $.children[5].children[4].children[0].@type'
+asciidoc:docs/_pages/transformation.adoc: 'untriaged: model at $.children[4].children[1].items[0].children[0].@type'
+asciidoc:docs/_references/api-reference.adoc: 'untriaged: model at $.children[4].children[0].children[2].children[0].text'
+asciidoc:docs/_references/asciidoc-syntax.adoc: 'untriaged: model at $.children[2].children[0].text'
+asciidoc:docs/_references/cli-commands.adoc: 'untriaged: model at $.children[4].children[1].items[0].term'
+asciidoc:docs/_references/coremodel-types.adoc: 'untriaged: timeout at over 20s'
+asciidoc:docs/_references/error-codes.adoc: 'untriaged: model at $.children[3].children[0].title'
+asciidoc:docs/_references/extension-points.adoc: 'untriaged: model at $.children[5].children[0].children[0].@type'
+asciidoc:docs/_references/feature-matrix.adoc: 'untriaged: model at $.children[3].children[0].children[0].text'
+asciidoc:docs/_references/limitations.adoc: 'untriaged: model at $.children[3].children[0].children[0].children[0].@type'
+asciidoc:docs/_references/markdown-serialization-spec.adoc: 'untriaged: model at $.children[1].children[0].children[2].text'
+asciidoc:docs/_references/markdown-syntax.adoc: 'untriaged: model at $.children[2].children[0].text'
+asciidoc:docs/_references/model-classes.adoc: 'untriaged: timeout at over 20s'
+asciidoc:docs/_references/output-formats.adoc: 'untriaged: model at $.children[3].children[0].children[2].children[0].@type'
+asciidoc:docs/_references/ruby-methods.adoc: 'untriaged: model at $.children[3].children[0].children[1].title'
+asciidoc:docs/_tutorials/basic-parsing.adoc: 'untriaged: model at $.children[3].children[0].items[1].children[0].text'
+asciidoc:docs/_tutorials/document-modeling.adoc: 'untriaged: model at $.children[3].children[0].items[0].children[0].text'
+asciidoc:docs/_tutorials/html-conversion.adoc: 'untriaged: model at $.children[3].children[0].items[0].children[0].text'
+asciidoc:docs/_tutorials/round-tripping.adoc: 'untriaged: model at $.children[3].children[0].items[0].children[0].text'
+asciidoc:docs/_tutorials/serialization.adoc: 'untriaged: model at $.children[3].children[0].items[0].children[0].text'
+asciidoc:docs/guides.adoc: 'untriaged: model at $.children[3].children[1].items[0].children[0].@type'
+asciidoc:docs/index.adoc: 'untriaged: model at $.children[2].lines[0]'
+asciidoc:docs/pages.adoc: 'untriaged: model at $.children[3].children[1].items[0].children[0].@type'
+asciidoc:docs/references.adoc: 'untriaged: model at $.children[3].children[1].children[0].items[0].children[0].@type'
+asciidoc:docs/tutorials.adoc: 'untriaged: model at $.children[3].children[1].items[0].children[0].@type'
+asciidoc:edge/admonition: 'untriaged: model at $.children[0].@type'
+asciidoc:edge/attribute-entry: 'untriaged: model at $.children[0].children[0].text'
+asciidoc:edge/definition-list: 'untriaged: model at $.children[0].items[0].term'
+asciidoc:edge/inline-markup: 'untriaged: serialize at /private/tmp/hk-coradoc/coradoc-adoc/lib/coradoc/util/asciidoc.rb:41:in
+  ''escape_characters'''
+asciidoc:edge/link-and-xref: 'untriaged: model at $.children[0].children[2].content'
+asciidoc:examples/README.adoc: 'untriaged: model at $.children[2].children[0].@type'
+asciidoc:examples/documents/article.adoc: 'untriaged: model at $.children[1].@type'
+asciidoc:examples/documents/technical_documentation.adoc: 'untriaged: model at $.children[3].children[0].rows[1].cells[0].children[0].@type'
+markdown:BUGREPORT.model-driven/02-core-type-redundancy.md: 'untriaged: model at $.children[15].content'
+markdown:BUGREPORT.model-driven/03-core-inline-string-typing.md: 'untriaged: model
+  at $.children[12].content'
+markdown:BUGREPORT.model-driven/05-core-builder-format-knowledge.md: 'untriaged: model
+  at $.children[17].content'
+markdown:BUGREPORT.model-driven/07-html-no-model-layer.md: 'untriaged: model at $.children[28].content'
+markdown:BUGREPORT.model-driven/09-adoc-dlist-raw-strings.md: 'untriaged: model at
+  $.children[11].content'
+markdown:BUGREPORT.model-driven/10-coremodel-dlist-string-only.md: 'untriaged: model
+  at $.children[28].content'
+markdown:BUGREPORT.model-driven/11-coremodel-heading-missing-ids.md: 'untriaged: model
+  at $.children[13].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/03_paragraph/indented.text: 'untriaged:
+  model at $.children[4].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/03_paragraph/standalone_image.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/04_header/setext_header.text: 'untriaged:
+  model at $.children[4].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/04_header/with_auto_ids.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/04_header/with_header_links.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/05_blockquote/lazy.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/disable-highlighting.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/guess_lang_css_class.text: 'untriaged:
+  model at $.children[0].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/highlighting-minted-with-opts.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/highlighting-minted.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/highlighting-opts.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/highlighting.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/normal.text: 'untriaged:
+  model at $.children[4].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/rouge/simple.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/whitespace.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/with_ial.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/with_lang_in_fenced_block.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/07_horizontal_rule/normal.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/07_horizontal_rule/sepspaces.text: 'untriaged:
+  model at $.children[1]'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/07_horizontal_rule/septabs.text: 'untriaged:
+  model at $.children[1]'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/08_list/lazy.text: 'untriaged:
+  model at $.children[0].items[2]'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/08_list/list_and_others.text: 'untriaged:
+  model at $.children[9].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/08_list/mixed.text: 'untriaged:
+  model at $.children[15].children[2]'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/08_list/simple_ul.text: 'untriaged:
+  model at $.children[0].items[2]'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/09_html/html_to_native/entity.text: 'untriaged:
+  model at $.children[0].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/11_ial/auto_id_and_ial.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/11_ial/nested.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/11_ial/simple.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/12_extension/comment.text: 'untriaged:
+  model at $.children[1].@type'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/12_extension/ignored.text: 'untriaged:
+  model at $.children[2].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/12_extension/nomarkdown.text: 'untriaged:
+  model at $.children[4].@type'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/12_extension/options.text: 'untriaged:
+  model at $.children[1].@type'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/12_extension/options2.text: 'untriaged:
+  model at $.children[0].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/12_extension/options3.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/13_definition_list/auto_ids.text: 'untriaged:
+  model at $.children[0].items[2]'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/13_definition_list/item_ial.text: 'untriaged:
+  model at $.children[0].items[0].definitions[1]'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/13_definition_list/multiple_terms.text: 'untriaged:
+  model at $.children[0].items[0].definitions[1]'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/13_definition_list/separated_by_eob.text: 'untriaged:
+  model at $.children[0].items[0].definitions[1]'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/13_definition_list/simple.text: 'untriaged:
+  model at $.children[3].items[0].definitions[1]'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/13_definition_list/with_blocks.text: 'untriaged:
+  model at $.children[5].items[0].definitions[1]'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/14_table/escaping.text: 'untriaged:
+  model at $.children[6].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/14_table/simple.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/15_math/no_engine.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/15_math/normal.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/block/16_toc/toc_exclude.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/encoding.text: 'untriaged: parse
+  at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/man/example.text: 'untriaged: parse
+  at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/man/heading-name-description.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/span/01_link/link_defs_with_ial.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/span/02_emphasis/nesting.text: 'untriaged:
+  model at $.children[0].items[0].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/span/02_emphasis/normal.text: 'untriaged:
+  model at $.children[1].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/span/03_codespan/normal.text: 'untriaged:
+  model at $.children[2].children[0].text'
+markdown:coradoc-markdown/spec/fixtures/kramdown/span/04_footnote/backlink_inline.text: 'untriaged:
+  model at $.children[2].children[1]'
+markdown:coradoc-markdown/spec/fixtures/kramdown/span/04_footnote/definitions.text: 'untriaged:
+  model at $.children[4].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/span/04_footnote/markers.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/span/05_html/normal.text: 'untriaged:
+  model at $.children[8].content'
+markdown:coradoc-markdown/spec/fixtures/kramdown/span/abbreviations/abbrev.text: 'untriaged:
+  parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
+  ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
+markdown:coradoc-markdown/spec/fixtures/kramdown/span/text_substitutions/typography.text: 'untriaged:
+  model at $.children[7].content'
+markdown:edge/emphasis-markers: 'untriaged: model at $.children[0].content'
+markdown:edge/nested-unordered: 'untriaged: model at $.children[1].content'

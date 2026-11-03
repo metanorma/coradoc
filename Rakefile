@@ -39,6 +39,27 @@ end
 task spec: 'spec:all'
 task spec_all: 'spec:all'
 
+# --- Round-trip harness (roundtrip/CANONICAL_FORM.md) ---
+
+namespace :roundtrip do
+  desc 'Run the round-trip harness for every format'
+  task(:all) { sh 'bundle exec rspec roundtrip/spec --format progress' }
+
+  { adoc: 'asciidoc', markdown: 'markdown' }.each do |task, format|
+    desc "Run the round-trip harness for #{format}"
+    task(task) { sh({ 'ROUNDTRIP_FORMAT' => format }, 'bundle exec rspec roundtrip/spec --format progress') }
+  end
+
+  desc 'Rewrite roundtrip/known_failures.yml from the current failures'
+  task :baseline do
+    $LOAD_PATH.unshift File.expand_path('roundtrip/lib', __dir__)
+    require 'coradoc/roundtrip'
+    Coradoc::Roundtrip::KnownFailures.write_baseline(Coradoc::Roundtrip::Corpus.cases)
+  end
+end
+
+task roundtrip: 'roundtrip:all'
+
 # --- Build / Clean ---
 
 namespace :build do

@@ -1,0 +1,39 @@
+# Round-trip property harness (roundtrip/CANONICAL_FORM.md): format -> CoreModel -> format
+# for AsciiDoc and Markdown over the fixture corpus. Known failures are tracked in
+# roundtrip/known_failures.yml; any new failure, or a listed case that now passes, fails the job.
+name: roundtrip
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    paths:
+      - 'coradoc/lib/**'
+      - 'coradoc-adoc/lib/**'
+      - 'coradoc-markdown/lib/**'
+      - 'coradoc-markdown/schemas/**'
+      - 'roundtrip/**'
+      - 'Gemfile'
+      - '.github/workflows/roundtrip.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  roundtrip:
+    strategy:
+      fail-fast: false
+      matrix:
+        format: [adoc, markdown]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+
+      - name: Round trip (${{ matrix.format }})
+        run: bundle exec rake roundtrip:${{ matrix.format }}
