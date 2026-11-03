@@ -81,15 +81,7 @@ module Coradoc
               text.to_s
             end
 
-            # Paragraph
-            rule(paragraph: subtree(:paragraph)) do
-              Model::Paragraph.new(
-                content: Transformer.lines_to_text_elements(paragraph[:lines]),
-                id: paragraph[:id],
-                attributes: paragraph[:attribute_list],
-                title: paragraph[:title]
-              )
-            end
+            # Paragraph is bound: see Bindings::PARAGRAPH.
           end
         end
       end

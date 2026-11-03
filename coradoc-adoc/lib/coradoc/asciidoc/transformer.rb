@@ -10,7 +10,8 @@ module Coradoc
     # is defined in a separate file for maintainability.
     #
     # Rule modules (each autoloaded):
-    # - HeaderRules: Document header, author, revision
+    # - Bindings: rules bound to model classes (header, author, revision);
+    #   see Bindings. Bound rules no longer have a rule module.
     # - InlineRules: Inline formatting (bold, italic, etc.)
     # - TextRules: Text elements and paragraphs
     # - BlockRules: Block elements (example, admonition, etc.)
@@ -22,7 +23,6 @@ module Coradoc
       # Autoload rule modules at the class level.
       # Each rule file reopens this class and defines a module inside it.
       # The file path matches the expected constant path.
-      autoload :HeaderRules, "#{__dir__}/transformer/header_rules"
       autoload :InlineRules, "#{__dir__}/transformer/inline_rules"
       autoload :TextRules, "#{__dir__}/transformer/text_rules"
       autoload :BlockRules, "#{__dir__}/transformer/block_rules"
@@ -36,13 +36,32 @@ module Coradoc
       autoload :SourceLineExtractor, "#{__dir__}/transformer/source_line_extractor"
 
       # Apply all rule modules (triggers autoload)
-      HeaderRules.apply(self)
       InlineRules.apply(self)
       TextRules.apply(self)
       BlockRules.apply(self)
       ListRules.apply(self)
       StructuralRules.apply(self)
       MiscRules.apply(self)
+
+      class << self
+        # Active Coradoc::BindingInflater: bound rules inflate straight to
+        # their model class, everything else takes the rule modules above.
+        # Defaults to the shipped bindings; nil disables them (every rule
+        # takes the hand-written path), which is what the bound-vs-unbound
+        # differential spec compares against.
+        def bindings
+          @bindings_set ? @bindings : Bindings.inflater
+        end
+
+        def with_bindings(inflater)
+          previous = [@bindings_set, @bindings]
+          @bindings_set = true
+          @bindings = inflater
+          yield
+        ensure
+          @bindings_set, @bindings = previous
+        end
+      end
 
       # Helper method for extracting inline content (used by InlineRules)
       def self.extract_inline_content(data)
@@ -235,7 +254,23 @@ module Coradoc
       #   * No Slice in the bindings → SourceLineExtractor returns nil,
       #     no injection (synthetic transformations stay clean).
       def call_on_match(bindings, block)
-        result = super
+        inject_source_line(super, bindings)
+      end
+
+      private
+
+      # Bound rules inflate here: children are already transformed
+      # (depth-first), so a bound node's captures are models/strings and
+      # only the node itself is inflated. Unbound nodes take the rules.
+      def attempt_transformation(node, ctx)
+        inflater = self.class.bindings
+        return super unless inflater&.bound?(node)
+
+        result = inflater.inflate(node) { |unbound| unbound }
+        inject_source_line(result, node)
+      end
+
+      def inject_source_line(result, bindings)
         return result unless result.is_a?(Model::Base)
         return result if result.source_line
 

@@ -52,4 +52,13 @@ RSpec.describe Coradoc::BindingInflater do
     node = { rule: true, child: 'a' }
     expect(described_class.new(bindings: []).inflate(node, &residual)).to eq([:residual, node])
   end
+
+  it 'builds the model from the attributes a via hook returns' do
+    hooked = described_class::Binding.new(
+      keys: [:wrapped], model: rule_model, captures: { wrapped: :wrapped }, defaults: {},
+      via: ->(attributes) { { style: attributes[:wrapped][:inner].upcase } }
+    )
+    result = described_class.new(bindings: [hooked]).inflate({ wrapped: { inner: 'a' } }, &:itself)
+    expect(result).to eq(rule_model.new(style: 'A'))
+  end
 end

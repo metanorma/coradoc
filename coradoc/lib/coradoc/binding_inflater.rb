@@ -21,7 +21,10 @@ module Coradoc
     #   returns it (resolved on first use, for lazily loaded classes)
     # @!attribute captures [Hash{Symbol=>Symbol}] attribute => capture key
     # @!attribute defaults [Hash{Symbol=>Object}] attributes fixed by the rule
-    Binding = Struct.new(:keys, :model, :captures, :defaults, keyword_init: true) do
+    # @!attribute via [#call, nil] optional named hook for a rule's semantic
+    #   step: receives the assigned attributes, returns the attributes the
+    #   model is built from. Pure capture-to-attribute rules need none.
+    Binding = Struct.new(:keys, :model, :captures, :defaults, :via, keyword_init: true) do
       def matches?(node)
         node.is_a?(Hash) && node.keys.sort == keys.sort
       end
@@ -34,6 +37,10 @@ module Coradoc
     def initialize(bindings:)
       @bindings = bindings
     end
+
+    # @return [Array<Binding>] the bindings, for callers that need to know
+    #   which rules are bound (e.g. a corpus guard)
+    attr_reader :bindings
 
     def bound?(node)
       !binding_for(node).nil?
@@ -48,6 +55,7 @@ module Coradoc
 
       attributes = binding.defaults.dup
       binding.captures.each { |attribute, key| attributes[attribute] = inflate_value(node[key], &residual) }
+      attributes = binding.via.call(attributes) if binding.via
       binding.model_class.new(**attributes)
     end
 
