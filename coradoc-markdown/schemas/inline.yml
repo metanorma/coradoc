@@ -54,5 +54,4 @@ classes:
       text: { type: string }
   HardLineBreak:
     parent: Base
-    behaviors: [HardLineBreak]
     attributes: {}

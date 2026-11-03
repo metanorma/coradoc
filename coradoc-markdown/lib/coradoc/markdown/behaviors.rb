@@ -10,7 +10,6 @@ module Coradoc
       autoload :Admonition, 'coradoc/markdown/behaviors/admonition'
       autoload :Document, 'coradoc/markdown/behaviors/document'
       autoload :Extension, 'coradoc/markdown/behaviors/extension'
-      autoload :HardLineBreak, 'coradoc/markdown/behaviors/hard_line_break'
       autoload :Heading, 'coradoc/markdown/behaviors/heading'
       autoload :Math, 'coradoc/markdown/behaviors/math'
       autoload :Text, 'coradoc/markdown/behaviors/text'
