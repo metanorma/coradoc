@@ -116,6 +116,64 @@ module Coradoc
           tree.attrs = attributes[:attrs] if attributes[:attrs]
           tree
         end
+
+        # Inline formatting (bold, italic, highlight, monospace): the
+        # constrained/unconstrained flag arrives as a binding default.
+        def formatting(attributes)
+          { content: Transformer.extract_inline_content(attributes.fetch(:subtree)),
+            unconstrained: attributes.fetch(:unconstrained) }
+        end
+
+        def span(attributes)
+          raw = attributes.fetch(:span)
+          { text: raw[:text], unconstrained: attributes.fetch(:unconstrained), attributes: raw[:attribute_list] }
+        end
+
+        def script(attributes)
+          { content: Transformer.extract_simple_inline_content(attributes.fetch(:script)) }
+        end
+
+        def link(attributes)
+          raw = attributes.fetch(:link)
+          { path: raw[:path].to_s, name: raw[:text]&.to_s }
+        end
+
+        def cross_reference(attributes)
+          raw = attributes.fetch(:xref)
+          { href: raw[:href].to_s, args: raw[:text] ? [raw[:text].to_s] : [] }
+        end
+
+        def inline_image(attributes)
+          raw = attributes.fetch(:inline_image)
+          promoted, residual = Model::Image::AttributeExtractor.call(
+            Transformer::AttributeListNormalizer.coerce(raw[:attribute_list]), Model::Image::InlineImage
+          )
+          { src: raw[:path], attributes: residual, **promoted }
+        end
+
+        # Both passthrough forms carry an opaque payload; `form` records the
+        # syntax so the serializer can round-trip it.
+        def passthrough(attributes)
+          { content: attributes.fetch(:passthrough)[:raw].to_s, form: 'triple' }
+        end
+
+        # Typographic quotes collapse to the single Unicode character at
+        # parse time (shared TypographicQuotes table).
+        def typographic_quote(attributes)
+          { content: Coradoc::AsciiDoc::TypographicQuotes.char_for(attributes.fetch(:pattern)) }
+        end
+
+        # Footnote text arrives as a string or (empty reference) a sequence.
+        def footnote(attributes)
+          raw = attributes.fetch(:footnote)
+          text = raw.is_a?(Array) ? raw.map(&:to_s).join : raw.to_s
+          attributes.key?(:id) ? { text:, id: attributes[:id].to_s } : { text: }
+        end
+
+        def stem(attributes)
+          raw = attributes.fetch(:stem)
+          { type: raw[:stem_type], content: raw[:content] }
+        end
       end
 
       HEADER = Binding.new(
@@ -196,11 +254,81 @@ module Coradoc
         via: Hooks.method(:definition_list)
       )
 
+      # Inline formatting variants sharing one rule shape: constrained and
+      # unconstrained forms of the same model class. `span` carries
+      # `text:` + `attributes:` rather than `content:`, so it is bound apart.
+      FORMATTING_VARIANTS = [
+        %i[bold Bold], %i[italic Italic], %i[highlight Highlight], %i[monospace Monospace]
+      ].freeze
+
+      FORMATTING = FORMATTING_VARIANTS.flat_map do |prefix, class_name|
+        [[:"#{prefix}_constrained", false], [:"#{prefix}_unconstrained", true]].map do |key, unconstrained|
+          Binding.new(keys: [key], model: -> { Model::Inline.const_get(class_name) }, captures: { subtree: key },
+                      defaults: { unconstrained: }, via: Hooks.method(:formatting))
+        end
+      end.freeze
+
+      SPAN = [[:span_constrained, false], [:span_unconstrained, true]].map do |key, unconstrained|
+        Binding.new(keys: [key], model: -> { Model::Inline::Span }, captures: { span: key },
+                    defaults: { unconstrained: }, via: Hooks.method(:span))
+      end.freeze
+
+      SUPERSCRIPT = Binding.new(keys: [:superscript], model: -> { Model::Inline::Superscript },
+                                captures: { script: :superscript }, defaults: {}, via: Hooks.method(:script))
+
+      SUBSCRIPT = Binding.new(keys: [:subscript], model: -> { Model::Inline::Subscript },
+                              captures: { script: :subscript }, defaults: {}, via: Hooks.method(:script))
+
+      LINK = Binding.new(keys: [:link], model: -> { Model::Inline::Link }, captures: { link: :link },
+                         defaults: {}, via: Hooks.method(:link))
+
+      CROSS_REFERENCE = Binding.new(keys: [:cross_reference], model: -> { Model::Inline::CrossReference },
+                                    captures: { xref: :cross_reference }, defaults: {},
+                                    via: Hooks.method(:cross_reference))
+
+      INLINE_IMAGE = Binding.new(keys: [:inline_image], model: -> { Model::Image::InlineImage },
+                                 captures: { inline_image: :inline_image }, defaults: {},
+                                 via: Hooks.method(:inline_image))
+
+      PASSTHROUGH = Binding.new(keys: [:inline_passthrough], model: -> { Model::Inline::Passthrough },
+                                captures: { passthrough: :inline_passthrough }, defaults: {},
+                                via: Hooks.method(:passthrough))
+
+      ATTRIBUTE_REFERENCE = Binding.new(keys: [:attribute_reference], model: -> { Model::Inline::AttributeReference },
+                                        captures: { name: :attribute_reference }, defaults: {})
+
+      TYPOGRAPHIC_QUOTE = Binding.new(keys: [:typographic_quote], model: -> { Model::TextElement },
+                                      captures: { pattern: :typographic_quote }, defaults: {},
+                                      via: Hooks.method(:typographic_quote))
+
+      HARD_LINE_BREAK = Binding.new(keys: [:hard_line_break], model: -> { Model::Inline::HardLineBreak },
+                                    captures: {}, defaults: {})
+
+      TERM = Binding.new(keys: %i[term_type term], model: -> { Model::Term },
+                         captures: { term: :term, type: :term_type }, defaults: { lang: :en })
+
+      FOOTNOTE = Binding.new(keys: [:footnote], model: -> { Model::Inline::Footnote },
+                             captures: { footnote: :footnote }, defaults: {}, via: Hooks.method(:footnote))
+
+      FOOTNOTE_ID = Binding.new(keys: %i[footnote id], model: -> { Model::Inline::Footnote },
+                                captures: { footnote: :footnote, id: :id }, defaults: {},
+                                via: Hooks.method(:footnote))
+
+      HIGHLIGHT = Binding.new(keys: [:highlight], model: -> { Model::Highlight },
+                              captures: { content: :highlight }, defaults: {})
+
+      STEM = Binding.new(keys: [:stem], model: -> { Model::Inline::Stem }, captures: { stem: :stem },
+                         defaults: {}, via: Hooks.method(:stem))
+
+      INLINE = [LINK, CROSS_REFERENCE, INLINE_IMAGE, PASSTHROUGH, ATTRIBUTE_REFERENCE, TYPOGRAPHIC_QUOTE,
+                HARD_LINE_BREAK, TERM, FOOTNOTE, FOOTNOTE_ID, *FORMATTING, *SPAN,
+                SUPERSCRIPT, SUBSCRIPT, HIGHLIGHT, STEM].freeze
+
       # Rules bound so far, in migration order (header -> paragraphs ->
       # lists -> inline).
       ALL = [HEADER, AUTHOR, REVISION, PARAGRAPH,
              LIST_ITEM, LIST, UNORDERED, UNORDERED_ATTRS, ORDERED, ORDERED_ATTRS,
-             DLIST_TERM, DLIST_ITEM, DLIST, DLIST_ATTRS].freeze
+             DLIST_TERM, DLIST_ITEM, DLIST, DLIST_ATTRS, *INLINE].freeze
 
       class << self
         # @return [Coradoc::BindingInflater] the inflater for the bound rules

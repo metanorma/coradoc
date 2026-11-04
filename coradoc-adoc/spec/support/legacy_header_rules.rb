@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'legacy_list_rules'
+require_relative 'legacy_inline_rules'
 
 # Frozen copy of the hand-written header/author/revision/paragraph rules that the
 # M3 bindings retired (header_rules.rb, and the paragraph rule of
@@ -50,6 +51,7 @@ module LegacyHeaderRules
     @transformer ||= Class.new(Coradoc::AsciiDoc::Transformer).tap do |klass|
       apply(klass)
       LegacyListRules.apply(klass)
+      Coradoc::AsciiDoc::Transformer::LegacyInlineRules.apply(klass)
     end
   end
 end

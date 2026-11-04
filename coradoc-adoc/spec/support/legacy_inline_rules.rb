@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 
+# Frozen copy of the hand-written inline rules that the M3 bindings
+# retired (transformer/inline_rules.rb at d9b4bae). The bound-vs-unbound
+# differential applies them to a Transformer subclass as the reference the
+# bindings must match.
 module Coradoc
   module AsciiDoc
     class Transformer < Parsanol::Transform
-      # Module containing inline element transformation rules
-      module InlineRules
+      module LegacyInlineRules
         # Inline formatting variants that share the same rule shape:
         # constrained and unconstrained forms of the same model class.
         # `span` is excluded because it carries `text:` + `attributes:`
@@ -131,10 +134,10 @@ module Coradoc
             end
 
             # Inline formatting rules generated from a single registry.
-            # See InlineRules::FORMATTING_VARIANTS. `span` is special
+            # See FORMATTING_VARIANTS. `span` is special
             # because it carries `text:` + `attributes:` rather than
             # `content:`, so it stays inline below.
-            InlineRules::FORMATTING_VARIANTS.each do |prefix, class_name|
+            LegacyInlineRules::FORMATTING_VARIANTS.each do |prefix, class_name|
               klass = Model::Inline.const_get(class_name)
               constrained_key = :"#{prefix}_constrained"
               unconstrained_key = :"#{prefix}_unconstrained"

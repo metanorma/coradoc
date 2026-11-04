@@ -10,9 +10,8 @@ module Coradoc
     # is defined in a separate file for maintainability.
     #
     # Rule modules (each autoloaded):
-    # - Bindings: rules bound to model classes (header, author, revision, paragraph, lists);
+    # - Bindings: rules bound to model classes (header, author, revision, paragraph, lists, inline);
     #   see Bindings. Bound rules no longer have a rule module.
-    # - InlineRules: Inline formatting (bold, italic, etc.)
     # - TextRules: Text elements and paragraphs
     # - BlockRules: Block elements (example, admonition, etc.)
     # - StructuralRules: Sections, tables, documents
@@ -22,7 +21,6 @@ module Coradoc
       # Autoload rule modules at the class level.
       # Each rule file reopens this class and defines a module inside it.
       # The file path matches the expected constant path.
-      autoload :InlineRules, "#{__dir__}/transformer/inline_rules"
       autoload :TextRules, "#{__dir__}/transformer/text_rules"
       autoload :BlockRules, "#{__dir__}/transformer/block_rules"
       autoload :StructuralRules, "#{__dir__}/transformer/structural_rules"
@@ -34,7 +32,6 @@ module Coradoc
       autoload :SourceLineExtractor, "#{__dir__}/transformer/source_line_extractor"
 
       # Apply all rule modules (triggers autoload)
-      InlineRules.apply(self)
       TextRules.apply(self)
       BlockRules.apply(self)
       StructuralRules.apply(self)
@@ -60,7 +57,7 @@ module Coradoc
         end
       end
 
-      # Helper method for extracting inline content (used by InlineRules)
+      # Helper method for extracting inline content (used by the inline bindings)
       def self.extract_inline_content(data)
         if data.is_a?(Hash) && data.key?(:content)
           data[:content]
