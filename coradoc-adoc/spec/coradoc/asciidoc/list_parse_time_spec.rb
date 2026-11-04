@@ -8,14 +8,24 @@ require 'spec_helper'
 # looks one line deep. These run in a child process under a hard limit
 # because the native parser cannot be interrupted from Ruby.
 RSpec.describe 'List parse time (#308)' do
+  # fork is unavailable on Windows, so the child is a fresh ruby process.
   def parsed_within?(text, seconds)
-    pid = fork do
-      Coradoc::AsciiDoc::Parser::Base.new.parse(text)
-      exit!(0)
-    end
+    script = "require 'bundler/setup'; require 'coradoc'; require 'coradoc/asciidoc'; " \
+             'Coradoc::AsciiDoc::Parser::Base.new.parse($stdin.binmode.read); exit!(0)'
+    reader, writer = IO.pipe
+    pid = Process.spawn(RbConfig.ruby, '-I', File.expand_path('../../../lib', __dir__),
+                        '-e', script, in: reader)
+    reader.close
+    writer.binmode.write(text)
+    writer.close
+    exited_successfully_within?(pid, seconds)
+  end
+
+  def exited_successfully_within?(pid, seconds)
     deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + seconds
     loop do
-      return Process.last_status.success? if Process.waitpid(pid, Process::WNOHANG)
+      _, status = Process.wait2(pid, Process::WNOHANG)
+      return status.success? if status
 
       if Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
         Process.kill('KILL', pid)
