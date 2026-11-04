@@ -38,9 +38,10 @@ RSpec.describe 'Markdown bound-vs-unbound differential (M2 BindingInflater seam)
   end
 
   it 'leaves parsing untouched when no bindings are given' do
+    generated_rule = Coradoc::Markdown::Schema.generated_class('HorizontalRule') # load first: a negative check must not pass by absence
     doc = Coradoc::Markdown.parse("para\n\n---\n")
     expect(blocks_of(doc, Coradoc::Markdown::HorizontalRule).size).to eq(1)
-    expect(blocks_of(doc, Coradoc::Markdown::Generated::HorizontalRule)).to be_empty
+    expect(blocks_of(doc, generated_rule)).to be_empty
   end
 
   it 'routes unbound nodes through the residual transformer' do
