@@ -173,7 +173,10 @@ module Coradoc
 
         def consume_fenced_indent
           dynamic do |_src, ctx|
-            indent = ctx.captures[:fence_indent].to_s.length
+            # A zero-width capture comes back from the native engine as an
+            # empty Array, whose #to_s is "[]" (length 2): read it as 0.
+            captured = ctx.captures[:fence_indent]
+            indent = captured.is_a?(Array) ? 0 : captured.to_s.length
             if indent.positive?
               str(' ').repeat(0, indent)
             else

@@ -21,19 +21,31 @@ module Coradoc
     #   returns it (resolved on first use, for lazily loaded classes)
     # @!attribute captures [Hash{Symbol=>Symbol}] attribute => capture key
     # @!attribute defaults [Hash{Symbol=>Object}] attributes fixed by the rule
-    Binding = Struct.new(:keys, :model, :captures, :defaults, keyword_init: true) do
+    # @!attribute via [#call, nil] optional named hook for a rule's semantic
+    #   step: receives the assigned attributes, returns the attributes the
+    #   model is built from. Pure capture-to-attribute rules need none.
+    #   With `model: nil` the hook's return value IS the result (for rules
+    #   that build a tree, pass a value through, or return plain data).
+    # @!attribute raw [Hash{Symbol=>Symbol}] attribute => capture key, assigned
+    #   as captured: never inflated and never sent to the residual. For hooks
+    #   that read the raw subtree themselves.
+    Binding = Struct.new(:keys, :model, :captures, :defaults, :via, :raw, keyword_init: true) do
       def matches?(node)
         node.is_a?(Hash) && node.keys.sort == keys.sort
       end
 
       def model_class
-        model.is_a?(Class) ? model : model.call
+        model.is_a?(Class) || model.nil? ? model : model.call
       end
     end
 
     def initialize(bindings:)
       @bindings = bindings
     end
+
+    # @return [Array<Binding>] the bindings, for callers that need to know
+    #   which rules are bound (e.g. a corpus guard)
+    attr_reader :bindings
 
     def bound?(node)
       !binding_for(node).nil?
@@ -48,7 +60,9 @@ module Coradoc
 
       attributes = binding.defaults.dup
       binding.captures.each { |attribute, key| attributes[attribute] = inflate_value(node[key], &residual) }
-      binding.model_class.new(**attributes)
+      binding.raw&.each { |attribute, key| attributes[attribute] = node[key] }
+      attributes = binding.via.call(attributes) if binding.via
+      binding.model ? binding.model_class.new(**attributes) : attributes
     end
 
     private

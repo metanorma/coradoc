@@ -22,11 +22,7 @@ RSpec.describe 'coradoc-markdown.parg artifact parity with the Ruby DSL block gr
     [:err, e.class.to_s]
   end
 
-  # The reference is the DSL grammar under the Ruby engine. The
-  # production default (native) drops a fenced block's content
-  # indentation when the fence itself is unindented (a zero-width
-  # `fence_indent` capture leaks a stale span); the artifact, like the
-  # Ruby engine, keeps it — see 'native DSL divergence' below.
+  # The reference is the DSL grammar under the Ruby engine.
   def dsl(input)
     Coradoc::Markdown::Parser::BlockParser.new.parse(input, mode: :ruby)
   end
@@ -64,9 +60,22 @@ RSpec.describe 'coradoc-markdown.parg artifact parity with the Ruby DSL block gr
     end
   end
 
-  describe 'native DSL divergence' do
-    it 'keeps content indentation in an unindented fenced block, unlike the native DSL' do
-      tree = normalize(grammar.parse("~~~\na\n  b\n~~~\n"))
+  describe 'native DSL engine' do
+    # A zero-width `fence_indent` capture used to read back as "[]" under
+    # the native engine, stripping two spaces of content indentation.
+    [
+      "~~~\na\n  b\n~~~\n",
+      "```\n    indented\n```\n",
+      "  ```\n  a\n    b\n  ```\n"
+    ].each do |input|
+      it "keeps fenced content indentation for #{input.inspect}" do
+        native = Coradoc::Markdown::Parser::BlockParser.new.parse(input, mode: :native)
+        expect(normalize(native)).to eq(normalize(grammar.parse(input)))
+      end
+    end
+
+    it 'keeps content indentation in an unindented fenced block' do
+      tree = normalize(Coradoc::Markdown::Parser::BlockParser.new.parse("~~~\na\n  b\n~~~\n", mode: :native))
       expect(tree).to eq([{ code_block: [{ ln: 'a' }, { ln: '  b' }] }])
     end
   end
