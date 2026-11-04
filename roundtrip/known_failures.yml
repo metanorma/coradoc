@@ -54,20 +54,6 @@ asciidoc:edge/link-and-xref: 'untriaged: model at $.children[0].children[2].cont
 asciidoc:examples/README.adoc: 'untriaged: model at $.children[2].children[0].@type'
 asciidoc:examples/documents/article.adoc: 'untriaged: model at $.children[1].@type'
 asciidoc:examples/documents/technical_documentation.adoc: 'untriaged: model at $.children[3].children[0].rows[1].cells[0].children[0].@type'
-markdown:BUGREPORT.model-driven/02-core-type-redundancy.md: 'untriaged: model at $.children[15].content'
-markdown:BUGREPORT.model-driven/03-core-inline-string-typing.md: 'untriaged: model
-  at $.children[12].content'
-markdown:BUGREPORT.model-driven/05-core-builder-format-knowledge.md: 'untriaged: model
-  at $.children[17].content'
-markdown:BUGREPORT.model-driven/07-html-no-model-layer.md: 'untriaged: model at $.children[28].content'
-markdown:BUGREPORT.model-driven/09-adoc-dlist-raw-strings.md: 'untriaged: model at
-  $.children[11].content'
-markdown:BUGREPORT.model-driven/10-coremodel-dlist-string-only.md: 'untriaged: model
-  at $.children[28].content'
-markdown:BUGREPORT.model-driven/11-coremodel-heading-missing-ids.md: 'untriaged: model
-  at $.children[13].content'
-markdown:coradoc-markdown/spec/fixtures/kramdown/block/03_paragraph/indented.text: 'untriaged:
-  model at $.children[4].content'
 markdown:coradoc-markdown/spec/fixtures/kramdown/block/03_paragraph/standalone_image.text: 'untriaged:
   parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
   ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
@@ -85,8 +71,6 @@ markdown:coradoc-markdown/spec/fixtures/kramdown/block/05_blockquote/lazy.text: 
 markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/disable-highlighting.text: 'untriaged:
   parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
   ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
-markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/guess_lang_css_class.text: 'untriaged:
-  model at $.children[0].content'
 markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/highlighting-minted-with-opts.text: 'untriaged:
   parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
   ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
@@ -99,8 +83,6 @@ markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/highlighting
 markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/highlighting.text: 'untriaged:
   parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
   ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
-markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/normal.text: 'untriaged:
-  model at $.children[4].content'
 markdown:coradoc-markdown/spec/fixtures/kramdown/block/06_codeblock/rouge/simple.text: 'untriaged:
   parse at /Users/umerhassan/lutaml/lutaml-model/lib/lutaml/model/serialize/builder.rb:212:in
   ''Lutaml::Model::Serialize::Builder#handle_nested_block'''
@@ -122,8 +104,6 @@ markdown:coradoc-markdown/spec/fixtures/kramdown/block/07_horizontal_rule/septab
   model at $.children[1]'
 markdown:coradoc-markdown/spec/fixtures/kramdown/block/08_list/lazy.text: 'untriaged:
   model at $.children[0].items[2]'
-markdown:coradoc-markdown/spec/fixtures/kramdown/block/08_list/list_and_others.text: 'untriaged:
-  model at $.children[9].content'
 markdown:coradoc-markdown/spec/fixtures/kramdown/block/08_list/mixed.text: 'untriaged:
   model at $.children[15].children[2]'
 markdown:coradoc-markdown/spec/fixtures/kramdown/block/08_list/simple_ul.text: 'untriaged:
@@ -211,4 +191,3 @@ markdown:coradoc-markdown/spec/fixtures/kramdown/span/abbreviations/abbrev.text:
 markdown:coradoc-markdown/spec/fixtures/kramdown/span/text_substitutions/typography.text: 'untriaged:
   model at $.children[7].content'
 markdown:edge/emphasis-markers: 'untriaged: model at $.children[0].content'
-markdown:edge/nested-unordered: 'untriaged: model at $.children[1].content'

@@ -43,6 +43,14 @@ RSpec.describe Coradoc::BindingInflater do
     expect(described_class.new(bindings: [lazy]).inflate({ rule: true }, &residual)).to eq(rule_model.new(style: 'l'))
   end
 
+  it 'assigns raw captures as captured, never inflating or sending them to the residual' do
+    raw = described_class::Binding.new(keys: %i[rule child], model: rule_model, captures: {}, defaults: {},
+                                       raw: { child: :child })
+    subtree = [{ rule: true, child: 'a' }, { other: 1 }]
+    result = described_class.new(bindings: [raw]).inflate({ rule: true, child: subtree }, &residual)
+    expect(result.child).to equal(subtree)
+  end
+
   it 'reports whether a node is bound without instantiating' do
     expect(inflater.bound?({ rule: true, child: 'a' })).to be(true)
     expect(inflater.bound?({ other: 1 })).to be(false)
