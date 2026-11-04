@@ -114,7 +114,13 @@ module Coradoc
       module GrammarBackend
         class << self
           def parse(string, **)
-            TreeMaterializer.convert(artifact.parse('document', string, **))
+            parse_entry('document', string, **)
+          end
+
+          # Parse +string+ from a named artifact entry (document,
+          # text_any, list) and materialize the tree.
+          def parse_entry(entry, string, **)
+            TreeMaterializer.convert(artifact.parse(entry, string, **))
           end
 
           private
