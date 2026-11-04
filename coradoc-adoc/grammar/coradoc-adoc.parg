@@ -28,25 +28,25 @@ grammar CoradocAdoc version "0.2.0" {
   # ---- attribute_list.rb (faithful capture shapes) ----
   named_key = (1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-")) as named_key
 
-  named_value_sq = %x27 (1*(!(%x27) any_char)) %x27
-  named_value_dq = %x22 (1*(!(%x22) any_char)) %x22
-  named_value_noquote = 1*(!(%x5D / %x2C) any_char)
+  named_value_sq = "'" (1*(!("'") any_char)) "'"
+  named_value_dq = "\"" (1*(!("\"") any_char)) "\""
+  named_value_noquote = 1*(!("]" / ",") any_char)
   named_value = ((named_value_sq / named_value_dq / named_value_noquote)) as named_value
 
   named_attribute = ((named_key [space] "=" [space] named_value [space])) as named
 
-  positional_value_sq = %x27 (1*(!(%x27) any_char)) %x27
-  positional_value_dq = %x22 (1*(!(%x22) any_char)) %x22
-  positional_value_unquoted = 1*(!(%x5D / %x2C / %x3D) any_char)
-  positional_attribute = (((positional_value_sq / positional_value_dq / positional_value_unquoted) !(%x3D))) as positional
+  positional_value_sq = "'" (1*(!("'") any_char)) "'"
+  positional_value_dq = "\"" (1*(!("\"") any_char)) "\""
+  positional_value_unquoted = 1*(!("]" / "," / "=") any_char)
+  positional_attribute = (((positional_value_sq / positional_value_dq / positional_value_unquoted) !("="))) as positional
 
-  named_many = ((1*1(named_attribute)) [*(%x2C [space] named_attribute)])
-  positional_one_named_many = ((1*1(positional_attribute)) 1*(%x2C [space] named_attribute))
-  positional_many_named_many = ((1*1(positional_attribute)) 1*(%x2C [space] positional_attribute) 1*(%x2C [space] named_attribute))
-  positional_many = ((1*1(positional_attribute)) [*(%x2C [space] positional_attribute)])
+  named_many = ((1*1(named_attribute)) [*("," [space] named_attribute)])
+  positional_one_named_many = ((1*1(positional_attribute)) 1*("," [space] named_attribute))
+  positional_many_named_many = ((1*1(positional_attribute)) 1*("," [space] positional_attribute) 1*("," [space] named_attribute))
+  positional_many = ((1*1(positional_attribute)) [*("," [space] positional_attribute)])
   positional_zero_or_one = 0*1(positional_attribute)
 
-  attribute_list = (&(%x5B) %x5B !(%x5B) (((((named_many / positional_one_named_many / positional_many_named_many / positional_many / positional_zero_or_one))) as attribute_array)) as attribute_list %x5D)
+  attribute_list = (&("[") "[" !("[") (((((named_many / positional_one_named_many / positional_many_named_many / positional_many / positional_zero_or_one))) as attribute_array)) as attribute_list "]")
 
   # ---- content.rb: element_id / block_header.rb ----
   element_id = ((("[[" (keyword) as id "]]") / ("[#" (keyword) as id "]")) newline)
@@ -54,9 +54,9 @@ grammar CoradocAdoc version "0.2.0" {
   attribute_blocks = (1*((attribute_list newline))) as attribute_list
 
   # ---- block.rb: delimiters + title ----
-  block_delim_run = 4*((%x2A / %x3D / %x5F / %x2B / %x2E / %x2D))
-  block_delimiter = ((block_delim_run / (2%x2D) / (3*%x60)) newline)
-  block_title = (!(block_delimiter) %x2E !(space) (text) as title newline)
+  block_delim_run = 4*(("*" / "=" / "_" / "+" / "." / "-"))
+  block_delimiter = ((block_delim_run / (2"-") / (3*"`")) newline)
+  block_title = (!(block_delimiter) "." !(space) (text) as title newline)
 
   block_header = [(block_title)] [(element_id)] [(attribute_blocks)]
 
@@ -88,7 +88,7 @@ grammar CoradocAdoc version "0.2.0" {
   md_close = (state md_fence [space] newline)
   md_content = (!(md_close) verbatim_line)
   md_break = (empty_line as line_break)
-  markdown_code_block = (block_header ((set md_fence = (3*%x60)) as delimiter md_lang newline (1*(md_content / md_break)) as lines [space] (state md_fence) [space] newline))
+  markdown_code_block = (block_header ((set md_fence = (3*"`")) as delimiter md_lang newline (1*(md_content / md_break)) as lines [space] (state md_fence) [space] newline))
 
   # block_style: 4+ identical fence chars, closes with the exact same run.
   state eq_fence: string
@@ -106,94 +106,94 @@ grammar CoradocAdoc version "0.2.0" {
   dot_content = (!(((state dot_fence) newline)) verbatim_line)
   vbreak = (empty_line as line_break)
 
-  # superseded by depth-unrolled forms: example_block = (block_header ((set eq_fence = (4*%x3D)) as delimiter newline (1*(eq_content / vbreak)) as lines (state eq_fence) newline))
-  source_block = (block_header ((set dash_fence = (4*%x2D)) as delimiter newline (1*(dash_content / vbreak)) as lines (state dash_fence) newline))
-  # superseded by depth-unrolled forms: quote_block = (block_header ((set us_fence = (4*%x5F)) as delimiter newline (1*(us_content / vbreak)) as lines (state us_fence) newline))
-  # superseded by depth-unrolled forms: sidebar_block = (block_header ((set ast_fence = (4*%x2A)) as delimiter newline (1*(ast_content / vbreak)) as lines (state ast_fence) newline))
-  pass_block = (block_header ((set plus_fence = (4*%x2B)) as delimiter newline (1*(plus_content / vbreak)) as lines (state plus_fence) newline))
-  literal_block = (block_header ((set dot_fence = (4*%x2E)) as delimiter newline (1*(dot_content / vbreak)) as lines (state dot_fence) newline))
+  # superseded by depth-unrolled forms: example_block = (block_header ((set eq_fence = (4*"=")) as delimiter newline (1*(eq_content / vbreak)) as lines (state eq_fence) newline))
+  source_block = (block_header ((set dash_fence = (4*"-")) as delimiter newline (1*(dash_content / vbreak)) as lines (state dash_fence) newline))
+  # superseded by depth-unrolled forms: quote_block = (block_header ((set us_fence = (4*"_")) as delimiter newline (1*(us_content / vbreak)) as lines (state us_fence) newline))
+  # superseded by depth-unrolled forms: sidebar_block = (block_header ((set ast_fence = (4*"*")) as delimiter newline (1*(ast_content / vbreak)) as lines (state ast_fence) newline))
+  pass_block = (block_header ((set plus_fence = (4*"+")) as delimiter newline (1*(plus_content / vbreak)) as lines (state plus_fence) newline))
+  literal_block = (block_header ((set dot_fence = (4*".")) as delimiter newline (1*(dot_content / vbreak)) as lines (state dot_fence) newline))
 
   # block_style_exact: open block — EXACTLY 2 dashes
   state open_fence: string
   open_content = (!(((state open_fence) newline)) verbatim_line)
-  # superseded by depth-unrolled forms: open_block = (block_header ((set open_fence = (2%x2D)) as delimiter newline (1*(open_content / vbreak)) as lines (state open_fence) newline))
+  # superseded by depth-unrolled forms: open_block = (block_header ((set open_fence = (2"-")) as delimiter newline (1*(open_content / vbreak)) as lines (state open_fence) newline))
 
   # superseded by depth-unrolled block_3/block_2/block_1
 
   # ---- inline.rb (INLINE_RULE_ORDER is load-bearing) ----
-  typographic_quote = ((%x22 %x60) / (%x60 %x22) / (%x27 %x60) / (%x60 %x27)) as typographic_quote
+  typographic_quote = (("\"" "`") / ("`" "\"") / ("'" "`") / ("`" "'")) as typographic_quote
 
-  attribute_reference = (&(%x7B) %x7B ((1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-"))) as attribute_reference %x7D)
+  attribute_reference = (&("{") "{" ((1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-"))) as attribute_reference "}")
 
   uri_char = (%x41-5A / %x61-7A / %x30-39 / "_" / "." / "-" / ":" / "/" / "&" / "?" / "=" / "+" / "," / "%" / "#" / "~" / ";")
 
-  link_tail = (((1*uri_char)) as path [(%x5B ((1*(!(%x5D) any_char))) as text %x5D)])
+  link_tail = (((1*uri_char)) as path [("[" ((1*(!("]") any_char))) as text "]")])
   link = ((&(("http" / "https" / "ftp")) link_tail) as link / (&("link:") "link:" link_tail) as link)
 
   inline_image = (&("image:") "image:" !(":") ((1*uri_char)) as path [attribute_list]) as inline_image
 
-  inline_passthrough = ((("+++" ((1*(!("+++") !(%x0A) any_char))) as raw "+++")) as inline_passthrough / (&("pass:") "pass:" *(%x41-5A / %x61-7A / %x2B / %x2C) %x5B ((1*(!("]]") !(%x5D / %x0A) any_char))) as raw %x5D) as inline_passthrough)
+  inline_passthrough = ((("+++" ((1*(!("+++") !("\n") any_char))) as raw "+++")) as inline_passthrough / (&("pass:") "pass:" *(%x41-5A / %x61-7A / "+" / ",") "[" ((1*(!("]]") !("]" / "\n") any_char))) as raw "]") as inline_passthrough)
 
-  underline = (attribute_list %x5B ".underline" %x5D as role %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23) as underline
-  small = (attribute_list %x5B ".small" %x5D as role %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23) as small
+  underline = (attribute_list "[" ".underline" "]" as role "#" ((1*(!("#" / "\n") any_char))) as text "#") as underline
+  small = (attribute_list "[" ".small" "]" as role "#" ((1*(!("#" / "\n") any_char))) as text "#") as small
 
-  hard_line_break = (((" +" %x0A) / (%x5C %x0A))) as hard_line_break
+  hard_line_break = (((" +" "\n") / ("\\" "\n"))) as hard_line_break
 
   term_type = ("term" / "alt" / "deprecated" / "domain") as term_type
   stem_type = ("stem" / "latexmath" / "asciimath") as stem_type
 
-  escaped_xref = (%x5C (%x3C %x3C) as text)
+  escaped_xref = ("\\" ("<" "<") as text)
   # \X (X punctuation, minus < for escaped_xref and \ itself)
   # yields the literal X without firing any inline rule (#281)
-  escape_char = (%x5C ((%x21-2f / %x3a-3b / %x3d-40 / %x5b / %x5d-60 / %x7b-7e)) as text)
-  cross_reference = (((%x3C %x3C) ((1*(!((%x2C / %x3E)) any_char)) as href) [((%x2C) ((*(!((%x3E)) any_char)) as text))] (%x3E %x3E)) as cross_reference)
+  escape_char = ("\\" ((%x21-2f / %x3a-3b / %x3d-40 / "[" / %x5d-60 / %x7b-7e)) as text)
+  cross_reference = ((("<" "<") ((1*(!(("," / ">")) any_char)) as href) [((",") ((*(!((">")) any_char)) as text))] (">" ">")) as cross_reference)
 
-  term_inline = (term_type ":[" ((1*(!(%x5D) any_char))) as term %x5D)
-  term_inline2 = (%x5B term_type %x5D %x23 ((1*(!(%x23) any_char))) as term2 %x23)
+  term_inline = (term_type ":[" ((1*(!("]") any_char))) as term "]")
+  term_inline2 = ("[" term_type "]" "#" ((1*(!("#") any_char))) as term2 "#")
 
   macro_kw = ("term" / "alt" / "deprecated" / "domain" / "stem" / "latexmath" / "asciimath")
-  macro_content = 1*((!(macro_kw) !(%x5D) any_char) / (macro_kw %x3A %x5B macro_content %x5D))
-  footnote = ("footnote:" [(keyword) as id] %x5B ((macro_content)) as footnote %x5D)
+  macro_content = 1*((!(macro_kw) !("]") any_char) / (macro_kw ":" "[" macro_content "]"))
+  footnote = ("footnote:" [(keyword) as id] "[" ((macro_content)) as footnote "]")
 
-  stem = (stem_type ":[" ((1*(!(%x5D) any_char))) as content %x5D) as stem
+  stem = (stem_type ":[" ((1*(!("]") any_char))) as content "]") as stem
 
   # constrained/unstrained marks — content keeps Ruby's .as(:text).repeat(1,1)
   # array wrap (1*1) except where Ruby uses a bare .as
-  bold_constrained = ((!< WORD %x2A !(%x2A) (1*1(((1*(!(%x2A / %x0A) any_char))) as text)) %x2A !(%x2A) !(WORD)) !(%x0A %x0A)) as bold_constrained
-  bold_unconstrained = ((%x2A %x2A (1*1(((1*(!(%x2A) any_char))) as text)) %x2A %x2A)) as bold_unconstrained
-  span_constrained = (attribute_list %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23 !(%x23) !(WORD)) as span_constrained
-  span_unconstrained = (attribute_list %x23 %x23 ((1*(!(%x23 / %x0A) any_char))) as text %x23 %x23) as span_unconstrained
-  italic_constrained = ((!< WORD %x5F !(%x5F) (1*1(((1*(!(%x5F / %x0A) any_char))) as text)) %x5F !(%x5F) !(WORD))) as italic_constrained
-  italic_unconstrained = ((%x5F %x5F (1*1(((1*(!(%x5F) any_char))) as text)) %x5F %x5F)) as italic_unconstrained
-  highlight_constrained = ((!< WORD %x23 !(%x23) (1*1(((1*(!(%x23 / %x0A) any_char))) as text)) %x23 !(%x23) !(WORD))) as highlight_constrained
-  highlight_unconstrained = ((%x23 %x23 (1*1(((1*(!(%x23) any_char))) as text)) %x23 %x23)) as highlight_unconstrained
-  monospace_constrained = ((!< WORD %x60 !(%x60) (1*1((1*((!(%x60 / %x0A) any_char) / (%x60 %x60))) as text)) %x60 !(%x60) !(WORD))) as monospace_constrained
-  monospace_unconstrained = ((%x60 %x60 (1*1(((1*(!(%x60) any_char))) as text)) %x60 %x60)) as monospace_unconstrained
-  superscript = (%x5E (1*1(((1*(!(%x5E / %x0A) any_char))) as text)) %x5E) as superscript
-  subscript = (%x7E (1*1(((1*(!(%x7E / %x0A) any_char))) as text)) %x7E) as subscript
+  bold_constrained = ((!< WORD "*" !("*") (1*1(((1*(!("*" / "\n") any_char))) as text)) "*" !("*") !(WORD)) !("\n" "\n")) as bold_constrained
+  bold_unconstrained = (("*" "*" (1*1(((1*(!("*") any_char))) as text)) "*" "*")) as bold_unconstrained
+  span_constrained = (attribute_list "#" ((1*(!("#" / "\n") any_char))) as text "#" !("#") !(WORD)) as span_constrained
+  span_unconstrained = (attribute_list "#" "#" ((1*(!("#" / "\n") any_char))) as text "#" "#") as span_unconstrained
+  italic_constrained = ((!< WORD "_" !("_") (1*1(((1*(!("_" / "\n") any_char))) as text)) "_" !("_") !(WORD))) as italic_constrained
+  italic_unconstrained = (("_" "_" (1*1(((1*(!("_") any_char))) as text)) "_" "_")) as italic_unconstrained
+  highlight_constrained = ((!< WORD "#" !("#") (1*1(((1*(!("#" / "\n") any_char))) as text)) "#" !("#") !(WORD))) as highlight_constrained
+  highlight_unconstrained = (("#" "#" (1*1(((1*(!("#") any_char))) as text)) "#" "#")) as highlight_unconstrained
+  monospace_constrained = ((!< WORD "`" !("`") (1*1((1*((!("`" / "\n") any_char) / ("`" "`"))) as text)) "`" !("`") !(WORD))) as monospace_constrained
+  monospace_unconstrained = (("`" "`" (1*1(((1*(!("`") any_char))) as text)) "`" "`")) as monospace_unconstrained
+  superscript = ("^" (1*1(((1*(!("^" / "\n") any_char))) as text)) "^") as superscript
+  subscript = ("~" (1*1(((1*(!("~" / "\n") any_char))) as text)) "~") as subscript
 
   inline = (typographic_quote / bold_unconstrained / bold_constrained / span_unconstrained / span_constrained / italic_unconstrained / italic_constrained / highlight_unconstrained / highlight_constrained / monospace_unconstrained / monospace_constrained / superscript / subscript / attribute_reference / escaped_xref / escape_char / cross_reference / term_inline / term_inline2 / footnote / stem / link / inline_image / inline_passthrough / underline / small / hard_line_break)
 
   # text.rb/inline.rb text layers
-  inline_chars = ((%x5B / %x2A / %x23 / %x5F / %x7B / %x3C / %x5E / %x7E / %x60 / %x5C) / typographic_quote / "https" / "http" / "link:" / "image:" / "+++" / "pass:" / term_type / "footnote" / stem_type / (%x5C %x3C %x3C) / hard_line_break)
+  inline_chars = (("[" / "*" / "#" / "_" / "{" / "<" / "^" / "~" / "`" / "\\") / typographic_quote / "https" / "http" / "link:" / "image:" / "+++" / "pass:" / term_type / "footnote" / stem_type / ("\\" "<" "<") / hard_line_break)
   text_formatted = (&(inline_chars) inline)
-  text_unformatted = 1*(!("\\" %x3C %x3C) !(inline) !(%x0A) any_char)
+  text_unformatted = 1*(!("\\" "<" "<") !(inline) !("\n") any_char)
   text_any = ((2*((text_formatted / (text_unformatted) as text))) / (1*1(text_formatted)) / text_unformatted)
 
   # ---- paragraph.rb ----
   # list.absent? from the DSL's line_not_text? — ported with the
   # empty-item arm (#139): a bare marker line must not be eaten as a
   # continuation line of the previous item.
-  literal_space = 1*(%x20 / %x09)
-  section_prefix = (%x3D *(%x3D) (!(%x0A) any_char))
-  list_prefix = (((%x2A 1*5(%x2A)) / (%x2E 1*5(%x2E))) " ")
+  literal_space = 1*(" " / "\t")
+  section_prefix = ("=" *("=") (!("\n") any_char))
+  list_prefix = ((("*" 1*5("*")) / ("." 1*5("."))) " ")
   # Any-depth list markers stop continuation text: a nested list
   # (`** b` under `* a`) attaches as `nested`, not continuation.
-  line_not_text = (!(ulist_head_1 / olist_head_1 / dlist_exact) !(ulist_item_head_1) !(ulist_head_2 / olist_head_2) !(ulist_head_3 / olist_head_3) !(ulist_head_4 / olist_head_4) !(ulist_head_5 / olist_head_5) !(list_prefix) !(list_continuation) !((attribute_list newline)) !(block_delimiter) !((%x7C %x3D %x3D %x3D newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
-  line_not_text_h = (!(ulist_head_1 / olist_head_1 / dlist_head) !(ulist_item_head_1) !(ulist_head_2 / olist_head_2) !(ulist_head_3 / olist_head_3) !(ulist_head_4 / olist_head_4) !(ulist_head_5 / olist_head_5) !(list_prefix) !(list_continuation) !((attribute_list newline)) !(block_delimiter) !((%x7C %x3D %x3D %x3D newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
-  asciidoc_char = (%x2A / %x5F / %x3A / %x2B / %x3D / %x2D)
-  asciidoc_char_with_id = (asciidoc_char / (%x5B %x23) / (%x5B %x5B))
-  element_id_inline = ((%x5B %x5B (keyword) as id %x5D %x5D) / (%x5B %x23 (keyword) as id %x5D))
+  line_not_text = (!(ulist_head_1 / olist_head_1 / dlist_exact) !(ulist_item_head_1) !(ulist_head_2 / olist_head_2) !(ulist_head_3 / olist_head_3) !(ulist_head_4 / olist_head_4) !(ulist_head_5 / olist_head_5) !(list_prefix) !(list_continuation) !((attribute_list newline)) !(block_delimiter) !(("|" "=" "=" "=" newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
+  line_not_text_h = (!(ulist_head_1 / olist_head_1 / dlist_head) !(ulist_item_head_1) !(ulist_head_2 / olist_head_2) !(ulist_head_3 / olist_head_3) !(ulist_head_4 / olist_head_4) !(ulist_head_5 / olist_head_5) !(list_prefix) !(list_continuation) !((attribute_list newline)) !(block_delimiter) !(("|" "=" "=" "=" newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
+  asciidoc_char = ("*" / "_" / ":" / "+" / "=" / "-")
+  asciidoc_char_with_id = (asciidoc_char / ("[" "#") / ("[" "["))
+  element_id_inline = (("[" "[" (keyword) as id "]" "]") / ("[" "#" (keyword) as id "]"))
   # paragraph_text_line(0|false|true): guard, text_any, then the
   # three-state newline tail (0 = eof only; false = single; true = many)
   # Ruby's (a.absent? | element_id_inline | line_not_text?) reduces under
@@ -211,26 +211,26 @@ grammar CoradocAdoc version "0.2.0" {
   admonition_line = ((admonition_type as admonition_type) ": " ((1*((text_any as text) (line_ending as line_break))) as content))
 
   # ---- list.rb (nesting levels unrolled 1..5) ----
-  list_continuation = ("+" %x0A)
+  list_continuation = ("+" "\n")
   list_item_separator = (*(comment_line_content / empty_line))
-  ulist_marker_1 = ( ((1%x2A !(%x2A) !("===")) / (%x2D !(%x2D) !(%x30-39))))
-  olist_marker_1 = ( 1%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  ulist_marker_1 = ( ((1"*" !("*") !("===")) / ("-" !("-") !(%x30-39))))
+  olist_marker_1 = ( 1"." !(".") !((*((%x30-39 / "." / "<" / ">" / "^") / "+")) "|"))
   list_marker_1 = (olist_marker_1 / ulist_marker_1)
-  ulist_marker_2 = ([*literal_space] (2%x2A !(%x2A) !("===")))
-  olist_marker_2 = ([*literal_space] 2%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  ulist_marker_2 = ([*literal_space] (2"*" !("*") !("===")))
+  olist_marker_2 = ([*literal_space] 2"." !(".") !((*((%x30-39 / "." / "<" / ">" / "^") / "+")) "|"))
   list_marker_2 = (olist_marker_2 / ulist_marker_2)
-  ulist_marker_3 = ([*literal_space] (3%x2A !(%x2A) !("===")))
-  olist_marker_3 = ([*literal_space] 3%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  ulist_marker_3 = ([*literal_space] (3"*" !("*") !("===")))
+  olist_marker_3 = ([*literal_space] 3"." !(".") !((*((%x30-39 / "." / "<" / ">" / "^") / "+")) "|"))
   list_marker_3 = (olist_marker_3 / ulist_marker_3)
-  ulist_marker_4 = ([*literal_space] (4%x2A !(%x2A) !("===")))
-  olist_marker_4 = ([*literal_space] 4%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  ulist_marker_4 = ([*literal_space] (4"*" !("*") !("===")))
+  olist_marker_4 = ([*literal_space] 4"." !(".") !((*((%x30-39 / "." / "<" / ">" / "^") / "+")) "|"))
   list_marker_4 = (olist_marker_4 / ulist_marker_4)
-  ulist_marker_5 = ([*literal_space] (5%x2A !(%x2A) !("===")))
-  olist_marker_5 = ([*literal_space] 5%x2E !(%x2E) !((*((%x30-39 / %x2E / %x3C / %x3E / %x5E) / %x2B)) "|"))
+  ulist_marker_5 = ([*literal_space] (5"*" !("*") !("===")))
+  olist_marker_5 = ([*literal_space] 5"." !(".") !((*((%x30-39 / "." / "<" / ">" / "^") / "+")) "|"))
   list_marker_5 = (olist_marker_5 / ulist_marker_5)
   inline_lb = (typographic_quote / bold_unconstrained / bold_constrained / span_unconstrained / span_constrained / italic_unconstrained / italic_constrained / highlight_unconstrained / highlight_constrained / monospace_unconstrained / monospace_constrained / superscript / subscript / attribute_reference / escaped_xref / escape_char / cross_reference / term_inline / term_inline2 / footnote / stem / link / inline_image / inline_passthrough / underline / small)
-  list_body_hard_break = ((" +" %x0A) / (%x5C %x0A))
-  list_body_text_unformatted = (1*(!("\\<<") !(inline_lb) !(list_body_hard_break) !(%x0A) any_char))
+  list_body_hard_break = ((" +" "\n") / ("\\" "\n"))
+  list_body_text_unformatted = (1*(!("\\<<") !(inline_lb) !(list_body_hard_break) !("\n") any_char))
   list_body_text_any = (1*(inline_lb / (list_body_text_unformatted as text)))
   list_body_line_ending = (((" +" as hard_line_break) (line_ending as line_break)) / (line_ending as line_break) / !(any_char))
   list_body_text_line = ([*literal_space] (list_body_text_any as text) list_body_line_ending)
@@ -242,18 +242,18 @@ grammar CoradocAdoc version "0.2.0" {
   # the preceding item.
   ulist_item_1 = (empty_ulist_item_1 / ulist_item_1_nonempty)
 
-  empty_ulist_item_1 = (&(ulist_marker_1) (((ulist_marker_1 as marker) !(" [[[") (%x0A as lines)) as list_item))
+  empty_ulist_item_1 = (&(ulist_marker_1) (((ulist_marker_1 as marker) !(" [[[") ("\n" as lines)) as list_item))
 
-  ulist_item_1_nonempty = (&(ulist_marker_1) (((ulist_marker_1 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
-  olist_item_1 = (&(olist_marker_1) (((olist_marker_1 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
-  ulist_item_2 = (&(ulist_marker_2) (((ulist_marker_2 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_3) list_3)) as nested)) as list_item))
-  olist_item_2 = (&(olist_marker_2) (((olist_marker_2 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_3) list_3)) as nested)) as list_item))
-  ulist_item_3 = (&(ulist_marker_3) (((ulist_marker_3 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_4) list_4)) as nested)) as list_item))
-  olist_item_3 = (&(olist_marker_3) (((olist_marker_3 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_4) list_4)) as nested)) as list_item))
-  ulist_item_4 = (&(ulist_marker_4) (((ulist_marker_4 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_5) list_5)) as nested)) as list_item))
-  olist_item_4 = (&(olist_marker_4) (((olist_marker_4 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_5) list_5)) as nested)) as list_item))
-  ulist_item_5 = (&(ulist_marker_5) (((ulist_marker_5 as marker) !(" [[[") !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ) as list_item))
-  olist_item_5 = (&(olist_marker_5) (((olist_marker_5 as marker) !(%x0A) space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ) as list_item))
+  ulist_item_1_nonempty = (&(ulist_marker_1) (((ulist_marker_1 as marker) !(" [[[") !("\n") space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
+  olist_item_1 = (&(olist_marker_1) (((olist_marker_1 as marker) !("\n") space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_2) list_2)) as nested)) as list_item))
+  ulist_item_2 = (&(ulist_marker_2) (((ulist_marker_2 as marker) !(" [[[") !("\n") space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_3) list_3)) as nested)) as list_item))
+  olist_item_2 = (&(olist_marker_2) (((olist_marker_2 as marker) !("\n") space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_3) list_3)) as nested)) as list_item))
+  ulist_item_3 = (&(ulist_marker_3) (((ulist_marker_3 as marker) !(" [[[") !("\n") space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_4) list_4)) as nested)) as list_item))
+  olist_item_3 = (&(olist_marker_3) (((olist_marker_3 as marker) !("\n") space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_4) list_4)) as nested)) as list_item))
+  ulist_item_4 = (&(ulist_marker_4) (((ulist_marker_4 as marker) !(" [[[") !("\n") space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_5) list_5)) as nested)) as list_item))
+  olist_item_4 = (&(olist_marker_4) (((olist_marker_4 as marker) !("\n") space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ((*(&(list_marker_5) list_5)) as nested)) as list_item))
+  ulist_item_5 = (&(ulist_marker_5) (((ulist_marker_5 as marker) !(" [[[") !("\n") space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ) as list_item))
+  olist_item_5 = (&(olist_marker_5) (((olist_marker_5 as marker) !("\n") space ((list_body_text_line list_item_continuation_lines) as lines) [list_item_attached] ) as list_item))
   unordered_list_1 = ([(attribute_list line_ending)] ((1*(list_item_separator ulist_item_1)) as unordered))
   ordered_list_1 = ([(attribute_list line_ending)] ((1*(list_item_separator olist_item_1)) as ordered))
   list_1 = ((unordered_list_1 / ordered_list_1 / definition_list)) as list
@@ -269,9 +269,9 @@ grammar CoradocAdoc version "0.2.0" {
   unordered_list_5 = ([(attribute_list line_ending)] ((1*(list_item_separator ulist_item_5)) as unordered))
   ordered_list_5 = ([(attribute_list line_ending)] ((1*(list_item_separator olist_item_5)) as ordered))
   list_5 = ((unordered_list_5 / ordered_list_5 / definition_list)) as list
-  dlist_delimiter = (((":::::" !(%x3A)) / ("::::" !(%x3A)) / (":::" !(%x3A)) / ("::" !(%x3A)) / ";;") as delimiter)
-  dlist_term = ((([element_id_inline] ((1*(!(dlist_delimiter) !(%x0A) any_char)) as text)) as dlist_term) dlist_delimiter)
-  dlist_definition = ((line_not_text *((%x20 / %x09)) ((list_body_text_line list_item_continuation_lines) as lines)) (*empty_line))
+  dlist_delimiter = (((":::::" !(":")) / ("::::" !(":")) / (":::" !(":")) / ("::" !(":")) / ";;") as delimiter)
+  dlist_term = ((([element_id_inline] ((1*(!(dlist_delimiter) !("\n") any_char)) as text)) as dlist_term) dlist_delimiter)
+  dlist_definition = ((line_not_text *((" " / "\t")) ((list_body_text_line list_item_continuation_lines) as lines)) (*empty_line))
   dlist_item = ((((((1*dlist_term) as terms) line_ending (*empty_line) [dlist_definition]) / (((1*dlist_term) as terms) space dlist_definition)) [list_item_attached] (*(list_continuation &(dlist_item)))) as definition_list_item)
   definition_list = ([(attribute_list line_ending)] ((1*(list_item_separator dlist_item)) as definition_list) !(dlist_item))
 
@@ -285,16 +285,16 @@ grammar CoradocAdoc version "0.2.0" {
   # list ended by a "// x::" comment line; dlist_exact keeps that check by
   # walking the run with line_not_text_h (the head-only guard), so the walk
   # is linear in the run and never recurses into itself.
-  ulist_item_head_1 = (ulist_marker_1 !(" [[[") (%x0A / (!(%x0A) space list_body_text_line)))
-  olist_item_head_1 = (olist_marker_1 !(%x0A) space list_body_text_line)
-  ulist_item_head_2 = (ulist_marker_2 !(" [[[") !(%x0A) space list_body_text_line)
-  olist_item_head_2 = (olist_marker_2 !(%x0A) space list_body_text_line)
-  ulist_item_head_3 = (ulist_marker_3 !(" [[[") !(%x0A) space list_body_text_line)
-  olist_item_head_3 = (olist_marker_3 !(%x0A) space list_body_text_line)
-  ulist_item_head_4 = (ulist_marker_4 !(" [[[") !(%x0A) space list_body_text_line)
-  olist_item_head_4 = (olist_marker_4 !(%x0A) space list_body_text_line)
-  ulist_item_head_5 = (ulist_marker_5 !(" [[[") !(%x0A) space list_body_text_line)
-  olist_item_head_5 = (olist_marker_5 !(%x0A) space list_body_text_line)
+  ulist_item_head_1 = (ulist_marker_1 !(" [[[") ("\n" / (!("\n") space list_body_text_line)))
+  olist_item_head_1 = (olist_marker_1 !("\n") space list_body_text_line)
+  ulist_item_head_2 = (ulist_marker_2 !(" [[[") !("\n") space list_body_text_line)
+  olist_item_head_2 = (olist_marker_2 !("\n") space list_body_text_line)
+  ulist_item_head_3 = (ulist_marker_3 !(" [[[") !("\n") space list_body_text_line)
+  olist_item_head_3 = (olist_marker_3 !("\n") space list_body_text_line)
+  ulist_item_head_4 = (ulist_marker_4 !(" [[[") !("\n") space list_body_text_line)
+  olist_item_head_4 = (olist_marker_4 !("\n") space list_body_text_line)
+  ulist_item_head_5 = (ulist_marker_5 !(" [[[") !("\n") space list_body_text_line)
+  olist_item_head_5 = (olist_marker_5 !("\n") space list_body_text_line)
   ulist_head_1 = ([(attribute_list line_ending)] list_item_separator ulist_item_head_1)
   olist_head_1 = ([(attribute_list line_ending)] list_item_separator olist_item_head_1)
   ulist_head_2 = ([(attribute_list line_ending)] list_item_separator ulist_item_head_2)
@@ -305,51 +305,51 @@ grammar CoradocAdoc version "0.2.0" {
   olist_head_4 = ([(attribute_list line_ending)] list_item_separator olist_item_head_4)
   ulist_head_5 = ([(attribute_list line_ending)] list_item_separator ulist_item_head_5)
   olist_head_5 = ([(attribute_list line_ending)] list_item_separator olist_item_head_5)
-  dlist_item_head = (((1*dlist_term) line_ending) / ((1*dlist_term) space line_not_text_h *((%x20 / %x09)) list_body_text_line))
+  dlist_item_head = (((1*dlist_term) line_ending) / ((1*dlist_term) space line_not_text_h *((" " / "\t")) list_body_text_line))
   dlist_head = ([(attribute_list line_ending)] list_item_separator dlist_item_head)
   list_item_continuation_lines_h = (*(line_not_text_h list_body_text_line))
-  dlist_definition_h = (line_not_text_h *((%x20 / %x09)) (list_body_text_line list_item_continuation_lines_h) (*empty_line))
+  dlist_definition_h = (line_not_text_h *((" " / "\t")) (list_body_text_line list_item_continuation_lines_h) (*empty_line))
   dlist_item_w = ((((1*dlist_term) line_ending (*empty_line) [dlist_definition_h]) / ((1*dlist_term) space dlist_definition_h)) [list_item_attached] (*(list_continuation &(dlist_item_w))))
   dlist_exact = ([(attribute_list line_ending)] (1*(list_item_separator dlist_item_w)) !(dlist_item_head))
 
   # ---- header.rb ----
   word = (1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-"))
   words = (word (*([*" "] word)))
-  email_r = (word %x40 word %x2E word)
-  date_r = (2*4(%x30-39) %x2D 1*2(%x30-39) %x2D 1*2(%x30-39))
-  header_title = (%x3D !(%x3D) [*" "] (text as title) newline)
-  author_r = ((words as first_name) %x2C [*" "] (words as last_name) [*" "] %x3C (email_r as email) %x3E newline)
-  revision_r = (((word [(%x2E word)]) as number) %x2C [*" "] (date_r as date) %x3A [*" "] (words as remark) newline)
+  email_r = (word "@" word "." word)
+  date_r = (2*4(%x30-39) "-" 1*2(%x30-39) "-" 1*2(%x30-39))
+  header_title = ("=" !("=") [*" "] (text as title) newline)
+  author_r = ((words as first_name) "," [*" "] (words as last_name) [*" "] "<" (email_r as email) ">" newline)
+  revision_r = (((word [("." word)]) as number) "," [*" "] (date_r as date) ":" [*" "] (words as remark) newline)
   header = (header_title ([author_r] as author) ([revision_r] as revision) *(newline))
 
   # ---- document_attributes.rb ----
   doc_attr_name = (1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-"))
   doc_attr_value = (text / !(newline_single))
-  document_attribute = (%x3A (doc_attr_name as key) %x3A [*" "] (doc_attr_value as value) (newline_single / !(any_char)))
+  document_attribute = (":" (doc_attr_name as key) ":" [*" "] (doc_attr_value as value) (newline_single / !(any_char)))
   document_attributes = ((1*document_attribute) as document_attributes)
 
   # ---- bibliography.rb ----
   text_line_g = ([element_id_inline] [*literal_space] (text_any as text) ((newline_single as line_break) / !(any_char)))
-  bib_entry = (((!(%x2A) any_char) " [[[" ((1*(! (%x2C / %x5B / %x5D / %x0A) any_char)) as anchor_name) [(%x2C ((1*(! (%x5D / %x0A) any_char)) as document_id))] "]]]" [(((0*1text_line_g) (*text_line_g)) as ref_text)] [((1*newline_single) as line_break)]) as bibliography_entry)
+  bib_entry = (((!("*") any_char) " [[[" ((1*(! ("," / "[" / "]" / "\n") any_char)) as anchor_name) [("," ((1*(! ("]" / "\n") any_char)) as document_id))] "]]]" [(((0*1text_line_g) (*text_line_g)) as ref_text)] [((1*newline_single) as line_break)]) as bibliography_entry)
 
   # ---- text.rb block_image ----
-  attribute_list_macro = (&(%x5B) %x5B !(%x5B) (((named_many / positional_one_named_many / positional_many_named_many / positional_many / positional_zero_or_one) as attribute_array) as attribute_list_macro) %x5D)
+  attribute_list_macro = (&("[") "[" !("[") (((named_many / positional_one_named_many / positional_many_named_many / positional_many / positional_zero_or_one) as attribute_array) as attribute_list_macro) "]")
   block_image = ((block_header "image::" (file_path as path) attribute_list_macro (newline as line_break)) as block_image)
 
   # ---- table.rb (state-driven delimiter) ----
   state tdc: string
   state tdf: string
-  dchar = (%x7C / %x21 / %x2C / %x3A / %x3B)
-  fspec_char = (%x30-39 / %x2E / %x3C / %x3E / "d" / "s" / "e" / "m" / "a" / "l" / "h" / "v" / %x2B / %x5E)
+  dchar = ("|" / "!" / "," / ":" / ";")
+  fspec_char = (%x30-39 / "." / "<" / ">" / "d" / "s" / "e" / "m" / "a" / "l" / "h" / "v" / "+" / "^")
   cell_format_spec = (1*fspec_char)
-  table_start = ((set tdc = (dchar as delim_char)) (set tdf = (2*%x3D)))
+  table_start = ((set tdc = (dchar as delim_char)) (set tdf = (2*"=")))
   table_close = ((state tdc) (state tdf))
   new_row_signal = (newline_single ((state tdc) / (fspec_char (*fspec_char) (state tdc))))
   # \ + a delim char: state-matched chars drop out of the enclosing
   # capture span (#129 nuance), so match the delim class instead —
   # for the active delim it consumes the same pair, and a \ + other-delim
   # pair consumes the same bytes as two single-char iterations
-  escaped_delim = (%x5C dchar)
+  escaped_delim = ("\\" dchar)
   cell_content = (*(!table_close !new_row_signal (escaped_delim / (!((state tdc)) any_char))))
   table_cell = ([*literal_space] ([cell_format_spec] as cell_format) (state tdc) (cell_content as text))
   table_row = (((1*(!table_close !new_row_signal (table_cell as cell))) as cells) newline_single)
@@ -360,13 +360,13 @@ grammar CoradocAdoc version "0.2.0" {
   endline_r = ((newline as line_break) / ((!(any_char)) as line_break))
   section_header = ([(element_id)] [(attribute_blocks)])
 
-  section_title_2 = ((((2*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
-  section_title_3 = ((((3*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
-  section_title_4 = ((((4*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
-  section_title_5 = ((((5*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
-  section_title_6 = ((((6*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
-  section_title_7 = ((((7*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
-  section_title_8 = ((((8*8(%x3D))) as level) !(%x3D) [*" "] (text as text) endline_r)
+  section_title_2 = ((((2*8("="))) as level) !("=") [*" "] (text as text) endline_r)
+  section_title_3 = ((((3*8("="))) as level) !("=") [*" "] (text as text) endline_r)
+  section_title_4 = ((((4*8("="))) as level) !("=") [*" "] (text as text) endline_r)
+  section_title_5 = ((((5*8("="))) as level) !("=") [*" "] (text as text) endline_r)
+  section_title_6 = ((((6*8("="))) as level) !("=") [*" "] (text as text) endline_r)
+  section_title_7 = ((((7*8("="))) as level) !("=") [*" "] (text as text) endline_r)
+  section_title_8 = ((((8*8("="))) as level) !("=") [*" "] (text as text) endline_r)
   contents_r = ((1*(bib_entry / block_image / tag / comment_block / comment_line / include_directive / admonition_line / block_3 / (table as table) / (page_break as page_break) / paragraph / list_1 / (empty_line as line_break))) as contents)
   section_block_2 = (section_header (section_title_2 as title) [(contents_r)])
   section_block_3 = (section_header (section_title_3 as title) [(contents_r)])
@@ -389,28 +389,28 @@ grammar CoradocAdoc version "0.2.0" {
   container_3 = ((table as table) / block_image / block_2 / list_1 / text_line_u / (empty_line as line_break))
   container_2 = ((table as table) / block_image / block_1 / list_1 / text_line_u / (empty_line as line_break))
   container_1 = ((table as table) / block_image / list_1 / text_line_u / (empty_line as line_break))
-  example_block_3 = (block_header ((set eq_fence = (4*%x3D)) as delimiter) newline ((1*(!((state eq_fence) newline) (container_3 / (empty_line as line_break)))) as lines) (state eq_fence) newline)
-  quote_block_3 = (block_header ((set us_fence = (4*%x5F)) as delimiter) newline ((1*(!((state us_fence) newline) (container_3 / (empty_line as line_break)))) as lines) (state us_fence) newline)
-  sidebar_block_3 = (block_header ((set ast_fence = (4*%x2A)) as delimiter) newline ((1*(!((state ast_fence) newline) (container_3 / (empty_line as line_break)))) as lines) (state ast_fence) newline)
-  open_block_3 = (block_header ((set open_fence = (2%x2D)) as delimiter) newline ((1*(!((state open_fence) newline) (container_3 / (empty_line as line_break)))) as lines) (state open_fence) newline)
+  example_block_3 = (block_header ((set eq_fence = (4*"=")) as delimiter) newline ((1*(!((state eq_fence) newline) (container_3 / (empty_line as line_break)))) as lines) (state eq_fence) newline)
+  quote_block_3 = (block_header ((set us_fence = (4*"_")) as delimiter) newline ((1*(!((state us_fence) newline) (container_3 / (empty_line as line_break)))) as lines) (state us_fence) newline)
+  sidebar_block_3 = (block_header ((set ast_fence = (4*"*")) as delimiter) newline ((1*(!((state ast_fence) newline) (container_3 / (empty_line as line_break)))) as lines) (state ast_fence) newline)
+  open_block_3 = (block_header ((set open_fence = (2"-")) as delimiter) newline ((1*(!((state open_fence) newline) (container_3 / (empty_line as line_break)))) as lines) (state open_fence) newline)
   block_3 = ((markdown_code_block / example_block_3 / sidebar_block_3 / source_block / quote_block_3 / pass_block / literal_block / open_cast_3 / open_block_3) as block)
-  example_block_2 = (block_header ((set eq_fence = (4*%x3D)) as delimiter) newline ((1*(!((state eq_fence) newline) (container_2 / (empty_line as line_break)))) as lines) (state eq_fence) newline)
-  quote_block_2 = (block_header ((set us_fence = (4*%x5F)) as delimiter) newline ((1*(!((state us_fence) newline) (container_2 / (empty_line as line_break)))) as lines) (state us_fence) newline)
-  sidebar_block_2 = (block_header ((set ast_fence = (4*%x2A)) as delimiter) newline ((1*(!((state ast_fence) newline) (container_2 / (empty_line as line_break)))) as lines) (state ast_fence) newline)
-  open_block_2 = (block_header ((set open_fence = (2%x2D)) as delimiter) newline ((1*(!((state open_fence) newline) (container_2 / (empty_line as line_break)))) as lines) (state open_fence) newline)
+  example_block_2 = (block_header ((set eq_fence = (4*"=")) as delimiter) newline ((1*(!((state eq_fence) newline) (container_2 / (empty_line as line_break)))) as lines) (state eq_fence) newline)
+  quote_block_2 = (block_header ((set us_fence = (4*"_")) as delimiter) newline ((1*(!((state us_fence) newline) (container_2 / (empty_line as line_break)))) as lines) (state us_fence) newline)
+  sidebar_block_2 = (block_header ((set ast_fence = (4*"*")) as delimiter) newline ((1*(!((state ast_fence) newline) (container_2 / (empty_line as line_break)))) as lines) (state ast_fence) newline)
+  open_block_2 = (block_header ((set open_fence = (2"-")) as delimiter) newline ((1*(!((state open_fence) newline) (container_2 / (empty_line as line_break)))) as lines) (state open_fence) newline)
   block_2 = ((markdown_code_block / example_block_2 / sidebar_block_2 / source_block / quote_block_2 / pass_block / literal_block / open_cast_2 / open_block_2) as block)
-  example_block_1 = (block_header ((set eq_fence = (4*%x3D)) as delimiter) newline ((1*(!((state eq_fence) newline) (container_1 / (empty_line as line_break)))) as lines) (state eq_fence) newline)
-  quote_block_1 = (block_header ((set us_fence = (4*%x5F)) as delimiter) newline ((1*(!((state us_fence) newline) (container_1 / (empty_line as line_break)))) as lines) (state us_fence) newline)
-  sidebar_block_1 = (block_header ((set ast_fence = (4*%x2A)) as delimiter) newline ((1*(!((state ast_fence) newline) (container_1 / (empty_line as line_break)))) as lines) (state ast_fence) newline)
-  open_block_1 = (block_header ((set open_fence = (2%x2D)) as delimiter) newline ((1*(!((state open_fence) newline) (container_1 / (empty_line as line_break)))) as lines) (state open_fence) newline)
+  example_block_1 = (block_header ((set eq_fence = (4*"=")) as delimiter) newline ((1*(!((state eq_fence) newline) (container_1 / (empty_line as line_break)))) as lines) (state eq_fence) newline)
+  quote_block_1 = (block_header ((set us_fence = (4*"_")) as delimiter) newline ((1*(!((state us_fence) newline) (container_1 / (empty_line as line_break)))) as lines) (state us_fence) newline)
+  sidebar_block_1 = (block_header ((set ast_fence = (4*"*")) as delimiter) newline ((1*(!((state ast_fence) newline) (container_1 / (empty_line as line_break)))) as lines) (state ast_fence) newline)
+  open_block_1 = (block_header ((set open_fence = (2"-")) as delimiter) newline ((1*(!((state open_fence) newline) (container_1 / (empty_line as line_break)))) as lines) (state open_fence) newline)
   block_1 = ((markdown_code_block / example_block_1 / sidebar_block_1 / source_block / quote_block_1 / pass_block / literal_block / open_cast_1 / open_block_1) as block)
 
   # ---- block_style_exact's verbatim cast: a [source]/[listing]/
   # ---- [literal] attribute list turns the open block body verbatim
   source_cast_attr = (&(("[" ("source" / "listing" / "literal"))) attribute_blocks)
-  open_cast_3 = ((source_cast_attr) ((set open_fence = (2%x2D)) as delimiter) newline ((1*(!((state open_fence) newline) verbatim_line / (empty_line as line_break))) as lines) (state open_fence) newline)
-  open_cast_2 = ((source_cast_attr) ((set open_fence = (2%x2D)) as delimiter) newline ((1*(!((state open_fence) newline) verbatim_line / (empty_line as line_break))) as lines) (state open_fence) newline)
-  open_cast_1 = ((source_cast_attr) ((set open_fence = (2%x2D)) as delimiter) newline ((1*(!((state open_fence) newline) verbatim_line / (empty_line as line_break))) as lines) (state open_fence) newline)
+  open_cast_3 = ((source_cast_attr) ((set open_fence = (2"-")) as delimiter) newline ((1*(!((state open_fence) newline) verbatim_line / (empty_line as line_break))) as lines) (state open_fence) newline)
+  open_cast_2 = ((source_cast_attr) ((set open_fence = (2"-")) as delimiter) newline ((1*(!((state open_fence) newline) verbatim_line / (empty_line as line_break))) as lines) (state open_fence) newline)
+  open_cast_1 = ((source_cast_attr) ((set open_fence = (2"-")) as delimiter) newline ((1*(!((state open_fence) newline) verbatim_line / (empty_line as line_break))) as lines) (state open_fence) newline)
 
   # ---- base.rb rule(:document) — ported members in Ruby order ----
   # the repetition itself is the capture: parenthesize so `as` binds to
