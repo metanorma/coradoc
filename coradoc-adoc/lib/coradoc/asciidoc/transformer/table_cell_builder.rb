@@ -13,16 +13,6 @@ module Coradoc
       module TableCellBuilder
         module_function
 
-        # Reused parser for cell-content re-parsing. Atoms are memoized
-        # per parser instance and Parsanol's VM program cache is keyed by
-        # atom identity — a fresh parser per cell recompiled the whole
-        # grammar for every cell (tables transformed ~50× slower than
-        # they parsed). Sequential reuse only; parse state lives in the
-        # per-call context, not the parser.
-        def inline_parser
-          @inline_parser ||= Coradoc::AsciiDoc::Parser::Base.new
-        end
-
         # @param format [Hash, String, Object, nil] Cell format from parser
         # @param content [Object] Cell content
         # @return [Model::TableCell]
@@ -75,9 +65,8 @@ module Coradoc
           return parse_block_content(text) if style == 'a'
           return [Model::TextElement.new(content: text.to_s)] if style == 'l'
 
-          parser = inline_parser
           begin
-            ast = Parser::TreeMaterializer.convert(parser.text_any.parse(text.to_s))
+            ast = Parser::GrammarBackend.parse_entry('text_any', text.to_s)
             transformed = Transformer.new.apply(ast)
             content_array = transformed.is_a?(Array) ? transformed : [transformed]
             [Model::TextElement.new(content: content_array)]
@@ -92,7 +81,6 @@ module Coradoc
         def parse_block_content(text)
           return [Model::TextElement.new(content: '')] if text.nil? || text.to_s.strip.empty?
 
-          parser = inline_parser
           text_str = text.to_s
 
           if /^(\*+|-+|\d+\.)/m.match?(text_str)
@@ -100,14 +88,14 @@ module Coradoc
             if list_match
               list_text = list_match[1] + list_match[2]
               begin
-                ast = Parser::TreeMaterializer.convert(parser.list.parse(list_text))
+                ast = Parser::GrammarBackend.parse_entry('list', list_text)
                 transformed = Transformer.new.apply(ast)
 
                 before_list = text_str[0, list_match.begin(1) - 1].strip
                 before_elements = []
                 unless before_list.empty?
                   begin
-                    before_ast = Parser::TreeMaterializer.convert(parser.text_any.parse(before_list))
+                    before_ast = Parser::GrammarBackend.parse_entry('text_any', before_list)
                     before_transformed = Transformer.new.apply(before_ast)
                     before_array = before_transformed.is_a?(Array) ? before_transformed : [before_transformed]
                     before_elements = [Model::TextElement.new(content: before_array)]
@@ -124,7 +112,7 @@ module Coradoc
           end
 
           begin
-            ast = Parser::TreeMaterializer.convert(parser.text_any.parse(text_str))
+            ast = Parser::GrammarBackend.parse_entry('text_any', text_str)
             transformed = Transformer.new.apply(ast)
             content_array = transformed.is_a?(Array) ? transformed : [transformed]
             [Model::TextElement.new(content: content_array)]

@@ -419,7 +419,13 @@ grammar CoradocAdoc version "0.2.0" {
 
   entry document: document
 
-  test {
+  # Entry points for the transformer's table-cell content re-parse
+  # (TableCellBuilder): cell text runs through the compiled artifact
+  # instead of the Ruby-DSL atoms, which cost ~80 us per byte.
+  entry text_any: text_any
+  entry list: list_1
+
+  test document {
     accept "----\ncode\n----"
     accept "----\ncode\n----\n----\nmore\n----"
     accept "------\ncode\n------"
