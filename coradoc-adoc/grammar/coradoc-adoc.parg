@@ -189,7 +189,8 @@ grammar CoradocAdoc version "0.2.0" {
   list_prefix = (((%x2A 1*5(%x2A)) / (%x2E 1*5(%x2E))) " ")
   # Any-depth list markers stop continuation text: a nested list
   # (`** b` under `* a`) attaches as `nested`, not continuation.
-  line_not_text = (!(list_1) !(ulist_item_1) !(list_2) !(list_3) !(list_4) !(list_5) !(list_prefix) !(list_continuation) !((attribute_list newline)) !(block_delimiter) !((%x7C %x3D %x3D %x3D newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
+  line_not_text = (!(ulist_head_1 / olist_head_1 / dlist_exact) !(ulist_item_head_1) !(ulist_head_2 / olist_head_2) !(ulist_head_3 / olist_head_3) !(ulist_head_4 / olist_head_4) !(ulist_head_5 / olist_head_5) !(list_prefix) !(list_continuation) !((attribute_list newline)) !(block_delimiter) !((%x7C %x3D %x3D %x3D newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
+  line_not_text_h = (!(ulist_head_1 / olist_head_1 / dlist_head) !(ulist_item_head_1) !(ulist_head_2 / olist_head_2) !(ulist_head_3 / olist_head_3) !(ulist_head_4 / olist_head_4) !(ulist_head_5 / olist_head_5) !(list_prefix) !(list_continuation) !((attribute_list newline)) !(block_delimiter) !((%x7C %x3D %x3D %x3D newline)) !(element_id) !(comment_line) !(tag) !(section_prefix))
   asciidoc_char = (%x2A / %x5F / %x3A / %x2B / %x3D / %x2D)
   asciidoc_char_with_id = (asciidoc_char / (%x5B %x23) / (%x5B %x5B))
   element_id_inline = ((%x5B %x5B (keyword) as id %x5D %x5D) / (%x5B %x23 (keyword) as id %x5D))
@@ -273,6 +274,43 @@ grammar CoradocAdoc version "0.2.0" {
   dlist_definition = ((line_not_text *((%x20 / %x09)) ((list_body_text_line list_item_continuation_lines) as lines)) (*empty_line))
   dlist_item = ((((((1*dlist_term) as terms) line_ending (*empty_line) [dlist_definition]) / (((1*dlist_term) as terms) space dlist_definition)) [list_item_attached] (*(list_continuation &(dlist_item)))) as definition_list_item)
   definition_list = ([(attribute_list line_ending)] ((1*(list_item_separator dlist_item)) as definition_list) !(dlist_item))
+
+  # Success-only heads of the list rules, for line_not_text. A list rule
+  # matches at a position iff its first item matches, and an item matches
+  # iff its marker/term and first body line do: the continuation lines,
+  # attached blocks and nested lists after that never fail. line_not_text
+  # used the full list rules, so each continuation line re-parsed the rest
+  # of the list (2^n in the item count; coradoc#308). A head is one line
+  # deep. definition_list also ends with !(dlist_item), which rejects a
+  # list ended by a "// x::" comment line; dlist_exact keeps that check by
+  # walking the run with line_not_text_h (the head-only guard), so the walk
+  # is linear in the run and never recurses into itself.
+  ulist_item_head_1 = (ulist_marker_1 !(" [[[") (%x0A / (!(%x0A) space list_body_text_line)))
+  olist_item_head_1 = (olist_marker_1 !(%x0A) space list_body_text_line)
+  ulist_item_head_2 = (ulist_marker_2 !(" [[[") !(%x0A) space list_body_text_line)
+  olist_item_head_2 = (olist_marker_2 !(%x0A) space list_body_text_line)
+  ulist_item_head_3 = (ulist_marker_3 !(" [[[") !(%x0A) space list_body_text_line)
+  olist_item_head_3 = (olist_marker_3 !(%x0A) space list_body_text_line)
+  ulist_item_head_4 = (ulist_marker_4 !(" [[[") !(%x0A) space list_body_text_line)
+  olist_item_head_4 = (olist_marker_4 !(%x0A) space list_body_text_line)
+  ulist_item_head_5 = (ulist_marker_5 !(" [[[") !(%x0A) space list_body_text_line)
+  olist_item_head_5 = (olist_marker_5 !(%x0A) space list_body_text_line)
+  ulist_head_1 = ([(attribute_list line_ending)] list_item_separator ulist_item_head_1)
+  olist_head_1 = ([(attribute_list line_ending)] list_item_separator olist_item_head_1)
+  ulist_head_2 = ([(attribute_list line_ending)] list_item_separator ulist_item_head_2)
+  olist_head_2 = ([(attribute_list line_ending)] list_item_separator olist_item_head_2)
+  ulist_head_3 = ([(attribute_list line_ending)] list_item_separator ulist_item_head_3)
+  olist_head_3 = ([(attribute_list line_ending)] list_item_separator olist_item_head_3)
+  ulist_head_4 = ([(attribute_list line_ending)] list_item_separator ulist_item_head_4)
+  olist_head_4 = ([(attribute_list line_ending)] list_item_separator olist_item_head_4)
+  ulist_head_5 = ([(attribute_list line_ending)] list_item_separator ulist_item_head_5)
+  olist_head_5 = ([(attribute_list line_ending)] list_item_separator olist_item_head_5)
+  dlist_item_head = (((1*dlist_term) line_ending) / ((1*dlist_term) space line_not_text_h *((%x20 / %x09)) list_body_text_line))
+  dlist_head = ([(attribute_list line_ending)] list_item_separator dlist_item_head)
+  list_item_continuation_lines_h = (*(line_not_text_h list_body_text_line))
+  dlist_definition_h = (line_not_text_h *((%x20 / %x09)) (list_body_text_line list_item_continuation_lines_h) (*empty_line))
+  dlist_item_w = ((((1*dlist_term) line_ending (*empty_line) [dlist_definition_h]) / ((1*dlist_term) space dlist_definition_h)) [list_item_attached] (*(list_continuation &(dlist_item_w))))
+  dlist_exact = ([(attribute_list line_ending)] (1*(list_item_separator dlist_item_w)) !(dlist_item_head))
 
   # ---- header.rb ----
   word = (1*(%x41-5A / %x61-7A / %x30-39 / "_" / "-"))
