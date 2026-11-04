@@ -10,12 +10,11 @@ module Coradoc
     # is defined in a separate file for maintainability.
     #
     # Rule modules (each autoloaded):
-    # - Bindings: rules bound to model classes (header, author, revision);
+    # - Bindings: rules bound to model classes (header, author, revision, paragraph, lists);
     #   see Bindings. Bound rules no longer have a rule module.
     # - InlineRules: Inline formatting (bold, italic, etc.)
     # - TextRules: Text elements and paragraphs
     # - BlockRules: Block elements (example, admonition, etc.)
-    # - ListRules: List items and list types
     # - StructuralRules: Sections, tables, documents
     # - MiscRules: Comments, attributes, media elements
     #
@@ -26,7 +25,6 @@ module Coradoc
       autoload :InlineRules, "#{__dir__}/transformer/inline_rules"
       autoload :TextRules, "#{__dir__}/transformer/text_rules"
       autoload :BlockRules, "#{__dir__}/transformer/block_rules"
-      autoload :ListRules, "#{__dir__}/transformer/list_rules"
       autoload :StructuralRules, "#{__dir__}/transformer/structural_rules"
       autoload :MiscRules, "#{__dir__}/transformer/misc_rules"
       autoload :AttributeListNormalizer, "#{__dir__}/transformer/attribute_list_normalizer"
@@ -39,7 +37,6 @@ module Coradoc
       InlineRules.apply(self)
       TextRules.apply(self)
       BlockRules.apply(self)
-      ListRules.apply(self)
       StructuralRules.apply(self)
       MiscRules.apply(self)
 

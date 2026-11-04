@@ -24,13 +24,15 @@ module Coradoc
     # @!attribute via [#call, nil] optional named hook for a rule's semantic
     #   step: receives the assigned attributes, returns the attributes the
     #   model is built from. Pure capture-to-attribute rules need none.
+    #   With `model: nil` the hook's return value IS the result (for rules
+    #   that build a tree, pass a value through, or return plain data).
     Binding = Struct.new(:keys, :model, :captures, :defaults, :via, keyword_init: true) do
       def matches?(node)
         node.is_a?(Hash) && node.keys.sort == keys.sort
       end
 
       def model_class
-        model.is_a?(Class) ? model : model.call
+        model.is_a?(Class) || model.nil? ? model : model.call
       end
     end
 
@@ -56,7 +58,7 @@ module Coradoc
       attributes = binding.defaults.dup
       binding.captures.each { |attribute, key| attributes[attribute] = inflate_value(node[key], &residual) }
       attributes = binding.via.call(attributes) if binding.via
-      binding.model_class.new(**attributes)
+      binding.model ? binding.model_class.new(**attributes) : attributes
     end
 
     private

@@ -45,14 +45,39 @@ RSpec.describe 'AsciiDoc bound-vs-unbound differential (M3 binding seam)' do
     "= Title\nJane, Doe <jane@example.org>\n\nbody\n",
     "= Title\n1.0, 2026-01-01: first\n\nbody\n",
     "= Title\nJane, Doe <jane@example.org>\n1.0, 2026-01-01: first\n\n== Section\n\nText.\n",
-    "[[hid]]\n= Title With Anchor\n\nbody\n"
+    "[[hid]]\n= Title With Anchor\n\nbody\n",
+    "* a\n* b\n** nested\n",
+    "[%reversed]\n. one\n. two\n",
+    "[square]\n* x\n",
+    "term1::\nterm2:: shared\n\nouter:: o\ninner::: i\n",
+    "[%key]\nterm:: def\n+\nattached\n",
+    "* item\n+\nattached para\n"
   ]
 
-  it 'binds header, author, revision and paragraph, with no rule module left for the header' do
+  it 'binds header, author, revision, paragraph and lists, with their rule modules retired' do
     expect(Coradoc::AsciiDoc::Bindings::ALL.map(&:keys)).to contain_exactly(
-      [:header], %i[first_name last_name email], %i[number date remark], [:paragraph]
+      [:header], %i[first_name last_name email], %i[number date remark], [:paragraph],
+      [:list_item], [:list], [:unordered], %i[attribute_list unordered], [:ordered], %i[attribute_list ordered],
+      %i[dlist_term delimiter], [:definition_list_item], [:definition_list], %i[attribute_list definition_list]
     )
-    expect(Coradoc::AsciiDoc::Transformer.const_defined?(:HeaderRules, false)).to be(false)
+    %i[HeaderRules ListRules].each do |retired|
+      expect(Coradoc::AsciiDoc::Transformer.const_defined?(retired, false)).to be(false)
+    end
+  end
+
+  it 'builds ordered, unordered and definition lists through the inflater' do
+    doc = bound("* a\n** nested\n\n. one\n. two\n\nterm:: def\n")
+    kinds = doc.sections.map(&:class)
+    expect(kinds).to eq([Coradoc::AsciiDoc::Model::List::Unordered, Coradoc::AsciiDoc::Model::List::Ordered,
+                         Coradoc::AsciiDoc::Model::List::Definition])
+    expect(doc.sections.first.items.first.nested).to be_a(Coradoc::AsciiDoc::Model::List::Unordered)
+  end
+
+  it 'exercises each bound list rule over the corpus (guards against a vacuous run)' do
+    trees = (corpus + inline).map { |input| Coradoc::AsciiDoc::Parser::Base.parse(input) }
+    %i[list_item unordered ordered definition_list definition_list_item dlist_term].each do |key|
+      expect(trees.count { |tree| contains_key?(tree, key) }).to be >= 1, "no corpus entry exercises #{key}"
+    end
   end
 
   it 'builds the header, author and revision through the inflater' do

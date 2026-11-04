@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'legacy_list_rules'
+
 # Frozen copy of the hand-written header/author/revision/paragraph rules that the
 # M3 bindings retired (header_rules.rb, and the paragraph rule of
 # text_rules.rb, at ecf32a2). The bound-vs-unbound differential applies
@@ -43,8 +45,11 @@ module LegacyHeaderRules
     end
   end
 
-  # A Transformer with the legacy rules and no bindings.
+  # A Transformer with every retired rule set and no bindings.
   def self.transformer
-    @transformer ||= Class.new(Coradoc::AsciiDoc::Transformer).tap { |klass| apply(klass) }
+    @transformer ||= Class.new(Coradoc::AsciiDoc::Transformer).tap do |klass|
+      apply(klass)
+      LegacyListRules.apply(klass)
+    end
   end
 end
