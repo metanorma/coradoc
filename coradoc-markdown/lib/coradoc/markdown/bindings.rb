@@ -15,8 +15,9 @@ module Coradoc
     # list items grouped) rather than copied from a capture.
     #
     # The binding machinery proper (codegen-ed bindings, typed capture
-    # assignment) is lutaml-model#1033; these declarations are the data
-    # it will back.
+    # assignment) is lutaml-model#1033. The table itself ships inside the
+    # compiled artifact (grammar/coradoc-markdown.bindings.yml is its
+    # sidecar source), so the inflater needs no side file at runtime.
     module Bindings
       Binding = Coradoc::BindingInflater::Binding
 
@@ -194,14 +195,6 @@ module Coradoc
         end
       end
 
-      # Thematic break: `{hr: true}` -> HorizontalRule(style: '---').
-      THEMATIC_BREAK = Binding.new(
-        keys: [:hr],
-        model: -> { Schema.generated_class('HorizontalRule') },
-        captures: {},
-        defaults: { style: '---' }
-      )
-
       # One entry per rule: the model, its hook, and the raw captures the
       # node carries. `optional` captures may be absent; `ial` rules may
       # carry a trailing inline attribute list (bound as a second key set).
@@ -238,7 +231,9 @@ module Coradoc
       class << self
         # @return [Coradoc::BindingInflater] the inflater for the bound rules
         def inflater
-          @inflater ||= Coradoc::BindingInflater.new(bindings: [THEMATIC_BREAK, *declared_bindings(DECLARATIONS)])
+          @inflater ||= Coradoc::BindingInflater.new(
+            bindings: [*table_bindings, *declared_bindings(DECLARATIONS)]
+          )
         end
 
         # @return [Coradoc::BindingInflater] the inflater for inline nodes
@@ -247,6 +242,15 @@ module Coradoc
         end
 
         private
+
+        # Rules whose attributes are plain captures and defaults (the thematic
+        # break) ship as a table inside the compiled artifact.
+        def table_bindings
+          Coradoc::BindingInflater.from_table(
+            Parser::Grammar.model_bindings,
+            models: ->(name) { Schema.generated_class(name) }
+          ).bindings
+        end
 
         def declared_bindings(declarations)
           declarations.flat_map do |declaration|

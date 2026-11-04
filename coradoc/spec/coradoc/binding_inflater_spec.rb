@@ -61,3 +61,28 @@ RSpec.describe Coradoc::BindingInflater do
     expect(described_class.new(bindings: []).inflate(node, &residual)).to eq([:residual, node])
   end
 end
+
+RSpec.describe Coradoc::BindingInflater, '.from_table' do
+  let(:model) { Struct.new(:style, :child, keyword_init: true) }
+  let(:table) do
+    { 'version' => 1,
+      'rules' => { 'r' => { 'keys' => %w[rule kid], 'model' => 'M', 'captures' => {},
+                            'children' => { 'child' => 'kid' }, 'defaults' => { 'style' => 'x' } } } }
+  end
+  let(:inflater) { described_class.from_table(table, models: ->(name) { { 'M' => model }.fetch(name) }) }
+
+  it 'builds bindings from the embedded table, resolving the model by name' do
+    result = inflater.inflate({ rule: true, kid: { rule: true, kid: 'leaf' } }) { |n| n }
+    expect(result).to eq(model.new(style: 'x', child: model.new(style: 'x', child: 'leaf')))
+  end
+
+  it 'binds nothing for a missing table' do
+    node = { rule: true }
+    expect(described_class.from_table(nil, models: ->(_) {}).inflate(node) { :residual }).to eq(:residual)
+  end
+
+  it 'rejects an unknown table version' do
+    expect { described_class.from_table(table.merge('version' => 2), models: ->(_) {}) }
+      .to raise_error(ArgumentError, /version/)
+  end
+end
