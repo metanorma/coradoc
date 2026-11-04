@@ -49,6 +49,11 @@ module Coradoc
           doc_title = extract_document_title(document, context)
           children = transform_elements(body, context)
 
+          # Footnote definitions ride along as document-level children so
+          # writers can emit [^id]: definition blocks after the body
+          definitions = footnote_definitions(document)
+          children.concat(definitions) if definitions.any?
+
           # If the first child is an H1 matching the doc title, skip the
           # duplicate — the document title already captures it
           if doc_title && children.first.is_a?(Coradoc::CoreModel::StructuralElement) &&
@@ -220,6 +225,17 @@ module Coradoc
           end
         end
 
+        # Footnote entries from the Uniword footnotes part. User notes
+        # only: separator/continuationSeparator entries carry w:type and
+        # no prose, so they never become definitions.
+        def footnote_entries(document)
+          part = document.footnotes
+          return [] unless defined?(Uniword::Wordprocessingml::Footnotes) &&
+                           part.is_a?(Uniword::Wordprocessingml::Footnotes)
+
+          footnote_collection(part).reject(&:type)
+        end
+
         def collect_footnotes(document)
           footnotes = {}
 
@@ -231,20 +247,32 @@ module Coradoc
             end
           end
 
-          if defined?(Uniword::Wordprocessingml::Footnotes) &&
-             document.footnotes.is_a?(Uniword::Wordprocessingml::Footnotes)
-            # uniword >= 1.7 exposes +footnote_entries+ (Footnote
-            # collection); older shapes carried +footnotes+.
-            entries = footnote_collection(document.footnotes)
-            entries.each do |fn|
-              id = fn.id&.to_s
-              next unless id
-
-              footnotes[id] = Array(fn.paragraphs || [])
-            end
+          footnote_entries(document).each do |fn|
+            footnotes[fn.id&.to_s] = Array(fn.paragraphs || [])
           end
 
           footnotes
+        end
+
+        # Build CoreModel::Footnote definitions from the footnotes part.
+        # Content is the entry's paragraph run text (plain text; inline
+        # formatting inside footnotes is out of scope for the reference).
+        def footnote_definitions(document)
+          footnote_entries(document).filter_map do |fn|
+            id = fn.id&.to_s
+            next unless id
+
+            text = footnote_text(fn)
+            next if text.nil? || text.strip.empty?
+
+            CoreModel::Footnote.new(id: id, content: text)
+          end
+        end
+
+        def footnote_text(entry)
+          Array(entry.paragraphs).map do |para|
+            Array(para.runs).map { |r| Array(r.text).map(&:to_s).join }.join
+          end.join("\n")
         end
 
         def extract_document_title(document, context)

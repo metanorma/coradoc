@@ -91,7 +91,8 @@ module Coradoc
 
           FrontmatterCoreProperties.apply(doc, FrontmatterCoreProperties.extract(element))
 
-          transform_children(element.children, doc)
+          footnotes = transform_children(element.children, doc)
+          attach_footnotes(footnotes, doc)
 
           doc.build
         end
@@ -145,14 +146,19 @@ module Coradoc
           elements.map { |e| transform(e) }
         end
 
-        # Helper to transform children into builder calls
+        # Helper to transform children into builder calls. Returns the
+        # CoreModel::Footnote definitions encountered (including ones
+        # nested in sections) so the caller can attach a footnotes part.
         def transform_children(children, builder)
-          return unless children
+          return [] unless children
 
+          footnotes = []
           children.each do |child|
             case child
+            when Coradoc::CoreModel::Footnote
+              footnotes << child
             when Coradoc::CoreModel::StructuralElement
-              add_section_to_builder(child, builder)
+              footnotes.concat(add_section_to_builder(child, builder))
             when Coradoc::CoreModel::AnnotationBlock
               add_annotation_to_builder(child, builder)
             when Coradoc::CoreModel::Block
@@ -165,6 +171,7 @@ module Coradoc
               add_image_to_builder(child, builder)
             end
           end
+          footnotes
         end
 
         def add_section_to_builder(element, builder)
@@ -203,6 +210,8 @@ module Coradoc
                   p << child
                 when Coradoc::CoreModel::InlineElement
                   p << build_inline_text(child)
+                when Coradoc::CoreModel::FootnoteReference
+                  p << build_ooxml_footnote_reference(child)
                 end
               end
             end
@@ -285,6 +294,8 @@ module Coradoc
                 para.runs << run
               when Coradoc::CoreModel::InlineElement
                 para.runs << build_ooxml_run(child)
+              when Coradoc::CoreModel::FootnoteReference
+                para.runs << build_ooxml_footnote_reference(child)
               end
             end
           else
@@ -459,6 +470,29 @@ module Coradoc
           run = Uniword::Wordprocessingml::Run.new
           run.footnote_reference = ref
           run
+        end
+
+        # Write CoreModel::Footnote definitions as a w:footnotes part on
+        # the DocumentRoot. Reference runs carry the core ids verbatim,
+        # keeping w:footnoteReference/@w:id aligned with w:footnote/@w:id.
+        def attach_footnotes(footnotes, builder)
+          return if Array(footnotes).empty?
+
+          part = Uniword::Wordprocessingml::Footnotes.new
+          footnotes.each do |fn|
+            entry = Uniword::Wordprocessingml::Footnote.new(id: fn.id.to_s)
+            entry.paragraphs << footnote_content_paragraph(fn)
+            part.footnote_entries << entry
+          end
+          builder.model.footnotes = part
+        end
+
+        def footnote_content_paragraph(fn)
+          para = Uniword::Wordprocessingml::Paragraph.new
+          run = Uniword::Wordprocessingml::Run.new
+          run.text = Uniword::Wordprocessingml::Text.new(content: fn.content.to_s)
+          para.runs << run
+          para
         end
 
         # Build OOXML footnote content as a paragraph placeholder
