@@ -16,6 +16,14 @@ RSpec.describe Coradoc::BindingInflater do
     expect(result).to eq(rule_model.new(style: 'x', child: 'leaf'))
   end
 
+  it 'returns the hook result as is for a model-less binding' do
+    hook = ->(attrs) { [:tree, attrs[:child]] }
+    modelless = described_class::Binding.new(keys: %i[rule child], model: nil, captures: { child: :child },
+                                             defaults: {}, via: hook)
+    result = described_class.new(bindings: [modelless]).inflate({ rule: true, child: 'leaf' }, &residual)
+    expect(result).to eq([:tree, 'leaf'])
+  end
+
   it 'hands an unbound node to the residual untouched' do
     node = { other: 'v' }
     expect(inflater.inflate(node, &residual)).to eq([:residual, node])
@@ -59,6 +67,15 @@ RSpec.describe Coradoc::BindingInflater do
   it 'falls through everything when no bindings exist' do
     node = { rule: true, child: 'a' }
     expect(described_class.new(bindings: []).inflate(node, &residual)).to eq([:residual, node])
+  end
+
+  it 'builds the model from the attributes a via hook returns' do
+    hooked = described_class::Binding.new(
+      keys: [:wrapped], model: rule_model, captures: { wrapped: :wrapped }, defaults: {},
+      via: ->(attributes) { { style: attributes[:wrapped][:inner].upcase } }
+    )
+    result = described_class.new(bindings: [hooked]).inflate({ wrapped: { inner: 'a' } }, &:itself)
+    expect(result).to eq(rule_model.new(style: 'A'))
   end
 end
 

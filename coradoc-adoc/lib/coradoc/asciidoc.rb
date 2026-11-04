@@ -31,6 +31,7 @@ module Coradoc
     autoload :TypographicQuotes, "#{__dir__}/asciidoc/typographic_quotes"
     autoload :Model, "#{__dir__}/asciidoc/model"
     autoload :Parser, "#{__dir__}/asciidoc/parser"
+    autoload :Bindings, "#{__dir__}/asciidoc/bindings"
     autoload :Transformer, "#{__dir__}/asciidoc/transformer"
     # Registration side effect: loading registers rules into Coradoc::Lint.registry.
     autoload :Lint, "#{__dir__}/asciidoc/lint"

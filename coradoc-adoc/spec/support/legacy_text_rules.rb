@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
+# Frozen copy of the hand-written text rules that the M3 bindings
+# retired (transformer/text_rules.rb at 5c1c689). The bound-vs-unbound
+# differential applies them to a Transformer subclass as the reference the
+# bindings must match.
 module Coradoc
   module AsciiDoc
     class Transformer < Parsanol::Transform
       # Module containing text and paragraph transformation rules
-      module TextRules
+      module LegacyTextRules
         def self.apply(transformer_class)
           transformer_class.class_eval do
             # Text Model
@@ -81,15 +85,7 @@ module Coradoc
               text.to_s
             end
 
-            # Paragraph
-            rule(paragraph: subtree(:paragraph)) do
-              Model::Paragraph.new(
-                content: Transformer.lines_to_text_elements(paragraph[:lines]),
-                id: paragraph[:id],
-                attributes: paragraph[:attribute_list],
-                title: paragraph[:title]
-              )
-            end
+            # Paragraph is bound: see Bindings::PARAGRAPH.
           end
         end
       end

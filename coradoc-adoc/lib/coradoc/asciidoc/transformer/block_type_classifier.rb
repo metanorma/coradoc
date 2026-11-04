@@ -5,7 +5,7 @@ module Coradoc
     class Transformer < Parsanol::Transform
       # Single source of truth for "which delimiter maps to which block model".
       #
-      # The block rule in BlockRules delegates here to convert a parser
+      # The block binding (Bindings::StructureHooks.block) delegates here to convert a parser
       # delimiter string (e.g., `----`, `****`, `--`) into the appropriate
       # Model::Block::* subclass instance. Adding a new block type means
       # appending one entry to DELIMITER_CLASSIFICATIONS — no edits to the
