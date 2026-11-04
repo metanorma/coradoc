@@ -98,9 +98,14 @@ module Coradoc
           Model::Document.from_ast(raw.is_a?(Array) ? raw : [raw])
         end
 
+        # An empty comment (`//` alone) captures no inner hash, only the bare
+        # `//` slice; the frozen legacy rule matched hash captures only, so
+        # that node stayed raw and the document dropped it. Keep that.
         def comment_line(attributes)
           raw = attributes.fetch(:comment_line)
-          { text: raw[:comment_text], line_break: raw[:line_break] }
+          return attributes unless raw.is_a?(Hash)
+
+          Model::CommentLine.new(text: raw[:comment_text], line_break: raw[:line_break])
         end
 
         def comment_block(attributes)

@@ -79,6 +79,7 @@ RSpec.describe 'AsciiDoc bound-vs-unbound differential (M3 binding seam)' do
     ".Cap\n[cols=\"1,2\",options=\"header\"]\n|===\n|H1 |H2\n\n2+^.^a|spanned *bold*\n|===\n",
     "[[tid]]\n|===\n|x\n|===\n",
     "image::pic.png[Alt,100,200]\n\n.Fig\n[[fid]]\nimage::b.png[]\n",
+    "//\n\n// image::images/419.svg[]\n//\ntext\n//",
     "// c1\n// tag::t[]\ntext\n// end::t[]\n////\nblock\n////\n",
     "include::a.adoc[]\n\ninclude::b.adoc[lines=1..2]\n",
     "<<<\n\ntext\n",

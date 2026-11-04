@@ -360,7 +360,7 @@ module Coradoc
       ].freeze
 
       MISC = [
-        bind(%i[comment_line], 'CommentLine', { comment_line: :comment_line },
+        bind(%i[comment_line], nil, { comment_line: :comment_line },
              via: StructureHooks.method(:comment_line)),
         bind(%i[comment_block], 'CommentBlock', { comment_block: :comment_block },
              via: StructureHooks.method(:comment_block)),
