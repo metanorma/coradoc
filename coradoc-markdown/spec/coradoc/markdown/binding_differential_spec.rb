@@ -88,12 +88,33 @@ RSpec.describe 'Markdown bound-vs-legacy differential (BindingInflater vs the fr
     expect(Coradoc::Markdown::Transformer.bindings).to be(inflater)
   end
 
-  it 'routes the stateful rules (ALD definition, IAL reference) through the residual' do
-    input = "{:ref: .note}\n\npara\n\n{:ref}\n"
+  it 'binds the stateful rules (ALD definition, IAL reference) through scoped hooks' do
+    input = "{:ref: .note}\n\npara\n\n{:ref}\n\n{: .fresh}\n"
     expect(comparable(Coradoc::Markdown.parse(input, bindings: inflater)))
       .to eq(comparable(legacy_parse(input)))
-    expect(inflater.bound?({ ald_name: 'ref:', ial: '.note' })).to be(false)
-    expect(inflater.bound?({ ial: 'ref' })).to be(false)
+    expect(inflater.bound?({ ald_name: 'ref:', ial: '.note' })).to be(true)
+    expect(inflater.bound?({ ial: 'ref' })).to be(true)
+  end
+
+  it 'resolves an IAL reference against its own document\'s ALD table only' do
+    ald = { ald_name: 'ref', ial: '.note' }
+    ref = { ial: 'ref' }
+    same = Coradoc::Markdown::Transformer.transform_document([ald, ref])
+    other = Coradoc::Markdown::Transformer.transform_document([ref])
+    expect(same.blocks.first.name).to eq('ref')
+    expect(other.blocks.first.name).to be_nil
+  end
+
+  # The hand-written transformer's standalone-IAL branch shadowed a code
+  # block or block quote that carries an IAL (it returned the bare
+  # attribute list and dropped the block). The bindings attach the IAL.
+  it 'attaches an IAL to a code block and a block quote instead of shadowing them' do
+    code = Coradoc::Markdown::Transformer.transform_element({ code_block: [{ ln: 'x' }], ial: '#a .b' })
+    quote = Coradoc::Markdown::Transformer.transform_element({ block_quote: { p: { ln: 'q' } }, ial: '.c' })
+    expect(code).to be_a(Coradoc::Markdown::CodeBlock)
+    expect(code.id).to eq('a')
+    expect(quote).to be_a(Coradoc::Markdown::Blockquote)
+    expect(quote.classes).to eq(['c'])
   end
 
   it 'reaches bound rules nested in containers' do

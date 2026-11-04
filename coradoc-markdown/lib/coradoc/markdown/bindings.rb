@@ -5,9 +5,9 @@ module Coradoc
     # PARG bindings for the Markdown block grammar: which raw-tree rules
     # inflate directly to schema-generated model classes through
     # Coradoc::BindingInflater. A rule is bound by its exact capture-key
-    # set. Only the stateful rules stay in the residual (Transformer):
-    # ALD definitions (they register in the ALD table) and a standalone
-    # IAL (it resolves against that table). This is the only stage-1 to
+    # set. The stateful rules (an ALD definition registers in the document's
+    # Scope, a standalone IAL resolves against it) are bound too, through
+    # scoped hooks; Transformer holds no rule. This is the only stage-1 to
     # stage-2 path; no per-rule transformer remains.
     #
     # Every rule except the thematic break takes its attributes from the
@@ -23,6 +23,7 @@ module Coradoc
       Binding = Coradoc::BindingInflater::Binding
 
       autoload :Captures, "#{__dir__}/bindings/captures"
+      autoload :Scope, "#{__dir__}/bindings/scope"
 
       # Semantic steps: raw captures in, model attributes out. They read the
       # raw captures through Captures.
@@ -53,13 +54,24 @@ module Coradoc
           { **language, code: Captures.extract_code(attrs[:code_block]), **ial(attrs) }
         end
 
-        def block_quote(attrs)
+        def block_quote(attrs, scope)
           content = attrs[:block_quote]
           nodes = content.is_a?(Array) ? content : [content]
-          text = nodes.map { |node| Transformer.transform_element(node) }.compact.map do |child|
+          text = nodes.map { |node| Transformer.transform_element(node, scope) }.compact.map do |child|
             child.is_a?(Base) && child.class.attributes.key?(:text) ? child.text : child.to_s
           end.join("\n")
           { content: text, **ial(attrs) }
+        end
+
+        # An ALD definition registers in the document scope and yields no block.
+        def ald_definition(attrs, scope)
+          scope.define(attrs[:ald_name].to_s, Captures.parse_ial_content(attrs[:ial].to_s))
+          nil
+        end
+
+        # An IAL on its own line: a registered ALD's attribute list, else a fresh one.
+        def ial_reference(attrs, scope)
+          scope.resolve(attrs[:ial].to_s)
         end
 
         def paragraph(attrs)
@@ -200,8 +212,8 @@ module Coradoc
       # carry a trailing inline attribute list (bound as a second key set).
       DECLARATIONS = [
         { model: 'Heading', via: :heading, raw: %i[heading text], optional: %i[text], ial: true },
-        { model: 'CodeBlock', via: :code_block, raw: %i[code_block info], optional: %i[info] },
-        { model: 'Blockquote', via: :block_quote, raw: %i[block_quote] },
+        { model: 'CodeBlock', via: :code_block, raw: %i[code_block info], optional: %i[info], ial: true },
+        { model: 'Blockquote', via: :block_quote, raw: %i[block_quote], ial: true, scoped: true },
         { model: 'Paragraph', via: :paragraph, raw: %i[p], ial: true },
         { model: 'Paragraph', via: :line, raw: %i[ln] },
         { model: 'List', via: :list, raw: %i[ul] },
@@ -215,7 +227,9 @@ module Coradoc
         { model: 'Extension', via: :extension, raw: %i[extension] },
         { model: 'Extension', via: :extension, raw: %i[ext_name ext_options ext_body], optional: %i[ext_body] },
         { model: 'Math', via: :math, raw: %i[math_content] },
-        { model: 'Text', via: :text, raw: %i[text] }
+        { model: 'Text', via: :text, raw: %i[text] },
+        { model: nil, via: :ald_definition, raw: %i[ald_name ial], scoped: true },
+        { model: nil, via: :ial_reference, raw: %i[ial], scoped: true }
       ].freeze
 
       # Inline rules, reached only through a paragraph's raw lines (the
@@ -279,11 +293,12 @@ module Coradoc
           name = declaration[:model]
           Binding.new(
             keys: keys,
-            model: -> { Bindings.model(name) },
+            model: name && -> { Bindings.model(name) },
             captures: {},
             defaults: {},
             raw: keys.to_h { |key| [key, key] },
-            via: Hooks.method(declaration[:via])
+            via: Hooks.method(declaration[:via]),
+            scoped: declaration[:scoped]
           )
         end
       end
