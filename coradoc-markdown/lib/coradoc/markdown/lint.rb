@@ -6,10 +6,9 @@ module Coradoc
     # the Markdown model tree. Rules self-register into
     # Coradoc::Lint.registry when this file is required.
     module Lint
-      require_relative 'lint/heading_levels'
-      require_relative 'lint/duplicate_headings'
+      require_relative 'lint/registrations'
 
-      RULES = [HeadingLevels, DuplicateHeadings].freeze
+      RULES = Registrations::RULES
 
       RULES.each { |rule| Coradoc::Lint.registry.register(rule) }
     end

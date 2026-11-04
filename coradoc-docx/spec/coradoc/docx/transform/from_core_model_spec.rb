@@ -98,6 +98,51 @@ RSpec.describe Coradoc::Docx::Transform::FromCoreModel do
       end
     end
 
+    context 'with document carrying footnote definitions and references' do
+      def para_texts(para)
+        para.runs.map { |r| Array(r.text).map { |t| t&.content.to_s }.join }
+      end
+
+      let(:core_model) do
+        Coradoc::CoreModel::DocumentElement.new(
+          title: 'Footnoted',
+          children: [
+            Coradoc::CoreModel::Block.new(
+              block_semantic_type: 'paragraph',
+              content: 'Body  end.',
+              children: [
+                Coradoc::CoreModel::TextContent.new(text: 'Body '),
+                Coradoc::CoreModel::FootnoteReference.new(id: '1'),
+                Coradoc::CoreModel::TextContent.new(text: ' end.')
+              ]
+            ),
+            Coradoc::CoreModel::Footnote.new(id: '1', content: 'note body')
+          ]
+        )
+      end
+
+      it 'writes a footnotes part with the definition' do
+        expect(result.footnotes).to be_a(Uniword::Wordprocessingml::Footnotes)
+        entries = result.footnotes.footnote_entries
+        expect(entries.map(&:id)).to eq(%w[1])
+        expect(run_text(entries.first.paragraphs.first.runs.first)).to eq('note body')
+      end
+
+      it 'writes the footnote reference run into the paragraph' do
+        runs = result.body.paragraphs.flat_map(&:runs)
+        refs = runs.select(&:footnote_reference).map { |r| r.footnote_reference.id }
+        expect(refs).to eq(%w[1])
+      end
+
+      it 'keeps the surrounding paragraph text runs' do
+        para = result.body.paragraphs.find do |p|
+          para_texts(p).any? { |t| t.include?('Body') }
+        end
+
+        expect(para_texts(para).join).to eq('Body  end.')
+      end
+    end
+
     context 'with document containing mixed types' do
       let(:core_model) do
         Coradoc::CoreModel::DocumentElement.new(
