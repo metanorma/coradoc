@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
+# Frozen copy of the hand-written structural rules that the M3 bindings
+# retired (transformer/structural_rules.rb at 5c1c689). The bound-vs-unbound
+# differential applies them to a Transformer subclass as the reference the
+# bindings must match.
 module Coradoc
   module AsciiDoc
     class Transformer < Parsanol::Transform
       # Module containing table and structural element transformation rules
-      module StructuralRules
+      module LegacyStructuralRules
         def self.apply(transformer_class)
           transformer_class.class_eval do
             # Table cell with format specification

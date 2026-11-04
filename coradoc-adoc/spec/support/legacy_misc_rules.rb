@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
+# Frozen copy of the hand-written misc rules that the M3 bindings
+# retired (transformer/misc_rules.rb at 5c1c689). The bound-vs-unbound
+# differential applies them to a Transformer subclass as the reference the
+# bindings must match.
 module Coradoc
   module AsciiDoc
     class Transformer < Parsanol::Transform
       # Module containing miscellaneous transformation rules
-      module MiscRules
+      module LegacyMiscRules
         def self.apply(transformer_class)
           transformer_class.class_eval do
             # Comments

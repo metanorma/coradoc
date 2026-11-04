@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'json'
+require 'yaml'
 require_relative '../../support/legacy_header_rules'
 
 RSpec.describe 'AsciiDoc bound-vs-unbound differential (M3 binding seam)' do
@@ -31,6 +32,15 @@ RSpec.describe 'AsciiDoc bound-vs-unbound differential (M3 binding seam)' do
     end
   end
 
+  # Raw parse trees of every input, parsed once for all the corpus guards.
+  def self.corpus_trees(inputs)
+    @corpus_trees ||= inputs.map { |input| Coradoc::AsciiDoc::Parser::Base.parse(input) }
+  end
+
+  def corpus_trees
+    self.class.corpus_trees(all_inputs)
+  end
+
   def contains_key?(node, *keys)
     case node
     when Hash then keys.all? { |k| node.key?(k) } || node.each_value.any? { |v| contains_key?(v, *keys) }
@@ -39,6 +49,10 @@ RSpec.describe 'AsciiDoc bound-vs-unbound differential (M3 binding seam)' do
     end
   end
 
+  roundtrip_root = File.expand_path('../../../..', __dir__)
+  roundtrip = YAML.load_file(File.join(roundtrip_root, 'roundtrip/corpus.yml')).fetch('asciidoc')
+                  .flat_map { |glob| Dir[File.join(roundtrip_root, glob)] }.sort.map { |path| File.read(path) }
+                  .select { |text| text.bytesize <= 6_000 } # the parser is superlinear: keep the run short
   corpus = JSON.parse(File.read(File.expand_path('../../fixtures/parg_corpus.json', __dir__)))
   inline = [
     "= Title\n\nbody\n",
@@ -58,23 +72,59 @@ RSpec.describe 'AsciiDoc bound-vs-unbound differential (M3 binding seam)' do
     "Line one +\nLine two\\\n\ncontinued\n",
     "Fact.footnote:[A note] and footnote:fid[Named] and footnote:fid[]\n",
     "stem:[x^2] and latexmath:[y] and asciimath:[z]\n",
-    "term:[x] and abbr:[y] and index:term[foo]\n"
+    "term:[x] and abbr:[y] and index:term[foo]\n",
+    "NOTE: a note\nmore note\n\nWARNING: careful\n",
+    "[NOTE]\n====\nexample note\n====\n",
+    "|===\n|a |b\n|c |d\n|===\n",
+    ".Cap\n[cols=\"1,2\",options=\"header\"]\n|===\n|H1 |H2\n\n2+^.^a|spanned *bold*\n|===\n",
+    "[[tid]]\n|===\n|x\n|===\n",
+    "image::pic.png[Alt,100,200]\n\n.Fig\n[[fid]]\nimage::b.png[]\n",
+    "// c1\n// tag::t[]\ntext\n// end::t[]\n////\nblock\n////\n",
+    "include::a.adoc[]\n\ninclude::b.adoc[lines=1..2]\n",
+    "<<<\n\ntext\n",
+    ":attr: value\n:other: more\n\nbody {attr}\n",
+    "[[sid]]\n== Section {#x}\n\ntext\n\n=== Sub\n\nmore\n\n== Another\n",
+    "[source,ruby,linenums]\n----\nx = 1\n----\n\n[quote,Author,Source]\n____\nq\n____\n",
+    "Plain *bold*\n\n\n\nafter blanks\n"
   ]
   inline_keys = %i[link cross_reference inline_image inline_passthrough attribute_reference typographic_quote
                    hard_line_break footnote bold_constrained italic_constrained highlight_constrained
                    monospace_constrained bold_unconstrained italic_unconstrained highlight_unconstrained
                    monospace_unconstrained span_constrained span_unconstrained superscript subscript stem]
 
-  it 'binds header, author, revision, paragraph, lists and inline, with their rule modules retired' do
-    expect(Coradoc::AsciiDoc::Bindings::ALL.map(&:keys)).to contain_exactly(
+  it 'binds every grammar rule, with all transformer rule modules retired' do
+    bindings = Coradoc::AsciiDoc::Bindings
+    expect(bindings::ALL.map(&:keys)).to contain_exactly(
       [:header], %i[first_name last_name email], %i[number date remark], [:paragraph],
       [:list_item], [:list], [:unordered], %i[attribute_list unordered], [:ordered], %i[attribute_list ordered],
       %i[dlist_term delimiter], [:definition_list_item], [:definition_list], %i[attribute_list definition_list],
-      *Coradoc::AsciiDoc::Bindings::INLINE.map(&:keys)
+      *bindings::INLINE.map(&:keys), *bindings::TEXT.map(&:keys), *bindings::BLOCK.map(&:keys),
+      *bindings::STRUCTURE.map(&:keys), *bindings::MISC.map(&:keys)
     )
-    %i[HeaderRules ListRules InlineRules].each do |retired|
+    %i[HeaderRules ListRules InlineRules TextRules BlockRules StructuralRules MiscRules].each do |retired|
       expect(Coradoc::AsciiDoc::Transformer.const_defined?(retired, false)).to be(false)
     end
+  end
+
+  # Rules the parser never emits were retired without a binding: no grammar
+  # production names them (see `as(:example)` etc. in parser/), and neither
+  # the adoc suite nor the roundtrip corpus ever matched them.
+  it 'never produces the keys of the retired dead rules over the corpus' do
+    dead = %i[example audio video reviewer_note text_string glossaries bibliography_entry highlight]
+    trees = corpus_trees
+    dead.each do |key|
+      expect(trees.count { |tree| contains_key?(tree, key) }).to eq(0), "#{key} is emitted"
+    end
+  end
+
+  it 'exercises each bound text, block, table and attribute rule over the corpus (guards against a vacuous run)' do
+    trees = corpus_trees
+    %i[text line_break unparsed block admonition_type block_image cell_format cell row cells table section
+       document comment_line comment_block page_break tag named positional attribute_array key
+       document_attributes include].each do |key|
+      expect(trees.count { |tree| contains_key?(tree, key) }).to be >= 1, "no corpus entry exercises #{key}"
+    end
+    expect(trees.count { |tree| contains_key?(tree, :level, :line_break, :text) }).to be >= 1
   end
 
   it 'builds ordered, unordered and definition lists through the inflater' do
@@ -86,14 +136,14 @@ RSpec.describe 'AsciiDoc bound-vs-unbound differential (M3 binding seam)' do
   end
 
   it 'exercises each bound list rule over the corpus (guards against a vacuous run)' do
-    trees = (corpus + inline).map { |input| Coradoc::AsciiDoc::Parser::Base.parse(input) }
+    trees = corpus_trees
     %i[list_item unordered ordered definition_list definition_list_item dlist_term].each do |key|
       expect(trees.count { |tree| contains_key?(tree, key) }).to be >= 1, "no corpus entry exercises #{key}"
     end
   end
 
   it 'exercises each bound inline rule over the corpus (guards against a vacuous run)' do
-    trees = (corpus + inline).map { |input| Coradoc::AsciiDoc::Parser::Base.parse(input) }
+    trees = corpus_trees
     inline_keys.each do |key|
       expect(trees.count { |tree| contains_key?(tree, key) }).to be >= 1, "no corpus entry exercises #{key}"
     end
@@ -115,13 +165,13 @@ RSpec.describe 'AsciiDoc bound-vs-unbound differential (M3 binding seam)' do
   end
 
   it 'exercises the bound header rule over the corpus (guards against a vacuous run)' do
-    hits = (corpus + inline).count do |input|
-      contains_key?(Coradoc::AsciiDoc::Parser::Base.parse(input), :header)
-    end
+    hits = corpus_trees.count { |tree| contains_key?(tree, :header) }
     expect(hits).to be >= 3
   end
 
-  (corpus + inline).each_with_index do |input, index|
+  define_method(:all_inputs) { corpus + inline + roundtrip }
+
+  (corpus + inline + roundtrip).each_with_index do |input, index|
     it "produces identical models (incl. source lines) for corpus entry #{index}" do
       with = bound(input)
       without = unbound(input)

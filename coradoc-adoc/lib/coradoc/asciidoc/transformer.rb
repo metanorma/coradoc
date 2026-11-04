@@ -6,43 +6,23 @@ module Coradoc
   module AsciiDoc
     # Parsanol::Transform subclass that converts AST to AsciiDoc model objects.
     #
-    # This transformer uses a modular rule system where each group of rules
-    # is defined in a separate file for maintainability.
-    #
-    # Rule modules (each autoloaded):
-    # - Bindings: rules bound to model classes (header, author, revision, paragraph, lists, inline);
-    #   see Bindings. Bound rules no longer have a rule module.
-    # - TextRules: Text elements and paragraphs
-    # - BlockRules: Block elements (example, admonition, etc.)
-    # - StructuralRules: Sections, tables, documents
-    # - MiscRules: Comments, attributes, media elements
+    # Every grammar rule is bound to its model class through Bindings (see
+    # there); this class only walks the tree depth-first and hands bound
+    # nodes to the inflater. No Parsanol rule modules remain.
     #
     class Transformer < Parsanol::Transform
-      # Autoload rule modules at the class level.
-      # Each rule file reopens this class and defines a module inside it.
-      # The file path matches the expected constant path.
-      autoload :TextRules, "#{__dir__}/transformer/text_rules"
-      autoload :BlockRules, "#{__dir__}/transformer/block_rules"
-      autoload :StructuralRules, "#{__dir__}/transformer/structural_rules"
-      autoload :MiscRules, "#{__dir__}/transformer/misc_rules"
       autoload :AttributeListNormalizer, "#{__dir__}/transformer/attribute_list_normalizer"
       autoload :BlockTypeClassifier, "#{__dir__}/transformer/block_type_classifier"
       autoload :TableLayout, "#{__dir__}/transformer/table_layout"
       autoload :TableCellBuilder, "#{__dir__}/transformer/table_cell_builder"
       autoload :SourceLineExtractor, "#{__dir__}/transformer/source_line_extractor"
 
-      # Apply all rule modules (triggers autoload)
-      TextRules.apply(self)
-      BlockRules.apply(self)
-      StructuralRules.apply(self)
-      MiscRules.apply(self)
-
       class << self
         # Active Coradoc::BindingInflater: bound rules inflate straight to
-        # their model class, everything else takes the rule modules above.
-        # Defaults to the shipped bindings; nil disables them (every rule
-        # takes the hand-written path), which is what the bound-vs-unbound
-        # differential spec compares against.
+        # their model class, everything else passes through unchanged.
+        # Defaults to the shipped bindings; nil disables them (nothing is
+        # bound; the differential spec's frozen legacy rules take over), which
+        # is what the bound-vs-unbound differential compares against.
         def bindings
           @bindings_set ? @bindings : Bindings.inflater
         end

@@ -2,7 +2,12 @@
 
 require_relative 'legacy_list_rules'
 require_relative 'legacy_inline_rules'
+require_relative 'legacy_text_rules'
+require_relative 'legacy_block_rules'
+require_relative 'legacy_structural_rules'
+require_relative 'legacy_misc_rules'
 
+# Also assembles the frozen text/block/structural/misc references.
 # Frozen copy of the hand-written header/author/revision/paragraph rules that the
 # M3 bindings retired (header_rules.rb, and the paragraph rule of
 # text_rules.rb, at ecf32a2). The bound-vs-unbound differential applies
@@ -52,6 +57,9 @@ module LegacyHeaderRules
       apply(klass)
       LegacyListRules.apply(klass)
       Coradoc::AsciiDoc::Transformer::LegacyInlineRules.apply(klass)
+      %i[LegacyTextRules LegacyBlockRules LegacyStructuralRules LegacyMiscRules].each do |name|
+        Coradoc::AsciiDoc::Transformer.const_get(name).apply(klass)
+      end
     end
   end
 end

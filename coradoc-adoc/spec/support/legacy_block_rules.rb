@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
+# Frozen copy of the hand-written block rules that the M3 bindings
+# retired (transformer/block_rules.rb at 5c1c689). The bound-vs-unbound
+# differential applies them to a Transformer subclass as the reference the
+# bindings must match.
 module Coradoc
   module AsciiDoc
     class Transformer < Parsanol::Transform
       # Module containing block element transformation rules
-      module BlockRules
+      module LegacyBlockRules
         def self.apply(transformer_class)
           transformer_class.class_eval do
             # Generic block

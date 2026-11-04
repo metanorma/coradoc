@@ -13,6 +13,7 @@ module Coradoc
     # that keeps growing is a grammar-shape problem, not a hook problem.
     module Bindings
       autoload :DefinitionListTree, "#{__dir__}/bindings/definition_list_tree"
+      autoload :StructureHooks, "#{__dir__}/bindings/structure_hooks"
 
       Binding = Coradoc::BindingInflater::Binding
 
@@ -314,21 +315,72 @@ module Coradoc
                                 captures: { footnote: :footnote, id: :id }, defaults: {},
                                 via: Hooks.method(:footnote))
 
-      HIGHLIGHT = Binding.new(keys: [:highlight], model: -> { Model::Highlight },
-                              captures: { content: :highlight }, defaults: {})
-
       STEM = Binding.new(keys: [:stem], model: -> { Model::Inline::Stem }, captures: { stem: :stem },
                          defaults: {}, via: Hooks.method(:stem))
 
       INLINE = [LINK, CROSS_REFERENCE, INLINE_IMAGE, PASSTHROUGH, ATTRIBUTE_REFERENCE, TYPOGRAPHIC_QUOTE,
                 HARD_LINE_BREAK, TERM, FOOTNOTE, FOOTNOTE_ID, *FORMATTING, *SPAN,
-                SUPERSCRIPT, SUBSCRIPT, HIGHLIGHT, STEM].freeze
+                SUPERSCRIPT, SUBSCRIPT, STEM].freeze
 
-      # Rules bound so far, in migration order (header -> paragraphs ->
-      # lists -> inline).
+      # Text, blocks, tables, sections and attributes: the rest of the
+      # grammar. Rules the parser never emits (example, audio, video,
+      # reviewer note, glossaries, bibliography entry, text_string, the
+      # id-bearing text variants, the named title) have no binding; the
+      # differential spec guards that the corpus never produces them.
+      def self.bind(keys, model, captures = {}, via: nil, defaults: {})
+        Binding.new(keys:, model: model && -> { Model.const_get(model) }, captures:, defaults:, via:)
+      end
+
+      TEXT = [
+        bind(%i[text], 'TextElement', { text: :text }, via: StructureHooks.method(:text)),
+        bind(%i[line_break text], 'TextElement', { text: :text, line_break: :line_break },
+             via: StructureHooks.method(:text_with_break)),
+        bind(%i[line_break], 'LineBreak', { line_break: :line_break }),
+        bind(%i[unparsed], nil, { text: :unparsed }, via: StructureHooks.method(:unparsed))
+      ].freeze
+
+      BLOCK = [
+        bind(%i[block], nil, { block: :block }, via: StructureHooks.method(:block)),
+        bind(%i[admonition_type content], 'Admonition', { type: :admonition_type, content: :content },
+             via: StructureHooks.method(:admonition)),
+        bind(%i[block_image], 'Image::BlockImage', { block_image: :block_image },
+             via: StructureHooks.method(:block_image))
+      ].freeze
+
+      STRUCTURE = [
+        bind(%i[cell_format text], nil, { format: :cell_format, text: :text }, via: StructureHooks.method(:table_cell)),
+        bind(%i[cell], nil, { cell: :cell }, via: StructureHooks.unwrap(:cell)),
+        bind(%i[row], nil, { row: :row }, via: StructureHooks.unwrap(:row)),
+        bind(%i[cells], 'TableRow', { columns: :cells }),
+        bind(%i[table], nil, { table: :table }, via: StructureHooks.method(:table)),
+        bind(%i[level line_break text], 'Title', { level: :level, text: :text, line_break: :line_break },
+             via: StructureHooks.method(:title)),
+        bind(%i[section], nil, { section: :section }, via: StructureHooks.method(:section)),
+        bind(%i[document], nil, { document: :document }, via: StructureHooks.method(:document))
+      ].freeze
+
+      MISC = [
+        bind(%i[comment_line], 'CommentLine', { comment_line: :comment_line },
+             via: StructureHooks.method(:comment_line)),
+        bind(%i[comment_block], 'CommentBlock', { comment_block: :comment_block },
+             via: StructureHooks.method(:comment_block)),
+        bind(%i[page_break], 'Break::PageBreak'),
+        bind(%i[tag], 'Tag', { tag: :tag }, via: StructureHooks.method(:tag)),
+        bind(%i[named], 'Attribute', { named: :named }, via: StructureHooks.method(:named_attribute)),
+        bind(%i[attribute_array], nil, { attribute_array: :attribute_array },
+             via: StructureHooks.method(:attribute_list)),
+        bind(%i[key value line_break], 'Attribute', { key: :key, value: :value, line_break: :line_break },
+             via: StructureHooks.method(:attribute)),
+        bind(%i[key value], 'Attribute', { key: :key, value: :value }, via: StructureHooks.method(:attribute)),
+        bind(%i[document_attributes], 'DocumentAttributes', { data: :document_attributes }),
+        bind(%i[include], 'Include', { include: :include }, via: StructureHooks.method(:include))
+      ].freeze
+
+      # Every grammar rule the parser emits is bound; the rule modules are retired.
       ALL = [HEADER, AUTHOR, REVISION, PARAGRAPH,
              LIST_ITEM, LIST, UNORDERED, UNORDERED_ATTRS, ORDERED, ORDERED_ATTRS,
-             DLIST_TERM, DLIST_ITEM, DLIST, DLIST_ATTRS, *INLINE].freeze
+             DLIST_TERM, DLIST_ITEM, DLIST, DLIST_ATTRS, *INLINE,
+             *TEXT, *BLOCK, *STRUCTURE, *MISC].freeze
 
       class << self
         # @return [Coradoc::BindingInflater] the inflater for the bound rules
