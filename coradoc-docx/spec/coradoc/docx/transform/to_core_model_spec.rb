@@ -56,6 +56,56 @@ RSpec.describe Coradoc::Docx::Transform::ToCoreModel do
       walk.call(core)
       expect(refs.map(&:id)).to eq(%w[2])
     end
+
+    it 'appends the footnote definition to the core document children' do
+      separator = Uniword::Wordprocessingml::Footnote.new(
+        id: '0',
+        type: 'separator',
+        paragraphs: [build_paragraph('footnote separator')]
+      )
+      note = Uniword::Wordprocessingml::Footnote.new(
+        id: '1',
+        paragraphs: [build_paragraph('note body')]
+      )
+      doc = build_document
+      doc.footnotes = build_footnotes_part([separator, note])
+      doc.body.paragraphs << build_paragraph('Body')
+
+      core = transform_to_core(doc)
+
+      defs = core.children.select { |c| c.is_a?(Coradoc::CoreModel::Footnote) }
+      expect(defs.map(&:id)).to eq(%w[1])
+      expect(defs.first.content).to eq('note body')
+    end
+
+    it 'omits definitions when the part has only separator entries' do
+      separator = Uniword::Wordprocessingml::Footnote.new(
+        id: '-1',
+        type: 'continuationSeparator',
+        paragraphs: [build_paragraph('continuation separator')]
+      )
+      doc = build_document
+      doc.footnotes = build_footnotes_part([separator])
+
+      core = transform_to_core(doc)
+
+      defs = core.children.select { |c| c.is_a?(Coradoc::CoreModel::Footnote) }
+      expect(defs).to be_empty
+    end
+
+    it 'joins multi-paragraph footnote content with newlines' do
+      note = Uniword::Wordprocessingml::Footnote.new(
+        id: '3',
+        paragraphs: [build_paragraph('first'), build_paragraph('second')]
+      )
+      doc = build_document
+      doc.footnotes = build_footnotes_part([note])
+
+      core = transform_to_core(doc)
+
+      defn = core.children.find { |c| c.is_a?(Coradoc::CoreModel::Footnote) }
+      expect(defn.content).to eq("first\nsecond")
+    end
   end
 
   describe '.transform' do
