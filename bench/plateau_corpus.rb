@@ -15,7 +15,7 @@ require 'coradoc/asciidoc'
 
 dir, out = ARGV
 max = Integer(ENV.fetch('MAX_BYTES', 250_000))
-all = Dir.glob(File.join(dir, '**/*.adoc')).sort
+all = Dir.glob(File.join(dir, '**/*.adoc'))
 files = all.select { |f| File.size(f) <= max }
 if ENV['CHUNK'] # "i/n": process every n-th file starting at i, so a driver can bound memory per process
   i, n = ENV['CHUNK'].split('/').map(&:to_i)
@@ -81,7 +81,7 @@ res = files.to_h do |f|
   rd, wr = IO.pipe
   pid = fork do
     rd.close
-    wr.write(Marshal.dump(measure(text)))
+    wr.write(JSON.generate(measure(text)))
     wr.close
     exit!(0)
   end
@@ -89,9 +89,9 @@ res = files.to_h do |f|
   deadline = clock + limit
   r = nil
   until r
-    if IO.select([rd], nil, nil, [deadline - clock, 0].max)
+    if rd.wait_readable([deadline - clock, 0].max)
       data = rd.read
-      r = data.empty? ? { 'bytes' => text.bytesize, 'error' => 'child died' } : Marshal.load(data)
+      r = data.empty? ? { 'bytes' => text.bytesize, 'error' => 'child died' } : JSON.parse(data)
     else
       Process.kill('KILL', pid)
       r = { 'bytes' => text.bytesize, 'error' => "timeout #{limit}s" }

@@ -17,10 +17,11 @@ tot = { 'old' => 0, 'new' => 0 }
   n = total.call(new, k)
   tot['old'] += o
   tot['new'] += n
-  puts format('%-7s old %.3fs new %.3fs (new/old %.3f)', k, o, n, n / o)
+  puts format('%<k>-7s old %<o>.3fs new %<n>.3fs (new/old %<r>.3f)', k: k, o: o, n: n, r: n / o)
 end
-puts format('total   old %.3fs new %.3fs  files/s old %.1f new %.1f', tot['old'], tot['new'], common.size / tot['old'], common.size / tot['new'])
+puts format('total   old %<o>.3fs new %<n>.3fs  files/s old %<of>.1f new %<nf>.1f',
+            o: tot['old'], n: tot['new'], of: common.size / tot['old'], nf: common.size / tot['new'])
 %w[ast model core core_norm error].each do |k|
-  d = common.select { |f| ofiles[f][k] != nfiles[f][k] }
+  d = common.reject { |f| ofiles[f][k] == nfiles[f][k] }
   puts "#{k}: #{common.size - d.size}/#{common.size} identical; differing: #{d.first(20).join(', ')}"
 end
