@@ -29,7 +29,10 @@ module Coradoc
     # @!attribute raw [Hash{Symbol=>Symbol}] attribute => capture key, assigned
     #   as captured: never inflated and never sent to the residual. For hooks
     #   that read the raw subtree themselves.
-    Binding = Struct.new(:keys, :model, :captures, :defaults, :via, :raw, keyword_init: true) do
+    # @!attribute scoped [Boolean, nil] when true the hook also receives the
+    #   context passed to {#inflate} (document-scoped state such as a table
+    #   of definitions), as its second argument.
+    Binding = Struct.new(:keys, :model, :captures, :defaults, :via, :raw, :scoped, keyword_init: true) do
       def matches?(node)
         node.is_a?(Hash) && node.keys.sort == keys.sort
       end
@@ -79,16 +82,18 @@ module Coradoc
     end
 
     # @param node [Object] a raw tree node
+    # @param context [Object, nil] document-scoped state, handed to the hooks
+    #   of scoped bindings and carried through nested nodes
     # @yield [Object] an unbound node, handed to the residual
     # @return [Object] the model for a bound node, else the residual's result
-    def inflate(node, &residual)
+    def inflate(node, context = nil, &residual)
       binding = binding_for(node)
       return yield(node) unless binding
 
       attributes = binding.defaults.dup
-      binding.captures.each { |attribute, key| attributes[attribute] = inflate_value(node[key], &residual) }
+      binding.captures.each { |attribute, key| attributes[attribute] = inflate_value(node[key], context, &residual) }
       binding.raw&.each { |attribute, key| attributes[attribute] = node[key] }
-      attributes = binding.via.call(attributes) if binding.via
+      attributes = call_hook(binding, attributes, context) if binding.via
       binding.model ? binding.model_class.new(**attributes) : attributes
     end
 
@@ -98,10 +103,14 @@ module Coradoc
       @bindings.find { |binding| binding.matches?(node) }
     end
 
-    def inflate_value(value, &residual)
+    def call_hook(binding, attributes, context)
+      binding.scoped ? binding.via.call(attributes, context) : binding.via.call(attributes)
+    end
+
+    def inflate_value(value, context, &residual)
       case value
-      when Array then value.map { |item| inflate_value(item, &residual) }
-      when Hash then inflate(value, &residual)
+      when Array then value.map { |item| inflate_value(item, context, &residual) }
+      when Hash then inflate(value, context, &residual)
       else value.respond_to?(:to_str) ? value.to_str : value
       end
     end

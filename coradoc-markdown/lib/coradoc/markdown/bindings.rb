@@ -5,9 +5,10 @@ module Coradoc
     # PARG bindings for the Markdown block grammar: which raw-tree rules
     # inflate directly to schema-generated model classes through
     # Coradoc::BindingInflater. A rule is bound by its exact capture-key
-    # set. Only the stateful rules stay in the residual (Transformer):
-    # ALD definitions (they register in the ALD table) and a standalone
-    # IAL (it resolves against that table).
+    # set. The stateful rules (an ALD definition registers in the document's
+    # Scope, a standalone IAL resolves against it) are bound too, through
+    # scoped hooks; Transformer holds no rule. This is the only stage-1 to
+    # stage-2 path; no per-rule transformer remains.
     #
     # Every rule except the thematic break takes its attributes from the
     # raw subtree through a named hook (`via:`), because the attribute is
@@ -21,50 +22,61 @@ module Coradoc
     module Bindings
       Binding = Coradoc::BindingInflater::Binding
 
-      # Semantic steps: raw captures in, model attributes out. They reuse
-      # the Transformer's text and IAL helpers, so a bound rule and the
-      # hand-written one cannot drift on those.
+      autoload :Captures, "#{__dir__}/bindings/captures"
+      autoload :Scope, "#{__dir__}/bindings/scope"
+
+      # Semantic steps: raw captures in, model attributes out. They read the
+      # raw captures through Captures.
       module Hooks
         module_function
 
-        def transformer
-          Coradoc::Markdown::Transformer
-        end
-
+        # The active model class by short name: hand-written by default,
+        # the schema-generated one under CORADOC_MARKDOWN_GENERATED=1.
         def model(name)
-          Schema.generated_class(name)
+          Bindings.model(name)
         end
 
         # IAL attributes, set only when present (as Transformer does).
         def ial(attrs)
           return {} unless attrs.key?(:ial)
 
-          parsed = transformer.parse_ial_content(attrs[:ial].to_s)
+          parsed = Captures.parse_ial_content(attrs[:ial].to_s)
           { id: parsed[:id], classes: parsed[:classes], attributes: parsed[:attributes] }.compact
         end
 
         def heading(attrs)
-          text = attrs.key?(:text) ? transformer.extract_text(attrs[:text]).strip : ''
-          { level: transformer.heading_level(attrs[:heading]), text: text, **ial(attrs) }
+          text = attrs.key?(:text) ? Captures.extract_text(attrs[:text]).strip : ''
+          { level: Captures.heading_level(attrs[:heading]), text: text, **ial(attrs) }
         end
 
         def code_block(attrs)
           language = attrs.key?(:info) ? { language: attrs[:info].to_s.strip } : {}
-          { **language, code: transformer.extract_code(attrs[:code_block]), **ial(attrs) }
+          { **language, code: Captures.extract_code(attrs[:code_block]), **ial(attrs) }
         end
 
-        def block_quote(attrs)
+        def block_quote(attrs, scope)
           content = attrs[:block_quote]
           nodes = content.is_a?(Array) ? content : [content]
-          text = nodes.map { |node| transformer.transform_element(node) }.compact.map do |child|
+          text = nodes.map { |node| Transformer.transform_element(node, scope) }.compact.map do |child|
             child.is_a?(Base) && child.class.attributes.key?(:text) ? child.text : child.to_s
           end.join("\n")
           { content: text, **ial(attrs) }
         end
 
+        # An ALD definition registers in the document scope and yields no block.
+        def ald_definition(attrs, scope)
+          scope.define(attrs[:ald_name].to_s, Captures.parse_ial_content(attrs[:ial].to_s))
+          nil
+        end
+
+        # An IAL on its own line: a registered ALD's attribute list, else a fresh one.
+        def ial_reference(attrs, scope)
+          scope.resolve(attrs[:ial].to_s)
+        end
+
         def paragraph(attrs)
           p = attrs[:p]
-          { text: transformer.extract_text_from_p(p), children: inline_models(p), **ial(attrs) }
+          { text: Captures.extract_text_from_p(p), children: inline_models(p), **ial(attrs) }
         end
 
         # A bare line that no other rule claimed is a paragraph.
@@ -86,11 +98,11 @@ module Coradoc
           text_parts = []
           children = []
           sublist = nil
-          transformer.normalize_list_item_nodes(item_node).each do |node|
+          Captures.normalize_list_item_nodes(item_node).each do |node|
             if !node.is_a?(Hash)
               text_parts << node.to_s
             elsif node.key?(:p)
-              text_parts << transformer.extract_text_from_p(node[:p])
+              text_parts << Captures.extract_text_from_p(node[:p])
               children.concat(inline_models(node[:p]))
             elsif node.key?(:ul)
               sublist = model('List').new(**list_attributes(node[:ul], ordered: false))
@@ -111,10 +123,10 @@ module Coradoc
             next unless node.is_a?(Hash)
 
             if node.key?(:def_term)
-              entries << [transformer.extract_text(node[:def_term]).strip, []]
+              entries << [Captures.extract_text(node[:def_term]).strip, []]
             elsif node.key?(:def_content) && entries.any?
               entries.last.last << model('DefinitionItem').new(
-                content: transformer.extract_text(node[:def_content]).strip
+                content: Captures.extract_text(node[:def_content]).strip
               )
             end
           end
@@ -123,15 +135,15 @@ module Coradoc
 
         def table(attrs)
           rows = Array(attrs[:table_body]).map do |node|
-            transformer.extract_row_cells(node[:table_body_row][:row]).join(' | ')
+            Captures.extract_row_cells(node[:table_body_row][:row]).join(' | ')
           end
-          { headers: transformer.extract_row_cells(attrs[:table_header][:row]), rows: rows }
+          { headers: Captures.extract_row_cells(attrs[:table_header][:row]), rows: rows }
         end
 
         def footnote(attrs)
           lines = [attrs[:fn_content]]
           lines += Array(attrs[:fn_content_continued]) if attrs[:fn_content_continued]
-          content = lines.map { |line| transformer.extract_text(line) }.join("\n")
+          content = lines.map { |line| Captures.extract_text(line) }.join("\n")
           { id: attrs[:fn_id].to_s, content: content.strip }
         end
 
@@ -149,20 +161,20 @@ module Coradoc
           opts = node[:ext_options]
           empty = !opts || (opts.is_a?(Array) && opts.empty?)
           { name: node[:ext_name].to_s,
-            options: empty ? {} : transformer.parse_extension_options(opts.to_s),
+            options: empty ? {} : Captures.parse_extension_options(opts.to_s),
             content: node[:ext_body]&.to_s }
         end
 
         def math(attrs)
-          { content: transformer.extract_text(attrs[:math_content]), inline: false }
+          { content: Captures.extract_text(attrs[:math_content]), inline: false }
         end
 
         def strong(attrs)
-          { text: transformer.flatten_inline_text(attrs[:strong]) }
+          { text: Captures.flatten_inline_text(attrs[:strong]) }
         end
 
         def emphasis(attrs)
-          { text: transformer.flatten_inline_text(attrs[:emph]) }
+          { text: Captures.flatten_inline_text(attrs[:emph]) }
         end
 
         def code(attrs)
@@ -189,7 +201,7 @@ module Coradoc
 
         def inline_model(node)
           Bindings.inline_inflater.inflate(node) do |unbound|
-            content = unbound.is_a?(Hash) ? transformer.flatten_inline_text([unbound]) : unbound.to_s
+            content = unbound.is_a?(Hash) ? Captures.flatten_inline_text([unbound]) : unbound.to_s
             model('Text').new(content: content)
           end
         end
@@ -200,8 +212,8 @@ module Coradoc
       # carry a trailing inline attribute list (bound as a second key set).
       DECLARATIONS = [
         { model: 'Heading', via: :heading, raw: %i[heading text], optional: %i[text], ial: true },
-        { model: 'CodeBlock', via: :code_block, raw: %i[code_block info], optional: %i[info] },
-        { model: 'Blockquote', via: :block_quote, raw: %i[block_quote] },
+        { model: 'CodeBlock', via: :code_block, raw: %i[code_block info], optional: %i[info], ial: true },
+        { model: 'Blockquote', via: :block_quote, raw: %i[block_quote], ial: true, scoped: true },
         { model: 'Paragraph', via: :paragraph, raw: %i[p], ial: true },
         { model: 'Paragraph', via: :line, raw: %i[ln] },
         { model: 'List', via: :list, raw: %i[ul] },
@@ -215,7 +227,9 @@ module Coradoc
         { model: 'Extension', via: :extension, raw: %i[extension] },
         { model: 'Extension', via: :extension, raw: %i[ext_name ext_options ext_body], optional: %i[ext_body] },
         { model: 'Math', via: :math, raw: %i[math_content] },
-        { model: 'Text', via: :text, raw: %i[text] }
+        { model: 'Text', via: :text, raw: %i[text] },
+        { model: nil, via: :ald_definition, raw: %i[ald_name ial], scoped: true },
+        { model: nil, via: :ial_reference, raw: %i[ial], scoped: true }
       ].freeze
 
       # Inline rules, reached only through a paragraph's raw lines (the
@@ -229,6 +243,14 @@ module Coradoc
       ].freeze
 
       class << self
+        # The active model class by short name (Coradoc::Markdown::Heading).
+        # Hand-written by default; CORADOC_MARKDOWN_GENERATED=1 replaces the
+        # constants with the schema-generated classes, so bound output
+        # always matches what the rest of the gem dispatches on.
+        def model(name)
+          Coradoc::Markdown.const_get(name, false)
+        end
+
         # @return [Coradoc::BindingInflater] the inflater for the bound rules
         def inflater
           @inflater ||= Coradoc::BindingInflater.new(
@@ -248,7 +270,7 @@ module Coradoc
         def table_bindings
           Coradoc::BindingInflater.from_table(
             Parser::Grammar.model_bindings,
-            models: ->(name) { Schema.generated_class(name) }
+            models: ->(name) { model(name) }
           ).bindings
         end
 
@@ -271,11 +293,12 @@ module Coradoc
           name = declaration[:model]
           Binding.new(
             keys: keys,
-            model: -> { Schema.generated_class(name) },
+            model: name && -> { Bindings.model(name) },
             captures: {},
             defaults: {},
             raw: keys.to_h { |key| [key, key] },
-            via: Hooks.method(declaration[:via])
+            via: Hooks.method(declaration[:via]),
+            scoped: declaration[:scoped]
           )
         end
       end

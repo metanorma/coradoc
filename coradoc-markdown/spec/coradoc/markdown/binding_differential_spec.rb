@@ -1,10 +1,20 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require_relative '../../support/legacy_transformer'
 
-RSpec.describe 'Markdown bound-vs-unbound differential (M2 BindingInflater seam)' do
+RSpec.describe 'Markdown bound-vs-legacy differential (BindingInflater vs the frozen hand-written transformer)' do
   def inflater
     Coradoc::Markdown::Bindings.inflater
+  end
+
+  # The retired hand-written stage-1 -> 2 path (spec/support).
+  def legacy_parse(input)
+    split = Coradoc::Markdown::Parser::FrontmatterParser.call(input)
+    ast = Coradoc::Markdown::Parser::BlockParser.new.parse(split.body)
+    doc = Coradoc::Markdown::LegacyTransformer.transform_document(ast)
+    doc.frontmatter = split.frontmatter if split.frontmatter?
+    doc
   end
 
   def self.fixture_paths
@@ -31,13 +41,13 @@ RSpec.describe 'Markdown bound-vs-unbound differential (M2 BindingInflater seam)
     doc.blocks.select { |b| b.instance_of?(klass) }
   end
 
-  it 'binds the thematic break to the schema-generated class' do
+  it 'binds the thematic break to the active model class' do
     doc = Coradoc::Markdown.parse("para\n\n---\n\nafter\n", bindings: inflater)
-    rules = blocks_of(doc, Coradoc::Markdown::Generated::HorizontalRule)
+    rules = blocks_of(doc, Coradoc::Markdown::HorizontalRule)
     expect(rules.map(&:style)).to eq(['---'])
   end
 
-  it 'binds every block rule to its schema-generated class' do
+  it 'binds every block rule to the active model classes' do
     input = <<~MD
       # Title
 
@@ -66,31 +76,50 @@ RSpec.describe 'Markdown bound-vs-unbound differential (M2 BindingInflater seam)
       *[MD]: Markdown
     MD
     doc = Coradoc::Markdown.parse(input, bindings: inflater)
-    expect(doc.blocks.map { |b| b.class.name.split('::').last(2) }.uniq).to all(start_with('Generated'))
     expect(doc.blocks.map { |b| b.class.name.split('::').last }).to include(
       'Heading', 'Paragraph', 'List', 'CodeBlock', 'Blockquote', 'Table', 'DefinitionList', 'Footnote',
       'Abbreviation'
     )
   end
 
-  it 'leaves parsing untouched when no bindings are given' do
-    generated_rule = Coradoc::Markdown::Schema.generated_class('HorizontalRule') # load first: a negative check must not pass by absence
+  it 'binds by default, with no bindings option' do
     doc = Coradoc::Markdown.parse("para\n\n---\n")
     expect(blocks_of(doc, Coradoc::Markdown::HorizontalRule).size).to eq(1)
-    expect(blocks_of(doc, generated_rule)).to be_empty
+    expect(Coradoc::Markdown::Transformer.bindings).to be(inflater)
   end
 
-  it 'routes the stateful rules (ALD definition, IAL reference) through the residual' do
-    input = "{:ref: .note}\n\npara\n\n{:ref}\n"
+  it 'binds the stateful rules (ALD definition, IAL reference) through scoped hooks' do
+    input = "{:ref: .note}\n\npara\n\n{:ref}\n\n{: .fresh}\n"
     expect(comparable(Coradoc::Markdown.parse(input, bindings: inflater)))
-      .to eq(comparable(Coradoc::Markdown.parse(input)))
-    expect(inflater.bound?({ ald_name: 'ref:', ial: '.note' })).to be(false)
-    expect(inflater.bound?({ ial: 'ref' })).to be(false)
+      .to eq(comparable(legacy_parse(input)))
+    expect(inflater.bound?({ ald_name: 'ref:', ial: '.note' })).to be(true)
+    expect(inflater.bound?({ ial: 'ref' })).to be(true)
+  end
+
+  it 'resolves an IAL reference against its own document\'s ALD table only' do
+    ald = { ald_name: 'ref', ial: '.note' }
+    ref = { ial: 'ref' }
+    same = Coradoc::Markdown::Transformer.transform_document([ald, ref])
+    other = Coradoc::Markdown::Transformer.transform_document([ref])
+    expect(same.blocks.first.name).to eq('ref')
+    expect(other.blocks.first.name).to be_nil
+  end
+
+  # The hand-written transformer's standalone-IAL branch shadowed a code
+  # block or block quote that carries an IAL (it returned the bare
+  # attribute list and dropped the block). The bindings attach the IAL.
+  it 'attaches an IAL to a code block and a block quote instead of shadowing them' do
+    code = Coradoc::Markdown::Transformer.transform_element({ code_block: [{ ln: 'x' }], ial: '#a .b' })
+    quote = Coradoc::Markdown::Transformer.transform_element({ block_quote: { p: { ln: 'q' } }, ial: '.c' })
+    expect(code).to be_a(Coradoc::Markdown::CodeBlock)
+    expect(code.id).to eq('a')
+    expect(quote).to be_a(Coradoc::Markdown::Blockquote)
+    expect(quote.classes).to eq(['c'])
   end
 
   it 'reaches bound rules nested in containers' do
     doc = Coradoc::Markdown.parse("> a\n>\n> ---\n", bindings: inflater)
-    expect(comparable(doc)).to eq(comparable(Coradoc::Markdown.parse("> a\n>\n> ---\n")))
+    expect(comparable(doc)).to eq(comparable(legacy_parse("> a\n>\n> ---\n")))
   end
 
   # Raw nodes the block parser does not currently emit (or emits only
@@ -113,12 +142,10 @@ RSpec.describe 'Markdown bound-vs-unbound differential (M2 BindingInflater seam)
     'block math' => { math_content: ' x^2 ' }
   }.each do |name, node|
     it "inflates the raw #{name} like the hand-written transformer" do
-      bound = Coradoc::Markdown::Transformer.with_bindings(inflater) do
-        Coradoc::Markdown::Transformer.transform_element(node)
-      end
-      unbound = Coradoc::Markdown::Transformer.transform_element(node)
+      bound = Coradoc::Markdown::Transformer.transform_element(node)
+      unbound = Coradoc::Markdown::LegacyTransformer.transform_element(node)
       expect(inflater.bound?(node)).to be(true)
-      expect(bound.class.name.split('::').last).to eq(unbound.class.name.split('::').last)
+      expect(bound.class).to eq(unbound.class)
       expect(comparable(bound)).to eq(comparable(unbound))
     end
   end
@@ -128,7 +155,7 @@ RSpec.describe 'Markdown bound-vs-unbound differential (M2 BindingInflater seam)
   it 'builds identical inline children for emphasis, strong and code, nested and across lines' do
     ['a *em* and **strong** and `code`', "line one\nline *two*\nthree", '***both*** and `x` and **a *b* c**'].each do |input|
       expect(comparable(Coradoc::Markdown.parse(input, bindings: inflater)))
-        .to eq(comparable(Coradoc::Markdown.parse(input))), input
+        .to eq(comparable(legacy_parse(input))), input
     end
   end
 
@@ -163,14 +190,14 @@ RSpec.describe 'Markdown bound-vs-unbound differential (M2 BindingInflater seam)
     'with an attribute list' => "---\n{:.rule}\n"
   }.each do |name, input|
     it "produces identical output for inline '#{name}'" do
-      expect(comparable(Coradoc::Markdown.parse(input, bindings: inflater))).to eq(comparable(Coradoc::Markdown.parse(input)))
+      expect(comparable(Coradoc::Markdown.parse(input, bindings: inflater))).to eq(comparable(legacy_parse(input)))
     end
   end
 
   fixture_paths.each do |path|
     it "produces identical output for #{path.sub(%r{.*?/(coradoc-markdown|BUGREPORT)}, '\\1')}" do
       input = File.read(path)
-      unbound = Coradoc::Markdown.parse(input)
+      unbound = legacy_parse(input)
       bound = Coradoc::Markdown.parse(input, bindings: inflater)
       expect(comparable(bound)).to eq(comparable(unbound))
     end
@@ -193,7 +220,7 @@ RSpec.describe 'Markdown bindings embedded in the artifact (M4)' do
 
   it 'inflates a thematic break from the embedded table' do
     node = Coradoc::Markdown::Bindings.inflater.inflate({ hr: true }) { raise 'residual reached' }
-    expect(node).to be_a(Coradoc::Markdown::Generated::HorizontalRule)
+    expect(node).to be_a(Coradoc::Markdown::HorizontalRule)
     expect(node.style).to eq('---')
   end
 end
