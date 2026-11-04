@@ -38,9 +38,10 @@ RSpec.describe 'Markdown bound-vs-unbound differential (M2 BindingInflater seam)
   end
 
   it 'leaves parsing untouched when no bindings are given' do
+    generated_rule = Coradoc::Markdown::Schema.generated_class('HorizontalRule') # load first: a negative check must not pass by absence
     doc = Coradoc::Markdown.parse("para\n\n---\n")
     expect(blocks_of(doc, Coradoc::Markdown::HorizontalRule).size).to eq(1)
-    expect(blocks_of(doc, Coradoc::Markdown::Generated::HorizontalRule)).to be_empty
+    expect(blocks_of(doc, generated_rule)).to be_empty
   end
 
   it 'routes unbound nodes through the residual transformer' do
@@ -79,5 +80,26 @@ RSpec.describe 'Markdown bound-vs-unbound differential (M2 BindingInflater seam)
       bound = Coradoc::Markdown.parse(input, bindings: inflater)
       expect(comparable(bound)).to eq(comparable(unbound))
     end
+  end
+end
+
+RSpec.describe 'Markdown bindings embedded in the artifact (M4)' do
+  it 'ships the sidecar table inside the compiled artifact' do
+    table = Coradoc::Markdown::Parser::Grammar.model_bindings
+    expect(table['version']).to eq(1)
+    expect(table['rules'].fetch('thematic_break')).to include('keys' => ['hr'], 'model' => 'HorizontalRule')
+  end
+
+  it 'keeps the artifact table equal to the sidecar source' do
+    sidecar = YAML.safe_load_file(Coradoc::Markdown::Parser::Grammar::BINDINGS_PATH)
+    embedded = Coradoc::Markdown::Parser::Grammar.model_bindings
+    expect(embedded['rules'].transform_values { |r| r.slice(*sidecar['rules'].values.first.keys) })
+      .to eq(sidecar['rules'])
+  end
+
+  it 'inflates a thematic break from the embedded table' do
+    node = Coradoc::Markdown::Bindings.inflater.inflate({ hr: true }) { raise 'residual reached' }
+    expect(node).to be_a(Coradoc::Markdown::Generated::HorizontalRule)
+    expect(node.style).to eq('---')
   end
 end

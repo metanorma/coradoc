@@ -1,0 +1,13 @@
+# Rule -> model bindings for the Markdown block grammar (coradoc#307 M4).
+# `rake grammar:compile` embeds this table in the artifact under
+# `model_bindings`; Coradoc::BindingInflater reads it from there.
+# Thematic break: `{hr: true}` -> HorizontalRule(style: '---').
+version: 1
+rules:
+  thematic_break:
+    keys: [hr]
+    model: HorizontalRule
+    captures: {}
+    children: {}
+    defaults:
+      style: '---'
