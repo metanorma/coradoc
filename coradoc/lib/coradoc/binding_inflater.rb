@@ -26,7 +26,10 @@ module Coradoc
     #   model is built from. Pure capture-to-attribute rules need none.
     #   With `model: nil` the hook's return value IS the result (for rules
     #   that build a tree, pass a value through, or return plain data).
-    Binding = Struct.new(:keys, :model, :captures, :defaults, :via, keyword_init: true) do
+    # @!attribute raw [Hash{Symbol=>Symbol}] attribute => capture key, assigned
+    #   as captured: never inflated and never sent to the residual. For hooks
+    #   that read the raw subtree themselves.
+    Binding = Struct.new(:keys, :model, :captures, :defaults, :via, :raw, keyword_init: true) do
       def matches?(node)
         node.is_a?(Hash) && node.keys.sort == keys.sort
       end
@@ -35,6 +38,33 @@ module Coradoc
         model.is_a?(Class) || model.nil? ? model : model.call
       end
     end
+
+    # Build an inflater from the model-bindings table a PARG artifact
+    # embeds (`parsanol parg bindings` dumps the same table).
+    #
+    # @param table [Hash, nil] `{"version"=>1, "rules"=>{name=>rule}}`; nil = no bindings
+    # @param models [#call] resolves a model name to its class, lazily
+    def self.from_table(table, models:)
+      rules = table ? table.fetch('rules') : {}
+      version = table && table['version']
+      raise ArgumentError, "unsupported model_bindings version #{version.inspect}" if table && version != 1
+
+      new(bindings: rules.values.map { |rule| binding_from_rule(rule, models) })
+    end
+
+    def self.binding_from_rule(rule, models)
+      name = rule.fetch('model')
+      # Both attribute => capture maps feed the same recursive inflation:
+      # `children` merely names the attributes that hold nested nodes.
+      captures = rule.fetch('captures', {}).merge(rule.fetch('children', {}))
+      Binding.new(
+        keys: rule.fetch('keys').map(&:to_sym),
+        model: -> { models.call(name) },
+        captures: captures.to_h { |attribute, key| [attribute.to_sym, key.to_sym] },
+        defaults: rule.fetch('defaults', {}).transform_keys(&:to_sym)
+      )
+    end
+    private_class_method :binding_from_rule
 
     def initialize(bindings:)
       @bindings = bindings
@@ -57,6 +87,7 @@ module Coradoc
 
       attributes = binding.defaults.dup
       binding.captures.each { |attribute, key| attributes[attribute] = inflate_value(node[key], &residual) }
+      binding.raw&.each { |attribute, key| attributes[attribute] = node[key] }
       attributes = binding.via.call(attributes) if binding.via
       binding.model ? binding.model_class.new(**attributes) : attributes
     end
