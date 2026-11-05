@@ -25,4 +25,47 @@ RSpec.describe 'coradoc-adoc grammar scaling' do
 
     expect(document[:document]).not_to be_empty
   end
+
+  # The inline fast path skips the inline choice at characters that cannot
+  # start markup; markup after plain, CJK or mid-word text must still parse.
+  describe 'inline markup after skipped text' do
+    def parse_lines(text)
+      Coradoc::AsciiDoc::Parser::Base.parse("#{text}\n")[:document]
+    end
+
+    {
+      '日本語*強調*です' => :bold_constrained,
+      'abc http://x.y/z ok' => :link,
+      'see:footnote:[n] x' => :footnote,
+      'x_ term:[a]' => :term_type
+    }.each do |text, key|
+      it "keeps #{key} in #{text.inspect}" do
+        expect(parse_lines(text).inspect).to include(key.to_s)
+      end
+    end
+
+    it 'keeps inline markup in list item text' do
+      expect(parse_lines('* 日本語 _it_ end').inspect).to include('italic_constrained')
+    end
+  end
+
+  # Table cells are consumed in bulk runs that stop at the active delimiter.
+  describe 'table cell boundaries' do
+    def table_cells(source)
+      document = Coradoc::AsciiDoc::Parser::Base.parse(source)[:document]
+      document.flat_map { |node| node[:table][:rows].flat_map { |row| row[:row][:cells] } }
+    end
+
+    it 'splits cells at the delimiter and keeps multi-line cell text' do
+      cells = table_cells("|===\n| a | b\\|c\nsecond line\n| d\n|===\n")
+
+      expect(cells.map { |cell| cell[:cell][:text].to_s }).to eq([' a ', " b\\|c\nsecond line", ' d'])
+    end
+
+    it 'honours a non-pipe delimiter' do
+      cells = table_cells("!===\n! x | y ! z\n!===\n")
+
+      expect(cells.map { |cell| cell[:cell][:text].to_s }).to eq([' x | y ', ' z'])
+    end
+  end
 end
