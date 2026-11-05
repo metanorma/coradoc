@@ -48,4 +48,24 @@ RSpec.describe 'coradoc-adoc grammar scaling' do
       expect(parse_lines('* 日本語 _it_ end').inspect).to include('italic_constrained')
     end
   end
+
+  # Table cells are consumed in bulk runs that stop at the active delimiter.
+  describe 'table cell boundaries' do
+    def table_cells(source)
+      document = Coradoc::AsciiDoc::Parser::Base.parse(source)[:document]
+      document.flat_map { |node| node[:table][:rows].flat_map { |row| row[:row][:cells] } }
+    end
+
+    it 'splits cells at the delimiter and keeps multi-line cell text' do
+      cells = table_cells("|===\n| a | b\\|c\nsecond line\n| d\n|===\n")
+
+      expect(cells.map { |cell| cell[:cell][:text].to_s }).to eq([' a ', " b\\|c\nsecond line", ' d'])
+    end
+
+    it 'honours a non-pipe delimiter' do
+      cells = table_cells("!===\n! x | y ! z\n!===\n")
+
+      expect(cells.map { |cell| cell[:cell][:text].to_s }).to eq([' x | y ', ' z'])
+    end
+  end
 end

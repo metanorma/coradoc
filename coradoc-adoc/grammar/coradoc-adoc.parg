@@ -355,9 +355,9 @@ grammar CoradocAdoc version "0.2.0" {
   # pair consumes the same bytes as two single-char iterations
   escaped_delim = ("\\" dchar)
   cell_plain = (1*%x80-10FFFF / 1*%x5D-7B / 1*%x3C-5B / 1*%x2D-39 / 1*%x0E-20 / 1*%x22-2B / ("\n" &("\n" / %x80-10FFFF / %x41-5A / " " / %x62-63 / %x66-67 / %x69-6B / %x6E-6F / %x70-72 / %x74-7A)) / (!(state tdc) "!" / !(state tdc) "," / !(state tdc) %x3A-3B / !(state tdc) "|") / ("\\" !(dchar)))
-  cell_content = (*(cell_plain / (!table_close !new_row_signal (escaped_delim / (!((state tdc)) any_char)))))
-  table_cell = ([*literal_space] ([cell_format_spec] as cell_format) (state tdc) (cell_content as text))
-  table_row = (((1*(!table_close !new_row_signal (table_cell as cell))) as cells) newline_single)
+  cell_content = (*(!(state tdc) (cell_plain / (!new_row_signal (escaped_delim / any_char)))))
+  table_cell = ([literal_space] ([cell_format_spec] as cell_format) (state tdc) (cell_content as text))
+  table_row = (((1*(!table_close (table_cell as cell))) as cells) newline_single)
   table_rows = (1*(!table_close (table_row as row)))
   table = (block_header table_start newline_single (table_rows as rows) table_close (newline_single / !(any_char)))
 
