@@ -19,6 +19,26 @@ RSpec.describe 'coradoc-adoc grammar scaling' do
     expect(offenders).to be_empty
   end
 
+  # A `%i"word"` case-insensitive literal compiles to an unanchored regex with a
+  # literal prefilter, so a failed attempt scans the remaining input for the
+  # word (a 21 MB document of base64 images took 83 s instead of 9 s).
+  it 'writes no case-insensitive literal (%i"...")' do
+    offenders = grammar.each_line.with_index(1).filter_map do |line, number|
+      code = line.sub(/#.*/, '')
+      "#{number}: #{line.strip}" if code.include?('%i"')
+    end
+
+    expect(offenders).to be_empty
+  end
+
+  it 'matches admonition labels in any letter case and nothing longer' do
+    parse = ->(text) { Coradoc::AsciiDoc::Parser::Base.parse(text)[:document] }
+
+    expect(parse.call("nOtE: hi\n").first).to include(admonition_type: 'nOtE')
+    expect(parse.call("ADMONITION: hi\n").first).to include(admonition_type: 'ADMONITION')
+    expect(parse.call("Tipp: hi\n").first).to have_key(:paragraph)
+  end
+
   it 'parses text without any inline markup byte' do
     text = (1..200).map { |i| "Plain text line #{i} here.\n\n" }.join
     document = Coradoc::AsciiDoc::Parser::Base.parse(text)
@@ -66,6 +86,13 @@ RSpec.describe 'coradoc-adoc grammar scaling' do
       cells = table_cells("!===\n! x | y ! z\n!===\n")
 
       expect(cells.map { |cell| cell[:cell][:text].to_s }).to eq([' x | y ', ' z'])
+    end
+
+    it 'keeps an inline base64 image line as one cell text' do
+      line = "image::data:image/webp;base64,#{'Ab+/9_=' * 40}[]"
+      cells = table_cells("|===\n1.1+| \n\n#{line}\n 1.1+| x\n|===\n")
+
+      expect(cells.first[:cell][:text].to_s).to include(line)
     end
   end
 end

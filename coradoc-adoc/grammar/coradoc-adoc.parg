@@ -211,7 +211,7 @@ grammar CoradocAdoc version "0.2.0" {
   paragraph = (block_header ((((1*1(paragraph_text_line_0)) ((newline) as line_break / (!(any_char)))) / ((1*(paragraph_text_line_s)) [(1*1(paragraph_text_line_m) ((newline) as line_break / (!(any_char))))]))) as lines *(newline)) as paragraph
 
   # ---- admonition.rb ----
-  admonition_type = (%i"note" / %i"tip" / %i"warning" / %i"caution" / %i"important" / %i"editor" / %i"todo" / %i"admonition")
+  admonition_type = ((("N" / "n") ("O" / "o") ("T" / "t") ("E" / "e")) / (("T" / "t") ("I" / "i") ("P" / "p")) / (("W" / "w") ("A" / "a") ("R" / "r") ("N" / "n") ("I" / "i") ("N" / "n") ("G" / "g")) / (("C" / "c") ("A" / "a") ("U" / "u") ("T" / "t") ("I" / "i") ("O" / "o") ("N" / "n")) / (("I" / "i") ("M" / "m") ("P" / "p") ("O" / "o") ("R" / "r") ("T" / "t") ("A" / "a") ("N" / "n") ("T" / "t")) / (("E" / "e") ("D" / "d") ("I" / "i") ("T" / "t") ("O" / "o") ("R" / "r")) / (("T" / "t") ("O" / "o") ("D" / "d") ("O" / "o")) / (("A" / "a") ("D" / "d") ("M" / "m") ("O" / "o") ("N" / "n") ("I" / "i") ("T" / "t") ("I" / "i") ("O" / "o") ("N" / "n")))
   admonition_line = ((admonition_type as admonition_type) ": " ((1*((text_any as text) (line_ending as line_break))) as content))
 
   # ---- list.rb (nesting levels unrolled 1..5) ----
@@ -354,7 +354,7 @@ grammar CoradocAdoc version "0.2.0" {
   # for the active delim it consumes the same pair, and a \ + other-delim
   # pair consumes the same bytes as two single-char iterations
   escaped_delim = ("\\" dchar)
-  cell_plain = (1*%x80-10FFFF / 1*%x5D-7B / 1*%x3C-5B / 1*%x2D-39 / 1*%x0E-20 / 1*%x22-2B / ("\n" &("\n" / %x80-10FFFF / %x41-5A / " " / %x62-63 / %x66-67 / %x69-6B / %x6E-6F / %x70-72 / %x74-7A)) / (!(state tdc) "!" / !(state tdc) "," / !(state tdc) %x3A-3B / !(state tdc) "|") / ("\\" !(dchar)))
+  cell_plain = (1*(%x80-10FFFF / %x5D-7B / %x3C-5B / %x2D-39 / %x0E-20 / %x22-2B) / ("\n" &("\n" / %x80-10FFFF / %x41-5A / " " / %x62-63 / %x66-67 / %x69-6B / %x6E-6F / %x70-72 / %x74-7A)) / (!(state tdc) "!" / !(state tdc) "," / !(state tdc) %x3A-3B / !(state tdc) "|") / ("\\" !(dchar)))
   cell_content = (*(!(state tdc) (cell_plain / (!new_row_signal (escaped_delim / any_char)))))
   table_cell = ([literal_space] ([cell_format_spec] as cell_format) (state tdc) (cell_content as text))
   table_row = (((1*(!table_close (table_cell as cell))) as cells) newline_single)
